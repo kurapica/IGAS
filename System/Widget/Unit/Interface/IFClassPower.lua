@@ -13,7 +13,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassPower", version) then
 	return
 end
@@ -29,9 +29,9 @@ SPEC_ALL = 0
 _ClassMap = {
 	MONK = {
 		[SPEC_ALL] = {
-			PowerType = _G.SPELL_POWER_LIGHT_FORCE,
+			PowerType = _G.SPELL_POWER_CHI,
 			PowerToken = {
-				LIGHT_FORCE = true,
+				CHI = true,
 				DARK_FORCE = true,
 			},
 		},

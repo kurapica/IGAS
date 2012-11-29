@@ -4,7 +4,7 @@
 -- ChangeLog
 
 ------------------------------------------------------
-local version = 5
+local version = 6
 
 if not IGAS:NewAddon("IGAS.Widget.Unit", version) then
 	return
@@ -23,7 +23,7 @@ _ClassPowerMap = {
 	[1] = "RAGE",
 	[2] = "FOCUS",
 	[3] = "ENERGY",
-	[4] = "CHI",
+	[4] = "NOUSE",
 	[5] = "RUNES",
 	[6] = "RUNIC_POWER",
 	[7] = "SOUL_SHARDS",
@@ -31,7 +31,7 @@ _ClassPowerMap = {
 	[9] = "HOLY_POWER",
 	[10] = "ALTERNATE_POWER",
 	[11] = "DARK_FORCE",
-	[12] = "LIGHT_FORCE",
+	[12] = "CHI",
 	[13] = "SHADOW_ORBS",
 	[14] = "BURNING_EMBERS",
 	[15] = "DEMONIC_FURY",
