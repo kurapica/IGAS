@@ -1,7 +1,7 @@
-## Interface: 50001
+## Interface: 50100
 ## Title: Lib: IGAS
 ## Author: kurapica.igas@gmail.com
-## Version: r3
+## Version: r4
 ## Notes: In-game addon system
 ## URL: www.cwowaddon.com
 ## X-Website: http://www.cwowaddon.com
