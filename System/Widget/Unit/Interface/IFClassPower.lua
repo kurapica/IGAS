@@ -104,7 +104,7 @@ function _IFClassPowerUnitList:ParseEvent(event, unit, powerToken)
 		if _PlayerActivePower and _PlayerActivePower.Max ~= UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower) then
 			_PlayerActivePower.Max = UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
 
-			_MinMax.max = map.Max
+			_MinMax.max = _PlayerActivePower.Max
 			self:EachK("player", "MinMaxValue", _MinMax)
 		end
 	elseif event == "UNIT_POWER_FREQUENT" then
