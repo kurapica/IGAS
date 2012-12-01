@@ -19,6 +19,36 @@ class "LevelLabel"
 	extend "IFUnitLevel"
 
 	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	-- FormatLevel
+	property "FormatLevel" {
+		Get = function(self)
+			return self.__FormatLevel or "Lv.%s"
+		end,
+		Set = function(self, value)
+			self.__FormatLevel = value
+		end,
+		Type = System.String,
+	}
+	-- Value
+	property "Value" {
+		Get = function(self)
+			return self.__Value
+		end,
+		Set = function(self, value)
+			self.__Value = value
+
+			if value and value > 0 then
+				self.Text = self.FormatLevel:format(value)
+			else
+				self.Text = self.FormatLevel:format("???")
+			end
+		end,
+		Type = System.Number + nil,
+	}
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function LevelLabel(...)

@@ -140,6 +140,7 @@ class "CodeEditor"
 		["while"] = _IndentNone,
 		-- IGAS
 		["class"] = _IndentRight,
+		["partclass"] = _IndentRight,
 		["inherit"] = _IndentNone,
 		["import"] = _IndentNone,
 		["endclass"] = _IndentLeft,

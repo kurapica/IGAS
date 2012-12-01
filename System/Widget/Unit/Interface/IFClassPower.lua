@@ -1,6 +1,7 @@
 -- Author      : Kurapica
 -- Create Date : 2012/11/14
 -- Change Log  :
+--               2012/12/01 Update for PLAYER_LEVEL_UP, UnitLevel("player") need +1
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 --- IFClassPower
@@ -13,7 +14,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassPower", version) then
 	return
 end
@@ -98,9 +99,9 @@ function _IFClassPowerUnitList:OnUnitListChanged()
 end
 
 function _IFClassPowerUnitList:ParseEvent(event, unit, powerToken)
-	if unit and unit ~= "player" then return end
-
 	if event == "UNIT_MAXPOWER" then
+		if unit ~= "player" then return end
+
 		if _PlayerActivePower and _PlayerActivePower.Max ~= UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower) then
 			_PlayerActivePower.Max = UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
 
@@ -108,15 +109,17 @@ function _IFClassPowerUnitList:ParseEvent(event, unit, powerToken)
 			self:EachK("player", "MinMaxValue", _MinMax)
 		end
 	elseif event == "UNIT_POWER_FREQUENT" then
+		if unit ~= "player" then return end
+
 		if _PlayerActivePower and _PlayerActivePower.PowerToken[powerToken] then
 			self:EachK("player", "Value", UnitPower("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower))
 		end
 	else
-		RefreshActivePower()
+		RefreshActivePower(event=="PLAYER_LEVEL_UP" and unit or nil)
 	end
 end
 
-function RefreshActivePower()
+function RefreshActivePower(trueLevel)
 	local spec = GetSpecialization() or 1
 	local map = _PlayerClassMap[spec] or _PlayerClassMap[SPEC_ALL]
 
@@ -126,7 +129,8 @@ function RefreshActivePower()
 		_PlayerActivePower = nil
 
 		if map.ShowLevel then
-			if UnitLevel("player") >= map.ShowLevel then
+			trueLevel = trueLevel or UnitLevel("player")
+			if trueLevel >= map.ShowLevel then
 				_PlayerActivePower = map
 				_IFClassPowerUnitList:UnregisterEvent("PLAYER_LEVEL_UP")
 			end

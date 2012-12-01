@@ -6,7 +6,7 @@
 --- IFUnitLevel
 -- @type Interface
 -- @name IFUnitLevel
--- @need property String : Text
+-- @need property Number+nil : Value
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
@@ -26,8 +26,8 @@ function _IFUnitLevelUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
-function _IFUnitLevelUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+function _IFUnitLevelUnitList:ParseEvent(event, level)
+	self:EachK(_All, "Refresh", event == "PLAYER_LEVEL_UP" and level or nil)
 end
 
 interface "IFUnitLevel"
@@ -49,33 +49,23 @@ interface "IFUnitLevel"
 	-- @name Refresh
 	-- @type function
 	------------------------------------
-	function Refresh(self)
+	function Refresh(self, playerLevel)
 		if self.Unit then
 			local lvl = UnitLevel(self.Unit)
 
-			if lvl and lvl > 0 then
-				self.Text = self.FormatLevel:format(lvl)
-			else
-				self.Text = self.FormatLevel:format("???")
+			if self.Unit == "player" and playerLevel then
+				lvl = playerLevel
 			end
+
+			self.Value = lvl
 		else
-			self.Text = ""
+			self.Value = nil
 		end
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- FormatLevel
-	property "FormatLevel" {
-		Get = function(self)
-			return self.__FormatLevel or "Lv.%s"
-		end,
-		Set = function(self, value)
-			self.__FormatLevel = value
-		end,
-		Type = System.String,
-	}
 
 	------------------------------------------------------
 	-- Script Handler
