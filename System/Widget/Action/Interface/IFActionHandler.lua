@@ -1,9 +1,10 @@
 -- Author      : Kurapica
 -- Create Date : 2012/09/10
 -- Change Log  :
+--               2012/12/01 Update for battlepet id -> guid
 
 -- Check Version
-local version = 10
+local version = 11
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -623,7 +624,7 @@ do
 		elseif kind == "equipmentset" then
 			return select(2, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
 		elseif kind == "battlepet" then
-			return select(8, C_PetJournal.GetPetInfoByPetID(target))
+			return select(9, C_PetJournal.GetPetInfoByPetID(target))
 		else
 			return self.__IFActionHandler_Texture
 		end
@@ -788,7 +789,21 @@ do
 		elseif kind == "equipmentset" then
 			_GameTooltip:SetEquipmentSet(target)
 		elseif kind == "battlepet" then
-			--@ todo self or just wait blz
+			local speciesID, _, _, _, _, _, _, name, _, _, _, sourceText, description, _, _, tradable, unique = C_PetJournal.GetPetInfoByPetID(target)
+
+			if speciesID then
+				_GameTooltip:SetText(name, 1, 1, 1)
+
+				if sourceText and sourceText ~= "" then
+					_GameTooltip:AddLine(sourceText, 1, 1, 1, true)
+				end
+
+				if description and description ~= "" then
+					_GameTooltip:AddLine(" ")
+					_GameTooltip:AddLine(description, nil, nil, nil, true)
+				end
+				_GameTooltip:Show()
+			end
 		elseif self.__IFActionHandler_Tooltip then
 			_GameTooltip:SetText(self.__IFActionHandler_Tooltip)
 		end
@@ -837,12 +852,12 @@ do
 
 	function PickupAny(kind, target, detail, ...)
 		if (kind == "clear") then
-			ClearCursor();
-			kind, target, detail = target, detail, ...;
+			ClearCursor()
+			kind, target, detail = target, detail, ...
 		end
 
 		if kind == 'action' then
-			PickupAction(target);
+			PickupAction(target)
 		elseif kind == 'bag' then
 			PickupBagFromSlot(target)
 		elseif kind == 'bagslot' then
@@ -906,7 +921,7 @@ do
 	function OnClick(self)
 		local kind, target = self:GetAttribute("type"), self.__IFActionHandler_Action
 		if kind == "battlepet" then
-			C_PetJournal.SummonPetByID(target)
+			C_PetJournal.SummonPetByGUID(target)
 		elseif kind == "companion" and not InCombatLockdown() and _IFActionHandler_MountMap[target] then
 			CallCompanion("MOUNT", _IFActionHandler_MountMap[target])
 		elseif kind == "equipmentset" and not InCombatLockdown() then
@@ -1020,7 +1035,9 @@ do
 		local desc
 
 		self = IGAS:GetWrapper(self)
-		target = tonumber(target) or target
+		if kind ~= "battlepet" then
+			target = tonumber(target) or target
+		end
 		if kind == "action" then
 			target = ActionButton_CalculateAction(self)
 			desc = GetActionDesc(target)
@@ -1852,7 +1869,6 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:PET_JOURNAL_LIST_UPDATE()
-		self:UnregisterEvent("PET_JOURNAL_LIST_UPDATE")
 		_IFActionHandler_Buttons:EachK("battlepet", UpdateActionButton)
 	end
 
