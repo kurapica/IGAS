@@ -1,13 +1,9 @@
 ## Interface: 50100
 ## Title: Lib: IGAS
 ## Author: kurapica.igas@gmail.com
-## Version: r6
+## Version: r7
 ## Notes: In-game addon system
-## URL: www.cwowaddon.com
-## X-Website: http://www.cwowaddon.com
-## X-Email: kurapica.igas@gmail.com
-## X-Category: Library
-## X-NameSpace: System
+## URL: http://github.com/kurapica
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: IGAS_DB

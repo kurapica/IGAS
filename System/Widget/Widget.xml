@@ -87,6 +87,7 @@
 	<Script file="Common\DataGrid.lua"/>
 	<Script file="Common\CodeEditor.lua"/>
 	<Script file="Common\ElementPanel.lua"/>
+	<Script file="Common\HTMLViewer.lua"/>
 
 	<!-- Secure Base -->
 	<Script file="Secure\IFSecureHandler.lua"/>

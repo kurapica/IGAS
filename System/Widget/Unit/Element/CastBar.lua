@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.CastBar", version) then
 	return
 end
@@ -343,6 +343,11 @@ class "CastBar"
 		end
 	end
 
+	local function OnHide(self)
+		self:OnCooldownUpdate()
+		self.Alpha = 0
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
@@ -378,6 +383,7 @@ class "CastBar"
 		safeZone.Visible = false
 
 		frame.OnSizeChanged = frame.OnSizeChanged + OnSizeChanged
+		frame.OnHide = frame.OnHide + OnHide
 
 		return frame
 	end
