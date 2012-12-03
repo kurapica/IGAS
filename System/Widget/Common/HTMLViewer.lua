@@ -469,6 +469,7 @@ class "HTMLViewer"
 		local html = SimpleHTML("HTMLViewer", container)
 		html:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
 		html:SetPoint("TOPRIGHT", container, "TOPRIGHT", 0, 0)
+		html:SetFontObject("GameFontNormal")
 
 		html.HyperlinksEnabled = true
 		html:SetHyperlinkFormat("|H%s|h%s|h")
