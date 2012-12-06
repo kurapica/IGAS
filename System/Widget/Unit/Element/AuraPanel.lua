@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.AuraPanel", version) then
 	return
 end
@@ -56,7 +56,7 @@ class "AuraPanel"
 		RAID_CLASS_COLORS = CopyTable(_G.RAID_CLASS_COLORS)
 		_BorderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 		_BackDrop = {
-		    edgeFile = [[Interface\ChatFrame\CHATFRAMEBACKGROUND]],
+		    edgeFile = "Interface\\Buttons\\WHITE8x8",
 		    edgeSize = 1,
 		}
 

@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.LevelLabel", version) then
 	return
 end
@@ -21,13 +21,13 @@ class "LevelLabel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- FormatLevel
-	property "FormatLevel" {
+	-- LevelFormat
+	property "LevelFormat" {
 		Get = function(self)
-			return self.__FormatLevel or "Lv.%s"
+			return self.__LevelFormat or "%s"
 		end,
 		Set = function(self, value)
-			self.__FormatLevel = value
+			self.__LevelFormat = value
 		end,
 		Type = System.String,
 	}
@@ -40,9 +40,9 @@ class "LevelLabel"
 			self.__Value = value
 
 			if value and value > 0 then
-				self.Text = self.FormatLevel:format(value)
+				self.Text = self.LevelFormat:format(value)
 			else
-				self.Text = self.FormatLevel:format("???")
+				self.Text = self.LevelFormat:format("???")
 			end
 		end,
 		Type = System.Number + nil,

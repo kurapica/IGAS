@@ -2,6 +2,7 @@
 -- Create Date : 5/4/2012
 -- ChangeLog
 --               2012/07/18 Support nonRegion object
+--               2012/12/07 Fix for not setpoint panel
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 --- LayoutPanel
@@ -9,7 +10,7 @@
 -- @name LayoutPanel
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-local version = 5
+local version = 6
 if not IGAS:NewAddon("IGAS.Widget.LayoutPanel", version) then
 	return
 end
@@ -40,6 +41,8 @@ class "LayoutPanel"
 		local obj = GetWidget(self, index)
 		local startFunc, endFunc, sizeFunc
 		local minSize, remainPct, realSize
+
+		if size == 0 then size = 65535 end 	-- Since can't get real value when not setpoint
 
 		prefix = prefix or ""
 		remainPct = 100
@@ -175,7 +178,7 @@ class "LayoutPanel"
 			end
 
 			-- Final check
-			if startFunc() < 0 or sizeFunc() < 0 or startFunc() + sizeFunc() > size then
+			if self[selfParam] > 0 and (startFunc() < 0 or sizeFunc() < 0 or startFunc() + sizeFunc() > size) then
 				error(_Error_Combine:format(prefix), 3)
 			end
 
