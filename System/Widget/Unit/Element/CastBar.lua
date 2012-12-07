@@ -37,7 +37,7 @@ class "CastBar"
 
 		parent.LatencyWorld = latencyWorld
 
-		if latencyWorld > 0 then
+		if latencyWorld > 0 and parent.Duration and parent.Duration > 0 then
 			parent.SafeZone.Visible = true
 
 			parent.SafeZone.Width = self.Width * latencyWorld / parent.Duration / 1000
@@ -137,6 +137,7 @@ class "CastBar"
 	function Fail(self, spell, rank, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
+		self.Duration = 0
 	end
 
 	------------------------------------
@@ -151,6 +152,7 @@ class "CastBar"
 	function Stop(self, spell, rank, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
+		self.Duration = 0
 	end
 
 	------------------------------------
@@ -165,6 +167,7 @@ class "CastBar"
 	function Interrupt(self, spell, rank, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
+		self.Duration = 0
 	end
 
 	------------------------------------
@@ -227,6 +230,7 @@ class "CastBar"
 
 		if not name then
 			self.Alpha = 0
+			self.Duration = 0
 			return
 		end
 
@@ -300,6 +304,7 @@ class "CastBar"
 	function ChannelStop(self, spell, rank, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
+		self.Duration = 0
 	end
 
 	------------------------------------------------------

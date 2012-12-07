@@ -17,8 +17,6 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFPowerFrequent", version) then
 	return
 end
 
-PowerBarColor = CopyTable(_G.PowerBarColor)
-
 _IFPowerFrequentUnitList = _IFPowerFrequentUnitList or UnitList(_Name)
 _IFPowerFrequentUnitPowerType = _IFPowerFrequentUnitPowerType or {}
 

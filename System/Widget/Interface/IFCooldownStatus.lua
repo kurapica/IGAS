@@ -77,6 +77,7 @@ interface "IFCooldownStatus"
 
 		if start and start > 0 and duration and duration > 0 then
 			-- Insert to update list
+			status.__IFInCooldown = true
 			status.__IFCooldownStatus_End = start + duration
 			status.__IFCooldownStatus_Duration = duration
 			status.__IFCooldownStatusReverse = self.IFCooldownStatusReverse
@@ -92,16 +93,15 @@ interface "IFCooldownStatus"
 			end
 			status.Visible = true
 		else
-			status.__IFCooldownStatus_End = nil
-			status.__IFCooldownStatus_Duration = nil
+			status.__IFInCooldown = false
 
 			_MinMax.max = 100
 			status.MinMaxValue = _MinMax
 
 			if self.IFCooldownStatusReverse then
-				status.value = 100
+				status.Value = 100
 			else
-				status.value = 0
+				status.Value = 0
 			end
 
 			if not self.IFCooldownStatusAlwaysShow then
@@ -111,7 +111,7 @@ interface "IFCooldownStatus"
 	end
 
 	local function OnUpdate(self, elapsed)
-		if not self.__IFCooldownStatus_End then return end
+		if not self.__IFInCooldown then return end
 
 		self.__NextTime = (self.__NextTime or 0) + elapsed
 
@@ -120,16 +120,14 @@ interface "IFCooldownStatus"
 
 			if GetTime() >= self.__IFCooldownStatus_End then
 				-- Clear status
-				self.__IFCooldownStatus_End = nil
-				self.__IFCooldownStatus_Duration = nil
-
+				self.__IFInCooldown = false
 				_MinMax.max = 100
 				self.MinMaxValue = _MinMax
 
 				if self.__IFCooldownStatusReverse then
-					self.value = 100
+					self.Value = 100
 				else
-					self.value = 0
+					self.Value = 0
 				end
 
 				if not self.__IFCooldownStatusAlwaysShow then
@@ -154,7 +152,7 @@ interface "IFCooldownStatus"
 
 		local bar = self:GetChild("CooldownStatus")
 
-		if bar and bar:IsClass("StatusBar") then
+		if bar and bar:IsClass(StatusBar) then
 			-- pass
 		else
 			if bar then bar:Dispose() end

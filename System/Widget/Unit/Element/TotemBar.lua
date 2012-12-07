@@ -29,17 +29,12 @@ class "TotemBar"
 		inherit "Button"
 		extend "IFCooldownIndicator"
 
-		------------------------------------
-		--- Custom the indicator
-		-- @name SetUpCooldownIndicator
-		-- @class function
-		-- @param indicator the cooldown object
-		------------------------------------
-		function SetUpCooldownIndicator(self, indicator)
-			indicator:SetPoint("CENTER")
-			indicator:SetSize(22, 22)
-			indicator.FrameLevel = self.BorderLayer.FrameLevel
-		end
+		_Border = {
+		    edgeFile = [[Interface\ChatFrame\CHATFRAMEBACKGROUND]],
+		    edgeSize = 2,
+		}
+
+		_BorderColor = ColorType(0, 0, 0)
 
 		------------------------------------------------------
 		-- Property
@@ -47,10 +42,10 @@ class "TotemBar"
 		-- Icon
 		property "Icon" {
 			Get = function(self)
-				return self.IconLayer.Icon.TexturePath
+				return self:GetChild("Icon").TexturePath
 			end,
 			Set = function(self, value)
-				self.IconLayer.Icon.TexturePath = value
+				self:GetChild("Icon").TexturePath = value
 			end,
 			Type = System.String + nil,
 		}
@@ -86,36 +81,16 @@ class "TotemBar"
 			local obj = Super(...)
 
 			obj.Visible = false
-			obj:SetSize(37, 37)
+			obj:SetSize(36, 36)
 
 			obj:RegisterForClicks("RightButtonUp")
 
-			local background = Texture("Background", obj, "BACKGROUND")
-			background.TexturePath = [[Interface\Minimap\UI-Minimap-Background]]
-			background:SetPoint("CENTER")
-			background:SetSize(34, 34)
-			background:SetVertexColor(1, 1, 1, 0.6)
+			local icon = Texture("Icon", obj, "BACKGROUND")
+			icon:SetPoint("TOPLEFT", 1, -1)
+			icon:SetPoint("BOTTOMRIGHT", -1, 1)
 
-			local duration = FontString("Duration", obj, "GameFontNormalSmall")
-			duration:SetPoint("TOP", obj, "BOTTOM", 0, 5)
-
-			local iconLayer = Frame("IconLayer", obj)
-			iconLayer:SetPoint("CENTER")
-			iconLayer:SetSize(22, 22)
-
-			local icon = Texture("Icon", iconLayer, "OVERLAY")
-			icon:SetAllPoints()
-
-			local borderLayer = Frame("BorderLayer", obj)
-			borderLayer.FrameLevel = borderLayer.FrameLevel + 1
-			borderLayer:SetPoint("CENTER")
-			borderLayer:SetSize(38, 38)
-
-			local border = Texture("Border", borderLayer, "OVERLAY")
-			border.TexturePath = [[Interface\CharacterFrame\TotemBorder]]
-			border:SetAllPoints()
-
-			obj.OnClick = obj.OnClick + OnClick
+			obj.Backdrop = _Border
+			obj.BackdropBorderColor = _G.RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 
 			obj.OnEnter = obj.OnEnter + OnEnter
 			obj.OnLeave = obj.OnLeave + OnLeave
@@ -135,7 +110,7 @@ class "TotemBar"
 
 		panel.FrameStrata = "LOW"
 		panel.Toplevel = true
-		panel:SetSize(128, 53)
+		panel:SetSize(108, 24)
 
 		local btnTotem
 
@@ -145,7 +120,7 @@ class "TotemBar"
 
 			panel:AddWidget(btnTotem)
 
-			panel:SetWidgetLeftWidth(btnTotem, margin + (i-1)*pct, "pct", pct, "pct")
+			panel:SetWidgetLeftWidth(btnTotem, margin + (i-1)*pct, "pct", pct-1, "pct")
 
 			panel[i] = btnTotem
 		end

@@ -41,6 +41,11 @@ for i, v in ipairs(_ClassPowerMap) do
 	_ClassPowerMap[v] = i
 end
 
+PowerBarColor = CopyTable(_G.PowerBarColor)
+
+PowerBarColor["MANA"] = ColorType(0.2, 0.2, 0.8)
+PowerBarColor[_G.SPELL_POWER_MANA] = ColorType(0.3, 0.3, 0.8)
+
 class "UnitList"
 	extend "IFIterator"
 

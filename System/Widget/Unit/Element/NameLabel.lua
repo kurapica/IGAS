@@ -35,7 +35,7 @@ class "NameLabel"
 				end
 			end
 
-			if self.UseSelectionColor then
+			if self.UseSelectionColor and not UnitIsPlayer(self.Unit) then
 				self:SetTextColor(UnitSelectionColor(self.Unit))
 			elseif self.UseClassColor then
 				self.TextColor = _RAID_CLASS_COLORS[select(2, UnitClass(self.Unit))] or _DefaultColor

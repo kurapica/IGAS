@@ -16,16 +16,15 @@ end
 class "StatusText"
 	inherit "FontString"
 
-	_FloatTemplate = "%.2f"
 	abs = math.abs
 
-	local function formatValue(value)
+	local function formatValue(self, value)
 		if abs(value) >= 10^9 then
-			return _FloatTemplate:format(value / 10^9) .. "b"
+			return self.ValueFormat:format(value / 10^9) .. "b"
 		elseif abs(value) >= 10^6 then
-			return _FloatTemplate:format(value / 10^6) .. "m"
+			return self.ValueFormat:format(value / 10^6) .. "m"
 		elseif abs(value) >= 10^4 then
-			return _FloatTemplate:format(value / 10^3) .. "k"
+			return self.ValueFormat:format(value / 10^3) .. "k"
 		else
 			return tostring(value)
 		end
@@ -43,16 +42,20 @@ class "StatusText"
 		if self.__Value then
 			if self.__ShowPercent and self.__Max then
 				if self.__Max > 0 then
-					self.Text = self.PercentFormat:format(self.__Value * 100 / self.__Max)
+					if self.__Value > self.__Max then
+						self.Text = self.PercentFormat:format(100)
+					else
+						self.Text = self.PercentFormat:format(self.__Value * 100 / self.__Max)
+					end
 				else
 					self.Text = self.PercentFormat:format(0)
 				end
 			elseif self.ShowLost and self.__Max then
-				self.Text = formatValue(self.__Value - self.__Max)
+				self.Text = formatValue(self, self.__Value - self.__Max)
 			elseif self.ShowMax and self.__Max then
-				self.Text = self.MaxFormat:format(formatValue(self.__Value), formatValue(self.__Max))
+				self.Text = self.MaxFormat:format(formatValue(self, self.__Value), formatValue(self, self.__Max))
 			else
-				self.Text = formatValue(self.__Value)
+				self.Text = formatValue(self, self.__Value)
 			end
 
 			if self.Text == "0" then
@@ -115,6 +118,16 @@ class "StatusText"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	-- ValueFormat
+	property "ValueFormat" {
+		Get = function(self)
+			return self.__ValueFormat or "%.2f"
+		end,
+		Set = function(self, value)
+			self.__ValueFormat = value
+		end,
+		Type = System.String + nil,
+	}
 	-- MinMaxValue
 	property "MinMaxValue" {
 		Get = function(self)
