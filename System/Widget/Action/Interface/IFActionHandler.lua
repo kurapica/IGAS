@@ -4,7 +4,7 @@
 --               2012/12/01 Update for battlepet id -> guid
 
 -- Check Version
-local version = 11
+local version = 12
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -658,8 +658,14 @@ do
 			return GetActionCooldown(target)
 		elseif kind == "pet" or kind == "petaction" then
 			return GetPetActionCooldown(target)
-		elseif kind == "spell" and not _IFActionHandler_StanceMap[target] then
-			return GetSpellCooldown(target)
+		elseif kind == "spell" then
+			if _IFActionHandler_StanceMap[target] then
+				if select(2, GetSpellCooldown(target)) > 2 then
+					return GetSpellCooldown(target)
+				end
+			else
+				return GetSpellCooldown(target)
+			end
 		elseif kind == "item" then
 			return GetItemCooldown(target)
 		else

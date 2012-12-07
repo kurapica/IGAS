@@ -103,14 +103,14 @@ class "CastBar"
 		endTime = endTime / 1000
 
 		self.Duration = endTime - startTime
+		self.EndTime = endTime
 		self.Icon.TexturePath = texture
 		self.Shield.Visible = not canInter
 		self.SpellName.Text = text
 
 		-- Init
-		self.Delay = 0
+		self.DelayTime = 0
 		self.LatencyWorld = 0
-		self.CastLineID = lineID
 		self.IFCooldownStatusReverse = true
 
 		-- SafeZone
@@ -209,9 +209,9 @@ class "CastBar"
 
 		-- Update
 		self.LatencyWorld = 0
-		self.Delay = self.Delay + self.Duration - duration
+		self.DelayTime = endTime - self.EndTime
 		self.Duration = duration
-		self.SpellName.Text = text .. self.DelayFormatString:format(self.Delay)
+		self.SpellName.Text = text .. self.DelayFormatString:format(self.DelayTime)
 
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
@@ -238,14 +238,14 @@ class "CastBar"
 		endTime = endTime / 1000
 
 		self.Duration = endTime - startTime
+		self.EndTime = endTime
 		self.Icon.TexturePath = texture
 		self.Shield.Visible = not canInter
 		self.SpellName.Text = text
 
 		-- Init
-		self.Delay = 0
+		self.DelayTime = 0
 		self.LatencyWorld = 0
-		self.CastLineID = lineID
 		self.IFCooldownStatusReverse = false
 
 		-- SafeZone
@@ -285,10 +285,11 @@ class "CastBar"
 
 		-- Update
 		self.LatencyWorld = 0
-		self.Delay = self.Delay + self.Duration - duration
+		self.DelayTime = endTime - self.EndTime
 		self.Duration = duration
-		self.SpellName.Text = text .. self.DelayFormatString:format(self.Delay)
-
+		if self.DelayTime > 0 then
+			self.SpellName.Text = text .. self.DelayFormatString:format(self.DelayTime)
+		end
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
 
