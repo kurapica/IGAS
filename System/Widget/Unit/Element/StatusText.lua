@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.StatusText", version) then
 	return
 end
@@ -42,11 +42,15 @@ class "StatusText"
 	function RefreshStatus(self)
 		if self.__Value then
 			if self.__ShowPercent and self.__Max then
-				self.Text = self.PercentFormat:format(self.__Value * 100 / self.__Max)
+				if self.__Max > 0 then
+					self.Text = self.PercentFormat:format(self.__Value * 100 / self.__Max)
+				else
+					self.Text = self.PercentFormat:format(0)
+				end
 			elseif self.ShowLost and self.__Max then
 				self.Text = formatValue(self.__Value - self.__Max)
 			elseif self.ShowMax and self.__Max then
-				self.Text = formatValue(self.__Value) .. "/" .. formatValue(self.__Max)
+				self.Text = self.MaxFormat:format(formatValue(self.__Value), formatValue(self.__Max))
 			else
 				self.Text = formatValue(self.__Value)
 			end
@@ -156,6 +160,16 @@ class "StatusText"
 			end
 		end,
 		Type = System.Boolean,
+	}
+	-- MaxFormat
+	property "MaxFormat" {
+		Get = function(self)
+			return self.__MaxFormat or "%s / %s"
+		end,
+		Set = function(self, value)
+			self.__MaxFormat = value
+		end,
+		Type = System.String + nil,
 	}
 	-- ShowPercent
 	property "ShowPercent" {

@@ -99,33 +99,6 @@ class "RuneBar"
 			indicator:SetPoint("BOTTOMRIGHT", -1, 1)
 		end
 
-		------------------------------------
-		--- Update cooldown by index
-		-- @name UpdatePower
-		-- @class function
-		------------------------------------
-		function UpdatePower(self, isEnergize)
-			if not self.ID then return end
-
-			local start, duration, runeReady = GetRuneCooldown(self.ID)
-
-			if not runeReady then
-				if start then
-					self.Cooldown:SetCooldown(start, duration)
-					self.Cooldown.Visible = true
-				end
-				self:Stop();
-			else
-				self.Cooldown:Hide();
-				self.Shine.Texture.VertexColor = RuneColors[RUNETYPE_COMMON]
-				self:StartShine()
-			end
-
-			if isEnergize then
-				self:Play()
-			end
-		end
-
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------

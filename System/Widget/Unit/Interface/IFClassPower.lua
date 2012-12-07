@@ -80,7 +80,7 @@ _ClassMap = {
 	},
 }
 
-_PlayerClassMap = _ClassMap[_PlayerClass]
+_PlayerClassMap = _ClassMap[_PlayerClass] or false
 
 function _IFClassPowerUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_POWER_FREQUENT")
@@ -188,7 +188,9 @@ interface "IFClassPower"
 	-- @type function
 	------------------------------------
 	function Refresh(self)
-		return RefreshActivePower()
+		if _M._PlayerClassMap then
+			return RefreshActivePower()
+		end
 	end
 
 	------------------------------------------------------
@@ -212,7 +214,7 @@ interface "IFClassPower"
 	-- Constructor
 	------------------------------------------------------
 	function IFClassPower(self)
-		if not _PlayerClassMap then
+		if not _M._PlayerClassMap then
 			self.Visible = false
 			return
 		end

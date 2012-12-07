@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.IFCooldownIndicator", version) then
 	return
 end
@@ -15,7 +15,7 @@ end
 ----------------------------------------------------------
 interface "IFCooldownIndicator"
 	extend "IFCooldown"
-	
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -32,11 +32,11 @@ interface "IFCooldownIndicator"
 	function SetUpCooldownIndicator(self, indicator)
 		indicator:SetAllPoints(self)
 	end
-	
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	
+
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
@@ -48,15 +48,22 @@ interface "IFCooldownIndicator"
 			self:GetChild("CooldownIndicator").Visible = false
 		end
 	end
-	
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function IFCooldownIndicator(self)
 		if not Reflector.ObjectIsClass(self, Frame) then return end
-	
-		self:SetUpCooldownIndicator(Cooldown("CooldownIndicator", self))
-		
+
+		local cd = self:GetChild("CooldownIndicator")
+
+		if cd and cd:IsClass(Cooldown) then
+			-- pass
+		else
+			if cd then cd:Dispose() end
+			self:SetUpCooldownIndicator(Cooldown("CooldownIndicator", self))
+		end
+
 		self.OnCooldownUpdate = self.OnCooldownUpdate + OnCooldownUpdate
 	end
 endinterface "IFCooldownIndicator"

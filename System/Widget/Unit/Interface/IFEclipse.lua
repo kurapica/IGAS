@@ -54,7 +54,20 @@ function _IFEclipseUnitList:OnUnitListChanged()
 end
 
 function _IFEclipseUnitList:ParseEvent(event, unit, powerType)
-	if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TALENT_UPDATE" or event == "UPDATE_SHAPESHIFT_FORM" then
+	if event == "UNIT_POWER" then
+		if unit == "player" and powerType == "ECLIPSE" then
+			self:EachK(_All, "Value", UnitPower('player', SPELL_POWER_ECLIPSE))
+		end
+	elseif event == "UNIT_AURA" then
+		if unit == "player" then
+			local hasLunarEclipse, hasSolarEclipse = GetEclipseActive()
+			self:EachK(_All, "MoonActivated", hasLunarEclipse)
+			self:EachK(_All, "SunActivated", hasSolarEclipse)
+		end
+	elseif event == "ECLIPSE_DIRECTION_CHANGE" then
+		-- unit -> isLunar
+		self:EachK(_All, "Direction", unit)
+	elseif event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TALENT_UPDATE" or event == "UPDATE_SHAPESHIFT_FORM" then
 		local needShow = NeedShowEclipse()
 
 		if needShow ~= _ShowEclipse then
@@ -66,15 +79,6 @@ function _IFEclipseUnitList:ParseEvent(event, unit, powerType)
 				self:EachK(_All, HideEclipse)
 			end
 		end
-	elseif event == "ECLIPSE_DIRECTION_CHANGE" then
-		-- unit -> isLunar
-		self:EachK(_All, "Direction", unit)
-	elseif event == "UNIT_AURA" and unit == "player" then
-		local hasLunarEclipse, hasSolarEclipse = GetEclipseActive()
-		self:EachK(_All, "MoonActivated", hasLunarEclipse)
-		self:EachK(_All, "SunActivated", hasSolarEclipse)
-	elseif event == "UNIT_POWER" and unit == "player" and powerType == "ECLIPSE" then
-		self:EachK(_All, "Value", UnitPower('player', SPELL_POWER_ECLIPSE))
 	end
 end
 

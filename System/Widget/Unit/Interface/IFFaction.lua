@@ -20,8 +20,20 @@ _IFFactionUnitList = _IFFactionUnitList or UnitList(_Name)
 
 function _IFFactionUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_FACTION")
+	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 
 	self.OnUnitListChanged = nil
+end
+
+function _IFFactionUnitList:ParseEvent(event, unit)
+	if event == "GROUP_ROSTER_UPDATE" or unit == "player" then
+		-- Update all
+		for unit in pairs(self) do
+			self:EachK(unit, "Refresh")
+		end
+	else
+		self:EachK(unit, "Refresh")
+	end
 end
 
 interface "IFFaction"
@@ -36,23 +48,6 @@ interface "IFFaction"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFFactionUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
-	function Refresh(self)
-		if self.IsPVPFreeForAll then
-			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-FFA]]
-			self.Visible = true
-		elseif self.IsPVP and self.Faction then
-			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-]]..self.Faction
-			self.Visible = true
-		else
-			self.Visible = false
-		end
 	end
 
 	------------------------------------------------------

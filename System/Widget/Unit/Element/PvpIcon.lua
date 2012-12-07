@@ -19,13 +19,33 @@ class "PvpIcon"
 	extend "IFFaction"
 
 	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	------------------------------------
+	--- Refresh the element
+	-- @name Refresh
+	-- @type function
+	------------------------------------
+	function Refresh(self)
+		if self.IsPVPFreeForAll then
+			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-FFA]]
+			self.Visible = true
+		elseif self.IsPVP and self.Faction then
+			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-]]..self.Faction
+			self.Visible = true
+		else
+			self.Visible = false
+		end
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function PvpIcon(...)
 		local icon = Super(...)
 
-		icon.Height = 16
-		icon.Width = 16
+		icon.Height = 64
+		icon.Width = 64
 
 		return icon
 	end

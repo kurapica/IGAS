@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.IFCooldownLabel", version) then
 	return
 end
@@ -175,7 +175,14 @@ interface "IFCooldownLabel"
 	function IFCooldownLabel(self)
 		if not Reflector.ObjectIsClass(self, Frame) then return end
 
-		self:SetUpCooldownLabel(FontString("CooldownLabel", self, "ARTWORK", "CombatTextFont"))
+		local label = self:GetChild("CooldownLabel")
+
+		if label and label:IsClass(FontString) then
+			-- pass
+		else
+			if label then label:Dispose() end
+			self:SetUpCooldownLabel(FontString("CooldownLabel", self, "ARTWORK", "CombatTextFont"))
+		end
 
 		if self.Height > 0 then
 			self:GetChild("CooldownLabel"):SetFont(self:GetChild("CooldownLabel"):GetFont(), self.Height * 4 / 7, "OUTLINE")

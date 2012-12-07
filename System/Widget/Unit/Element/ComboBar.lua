@@ -117,8 +117,6 @@ class "ComboBar"
 		end,
 		Set = function(self, value)
 			if self.__Value ~= value then
-				self.Visible = value > 0
-
 				for  i = 1, MAX_COMBO_POINTS do
 					self[i].Activated = i <= value
 				end
@@ -141,7 +139,6 @@ class "ComboBar"
 
 		panel.__Value = 0
 
-		panel.Visible = false
 		panel.FrameStrata = "LOW"
 		panel.Toplevel = true
 		panel:SetSize(136, 20)
