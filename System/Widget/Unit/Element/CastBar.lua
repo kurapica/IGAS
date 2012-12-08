@@ -54,6 +54,23 @@ class "CastBar"
 	-- Method
 	------------------------------------------------------
 	------------------------------------
+	--- Refresh the element
+	-- @name Refresh
+	-- @type function
+	------------------------------------
+	function Refresh(self)
+		local guid = self.Unit and UnitGUID(self.Unit)
+
+		if guid ~= self.UnitGUID then
+			self.UnitGUID = guid
+
+			self:OnCooldownUpdate()
+			self.Alpha = 0
+			self.Duration = 0
+		end
+	end
+
+	------------------------------------
 	--- Custom the label
 	-- @name SetUpCooldownLabel
 	-- @class function
@@ -106,7 +123,7 @@ class "CastBar"
 		self.EndTime = endTime
 		self.Icon.TexturePath = texture
 		self.Shield.Visible = not canInter
-		self.SpellName.Text = text
+		self.SpellName.Text = name
 
 		-- Init
 		self.DelayTime = 0
@@ -198,7 +215,7 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function Delay(self, spell, rank, lineID, spellID)
-		local _, _, text, texture, startTime, endTime = UnitCastingInfo(self.Unit)
+		local name, _, text, texture, startTime, endTime = UnitCastingInfo(self.Unit)
 
 		if not startTime or not endTime then return end
 
@@ -209,9 +226,10 @@ class "CastBar"
 
 		-- Update
 		self.LatencyWorld = 0
+		self.EndTime = self.EndTime or endTime
 		self.DelayTime = endTime - self.EndTime
 		self.Duration = duration
-		self.SpellName.Text = text .. self.DelayFormatString:format(self.DelayTime)
+		self.SpellName.Text = name .. self.DelayFormatString:format(self.DelayTime)
 
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
@@ -241,7 +259,7 @@ class "CastBar"
 		self.EndTime = endTime
 		self.Icon.TexturePath = texture
 		self.Shield.Visible = not canInter
-		self.SpellName.Text = text
+		self.SpellName.Text = name
 
 		-- Init
 		self.DelayTime = 0
@@ -285,10 +303,11 @@ class "CastBar"
 
 		-- Update
 		self.LatencyWorld = 0
+		self.EndTime = self.EndTime or endTime
 		self.DelayTime = endTime - self.EndTime
 		self.Duration = duration
 		if self.DelayTime > 0 then
-			self.SpellName.Text = text .. self.DelayFormatString:format(self.DelayTime)
+			self.SpellName.Text = name .. self.DelayFormatString:format(self.DelayTime)
 		end
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end

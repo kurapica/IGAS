@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitName", version) then
 	return
 end
@@ -54,7 +54,7 @@ interface "IFUnitName"
 			if (name and server and self.WithServerName and server ~= "") then
 				name = name.."-"..server
 			end
-			self.Text = name or ""
+			self.Text = name or self.Unit
 		else
 			self.Text = ""
 		end

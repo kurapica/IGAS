@@ -24,8 +24,8 @@ class "QuestBossIcon"
 	function QuestBossIcon(...)
 		local icon = Super(...)
 
-		icon.Height = 16
-		icon.Width = 16
+		icon.Height = 32
+		icon.Width = 32
 
 		return icon
 	end

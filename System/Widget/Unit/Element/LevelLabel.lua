@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.LevelLabel", version) then
 	return
 end
@@ -41,8 +41,23 @@ class "LevelLabel"
 
 			if value and value > 0 then
 				self.Text = self.LevelFormat:format(value)
+
+				if UnitIsWildBattlePet(self.Unit) or UnitIsBattlePetCompanion(self.Unit) then
+					local petLevel = UnitBattlePetLevel(self.Unit)
+
+					self:SetVertexColor(1.0, 0.82, 0.0)
+					self.Text = self.LevelFormat:format(petLevel)
+				else
+					if UnitCanAttack("player", self.Unit) then
+						local color = GetQuestDifficultyColor(value)
+						self:SetVertexColor(color.r, color.g, color.b)
+					else
+						self:SetVertexColor(1.0, 0.82, 0.0)
+					end
+				end
 			else
 				self.Text = self.LevelFormat:format("???")
+				self:SetVertexColor(1.0, 0.82, 0.0)
 			end
 		end,
 		Type = System.Number + nil,

@@ -70,6 +70,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/11/11 Disposing objects when Object created failded.
 --               2012/11/14 Fix interface constructor systfem.
 --               2012/11/16 Extend interface order system added.
+--               2012/12/08 Re-order inherit & extend tree.
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -116,7 +117,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 58
+local version = 59
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -1021,39 +1022,39 @@ do
 			CloneWithoutOverride(info.Cache4Script, _BaseScripts)
 			--- self script
 			CloneWithoutOverride(info.Cache4Script, info.Script)
-			--- extend script
-			for _, IF in ipairs(_Extend_Temp) do
-				CloneWithoutOverride(info.Cache4Script, _NSInfo[IF].Cache4Script)
-			end
 			--- superclass script
 			if info.SuperClass then
 				CloneWithoutOverride(info.Cache4Script, _NSInfo[info.SuperClass].Cache4Script)
+			end
+			--- extend script
+			for _, IF in ipairs(_Extend_Temp) do
+				CloneWithoutOverride(info.Cache4Script, _NSInfo[IF].Cache4Script)
 			end
 
 			-- Cache4Property
 			wipe(info.Cache4Property)
 			--- self property
 			CloneWithoutOverride(info.Cache4Property, info.Property)
-			--- extend property
-			for _, IF in ipairs(_Extend_Temp) do
-				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
-			end
 			--- superclass property
 			if info.SuperClass then
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[info.SuperClass].Cache4Property)
+			end
+			--- extend property
+			for _, IF in ipairs(_Extend_Temp) do
+				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
 			-- Cache4Method
 			wipe(info.Cache4Method)
 			--- self method
 			CloneWithoutOverride4Method(info.Cache4Method, info.ClassEnv or info.InterfaceEnv, info.Method)
-			--- extend method
-			for _, IF in ipairs(_Extend_Temp) do
-				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
-			end
 			--- superclass method
 			if info.SuperClass then
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method)
+			end
+			--- extend method
+			for _, IF in ipairs(_Extend_Temp) do
+				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
 			end
 
 			wipe(_Extend_Temp)

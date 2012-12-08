@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRune", version) then
 	return
 end
@@ -34,6 +34,7 @@ function _IFRuneUnitList:ParseEvent(event, runeIndex, isEnergize)
 			_RuneIndexMap[i] = GetRuneType(i)
 
 			self:EachK(_All, UpdatePowerType, i)
+			self:EachK(_All, UpdatePower, i)
 		end
 	elseif event == "RUNE_TYPE_UPDATE" and runeIndex then
 		if GetRuneType(runeIndex) ~= _RuneIndexMap[runeIndex] then

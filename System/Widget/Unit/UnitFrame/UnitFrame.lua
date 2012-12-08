@@ -135,7 +135,8 @@ class "UnitFrame"
 				self.PLAYER_FOCUS_CHANGED = nil
 			end
 
-			if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then
+			--if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then
+			if unit and (unit:match("%w+target")) then
 				self.OnUpdate = OnUpdate
 			else
 				self.OnUpdate = nil

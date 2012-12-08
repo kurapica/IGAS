@@ -39,7 +39,7 @@
 -- Version Check & Environment
 ------------------------------------------------------
 do
-	local version = 13
+	local version = 14
 
 	local _Meta = getmetatable(IGAS)
 
@@ -1135,6 +1135,11 @@ class "Addon"
 			return IFModule.Dispose(self)
 		end
 
+		RegisterEvent = IFModule.RegisterEvent
+		IsEventRegistered = IFModule.IsEventRegistered
+		UnregisterAllEvents = IFModule.UnregisterAllEvents
+		UnregisterEvent = IFModule.UnregisterEvent
+
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
@@ -1273,6 +1278,10 @@ class "Addon"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+	RegisterEvent = IFModule.RegisterEvent
+	IsEventRegistered = IFModule.IsEventRegistered
+	UnregisterAllEvents = IFModule.UnregisterAllEvents
+	UnregisterEvent = IFModule.UnregisterEvent
 
 	------------------------------------
 	--- Add SaveVariables to the addon
