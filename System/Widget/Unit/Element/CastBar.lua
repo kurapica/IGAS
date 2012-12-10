@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.CastBar", version) then
 	return
 end
@@ -53,22 +53,6 @@ class "CastBar"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
-	function Refresh(self)
-		local guid = self.Unit and UnitGUID(self.Unit)
-
-		if guid ~= self.UnitGUID then
-			self.UnitGUID = guid
-
-			self:OnCooldownUpdate()
-			self.Alpha = 0
-			self.Duration = 0
-		end
-	end
 
 	------------------------------------
 	--- Custom the label

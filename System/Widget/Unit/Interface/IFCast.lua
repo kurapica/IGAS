@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFCast", version) then
 	return
 end
@@ -62,6 +62,25 @@ interface "IFCast"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFCastUnitList[self] = nil
+	end
+
+	------------------------------------
+	--- Refresh the element
+	-- @name Refresh
+	-- @type function
+	------------------------------------
+	function Refresh(self)
+		if self.Unit then
+			if UnitCastingInfo(self.Unit) then
+				return self:Start()
+			elseif UnitChannelInfo(self.Unit) then
+				return self:ChannelStart()
+			else
+				return self:Stop()
+			end
+		else
+			return self:Stop()
+		end
 	end
 
 	------------------------------------
