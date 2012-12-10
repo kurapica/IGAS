@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 
 if not IGAS:NewAddon("IGAS.Widget.Mask", version) then
 	return
@@ -263,6 +263,7 @@ do
 
 			wipe(_PointsPool)
 
+			Sleep(0.1) -- Sleep to keep safe
 			-- Fire Script
 			-- frm:UnBlockScript("OnPositionChanged", "OnSizeChanged")
 
@@ -299,7 +300,7 @@ do
 		for i = 1, frm:GetNumPoints() do
 			local point, relativeTo, relativePoint, xOffset, yOffset = frm:GetPoint(i)
 			_PointsPool[point] = {	point = point,
-									relativeTo = relativeTo,
+									relativeTo = relativeTo or IGAS.UIParent,
 									relativePoint = relativePoint,
 									xOffset = xOffset,
 									yOffset = yOffset,}
