@@ -11,7 +11,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFTotem", version) then
 	return
 end
@@ -35,6 +35,7 @@ _IFTotemUnitList = _IFTotemUnitList or UnitList(_Name)
 
 function _IFTotemUnitList:OnUnitListChanged()
 	self:RegisterEvent("PLAYER_TOTEM_UPDATE")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")	-- won't update if leave instance.
 
 	self.OnUnitListChanged = nil
 end

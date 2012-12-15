@@ -616,7 +616,7 @@ class "EditBox"
 		Set = function(self, text)
 			self:SetText(text)
 		end,
-		Type = String,
+		Type = String + Number,
 	}
 	-- TextInsets
 	property "TextInsets" {
