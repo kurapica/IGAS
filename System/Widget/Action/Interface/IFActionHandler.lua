@@ -2,9 +2,10 @@
 -- Create Date : 2012/09/10
 -- Change Log  :
 --               2012/12/01 Update for battlepet id -> guid
+--               2012/12/19 Fix for battlpet casting in combat error
 
 -- Check Version
-local version = 12
+local version = 14
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -333,13 +334,19 @@ do
 
 				if kind == "spell" and IFActionHandler_StanceMap[target] then
 					-- Need this to cancel stance, use spell to replace stance button
-					self:SetAttribute("type1", "macro")
-					self:SetAttribute("macrotext1", "/click StanceButton".. IFActionHandler_StanceMap[target])
+					self:SetAttribute("*type*", "macro")
+					self:SetAttribute("*macrotext*", "/click StanceButton".. IFActionHandler_StanceMap[target])
+				elseif kind == "battlepet" then
+					-- just type1 to keep type to battlepet
+					self:SetAttribute("*type*", "macro")
+					self:SetAttribute("*macrotext*", "/summonpet "..target)
 				elseif (kind == "pet" or kind == "petaction") and tonumber(target) then
 					-- Use macro to toggle auto cast
 					self:SetAttribute("type2", "macro")
 					self:SetAttribute("macrotext2", "/click PetActionButton".. target .. " RightButton")
 				else
+					self:SetAttribute("*type*", nil)
+					self:SetAttribute("*macrotext*", nil)
 					self:SetAttribute("type1", nil)
 					self:SetAttribute("macrotext1", nil)
 					self:SetAttribute("type2", nil)
@@ -924,10 +931,10 @@ do
 		self.__IFActionHandler_PreMsg = nil
 	end
 
-	function OnClick(self)
+	function OnClick(self, button)
 		local kind, target = self:GetAttribute("type"), self.__IFActionHandler_Action
 		if kind == "battlepet" then
-			C_PetJournal.SummonPetByGUID(target)
+			--C_PetJournal.SummonPetByGUID(target)
 		elseif kind == "companion" and not InCombatLockdown() and _IFActionHandler_MountMap[target] then
 			CallCompanion("MOUNT", _IFActionHandler_MountMap[target])
 		elseif kind == "equipmentset" and not InCombatLockdown() then
@@ -1224,11 +1231,15 @@ do
 
 				for _, btn in _IFActionHandler_Buttons("spell") do
 					if _IFActionHandler_StanceMap[btn.__IFActionHandler_Action] then
-						btn:SetAttribute("type1", "macro")
-						btn:SetAttribute("macrotext1", "/click StanceButton".._IFActionHandler_StanceMap[btn.__IFActionHandler_Action])
+						btn:SetAttribute("*type*", "macro")
+						btn:SetAttribute("*macrotext*", "/click StanceButton".._IFActionHandler_StanceMap[btn.__IFActionHandler_Action])
 					else
+						btn:SetAttribute("*type*", nil)
+						btn:SetAttribute("*macrotext*", nil)
 						btn:SetAttribute("type1", nil)
 						btn:SetAttribute("macrotext1", nil)
+						btn:SetAttribute("type2", nil)
+						btn:SetAttribute("macrotext2", nil)
 					end
 				end
 			end)
