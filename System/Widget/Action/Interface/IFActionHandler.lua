@@ -1276,8 +1276,10 @@ do
 		    local locname, spellId = select(2, GetCompanionInfo("MOUNT", i))
 
 		    if spellId and _IFActionHandler_MountMap[spellId] ~= i then
-				str = str.._IFActionHandler_MountMapTemplate:format(i, spellId, spellId, locname)
-				_IFActionHandler_MountMap[spellId] = i
+		    	if locname and spellId then
+					str = str.._IFActionHandler_MountMapTemplate:format(i, spellId, spellId, locname)
+					_IFActionHandler_MountMap[spellId] = i
+				end
 		    end
 		end
 
