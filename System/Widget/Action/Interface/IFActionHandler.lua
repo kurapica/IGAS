@@ -3,9 +3,10 @@
 -- Change Log  :
 --               2012/12/01 Update for battlepet id -> guid
 --               2012/12/19 Fix for battlpet casting in combat error
+--               2012/12/19 Move all OnClick handler to macro, fix for action done after postclick and equipset error.
 
 -- Check Version
-local version = 14
+local version = 15
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -277,7 +278,7 @@ do
 	_IFActionHandler_EquipSetTemplate = "IFActionHandler_EquipSet[%q] = %d\n"
 	_IFActionHandler_FlyoutSlotTemplate = "IFActionHandler_FlyoutSlot[%d] = %d\n"
 	_IFActionHandler_StanceMapTemplate = "IFActionHandler_StanceMap[%d] = %d\n"
-	_IFActionHandler_MountMapTemplate = "IFActionHandler_MountMap[%d] = %d\n"
+	_IFActionHandler_MountMapTemplate = "IFActionHandler_MountMap[%d] = %d\nIFActionHandler_MountName[%d] = %q\n"
 
 	_IFActionHandler_EquipSetMap = _IFActionHandler_EquipSetMap or {}
 	_IFActionHandler_FlyoutSlot = _IFActionHandler_FlyoutSlot or {}
@@ -298,6 +299,7 @@ do
 			IFActionHandler_MainPage = newtable()
 			IFActionHandler_StanceMap = newtable()
 			IFActionHandler_MountMap = newtable()
+			IFActionHandler_MountName = newtable()
 
 			NUM_ACTIONBAR_BUTTONS = 12
 
@@ -332,29 +334,32 @@ do
 			UpdateAction = [=[
 				local kind, target = ...
 
+				-- Clear prev settings
+				self:SetAttribute("*type*", nil)
+				self:SetAttribute("*macrotext*", nil)
+				self:SetAttribute("type1", nil)
+				self:SetAttribute("macrotext1", nil)
+				self:SetAttribute("type2", nil)
+				self:SetAttribute("macrotext2", nil)
+
 				if kind == "spell" and IFActionHandler_StanceMap[target] then
 					-- Need this to cancel stance, use spell to replace stance button
 					self:SetAttribute("*type*", "macro")
 					self:SetAttribute("*macrotext*", "/click StanceButton".. IFActionHandler_StanceMap[target])
 				elseif kind == "battlepet" then
-					-- just type1 to keep type to battlepet
+					-- just *type* to keep type to battlepet
 					self:SetAttribute("*type*", "macro")
 					self:SetAttribute("*macrotext*", "/summonpet "..target)
+				elseif kind == "equipmentset" then
+					self:SetAttribute("*type*", "macro")
+					self:SetAttribute("*macrotext*", "/equipset "..target)
+				elseif kind == "companion" then
+					self:SetAttribute("*type*", "macro")
+					self:SetAttribute("*macrotext*", "/cast "..(IFActionHandler_MountName[target] or target))
 				elseif (kind == "pet" or kind == "petaction") and tonumber(target) then
 					-- Use macro to toggle auto cast
 					self:SetAttribute("type2", "macro")
 					self:SetAttribute("macrotext2", "/click PetActionButton".. target .. " RightButton")
-				else
-					self:SetAttribute("*type*", nil)
-					self:SetAttribute("*macrotext*", nil)
-					self:SetAttribute("type1", nil)
-					self:SetAttribute("macrotext1", nil)
-					self:SetAttribute("type2", nil)
-					self:SetAttribute("macrotext2", nil)
-				end
-
-				if type(self:GetAttribute("UpdateAction")) == "string" then
-					self:RunAttribute("UpdateAction", kind, target)
 				end
 
 				self:CallMethod("IFActionHandler_UpdateAction", kind, target)
@@ -509,6 +514,16 @@ do
 		]=])
 	end)
 
+	_IFActionHandler_InsertManager = [=[
+		IFActionHandler_Manager = self:GetFrameRef("IFActionHandler_Manager")
+	]=]
+
+	_IFActionHandler_UpdateActionAttribute = [=[
+		if IFActionHandler_Manager then
+			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateAction, ...)", ...)
+		end
+	]=]
+
 	_IFActionHandler_EnableSnippet = [[
 		IFActionHandler_NoDraggable[%q] = nil
 	]]
@@ -629,7 +644,7 @@ do
 				return select(4, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[target]))
 			end
 		elseif kind == "equipmentset" then
-			return select(2, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
+			return _IFActionHandler_EquipSetMap[target] and select(2, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
 		elseif kind == "battlepet" then
 			return select(9, C_PetJournal.GetPetInfoByPetID(target))
 		else
@@ -709,7 +724,7 @@ do
 		elseif kind == "item" then
 			return IsCurrentItem(target)
 		elseif kind == "equipmentset" then
-			return select(4, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
+			return _IFActionHandler_EquipSetMap[target] and select(4, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
 		end
 	end
 
@@ -931,21 +946,6 @@ do
 		self.__IFActionHandler_PreMsg = nil
 	end
 
-	function OnClick(self, button)
-		local kind, target = self:GetAttribute("type"), self.__IFActionHandler_Action
-		if kind == "battlepet" then
-			--C_PetJournal.SummonPetByGUID(target)
-		elseif kind == "companion" and not InCombatLockdown() and _IFActionHandler_MountMap[target] then
-			CallCompanion("MOUNT", _IFActionHandler_MountMap[target])
-		elseif kind == "equipmentset" and not InCombatLockdown() then
-			UseEquipmentSet(target)
-		elseif kind == "custom" then
-			return
-		end
-		-- Skip
-		return true
-	end
-
 	_IFActionHandler_OnTooltip = nil
 
 	function OnEnter(self)
@@ -1015,9 +1015,13 @@ do
     	_IFActionHandler_ManagerFrame:WrapScript(self, "OnDragStart", _IFActionHandler_WrapDragPrev, _IFActionHandler_WrapDragPost)
     	_IFActionHandler_ManagerFrame:WrapScript(self, "OnReceiveDrag", _IFActionHandler_WrapDragPrev, _IFActionHandler_WrapDragPost)
 
+    	-- Button UpdateAction method added to secure part
+    	self:SetAttribute("UpdateAction", _IFActionHandler_UpdateActionAttribute)
+    	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
+    	self:Execute(_IFActionHandler_InsertManager)
+
 		self.PreClick = self.PreClick + PreClick
 		self.PostClick = self.PostClick + PostClick
-		self.OnClick = self.OnClick + OnClick
 		self.OnEnter = self.OnEnter + OnEnter
 		self.OnLeave = self.OnLeave + OnLeave
     end
@@ -1233,13 +1237,6 @@ do
 					if _IFActionHandler_StanceMap[btn.__IFActionHandler_Action] then
 						btn:SetAttribute("*type*", "macro")
 						btn:SetAttribute("*macrotext*", "/click StanceButton".._IFActionHandler_StanceMap[btn.__IFActionHandler_Action])
-					else
-						btn:SetAttribute("*type*", nil)
-						btn:SetAttribute("*macrotext*", nil)
-						btn:SetAttribute("type1", nil)
-						btn:SetAttribute("macrotext1", nil)
-						btn:SetAttribute("type2", nil)
-						btn:SetAttribute("macrotext2", nil)
 					end
 				end
 			end)
@@ -1250,10 +1247,10 @@ do
 		local str = ""
 
 		for i = 1, GetNumCompanions("MOUNT") do
-		    local spellId = select(3, GetCompanionInfo("MOUNT", i))
+		    local locname, spellId = select(2, GetCompanionInfo("MOUNT", i))
 
 		    if spellId and _IFActionHandler_MountMap[spellId] ~= i then
-				str = str.._IFActionHandler_MountMapTemplate:format(i, spellId)
+				str = str.._IFActionHandler_MountMapTemplate:format(i, spellId, spellId, locname)
 				_IFActionHandler_MountMap[spellId] = i
 		    end
 		end
@@ -1262,6 +1259,14 @@ do
 			_IFActionHandler_Buttons:EachK("companion", UpdateActionButton)
 			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 				_IFActionHandler_ManagerFrame:Execute(str)
+
+				for _, btn in _IFActionHandler_Buttons("companion") do
+					if _IFActionHandler_MountMap[btn.__IFActionHandler_Action] then
+						local name = select(2, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[btn.__IFActionHandler_Action]))
+						btn:SetAttribute("*type*", "macro")
+						btn:SetAttribute("*macrotext*", "/cast "..name)
+					end
+				end
 			end)
 		end
 	end
