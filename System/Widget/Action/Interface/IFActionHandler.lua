@@ -6,7 +6,7 @@
 --               2012/12/19 Move all OnClick handler to macro, fix for action done after postclick and equipset error.
 
 -- Check Version
-local version = 15
+local version = 16
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -519,8 +519,34 @@ do
 	]=]
 
 	_IFActionHandler_UpdateActionAttribute = [=[
+		local kind, target = ...
+
+		-- Clear
+		local oldKind = self:GetAttribute("type")
+		if oldKind then
+			self:SetAttribute("type", nil)
+			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind, nil)
+			if oldKind == "macro" then
+				self:SetAttribute("macrotext", nil)
+			end
+		end
+
+		if not target then
+			kind = nil
+		end
+
+		if kind then
+			self:SetAttribute("type", kind == "macrotext" and "macro" or kind)
+			if kind ~= "custom" then
+				if kind == "item" then
+					target = tonumber(target) and "item:"..tonumber(target) or target
+				end
+				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind, target)
+			end
+		end
+
 		if IFActionHandler_Manager then
-			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateAction, ...)", ...)
+			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateAction, ...)", kind, target)
 		end
 	]=]
 
