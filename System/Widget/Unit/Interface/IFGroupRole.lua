@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroupRole", version) then
 	return
 end
@@ -42,24 +42,6 @@ interface "IFGroupRole"
 		_IFGroupRoleUnitList[self] = nil
 	end
 
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
-	function Refresh(self)
-		local role = self.Unit and UnitGroupRolesAssigned(self.Unit)
-
-		if(role == 'TANK' or role == 'HEALER' or role == 'DAMAGER') then
-			if self:IsClass(Texture) then
-				self:SetTexCoord(GetTexCoordsForRoleSmallCircle(role))
-			end
-			self.Visible = true
-		else
-			self.Visible = false
-		end
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -73,12 +55,5 @@ interface "IFGroupRole"
 	------------------------------------------------------
 	function IFGroupRole(self)
 		_IFGroupRoleUnitList[self] = _All
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]]
-			end
-		end
 	end
 endinterface "IFGroupRole"

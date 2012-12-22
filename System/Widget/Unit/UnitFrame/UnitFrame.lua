@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -94,10 +94,15 @@ class "UnitFrame"
 	function SetUnit(self, unit)
 		if type(unit) == "string" then
 			unit = unit:lower()
+		else
+			unit = nil
 		end
 
-		if (unit == nil or type(unit) == "string") and unit ~= self:GetAttribute("unit") then
+		local guid = unit and UnitGUID(unit) or nil
+
+		if unit ~= self:GetAttribute("unit") or guid ~= self.__UnitGuid then
 			self:SetAttribute("unit", unit)
+			self.__UnitGuid = guid
 
 			UpdateUnit(self, unit)
 

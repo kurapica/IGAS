@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFConnect", version) then
 	return
 end
@@ -20,8 +20,6 @@ _IFConnectUnitList = _IFConnectUnitList or UnitList(_Name)
 _IFConnectTimer = Timer("IGAS_IFConnect_Timer")
 _IFConnectTimer.Enabled = false
 _IFConnectTimer.Interval = 3
-
-_IFConnect_Cache = _IFConnect_Cache or {}
 
 function _IFConnectUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_CONNECTION")
@@ -48,12 +46,7 @@ end
 
 function UpdateConnectState(unit)
 	if UnitExists(unit) then
-		local connected = UnitIsConnected(unit) or false
-
-		if _IFConnect_Cache[unit] ~= connected then
-			_IFConnect_Cache[unit] = connected
-			_IFConnectUnitList:EachK(unit, "Connected", connected)
-		end
+		_IFConnectUnitList:EachK(unit, "Connected", UnitIsConnected(unit) or false)
 	end
 end
 

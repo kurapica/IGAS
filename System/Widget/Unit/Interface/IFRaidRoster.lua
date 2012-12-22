@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRaidRoster", version) then
 	return
 end
@@ -39,29 +39,6 @@ interface "IFRaidRoster"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFRaidRosterUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
-	function Refresh(self)
-		if self:IsClass(Texture) then
-			if self.Unit and not UnitHasVehicleUI(self.Unit) then
-				if GetPartyAssignment('MAINTANK', self.Unit) then
-					self.Visible = true
-					self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]]
-				elseif GetPartyAssignment('MAINASSIST', self.Unit) then
-					self.Visible = true
-					self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]]
-				else
-					self.Visible = false
-				end
-			else
-				self.Visible = false
-			end
-		end
 	end
 
 	------------------------------------------------------

@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.CastBar", version) then
 	return
 end
@@ -40,7 +40,11 @@ class "CastBar"
 		if latencyWorld > 0 and parent.Duration and parent.Duration > 0 then
 			parent.SafeZone.Visible = true
 
-			parent.SafeZone.Width = self.Width * latencyWorld / parent.Duration / 1000
+			local pct = latencyWorld / parent.Duration / 1000
+
+			if pct > 1 then pct = 1 end
+
+			parent.SafeZone.Width = self.Width * pct
 		else
 			parent.SafeZone.Visible = false
 		end

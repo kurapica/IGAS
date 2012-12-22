@@ -43,8 +43,8 @@ end
 
 PowerBarColor = CopyTable(_G.PowerBarColor)
 
-PowerBarColor["MANA"] = ColorType(0.2, 0.2, 0.8)
-PowerBarColor[_G.SPELL_POWER_MANA] = ColorType(0.3, 0.3, 0.8)
+PowerBarColor["MANA"] = ColorType(0.0, 0.6, 1)
+PowerBarColor[_G.SPELL_POWER_MANA] = ColorType(0.0, 0.6, 1)
 
 class "UnitList"
 	extend "IFIterator"
