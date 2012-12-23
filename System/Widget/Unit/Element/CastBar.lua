@@ -97,7 +97,7 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function Start(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime, _, _, canInter = UnitCastingInfo(self.Unit)
+		local name, _, text, texture, startTime, endTime, _, _, notInterruptible = UnitCastingInfo(self.Unit)
 
 		if not name then
 			self.Alpha = 0
@@ -110,7 +110,7 @@ class "CastBar"
 		self.Duration = endTime - startTime
 		self.EndTime = endTime
 		self.Icon.TexturePath = texture
-		self.Shield.Visible = not canInter
+		self.Shield.Visible = notInterruptible
 		self.SpellName.Text = name
 		self.LineID = lineID
 
@@ -242,7 +242,7 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function ChannelStart(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime, _, canInter = UnitChannelInfo(self.Unit)
+		local name, _, text, texture, startTime, endTime, _, notInterruptible = UnitChannelInfo(self.Unit)
 
 		if not name then
 			self.Alpha = 0
@@ -256,7 +256,7 @@ class "CastBar"
 		self.Duration = endTime - startTime
 		self.EndTime = endTime
 		self.Icon.TexturePath = texture
-		self.Shield.Visible = not canInter
+		self.Shield.Visible = notInterruptible
 		self.SpellName.Text = name
 
 		-- Init

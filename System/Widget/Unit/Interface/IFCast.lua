@@ -72,7 +72,9 @@ interface "IFCast"
 	function Refresh(self)
 		if self.Unit then
 			if UnitCastingInfo(self.Unit) then
-				return self:Start()
+				local name, subText, _, _, _, _, _, castID, notInterruptible = UnitCastingInfo(self.Unit)
+				self:Start(name, subText, castID)
+				return
 			elseif UnitChannelInfo(self.Unit) then
 				return self:ChannelStart()
 			else
