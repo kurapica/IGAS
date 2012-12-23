@@ -3492,10 +3492,8 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function MultiLineTextBox(name, parent)
-		local frame = ScrollForm(name, parent)
-
-		local container = frame.Container
+    function MultiLineTextBox(self, name, parent)
+		local container = self.Container
 
 		local editbox = EditBox("Text", container)
 		editbox:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -3515,9 +3513,9 @@ class "MultiLineTextBox"
 		lineNum.JustifyV = "TOP"
 		lineNum.JustifyH = "CENTER"
 
-		local margin = Frame("Margin", frame)
-		margin:SetPoint("TOPLEFT", frame, "TOPLEFT", 5, -5)
-		margin:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 5, 5)
+		local margin = Frame("Margin", self)
+		margin:SetPoint("TOPLEFT", self, "TOPLEFT", 5, -5)
+		margin:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 5, 5)
 		margin:SetPoint("RIGHT", lineNum, "RIGHT")
 		margin.MouseEnabled = true
 		margin.Visible = false
@@ -3529,30 +3527,30 @@ class "MultiLineTextBox"
 
 		margin.FrameStrata = "FULLSCREEN"
 
-		frame.__LineNum = lineNum
-        frame.__Text = editbox
-		frame.__Margin = margin
-        editbox.__Container = frame
-        margin.__Container = frame
+		self.__LineNum = lineNum
+        self.__Text = editbox
+		self.__Margin = margin
+        editbox.__Container = self
+        margin.__Container = self
 
 		-- Operation Keep List
-		frame.__Operation = {}
+		self.__Operation = {}
 
-		frame.__OperationStart = {}
-		frame.__OperationEnd = {}
-		frame.__OperationBackUp = {}
+		self.__OperationStart = {}
+		self.__OperationEnd = {}
+		self.__OperationBackUp = {}
 
-		frame.__OperationFinalStart = {}
-		frame.__OperationFinalEnd = {}
-		frame.__OperationData = {}
+		self.__OperationFinalStart = {}
+		self.__OperationFinalEnd = {}
+		self.__OperationData = {}
 
-		frame.__OperationIndex = 0
-		frame.__MaxOperationIndex = 0
+		self.__OperationIndex = 0
+		self.__MaxOperationIndex = 0
 
 		-- Settings
-		Ajust4Font(frame)
+		Ajust4Font(self)
 
-		frame.OnMouseUp = frame.OnMouseUp + Frame_OnMouseUp
+		self.OnMouseUp = self.OnMouseUp + Frame_OnMouseUp
 
 		margin:ActiveThread("OnMouseUp", "OnMouseDown")
 		margin.OnMouseDown = Margin_OnMouseDown
@@ -3576,8 +3574,6 @@ class "MultiLineTextBox"
 		editbox.OnMouseDown = editbox.OnMouseDown + OnMouseDown
 		editbox.OnMouseUp = editbox.OnMouseUp + OnMouseUp
 
-		frame:FixHeight()
-
-		return frame
+		self:FixHeight()
 	end
 endclass "MultiLineTextBox"

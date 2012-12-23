@@ -1078,38 +1078,35 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboBox(name, parent)
-        -- EditBox
-		local frame = Frame(name,parent)
+	function ComboBox(self, name, parent)
+        self:SetWidth(180)
+        self:SetHeight(26)
+		self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0,0,0,1)
+		self.__DisplayItemCount = 6
 
-        frame:SetWidth(180)
-        frame:SetHeight(26)
-		frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0,0,0,1)
-		frame.__DisplayItemCount = 6
-
-        local btnDropdown = Button("DropdownBtn", frame)
+        local btnDropdown = Button("DropdownBtn", self)
         btnDropdown:SetWidth(32)
         btnDropdown:SetHeight(32)
-		btnDropdown:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 3, 3)
-		btnDropdown:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 3, -3)
+		btnDropdown:SetPoint("TOPRIGHT", self, "TOPRIGHT", 3, 3)
+		btnDropdown:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 3, -3)
         btnDropdown:SetNormalTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up.blp")
         btnDropdown:SetPushedTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Down.blp")
         btnDropdown:SetDisabledTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Disabled.blp")
         btnDropdown:SetHighlightTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Highlight.blp", "ADD")
         btnDropdown:SetHitRectInsets(6, 7, 7, 8)
 
-		local icon = Texture("Icon", frame, "OVERLAY")
+		local icon = Texture("Icon", self, "OVERLAY")
 		icon:SetWidth(18)
 		icon:SetHeight(18)
 		icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
-		icon:SetPoint("LEFT", frame, "LEFT", 4, 0)
+		icon:SetPoint("LEFT", self, "LEFT", 4, 0)
 
-        local edit = EditBox("Text", frame)
-        edit:SetPoint("TOP", frame, "TOP", 0, -4)
+        local edit = EditBox("Text", self)
+        edit:SetPoint("TOP", self, "TOP", 0, -4)
         edit:SetPoint("LEFT", icon, "RIGHT")
         edit:SetPoint("RIGHT", btnDropdown, "LEFT", 6, 0)
-        edit:SetPoint("BOTTOM", frame, "BOTTOM", 0, 4)
+        edit:SetPoint("BOTTOM", self, "BOTTOM", 0, 4)
         edit:SetAutoFocus(false)
         edit:SetJustifyH("CENTER")
         edit:SetJustifyV("MIDDLE")
@@ -1128,8 +1125,6 @@ class "ComboBox"
 		edit.OnCharComposition = OnCharComposition
 		edit.OnChar = OnChar
 
-		frame.OnHide = frame.OnHide + OnHide
-
-        return frame
+		self.OnHide = self.OnHide + OnHide
     end
 endclass "ComboBox"

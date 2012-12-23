@@ -208,12 +208,8 @@ class "StatusText"
 		Type = System.String + nil,
 	}
 
-	function StatusText(...)
-		local text = Super(...)
-
-		text.FontObject = IGAS.TextStatusBarText
-
-		return text
+	function StatusText(self)
+		self.FontObject = IGAS.TextStatusBarText
 	end
 endclass "StatusText"
 

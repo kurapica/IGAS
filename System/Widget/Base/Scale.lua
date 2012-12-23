@@ -96,12 +96,12 @@ class "Scale"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Scale(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not Object.IsClass(parent, AnimationGroup) then
 			error("Usage : Scale(name, parent) : 'parent' - AnimationGroup element expected.", 2)
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateAnimation("Scale", nil, ...))
+		return IGAS:GetUI(parent):CreateAnimation("Scale", nil, ...)
 	end
 endclass "Scale"
 

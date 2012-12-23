@@ -45,12 +45,8 @@ class "RaidRosterIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RaidRosterIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function RaidRosterIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "RaidRosterIcon"

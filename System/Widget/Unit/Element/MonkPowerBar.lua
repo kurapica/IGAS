@@ -79,19 +79,18 @@ class "MonkPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function LightEnergy(...)
-			local lightEnergy = Super(...)
-			lightEnergy:SetSize(18, 17)
+	    function LightEnergy(self)
+			self:SetSize(18, 17)
 
 			-- BACKGROUND
-			local bg = Texture("Bg", lightEnergy, "BACKGROUND")
+			local bg = Texture("Bg", self, "BACKGROUND")
 			bg.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 			bg:SetTexCoord(0.09375000, 0.17578125, 0.71093750, 0.87500000)
 			bg:SetSize(21, 21)
 			bg:SetPoint("CENTER")
 
 			-- ARTWORK
-			local glow = Texture("Glow", lightEnergy, "ARTWORK")
+			local glow = Texture("Glow", self, "ARTWORK")
 			glow.Alpha = 0
 			glow.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 			glow:SetTexCoord(0.00390625, 0.08593750, 0.71093750, 0.87500000)
@@ -115,10 +114,8 @@ class "MonkPowerBar"
 
 			deactivate.OnFinished = Deactivate_OnFinished
 
-			lightEnergy.OnEnter = lightEnergy.OnEnter + OnEnter
-			lightEnergy.OnLeave = lightEnergy.OnLeave + OnLeave
-
-			return lightEnergy
+			self.OnEnter = self.OnEnter + OnEnter
+			self.OnLeave = self.OnLeave + OnLeave
 	    end
 	endclass "LightEnergy"
 
@@ -168,25 +165,23 @@ class "MonkPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MonkPowerBar(name, parent)
-		local panel = Super(name, parent)
+	function MonkPowerBar(self, name, parent)
+		self.__Value = 0
+		self.__Min, self.__Max = 0, 0
 
-		panel.__Value = 0
-		panel.__Min, panel.__Max = 0, 0
-
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(136, 60)
-		panel.MouseEnabled = true
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(136, 60)
+		self.MouseEnabled = true
 
 		-- BACKGROUND
-		local bgShadow = Texture("BgShadow", panel, "BACKGROUND")
+		local bgShadow = Texture("BgShadow", self, "BACKGROUND")
 		bgShadow.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 		bgShadow:SetTexCoord(0.00390625, 0.53515625, 0.00781250, 0.34375000)
 		bgShadow:SetAllPoints()
 
 		-- BORDER
-		local bg = Texture("Bg", panel, "BORDER")
+		local bg = Texture("Bg", self, "BORDER")
 		bg.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 		bg:SetTexCoord(0.00390625, 0.53515625, 0.35937500, 0.69531250)
 		bg:SetAllPoints()
@@ -195,17 +190,15 @@ class "MonkPowerBar"
 		local prev
 
 		for i = 1, 5 do
-			local light = LightEnergy("LightEnergy"..i, panel)
+			local light = LightEnergy("LightEnergy"..i, self)
 
 			if i == 1 then
-				light:SetPoint("LEFT", (panel.Width - light.Width * 4 - 5 * 3) / 2, 1)
+				light:SetPoint("LEFT", (self.Width - light.Width * 4 - 5 * 3) / 2, 1)
 			else
 				light:SetPoint("LEFT", prev, "RIGHT", 5, 0)
 			end
 
 			prev = light
 		end
-
-		return panel
 	end
 endclass "MonkPowerBar"

@@ -359,8 +359,8 @@ class "Model"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Model(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Model", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Model", nil, parent, ...)
 	end
 endclass "Model"
 

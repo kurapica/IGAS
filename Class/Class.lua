@@ -98,11 +98,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 --			Type = String,				-- the property "Name"'s type, so when you assign a value to Name, it should be checked.
 --		}
 --
---		function MyClass(name)		-- the function with same name of the class is treated as the Constructor of the class
---			local obj = {_Name = name}	-- the object should be a table
---			return obj
+--		function MyClass(self, name)	-- the function with same name of the class is treated as the Constructor of the class
+--			self._Name = name			-- use self to init
 --		end
---	endclass "MyClass"				-- declare the definition of the class is over.
+--	endclass "MyClass"					-- declare the definition of the class is over.
 --
 --	Using MyClass:
 --
@@ -117,7 +116,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 59
+local version = 60
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -194,45 +193,6 @@ do
 	-- Disposing method name
 	_DisposeMethod = "Dispose"
 
-	-- Track Class Object Creation
-	_CreateClassObjLevel = _CreateClassObjLevel or 0
-	_MaxCreateClassObjLevel = _MaxCreateClassObjLevel or -1
-	_InterfaceUpdateLevel = _InterfaceUpdateLevel or 0
-	_CacheInterfaceList = _CacheInterfaceList or setmetatable({}, {
-		__call = function(self, lst)
-			if lst then
-				wipe(lst)
-				tinsert(self, lst)
-			else
-				if #self > 0 then
-					local ret = tremove(self)
-					wipe(ret)
-					return ret
-				else
-					return {}
-				end
-			end
-		end,
-	})
-	_CreateClassObjInfo = _CreateClassObjInfo or setmetatable({}, {
-		__index = function(self, obj)
-			rawset(self, obj, _CacheInterfaceList())
-			return rawget(self, obj)
-		end,
-	})
-	_CreateClassObjLevelMap = _CreateClassObjLevelMap or {}
-
-	function ClearClassObjCache()
-		_CreateClassObjLevel = 0
-		_MaxCreateClassObjLevel = -1
-		_InterfaceUpdateLevel = 0
-		for _, cache in pairs(_CreateClassObjInfo) do
-			_CacheInterfaceList(cache)
-		end
-		wipe(_CreateClassObjInfo)
-		wipe(_CreateClassObjLevelMap)
-	end
-
 	_NSInfo = _NSInfo or setmetatable({}, {
 		__index = function(self, key)
 			if not IsNameSpace(key) then
@@ -254,62 +214,8 @@ do
 			local info = _NSInfo[self]
 
 			if info.Type == TYPE_CLASS then
-				-- Create Class
-				_CreateClassObjLevel = _CreateClassObjLevel + 1
-
-				local ok, obj = pcall(Class2Obj, self, ...)
-
-				if not ok then
-					--obj = strtrim(obj:match(":%d+:(.*)$") or obj)
-					for item in pairs(_CreateClassObjLevelMap) do
-						if item.Dispose then
-							pcall(item.Dispose, item)
-						end
-					end
-
-					ClearClassObjCache()
-
-					error(obj, 0)
-				else
-					_CreateClassObjLevel = _CreateClassObjLevel - 1
-
-					if obj then
-						-- Keep object level for interface constructor invoking
-						if _CreateClassObjLevel + _InterfaceUpdateLevel > _MaxCreateClassObjLevel then
-							_MaxCreateClassObjLevel = _CreateClassObjLevel + _InterfaceUpdateLevel
-						end
-						_CreateClassObjLevelMap[obj] = _CreateClassObjLevel + _InterfaceUpdateLevel
-					end
-					if _CreateClassObjLevel == 0 and _InterfaceUpdateLevel == 0 then
-						local nowLevel
-
-						while _MaxCreateClassObjLevel >= 0 do
-							nowLevel = _MaxCreateClassObjLevel
-
-							for item in pairs(_CreateClassObjInfo) do
-								if _CreateClassObjLevelMap[item] == nowLevel then
-									-- Clear
-									_CreateClassObjLevelMap[item] = nil
-
-									_InterfaceUpdateLevel = nowLevel + 1
-
-									FinishIF4Obj(item, _CreateClassObjInfo[item])
-
-									_InterfaceUpdateLevel = 0
-								end
-							end
-
-							if nowLevel == _MaxCreateClassObjLevel then
-								_MaxCreateClassObjLevel = _MaxCreateClassObjLevel - 1
-							end
-						end
-
-						-- Reset all cache
-						ClearClassObjCache()
-					end
-				end
-
-				return obj
+				-- Create Class object
+				return Class2Obj(self, ...)
 			elseif info.Type == TYPE_STRUCT then
 				-- Create Struct
 				return Struct2Obj(self, ...)
@@ -739,14 +645,14 @@ do
 						-- do nothing
 					elseif info.Type == TYPE_CLASS then
 						-- Check if the value is an instance of this class
-						if type(value) == "table" and getmetatable(value) and getmetatable(value).__class and IsChildClass(ns, getmetatable(value).__class) then
+						if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
 							return value
 						end
 
 						new = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
 					elseif info.Type == TYPE_INTERFACE then
 						-- Check if the value is an instance of this interface
-						if type(value) == "table" and getmetatable(value) and getmetatable(value).__class and IsExtend(ns, getmetatable(value).__class) then
+						if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then
 							return value
 						end
 
@@ -1105,42 +1011,6 @@ do
 		end
 
 		return false
-	end
-
-	function IF4Obj(IF, obj)
-		if not obj then return end
-
-		for _, eIF in ipairs(_CreateClassObjInfo[obj]) do
-			if eIF == IF then
-				return
-			end
-		end
-
-		if _NSInfo[IF].ExtendInterface then
-			for pIF in pairs(_NSInfo[IF].ExtendInterface) do
-				IF4Obj(pIF, obj)
-			end
-		end
-
-		tinsert(_CreateClassObjInfo[obj], IF)
-	end
-
-	function FinishIF4Obj(obj, lstIF)
-		if not obj or not lstIF then return end
-
-		local ok, msg
-
-		for _, IF in ipairs(lstIF) do
-			if _NSInfo[IF].Constructor then
-				-- print(("Interface[%s] Wrap Object[%s] For Class[%s]"):format(_NSInfo[IF].Name, tostring(obj), tostring(getmetatable(obj).__class)))
-
-				ok, msg = pcall(_NSInfo[IF].Constructor, obj)
-
-				if not ok then
-					errorhandler(msg)
-				end
-			end
-		end
 	end
 
 	------------------------------------
@@ -1569,7 +1439,7 @@ do
 	}
 
 	--------------------------------------------------
-	-- Dispose System
+	-- Init & Dispose System
 	--------------------------------------------------
 	do
 		local function GetInterfaces(lst, ns)
@@ -1615,6 +1485,40 @@ do
 			end,
 		})
 
+		function InitObjectWithClass(cls, obj, ...)
+			local  info = _NSInfo[cls]
+
+			if info.SuperClass then
+				InitObjectWithClass(info.SuperClass, obj, ...)
+			end
+
+			if type(info.Constructor) == "function" then
+				info.Constructor(obj, ...)
+			end
+		end
+
+		function InitObjectWithInterface(cls, obj)
+			local lst = _DisposeCache()
+
+			GetInterfaces(lst, cls)
+
+			local ok, msg, info
+
+			for _, IF in ipairs(lst) do
+				info = _NSInfo[IF]
+				if info.Constructor then
+					ok, msg = pcall(info.Constructor, obj)
+
+					if not ok then
+						errorhandler(msg)
+					end
+				end
+			end
+
+			-- Recycle
+			_DisposeCache(lst)
+		end
+
 		------------------------------------
 		--- Dispose this object
 		-- @name DisposeObject
@@ -1649,7 +1553,7 @@ do
 			end
 
 			-- Clear the table
-			setmetatable(self, nil)
+			-- setmetatable(self, nil)
 
 			wipe(self)
 		end
@@ -1917,7 +1821,7 @@ do
 	do
 		_MetaScripts.__index = function(self, key)
 			-- Check Script
-			local cls = self._Owner and getmetatable(self._Owner) and getmetatable(self._Owner).__class
+			local cls = self._Owner and getmetatable(self._Owner)
 
 			if _NSInfo[cls].Cache4Script[key] == nil then
 				return
@@ -1994,54 +1898,6 @@ do
 		end
 	end
 
-	function Class2ObjExistChk(cls, ret, ... )
-		local info = _NSInfo[cls]
-		local obj
-
-		if type(ret) == "table" then
-			obj = ret
-			local meta = getmetatable(obj)
-
-			if meta and meta.__class then
-				if meta ~= info.MetaTable then
-					setmetatable(obj, info.MetaTable)
-				end
-
-				return obj
-			end
-		elseif ret == false then
-			-- if the __exist modify the args.
-
-			--[[ Create new object
-			local constructor = info.Constructor
-			if type(constructor) ~= "function" then
-				error(("no Constructor found for class %s."):format(tostring(cls)), 4)
-			end
-
-			obj = constructor(...)
-			--]]
-			if type(info.Constructor) == "function" then
-				obj = info.Constructor(...)
-			elseif info.SuperClass then
-				obj = info.SuperClass(...)
-			else
-				obj = {}
-			end
-
-			if type(obj) == "table" then
-				setmetatable(obj, info.MetaTable)
-
-				if info.ExtendInterface then
-					for IF in pairs(info.ExtendInterface) do
-						IF4Obj(IF, obj)
-					end
-				end
-			end
-
-			return obj
-		end
-	end
-
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
 		local obj
@@ -2050,38 +1906,22 @@ do
 
 		-- Check if this class has __exist so no need to create again.
 		if type(info.MetaTable.__exist) == "function" then
-			obj = Class2ObjExistChk(cls, info.MetaTable.__exist(cls, ...))
+			obj = info.MetaTable.__exist(...)
 
 			if type(obj) == "table" then
-				return obj
-			end
-		end
-
-		--[[ Create new object
-		local constructor = info.Constructor
-		if type(constructor) ~= "function" then
-			error(("no Constructor found for class %s."):format(tostring(cls)), 3)
-		end
-
-		obj = constructor(...)
-		--]]
-		if type(info.Constructor) == "function" then
-			obj = info.Constructor(...)
-		elseif info.SuperClass then
-			obj = info.SuperClass(...)
-		else
-			obj = {}
-		end
-
-		if type(obj) == "table" then
-			setmetatable(obj, info.MetaTable)
-
-			if info.ExtendInterface then
-				for IF in pairs(info.ExtendInterface) do
-					IF4Obj(IF, obj)
+				if getmetatable(obj) == cls then
+					return obj
+				else
+					error(("There is an existed object as type '%s'."):format(Reflector.GetName(Reflector.GetObjectClass(obj)) or ""), 2)
 				end
 			end
 		end
+
+		-- Create new object
+		obj = setmetatable({}, info.MetaTable)
+		InitObjectWithClass(cls, obj, ...)
+
+		InitObjectWithInterface(cls, obj)
 
 		return obj
 	end
@@ -2206,6 +2046,8 @@ do
 			local ClassName = info.Name
 
 			MetaTable.__class = cls
+
+			MetaTable.__metatable = cls
 
 			MetaTable.__index = function(self, key)
 				if type(key) == "string" and not key:find("^__") then
@@ -2409,6 +2251,8 @@ do
 			local ClassName = info.Name
 
 			MetaTable.__class = cls
+
+			MetaTable.__metatable = cls
 
 			MetaTable.__index = MetaTable.__index or function(self, key)
 				if type(key) == "string" and not key:find("^__") then
@@ -4012,7 +3856,7 @@ do
 		-- @usage System.Reflector.GetObjectClass(obj)
 		------------------------------------
 		function GetObjectClass(obj)
-			return type(obj) == "table" and getmetatable(obj) and getmetatable(obj).__class
+			return type(obj) == "table" and getmetatable(obj)
 		end
 
 		------------------------------------
@@ -4167,30 +4011,6 @@ do
 					if HasScript(cls, name) then
 						obj[name]._Blocked = nil
 					end
-				end
-			end
-		end
-
-		------------------------------------
-		--- Convert the object to a new class.
-		-- @name ConvertClass
-		-- @class function
-		-- @param obj object
-		-- @param cls class
-		-- @usage System.Reflector.ConvertClass(obj, System.Addon)
-		------------------------------------
-		function ConvertClass(obj, ns)
-			if type(obj) ~= "table" then return end
-
-			if type(ns) == "string" then ns = ForName(ns) end
-
-			local info = ns and _NSInfo[ns]
-
-			if info and info.Type == TYPE_CLASS then
-				local meta = getmetatable(obj)
-
-				if meta ~= info.MetaTable then
-					setmetatable(obj, info.MetaTable)
 				end
 			end
 		end

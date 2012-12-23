@@ -371,12 +371,10 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MinimapIcon(name, parent)
-		local mask = VirtualUIObject(name, parent)
-
+	function MinimapIcon(self, name, parent)
 		local button = Button(nil, Minimap)
-		mask.__MiniMapBtn = button
-		button.__Mask = mask
+		self.__MiniMapBtn = button
+		button.__Mask = self
 
         button:SetFrameStrata("MEDIUM")
         button:SetWidth(31)
@@ -417,7 +415,5 @@ class "MinimapIcon"
         button.OnMouseDown = OnMouseDown
         button.OnMouseUp = OnMouseUp
 		button.OnClick = OnClick
-
-		return mask
 	end
 endclass "MinimapIcon"

@@ -376,12 +376,12 @@ class "AnimationGroup"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function AnimationGroup(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not IGAS:GetUI(parent).CreateAnimationGroup then
 			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateAnimationGroup(nil, ...))
+		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
 	end
 endclass "AnimationGroup"
 

@@ -194,7 +194,7 @@ endstruct "PositiveNumber"
 ------------------------------------------------------
 class "Object"
 	-- extend "IFDispose" -- not really need to extend IFDispose, just use it
-	
+
 	local create = coroutine.create
 	local resume = coroutine.resume
 	local status = coroutine.status
@@ -222,7 +222,7 @@ class "Object"
 		end
 		return Reflector.HasScript(Reflector.GetObjectClass(self), name) or false
 	end
-	
+
 	------------------------------------
 	--- Get the class type of this object
 	-- @name Object:GetClass
@@ -254,7 +254,7 @@ class "Object"
 	function IsInterface(self, IF)
 		return Reflector.ObjectIsInterface(self, IF)
 	end
-	
+
 	------------------------------------
 	--- Dispose this object
 	-- @name Object:Dispose
@@ -446,17 +446,6 @@ class "Object"
 	function UnBlockScript(self, ...)
 		return Reflector.UnBlockScript(self, ...)
 	end
-	
-	------------------------------------
-	--- Convert the object to a new class.
-	-- @name ConvertClass
-	-- @class function
-	-- @param cls class
-	-- @usage Object:ConvertClass(System.Addon)
-	------------------------------------
-	function ConvertClass(self, ns)
-		return Reflector.ConvertClass(self, ns)
-	end
 
 	------------------------------------
 	--- Call method as thread, self would be the first arg to the method
@@ -470,22 +459,10 @@ class "Object"
 		if type(method) == "string" then
 			method = self[method]
 		end
-		
+
 		if type(method) == "function" then
 			local thread = create(method)
 			return resume(thread, self, ...)
 		end
 	end
-	
-	------------------------------------
-	--- Create a new instance of the Object
-	-- @name Object
-	-- @class function
-	-- @return object
-	-- @usage obj = Object()
-	------------------------------------
-	function Object()
-		return {}
-	end
-
 endclass "Object"

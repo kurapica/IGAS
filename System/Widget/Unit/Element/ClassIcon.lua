@@ -45,17 +45,13 @@ class "ClassIcon"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ClassIcon(...)
-		local icon = Super(...)
-
-		icon.TexturePath = [[Interface\TargetingFrame\UI-Classes-Circles]]
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function ClassIcon(self)
+		self.TexturePath = [[Interface\TargetingFrame\UI-Classes-Circles]]
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "ClassIcon"

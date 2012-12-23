@@ -123,12 +123,12 @@ class "Rotation"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Rotation(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not Object.IsClass(parent, AnimationGroup) then
 			error("Usage : Rotation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateAnimation("Rotation", nil, ...))
+		return IGAS:GetUI(parent):CreateAnimation("Rotation", nil, ...)
 	end
 endclass "Rotation"
 

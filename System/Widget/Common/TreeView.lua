@@ -625,21 +625,17 @@ class "TreeView"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		 function TreeNode(name, parent)
-			local node = VirtualUIObject(name, parent)
-
+		 function TreeNode(self, name, parent)
 			parent.__ChildNodeCount = (parent.__ChildNodeCount or 0) + 1
 
 			if Object.IsClass(parent, TreeNode) then
-				node.__Root = parent.__Root
+				self.__Root = parent.__Root
 			else
-				node.__Root = parent
+				self.__Root = parent
 			end
 
-			node.__NodeIndex = parent.__ChildNodeCount
-			node.__TreeLevel = (parent.__TreeLevel or 0) + 1
-
-			return node
+			self.__NodeIndex = parent.__ChildNodeCount
+			self.__TreeLevel = (parent.__TreeLevel or 0) + 1
 		 end
 	endclass "TreeNode"
 
@@ -1726,22 +1722,20 @@ class "TreeView"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TreeView(name, parent)
-		local frame = Frame(name, parent)
-
-		frame.MouseWheelEnabled = true
-		frame.Visible = true
-		frame:ClearAllPoints()
-		frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0, 0, 0, 1)
-		frame.__DisplayItemCount = 6
-		frame.__Layout = true
-		frame.Height = 6 * _Height + 6
+	function TreeView(self)
+		self.MouseWheelEnabled = true
+		self.Visible = true
+		self:ClearAllPoints()
+		self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0, 0, 0, 1)
+		self.__DisplayItemCount = 6
+		self.__Layout = true
+		self.Height = 6 * _Height + 6
 
 		-- Scroll Bar
-		local scrollBar = ScrollBar("ScrollBar", frame)
-        scrollBar:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -2)
-        scrollBar:SetPoint("BOTTOM", frame, "BOTTOM", 0, 2)
+		local scrollBar = ScrollBar("ScrollBar", self)
+        scrollBar:SetPoint("TOPRIGHT", self, "TOPRIGHT", -8, -2)
+        scrollBar:SetPoint("BOTTOM", self, "BOTTOM", 0, 2)
 		scrollBar:SetMinMaxValues(1, 1)
 		scrollBar.Value = 1
 		scrollBar.Visible = false
@@ -1753,13 +1747,13 @@ class "TreeView"
 		scrollBar.OnLeave = ScrollBar_OnLeave
 
 		-- Function Buttons
-		local func1 = NormalButton("_Func_1", frame)
-		local func2 = NormalButton("_Func_2", frame)
-		local func3 = NormalButton("_Func_3", frame)
+		local func1 = NormalButton("_Func_1", self)
+		local func2 = NormalButton("_Func_2", self)
+		local func3 = NormalButton("_Func_3", self)
 
-		func1.FrameLevel = frame.FrameLevel + 3
-		func2.FrameLevel = frame.FrameLevel + 3
-		func3.FrameLevel = frame.FrameLevel + 3
+		func1.FrameLevel = self.FrameLevel + 3
+		func2.FrameLevel = self.FrameLevel + 3
+		func3.FrameLevel = self.FrameLevel + 3
 
 		func1.Style = "CLASSIC"
 		func2.Style = "CLASSIC"
@@ -1778,20 +1772,20 @@ class "TreeView"
 		func3.OnClick = FuncButton_OnClick
 
 		-- OrderButtons
-		local upArrow = Button("UpArrow", frame)
+		local upArrow = Button("UpArrow", self)
 		upArrow.Visible = false
 		upArrow.Height = 8
 		upArrow.Width = 16
 		upArrow.NormalTexturePath = [[Interface\PaperDollInfoFrame\StatSortArrows]]
 		upArrow.NormalTexture.Alpha = 0.6
 		upArrow.NormalTexture:SetTexCoord(0, 1, 0, 0.5)
-		upArrow.FrameLevel = frame.FrameLevel + 3
+		upArrow.FrameLevel = self.FrameLevel + 3
 
 		upArrow.OnEnter = OrderButton_OnEnter
 		upArrow.OnLeave = OrderButton_OnLeave
 		upArrow.OnClick = OrderButton_OnUpClick
 
-		local downArrow = Button("DownArrow", frame)
+		local downArrow = Button("DownArrow", self)
 		downArrow.Visible = false
 		downArrow.Height = 8
 		downArrow.Width = 16
@@ -1799,17 +1793,15 @@ class "TreeView"
 		downArrow.NormalTexturePath = [[Interface\PaperDollInfoFrame\StatSortArrows]]
 		downArrow.NormalTexture.Alpha = 0.6
 		downArrow.NormalTexture:SetTexCoord(0, 1, 0.5, 1)
-		downArrow.FrameLevel = frame.FrameLevel + 3
+		downArrow.FrameLevel = self.FrameLevel + 3
 
 		downArrow.OnEnter = OrderButton_OnEnter
 		downArrow.OnLeave = OrderButton_OnLeave
 		downArrow.OnClick = OrderButton_OnDownClick
 
-		frame.OnMouseWheel = frame.OnMouseWheel + OnMouseWheel
+		self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
 
-		frame.OnEnter = frame.OnEnter + TreeView_OnEnter
-		frame.OnLeave = frame.OnLeave + TreeView_OnLeave
-
-		return frame
+		self.OnEnter = self.OnEnter + TreeView_OnEnter
+		self.OnLeave = self.OnLeave + TreeView_OnLeave
 	end
 endclass "TreeView"

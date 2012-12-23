@@ -195,22 +195,22 @@ class "TabLayoutPanel"
 				self.TabLayoutPanel_Right.Enabled = true
 			else
 				offsetWidth = totalWidth - self.TabLayoutPanel_Header.Width
-				
+
 				self.TabLayoutPanel_Right.Enabled = false
-				
+
 				-- Update offset
 				totalWidth = 0
-				
+
 				for i = 1, self.Count do
 					totalWidth = totalWidth + headerArray[i].Width
-					
+
 					if totalWidth >= offsetWidth then
 						container._Offset = i
 						break
 					end
 				end
 			end
-			
+
 			container:SetPoint("TOPLEFT", - offsetWidth, 0)
 		else
 			container._Offset = 0
@@ -219,7 +219,7 @@ class "TabLayoutPanel"
 
 			container:SetPoint("TOPLEFT")
 		end
-		
+
 		-- Update Close button
 		self.TabLayoutPanel_Close.Visible = self.TabLayoutPanel_Close._Visible and self.Count > 0
 	end
@@ -310,7 +310,7 @@ class "TabLayoutPanel"
 		end
 
 		header = header or widget.Name
-		
+
 		if type(header) ~= "string" then
 			error("Usage: TabLayoutPanel:AddWidget(widget, header) : header - must be string.", 2)
 		end
@@ -322,7 +322,7 @@ class "TabLayoutPanel"
 		self:SetWidgetTopBottom(widget, _HeaderSize, "px", 0, "px")
 
 		widget.__TabLayoutPanel_Header = header
-		
+
 		if self.Count == 1 and index == 1 and not widget.__TabLayoutPanel_Disabled then
 			widget.__TabLayoutPanel_Selected = true
 		end
@@ -353,7 +353,7 @@ class "TabLayoutPanel"
 		end
 
 		header = header or widget.Name
-		
+
 		if type(header) ~= "string" then
 			error("Usage: TabLayoutPanel:InsertWidget(before, widget, header) : header - must be string.", 2)
 		end
@@ -462,8 +462,8 @@ class "TabLayoutPanel"
 			return self.TabLayoutPanel_Close._Visible
 		end,
 		Set = function(self, value)
-			self.TabLayoutPanel_Close._Visible = value			
-			
+			self.TabLayoutPanel_Close._Visible = value
+
 			UpdateHeader(self)
 		end,
 		Type = Boolean,
@@ -508,7 +508,7 @@ class "TabLayoutPanel"
 	local function OnClick_Close(self)
 		local pass = true
 		local widget = self.Parent.SelectedWidget
-		
+
 		if not widget then return end
 
 		if self.Parent.TabLayoutPanel_Header.Container._Message then
@@ -552,11 +552,9 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TabLayoutPanel(name, parent)
-		local panel = Super(name, parent)
-
+	function TabLayoutPanel(self)
 		-- Close
-		local btnClose = NormalButton("TabLayoutPanel_Close", panel)
+		local btnClose = NormalButton("TabLayoutPanel_Close", self)
         btnClose.Style = "CLOSE"
 		btnClose.OnClick = OnClick_Close
 
@@ -566,7 +564,7 @@ class "TabLayoutPanel"
 		btnClose.Width = _HeaderSize
 
 		-- Right
-        local btnScrollRight = Button("TabLayoutPanel_Right", panel)
+        local btnScrollRight = Button("TabLayoutPanel_Right", self)
         btnScrollRight:SetNormalTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up.blp")
         btnScrollRight:SetPushedTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down.blp")
         btnScrollRight:SetDisabledTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Disabled.blp")
@@ -579,7 +577,7 @@ class "TabLayoutPanel"
 		btnScrollRight.Width = _HeaderSize
 
 		-- Left
-        local btnScrollLeft = Button("TabLayoutPanel_Left", panel)
+        local btnScrollLeft = Button("TabLayoutPanel_Left", self)
         btnScrollLeft:SetNormalTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up.blp")
         btnScrollLeft:SetPushedTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down.blp")
         btnScrollLeft:SetDisabledTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Disabled.blp")
@@ -592,7 +590,7 @@ class "TabLayoutPanel"
 		btnScrollLeft.Width = _HeaderSize
 
 		-- Header
-        local header = ScrollFrame("TabLayoutPanel_Header",panel)
+        local header = ScrollFrame("TabLayoutPanel_Header",self)
 		header.MouseEnabled = true
         header.OnSizeChanged = OnSizeChanged_Header
 
@@ -610,9 +608,7 @@ class "TabLayoutPanel"
 		headerContainer._Offset = 0
 
 		-- HeaderItemArray
-		panel.__TabLayoutPanel_HeaderArray = System.Array(Button)
-		panel.__TabLayoutPanel_HeaderArray.OnClick = OnClick_HeaderItem
-
-		return panel
+		self.__TabLayoutPanel_HeaderArray = System.Array(Button)
+		self.__TabLayoutPanel_HeaderArray.OnClick = OnClick_HeaderItem
 	end
 endclass "TabLayoutPanel"

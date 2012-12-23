@@ -600,8 +600,8 @@ class "Button"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Button(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Button", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Button", nil, parent, ...)
 	end
 endclass "Button"
 

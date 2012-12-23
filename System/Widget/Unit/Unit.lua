@@ -157,27 +157,24 @@ class "UnitList"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function UnitList(name)
+	function UnitList(self, name)
 		if type(name) ~= "string" then
 			error("Usage : UnitList(name) - name must be a unique string.", 2)
 		end
 
-		local lst = {}
 		local prev = "__UnitList_" .. name .. "_Prev"
 		local nxt = "__UnitList_" .. name .. "_Next"
 
-		_UnitList_Info[name] = lst
-		_UnitList_Prev[lst] = prev
-		_UnitList_Next[lst] = nxt
-		_UnitList_Traverse[lst] = function (data, key)
+		_UnitList_Info[name] = self
+		_UnitList_Prev[self] = prev
+		_UnitList_Next[self] = nxt
+		_UnitList_Traverse[self] = function (data, key)
 			if type(key) == "string" and not key:match("^_") and type(data[key]) == "table" then
 				return data[key], data[key]
 			elseif type(key) == "table" then
 				return key[nxt], key[nxt]
 			end
 		end
-
-		return lst
 	end
 
 	------------------------------------------------------

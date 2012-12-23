@@ -15,8 +15,8 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 end
 
 class "UnitFrame"
-	inherit "SecureButton"
-	extend "IFContainer"
+	inherit "Button"
+	extend "IFContainer" "IFSecureHandler"
 
 	local function UpdateUnit(self, unit)
 		self:Each("Unit", unit)
@@ -251,27 +251,25 @@ class "UnitFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function UnitFrame(name, parent)
-		local frame = Super(name, parent, "SecureUnitButtonTemplate")
+	function Constructor(self, name, parent)
+		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate")
+	end
 
-		frame:ConvertClass(UnitFrame)
+    function UnitFrame(self, name, parent)
+		self.Layout = DockLayoutPanel
+		self.AutoLayout = true
 
-		frame.Layout = DockLayoutPanel
-		frame.AutoLayout = true
+		self:SetAttribute("*type1", "target")
+		self:SetAttribute("shift-type1", "focus")	-- default
+		self:SetAttribute("*type2", "menu")
 
-		frame:SetAttribute("*type1", "target")
-		frame:SetAttribute("shift-type1", "focus")	-- default
-		frame:SetAttribute("*type2", "menu")
+		IGAS:GetUI(self).menu = ShowMenu
 
-		IGAS:GetUI(frame).menu = ShowMenu
+		self:RegisterForClicks("AnyUp")
 
-		frame:RegisterForClicks("AnyUp")
-
-		frame.OnEnter = frame.OnEnter + OnEnter
-		frame.OnLeave = frame.OnLeave + OnLeave
-		frame.OnShow = frame.OnShow + OnShow
-
-		return frame
+		self.OnEnter = self.OnEnter + OnEnter
+		self.OnLeave = self.OnLeave + OnLeave
+		self.OnShow = self.OnShow + OnShow
     end
 
 	------------------------------------------------------

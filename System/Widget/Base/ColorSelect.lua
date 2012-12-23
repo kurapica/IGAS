@@ -164,8 +164,8 @@ class "ColorSelect"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ColorSelect(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("ColorSelect", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ColorSelect", nil, parent, ...)
 	end
 endclass "ColorSelect"
 

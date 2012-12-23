@@ -17,16 +17,12 @@ end
 class "LeaderIcon"
 	inherit "Texture"
 	extend "IFLeader"
-	
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function LeaderIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function LeaderIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "LeaderIcon"

@@ -24,7 +24,7 @@ class "Locale"
 	if _GameLocale == "enGB" then
 		_GameLocale = "enUS"
 	end
-	
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -38,7 +38,7 @@ class "Locale"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Locale(name, language, asDefault)
+	function Locale(self, name, language, asDefault)
 		if type(name) ~= "string" then
 			error(("Usage : Local(name[, language, asDefault]) : 'name' - string expected, got %s."):format(type(name)), 2)
 		end
@@ -55,15 +55,13 @@ class "Locale"
 			return
 		end
 
-		_Locale[name] = _Locale[name] or {}
-
-		return _Locale[name]
+		_Locale[name] = self
 	end
 
 	------------------------------------------------------
 	-- Exist checking
 	------------------------------------------------------
-	function __exist(cls, name, language, asDefault)
+	function __exist(name, language, asDefault)
 		if type(name) ~= "string" then
 			return
 		end
@@ -102,7 +100,7 @@ class "Locale"
 		if type(key) ~= "number" and type(key) ~= "string" then
 			error("Locale[key] = value : 'key' - number or string expected.")
 		end
-		
+
 		if type(value) == "string" or ( type(key) == "string" and value == true ) then
 			value = (value == true and key) or value
 			rawset(self, key, value)
@@ -110,7 +108,7 @@ class "Locale"
 			error("Locale[key] = value : 'value' - tring expected.")
 		end
 	end
-	
+
 	------------------------------------------------------
 	-- __call for class instance
 	------------------------------------------------------

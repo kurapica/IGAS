@@ -105,26 +105,22 @@ class "Recycle"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function Recycle(cls, ...)
-    	local cache = {}
-
+    function Recycle(self, cls, ...)
 		if type(cls) == "string" then
 			cls = Reflector.ForName(cls)
 		end
 
 		if cls and Reflector.IsClass(cls) then
-			_RecycleInfo[cache] = {
+			_RecycleInfo[self] = {
 				Type = cls,
 				Args = select('#', ...) > 0 and {...},
 			}
 		elseif cls and Reflector.IsStruct(cls) then
-			_RecycleInfo[cache] = {
+			_RecycleInfo[self] = {
 				Type = cls,
 				Args = select('#', ...) > 0 and {...},
 			}
 		end
-
-    	return cache
     end
 
 	------------------------------------------------------

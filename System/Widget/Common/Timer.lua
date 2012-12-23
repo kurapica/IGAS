@@ -179,12 +179,8 @@ class "Timer"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Timer(name, parent)
-		local timer = VirtualUIObject(name, parent)
-
-		timer.__Interval = 0
-		timer.__Enabled = true
-
-		return timer
+	function Timer(self)
+		self.__Interval = 0
+		self.__Enabled = true
 	end
 endclass "Timer"

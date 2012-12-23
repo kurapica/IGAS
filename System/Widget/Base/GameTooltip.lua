@@ -969,10 +969,10 @@ class "GameTooltip"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function GameTooltip(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		local fullname = (parent:GetName() or "").."."..name
 
-		return UIObject(name, parent, CreateFrame("GameTooltip", fullname, parent, ...))
+		return CreateFrame("GameTooltip", fullname, parent, ...)
 	end
 endclass "GameTooltip"
 

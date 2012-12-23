@@ -181,18 +181,12 @@ class "HealthBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function HealthBar(...)
-		local bar = Super(...)
+	function HealthBar(self)
+		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
+		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 
-		bar:ConvertClass(HealthBar)
-
-		bar.OnStateChanged = bar.OnStateChanged + HealthBar_OnStateChanged
-		bar.OnValueChanged = bar.OnValueChanged + HealthBar_OnStateChanged
-
-		HealthBar_OnStateChanged(bar)
-		bar.FrameStrata = "LOW"
-
-		return bar
+		HealthBar_OnStateChanged(self)
+		self.FrameStrata = "LOW"
 	end
 endclass "HealthBar"
 
@@ -263,17 +257,11 @@ class "HealthBarFrequent"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function HealthBarFrequent(...)
-		local bar = Super(...)
+	function HealthBarFrequent(self)
+		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
+		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 
-		bar:ConvertClass(HealthBarFrequent)
-
-		bar.OnStateChanged = bar.OnStateChanged + HealthBar_OnStateChanged
-		bar.OnValueChanged = bar.OnValueChanged + HealthBar_OnStateChanged
-
-		HealthBar_OnStateChanged(bar)
-		bar.FrameStrata = "LOW"
-
-		return bar
+		HealthBar_OnStateChanged(self)
+		self.FrameStrata = "LOW"
 	end
 endclass "HealthBarFrequent"

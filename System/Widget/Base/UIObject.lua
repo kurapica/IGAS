@@ -556,11 +556,6 @@ class "UIObject"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	-- __exist will do the Constructor work
-
-	------------------------------------------------------
-	-- Exist checking
-	------------------------------------------------------
     --- Name Creator
 	local function NewName(cls, parent)
 		local i = 1
@@ -581,7 +576,52 @@ class "UIObject"
 		return name..i
 	end
 
-	function __exist(cls, name, parent, frame, ...)
+	function Constructor(self, name, parent, ...)
+
+	end
+
+	function UIObject(self, name, parent, ...)
+		if type(name) == "table" and type(name[0]) == "userdata" then
+			-- Wrapper blz's element
+			self[0] = name[0]
+			self.__UI = name
+			name.__Wrapper = self
+
+			self.OnScriptHandlerChanged = self.OnScriptHandlerChanged + OnScriptHandlerChanged
+
+			SetName(self, name:GetName() or "Name"..random(100000))
+
+			return
+		end
+
+		parent = parent or IGAS.UIParent
+
+		parent = IGAS:GetWrapper(parent)
+
+		-- Check parent
+		if not Object.IsClass(parent, UIObject) then
+			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetName(cls)))
+		end
+
+		if type(name) ~= "string" then
+			name = NewName(Object.GetClass(self), parent)
+		end
+
+		local obj = self:Constructor(name, parent, ...) or self
+		self[0] = obj[0]
+		self.__UI = obj
+		obj.__Wrapper = self
+
+		self.OnScriptHandlerChanged = self.OnScriptHandlerChanged + OnScriptHandlerChanged
+
+		SetName(self, name)
+		SetParent(self, parent)
+	end
+
+	------------------------------------------------------
+	-- Exist checking
+	------------------------------------------------------
+	function __exist(name, parent, ...)
 		if type(name) == "table" and type(name[0]) == "userdata" then
 			-- Do Wrapper the blz's UI element
 			-- VirtualUIObject's instance will not be checked here.
@@ -594,17 +634,7 @@ class "UIObject"
 				return name.__Wrapper
 			end
 
-			local obj = Object()
-
-			obj[0] = name[0]
-			obj.__UI = name
-			name.__Wrapper = obj
-
-			obj.OnScriptHandlerChanged = obj.OnScriptHandlerChanged + OnScriptHandlerChanged
-
-			SetName(obj, name:GetName() or "Name"..random(100000))
-
-			return obj
+			return
 		end
 
 		parent = parent or IGAS.UIParent
@@ -617,53 +647,7 @@ class "UIObject"
 		end
 
 		if type(name) == "string" then
-			if cls == UIObject then
-				-- instead the Constructor
-				if type(frame) == "table" and type(frame[0]) == "userdata" then
-					if frame.__Wrapper and Object.IsClass(frame.__Wrapper, UIObject) then
-						frame = frame.__Wrapper
-					elseif not Object.IsClass(frame, UIObject) then
-						local _UI = frame
-
-						frame = Object()
-
-						frame[0] = _UI[0]
-						frame.__UI = _UI
-						_UI.__Wrapper = frame
-
-						frame.OnScriptHandlerChanged = frame.OnScriptHandlerChanged + OnScriptHandlerChanged
-					end
-
-					SetName(frame, name)
-					SetParent(frame, parent)
-
-					return frame
-				else
-					error("Usage : UIObject(name, parent, frame) : 'frame' - UI element expected.")
-				end
-			else
-				-- checking if existed
-				local child = parent:GetChild(name)
-
-				if child then
-					if Object.IsClass(child, cls) then
-						return child
-					else
-						error(("%s already have a child named '%s' as type '%s'."):format(parent.Name, name, Reflector.GetName(Object.GetClass(child)) or ""))
-					end
-				end
-			end
-		elseif name == nil then
-			name = NewName(cls, parent)
-		else
-			error(("Usage : %s(name, parent, ...) : 'name' - string expected."):format(Reflector.GetName(cls)))
-		end
-
-		if frame ~= nil then
-			return false, name, parent, frame, ...
-		else
-			-- won't cause a nil arg confuse
-			return false, name, parent
+			return parent:GetChild(name)
 		end
 	end
 

@@ -276,38 +276,35 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function ScrollForm(name, parent)
-		local frame = ScrollFrame(name, parent)
-        frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0, 0, 0)
-		frame:SetBackdropBorderColor(0.4, 0.4, 0.4)
-        frame.MouseWheelEnabled = true
-		frame.MouseEnabled = true
+    function ScrollForm(self, name, parent)
+        self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0, 0, 0)
+		self:SetBackdropBorderColor(0.4, 0.4, 0.4)
+        self.MouseWheelEnabled = true
+		self.MouseEnabled = true
 
-        local slider = ScrollBar("Bar", frame)
+        local slider = ScrollBar("Bar", self)
         slider:SetMinMaxValues(0,0)
         slider.Value = 0
         slider.ValueStep = 10
 
-        local container = Frame("Container", frame)
-        frame:SetScrollChild(container)
-		container:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0)
-		container:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,0)
+        local container = Frame("Container", self)
+        self:SetScrollChild(container)
+		container:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
+		container:SetPoint("TOPRIGHT",self,"TOPRIGHT",-18,0)
 		container.FixHeight = Container_FixHeight
 
-        frame.OnMouseWheel = frame.OnMouseWheel + OnMouseWheel
+        self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
         slider.OnSizeChanged = OnSizeChanged
         slider.OnValueChanged = OnValueChanged
         container.OnSizeChanged = container.OnSizeChanged + OnSizeChanged
 
-		frame.__AutoHeight = false
+		self.__AutoHeight = false
 
 		-- Don't move this code
 		slider.Value = 10
 		slider.Value = 0
 
-		frame.OnUpdate = frame.OnUpdate + OnUpdate_Init
-
-        return frame
+		self.OnUpdate = self.OnUpdate + OnUpdate_Init
     end
 endclass "ScrollForm"

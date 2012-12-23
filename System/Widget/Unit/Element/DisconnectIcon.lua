@@ -43,13 +43,9 @@ class "DisconnectIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DisconnectIcon(...)
-		local icon = Super(...)
-
-		icon.TexturePath = [[Interface\CharacterFrame\Disconnect-Icon]]
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function DisconnectIcon(self)
+		self.TexturePath = [[Interface\CharacterFrame\Disconnect-Icon]]
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "DisconnectIcon"

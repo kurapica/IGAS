@@ -66,11 +66,7 @@ class "LevelLabel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function LevelLabel(...)
-		local label = Super(...)
-
-		label.DrawLayer = "BORDER"
-
-		return label
+	function LevelLabel(self)
+		self.DrawLayer = "BORDER"
 	end
 endclass "LevelLabel"

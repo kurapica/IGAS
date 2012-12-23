@@ -99,8 +99,8 @@ class "TabardModel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TabardModel(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("TabardModel", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("TabardModel", nil, parent, ...)
 	end
 endclass "TabardModel"
 

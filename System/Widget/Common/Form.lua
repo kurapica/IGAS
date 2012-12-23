@@ -34,7 +34,7 @@ class "Form"
 	-- @name DockHeader
 	-----------------------------------------------
 	class "DockHeader"
-		inherit "Frame"
+		inherit "VirtualUIObject"
 
 		_Form_DockHeader = _Form_DockHeader or Frame("IGAS_FORM_DOCKHEADER")
 		_Form_DockHeader.Visible = true
@@ -68,7 +68,7 @@ class "Form"
 		end
 
 		local function Form_OnHide(self)
-			self = self.__DockHeader
+			self = self.__DockHeader.DockHeader
 			if self.NeedHideForm then
 				if self.NeedHideForm == 2 then
 					self:GetChild("Name").Text = AddReturn(self.Form.Caption)
@@ -131,13 +131,13 @@ class "Form"
 		end
 
 		local function Form_OnShow(self)
-			self = self.__DockHeader
+			self = self.__DockHeader.DockHeader
 			self.Visible = false
 			CheckPosition(self)
 		end
 
 		local function Form_OnPositionChanged(self)
-			self = self.__DockHeader
+			self = self.__DockHeader.DockHeader
 			CheckPosition(self)
 		end
 
@@ -149,11 +149,14 @@ class "Form"
 		-- Method
 		------------------------------------------------------
 		function Dispose(self)
-			local form = self.Form
+			local dockHeader = self.DockHeader
+			local form = dockHeader.Form
 
 			form.OnShow = form.OnShow - Form_OnShow
 			form.OnHide = form.OnHide - Form_OnHide
 			form.OnPositionChanged = form.OnPositionChanged - Form_OnPositionChanged
+
+			dockHeader:Dispose()
 
 			return Super.Dispose(self)
 		end
@@ -174,15 +177,17 @@ class "Form"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function DockHeader(form)
+	    function DockHeader(self, name, parent)
 			local dockHeader = Frame(nil, _Form_DockHeader)
 
-			dockHeader.Form = form
-			form.__DockHeader = dockHeader
+			self.DockHeader = dockHeader
 
-			form.OnShow = form.OnShow + Form_OnShow
-			form.OnHide = form.OnHide + Form_OnHide
-			form.OnPositionChanged = form.OnPositionChanged + Form_OnPositionChanged
+			dockHeader.Form = parent
+			parent.__DockHeader = self
+
+			parent.OnShow = parent.OnShow + Form_OnShow
+			parent.OnHide = parent.OnHide + Form_OnHide
+			parent.OnPositionChanged = parent.OnPositionChanged + Form_OnPositionChanged
 
 			dockHeader:SetBackdrop(_FrameBackdrop)
 			dockHeader:SetBackdropColor(0, 0, 0)
@@ -197,11 +202,9 @@ class "Form"
 			dockHeader.OnEnter = dockHeader.OnEnter + OnEnter
 
 			CheckPosition(dockHeader, true)
-
-			return dockHeader
 	    end
 
-	    function __exist(cls, form)
+	    function __exist(form)
 	    	if form.__DockHeader then
 	    		return form.__DockHeader
 	    	end
@@ -497,7 +500,7 @@ class "Form"
 		Set = function(self, value)
 			if self.DockMode ~= value then
 				if value then
-					DockHeader(self)
+					DockHeader("DockHeader", self)
 				else
 					self.__DockHeader:Dispose()
 				end
@@ -506,34 +509,28 @@ class "Form"
 		Type = System.Boolean,
 	}
 
-	function Form(name, parent, ...)
-		-- New Frame
-		local frame = Super(name, parent, ...)
+	function Form(self, name, parent)
+		self.Width = 400
+		self.Height = 300
 
-		frame.Width = 400
-		frame.Height = 300
-		frame.Movable = true
-		frame.Resizable = true
-		frame.Toplevel = true
+		self:SetPoint("CENTER",parent,"CENTER",0,0)
+		self:SetMinResize(300,200)
+        self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0, 0, 0)
+		self:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
-		frame:SetPoint("CENTER",parent,"CENTER",0,0)
-		frame:SetMinResize(300,200)
-        frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0, 0, 0)
-		frame:SetBackdropBorderColor(0.4, 0.4, 0.4)
-
-		local title = Frame("Form_Caption", frame)
+		local title = Frame("Form_Caption", self)
 		title.MouseEnabled = true
 		title.Height = 24
-		title:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
-		title:SetPoint("RIGHT", frame, "RIGHT")
+		title:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		title:SetPoint("RIGHT", self, "RIGHT")
 		title:SetBackdrop(_FrameBackdropTitle)
 		title:SetBackdropColor(1, 0, 0, 0)
 		title.OnMouseDown = frameOnMouseDown
 		title.OnMouseUp = frameOnMouseUp
 
-		local CloseButton = NormalButton("Form_Btn_Close", frame)
-		CloseButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 2, 0)
+		local CloseButton = NormalButton("Form_Btn_Close", self)
+		CloseButton:SetPoint("TOPRIGHT", self, "TOPRIGHT", 2, 0)
 		CloseButton.FrameLevel = title.FrameLevel + 1
         CloseButton.Style = "CLOSE"
 
@@ -546,27 +543,28 @@ class "Form"
 		titleText.JustifyV = "MIDDLE"
 		titleText.JustifyH = "CENTER"
 
-        local statusText = FontString("Form_StatusBar_Text", frame, "OVERLAY", "GameFontNormal")
+        local statusText = FontString("Form_StatusBar_Text", self, "OVERLAY", "GameFontNormal")
         statusText.JustifyH = "LEFT"
-        statusText:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 4)
-        statusText:SetPoint("RIGHT", frame, "RIGHT")
+        statusText:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 6, 4)
+        statusText:SetPoint("RIGHT", self, "RIGHT")
         statusText:SetText("")
 
 		-- Sizer
-		local sizer_se = Button("Sizer_se", frame)
+		local sizer_se = Button("Sizer_se", self)
 		sizer_se.Width = 16
 		sizer_se.Height = 16
 		sizer_se.MouseEnabled = true
-		sizer_se:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+		sizer_se:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
 		sizer_se.OnMouseDown = sizerseOnMouseDown
 		sizer_se.OnMouseUp = sizerOnMouseUp
 		sizer_se.NormalTexturePath = [[Interface\ChatFrame\UI-ChatIM-SizeGrabber-Up]]
 		sizer_se.HighlightTexturePath = [[Interface\ChatFrame\UI-ChatIM-SizeGrabber-Highlight]]
 		sizer_se.PushedTexturePath = [[Interface\ChatFrame\UI-ChatIM-SizeGrabber-Down]]
 
-		frame.MouseWheelEnabled = true
-		frame.MouseEnabled = true
-
-		return frame
+		self.MouseWheelEnabled = true
+		self.MouseEnabled = true
+		self.Resizable = true
+		self.Movable = true
+		self.Toplevel = true
 	end
 endclass "Form"

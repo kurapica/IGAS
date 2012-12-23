@@ -1157,7 +1157,7 @@ class "Addon"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Module(parent, name)
+		function Module(self, parent, name)
 			if not Object.IsClass(parent, Module) and not Object.IsClass(parent, Addon) then
 				error("Usage : Module(mdl, name) : 'mdl' - Addon or Module expected.", 2)
 			end
@@ -1171,28 +1171,24 @@ class "Addon"
 			if not name or name == "" then return end
 
 			_Info[parent].Module = _Info[parent].Module or {}
-			_Info[parent].Module[name] = Object()
+			_Info[parent].Module[name] = self
 
-			local mdl = _Info[parent].Module[name]
+			rawset(parent, name, self)
 
-			rawset(parent, name, mdl)
-
-			_Info[mdl] = {
-				Owner = mdl,
+			_Info[self] = {
+				Owner = self,
 				Name = name,
 				Parent = parent,
 			}
 
-			_Info[mdl].DefaultState = true
-			_Info[mdl].Disabled = _Info[parent].Disabled
-
-			return mdl
+			_Info[self].DefaultState = true
+			_Info[self].Disabled = _Info[parent].Disabled
 		end
 
 		------------------------------------------------------
 		-- Exist checking
 		------------------------------------------------------
-		function __exist(cls, parent, name)
+		function __exist(parent, name)
 			if (Object.IsClass(parent, Module) or Object.IsClass(parent, Addon)) and type(name) == "string" then
 				name = name:match("[_%w]+")
 
@@ -1403,7 +1399,7 @@ class "Addon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Addon(name)
+	function Addon(self, name)
 		if type(name) ~= "string" then
 			error(("Usage : Addon(name) : 'name' - string expected, got %s."):format(type(name)), 2)
 		end
@@ -1412,22 +1408,18 @@ class "Addon"
 
 		if not name or name == "" then return end
 
-		_Addon[name] = Object()
+		_Addon[name] = self
 
-		local addon = _Addon[name]
-
-		_Info[addon] = {
-			Owner = addon,
+		_Info[self] = {
+			Owner = self,
 			Name = name,
 		}
-
-		return addon
 	end
 
 	------------------------------------------------------
 	-- Exist checking
 	------------------------------------------------------
-	function __exist(cls, name)
+	function __exist(name)
 		if type(name) ~= "string" then
 			return
 		end

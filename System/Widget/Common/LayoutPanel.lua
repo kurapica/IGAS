@@ -672,13 +672,9 @@ class "LayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function LayoutPanel(name, parent)
-		local panel = Frame(name, parent)
+	function LayoutPanel(self, name, parent)
+		self.__LayoutItems = self.__LayoutItems or {}
 
-		panel.__LayoutItems = panel.__LayoutItems or {}
-
-		panel.OnSizeChanged = panel.OnSizeChanged + OnSizeChanged
-
-		return panel
+		self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged
 	end
 endclass "LayoutPanel"

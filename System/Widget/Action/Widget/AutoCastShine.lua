@@ -117,16 +117,14 @@ class "AutoCastShine"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function AutoCastShine(name, parent)
-		local frame = Super(name, parent)
-
-		frame:SetPoint("TOPLEFT", 1, -1)
-		frame:SetPoint("BOTTOMRIGHT", -1, 1)
-		frame.Visible = false
+    function AutoCastShine(self, name, parent)
+		self:SetPoint("TOPLEFT", 1, -1)
+		self:SetPoint("BOTTOMRIGHT", -1, 1)
+		self.Visible = false
 
 		-- BACKGROUND
 		for i = 1, 16 do
-			local part = Texture("part"..i, frame, "BACKGROUND")
+			local part = Texture("part"..i, self, "BACKGROUND")
 			part.TexturePath = [[Interface\ItemSocketingFrame\UI-ItemSockets]]
 			part.BlendMode = "ADD"
 			part:SetTexCoord(0.3984375, 0.4453125, 0.40234375, 0.44921875)
@@ -138,9 +136,7 @@ class "AutoCastShine"
 						or 4
 			part:SetSize(size, size)
 
-			frame[i] = part
+			self[i] = part
 		end
-
-		return frame
     end
 endclass "AutoCastShine"

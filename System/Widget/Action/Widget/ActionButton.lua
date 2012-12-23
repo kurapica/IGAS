@@ -253,58 +253,57 @@ class "ActionButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function ActionButton(name, parent, template)
-    	local button
+	function Constructor(self, name, parent, template)
     	if type(template) ~= "string" or strtrim(template) == "" then
-    		button = UIObject(name, parent, CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate"))
+    		return CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate")
     	else
     		if not template:find("SecureActionButtonTemplate") then
     			template = "SecureActionButtonTemplate,"..template
     		end
-    		button = UIObject(name, parent, CreateFrame("CheckButton", name, parent, template))
+    		return CreateFrame("CheckButton", name, parent, template)
     	end
+	end
 
-    	button:ConvertClass(ActionButton)
-
-		button.Height = 36
-		button.Width = 36
+    function ActionButton(self)
+		self.Height = 36
+		self.Width = 36
 
 		-- Button Texture
 		--- NormalTexture
-		button.NormalTexturePath = [[Interface\Buttons\UI-Quickslot]]
-		button.NormalTexture:ClearAllPoints()
-		button.NormalTexture:SetPoint("TOPLEFT", -15, 15)
-		button.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
+		self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot]]
+		self.NormalTexture:ClearAllPoints()
+		self.NormalTexture:SetPoint("TOPLEFT", -15, 15)
+		self.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
 
 		--- PushedTexture
-		button.PushedTexturePath = [[Interface\Buttons\UI-Quickslot-Depress]]
+		self.PushedTexturePath = [[Interface\Buttons\UI-Quickslot-Depress]]
 
 		--- HighlightTexture
-		button.HighlightTexturePath = [[Interface\Buttons\ButtonHilight-Square]]
-		button.HighlightTexture.BlendMode = "Add"
+		self.HighlightTexturePath = [[Interface\Buttons\ButtonHilight-Square]]
+		self.HighlightTexture.BlendMode = "Add"
 
 		--- CheckedTexture
-		button.CheckedTexturePath = [[Interface\Buttons\CheckButtonHilight]]
-		button.CheckedTexture.BlendMode = "Add"
+		self.CheckedTexturePath = [[Interface\Buttons\CheckButtonHilight]]
+		self.CheckedTexture.BlendMode = "Add"
 
 		-- BACKGROUND
-		local icon = Texture("Icon", button, "BACKGROUND")
-		icon:SetAllPoints(button)
+		local icon = Texture("Icon", self, "BACKGROUND")
+		icon:SetAllPoints(self)
 
 		-- ARTWORK-1
-		local flash = Texture("Flash", button, "ARTWORK", nil, 1)
+		local flash = Texture("Flash", self, "ARTWORK", nil, 1)
 		flash.Visible = false
 		flash.TexturePath = [[Interface\Buttons\UI-QuickslotRed]]
-		flash:SetAllPoints(button)
+		flash:SetAllPoints(self)
 
-		local flyoutBorder = Texture("FlyoutBorder", button, "ARTWORK", nil, 1)
+		local flyoutBorder = Texture("FlyoutBorder", self, "ARTWORK", nil, 1)
 		flyoutBorder.Visible = false
 		flyoutBorder.TexturePath = [[Interface\Buttons\ActionBarFlyoutButton]]
 		flyoutBorder:SetTexCoord(0.01562500, 0.67187500, 0.39843750, 0.72656250)
 		flyoutBorder:SetPoint("TOPLEFT", -3, 3)
 		flyoutBorder:SetPoint("BOTTOMRIGHT", 3, -3)
 
-		local flyoutBorderShadow = Texture("FlyoutBorderShadow", button, "ARTWORK", nil, 1)
+		local flyoutBorderShadow = Texture("FlyoutBorderShadow", self, "ARTWORK", nil, 1)
 		flyoutBorderShadow.Visible = false
 		flyoutBorderShadow.TexturePath = [[Interface\Buttons\ActionBarFlyoutButton]]
 		flyoutBorderShadow:SetTexCoord(0.01562500, 0.76562500, 0.00781250, 0.38281250)
@@ -312,40 +311,38 @@ class "ActionButton"
 		flyoutBorderShadow:SetPoint("BOTTOMRIGHT", 6, -6)
 
 		-- ARTWORK-2
-		local flyoutArrow = Texture("FlyoutArrow", button, "ARTWORK", nil, 2)
+		local flyoutArrow = Texture("FlyoutArrow", self, "ARTWORK", nil, 2)
 		flyoutArrow.Visible = false
 		flyoutArrow.TexturePath = [[Interface\Buttons\ActionBarFlyoutButton]]
 		flyoutArrow:SetTexCoord(0.62500000, 0.98437500, 0.74218750, 0.82812500)
 		flyoutArrow.Width = 23
 		flyoutArrow.Height = 11
-		flyoutArrow:SetPoint("BOTTOM", button, "TOP")
+		flyoutArrow:SetPoint("BOTTOM", self, "TOP")
 
-		local hotKey = FontString("HotKey", button, "ARTWORK", "NumberFontNormalSmallGray", 2)
+		local hotKey = FontString("HotKey", self, "ARTWORK", "NumberFontNormalSmallGray", 2)
 		hotKey.JustifyH = "Right"
 		hotKey.Height = 10
 		hotKey:SetPoint("TOPLEFT", 1, -3)
 		hotKey:SetPoint("TOPRIGHT", -1, -3)
 
-		local count = FontString("Count", button, "ARTWORK", "NumberFontNormal", 2)
+		local count = FontString("Count", self, "ARTWORK", "NumberFontNormal", 2)
 		count.JustifyH = "Right"
 		count:SetPoint("BOTTOMRIGHT", -2, 2)
 
 		-- OVERLAY
-		local name = FontString("Name", button, "OVERLAY", "GameFontHighlightSmallOutline")
+		local name = FontString("Name", self, "OVERLAY", "GameFontHighlightSmallOutline")
 		name.JustifyH = "Center"
 		name.Height = 10
 		name:SetPoint("BOTTOMLEFT", 0, 2)
 		name:SetPoint("BOTTOMRIGHT", 0, 2)
 
-		local border = Texture("Border", button, "OVERLAY")
+		local border = Texture("Border", self, "OVERLAY")
 		border.BlendMode = "Add"
 		border.Visible = false
 		border.TexturePath = [[Interface\Buttons\UI-ActionButton-Border]]
 		border:SetPoint("TOPLEFT", -8, 8)
 		border:SetPoint("BOTTOMRIGHT", 8, -8)
 
-		button.__InRange = -1
-
-		return button
+		self.__InRange = -1
     end
 endclass "ActionButton"

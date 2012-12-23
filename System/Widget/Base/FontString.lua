@@ -370,12 +370,12 @@ class "FontString"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function FontString(name, parent, layer, inheritsFrom, ...)
+	function Constructor(self, name, parent, layer, inheritsFrom, ...)
 		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateFontString then
 			error("Usage : FontString(name, parent) : 'parent' - UI element expected.", 2)
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateFontString(nil, layer or "OVERLAY", inheritsFrom or "GameFontNormal", ...))
+		return IGAS:GetUI(parent):CreateFontString(nil, layer or "OVERLAY", inheritsFrom or "GameFontNormal", ...)
 	end
 endclass "FontString"
 

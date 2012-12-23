@@ -16,13 +16,4 @@ end
 class "ElementPanel"
 	inherit "Frame"
 	extend "IFElementPanel"
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function ElementPanel(name, parent, ...)
-		local panel = Super(name, parent, ...)
-
-		return panel
-	end
 endclass "ElementPanel"

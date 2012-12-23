@@ -21,12 +21,8 @@ class "ReadyCheckIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ReadyCheckIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function ReadyCheckIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "ReadyCheckIcon"

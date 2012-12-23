@@ -260,8 +260,8 @@ class "StatusBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function StatusBar(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("StatusBar", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("StatusBar", nil, parent, ...)
 	end
 endclass "StatusBar"
 

@@ -1046,20 +1046,18 @@ class "List"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function List(name, parent)
-		local frame = Frame(name, parent)
-
-		frame.MouseWheelEnabled = true
-		frame.Visible = true
-		frame:ClearAllPoints()
-		frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0, 0, 0, 1)
-		frame.__DisplayItemCount = 6
-		frame.Height = 6 * _Height + 6
-		frame.__Layout = true
+	function List(self, name, parent)
+		self.MouseWheelEnabled = true
+		self.Visible = true
+		self:ClearAllPoints()
+		self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0, 0, 0, 1)
+		self.__DisplayItemCount = 6
+		self.Height = 6 * _Height + 6
+		self.__Layout = true
 
 		-- Scroll Bar
-		local scrollBar = ScrollBar("ScrollBar", frame)
+		local scrollBar = ScrollBar("ScrollBar", self)
 		scrollBar:Hide()
 
 		-- Event Handle
@@ -1068,14 +1066,12 @@ class "List"
 		scrollBar.OnEnter = ScrollBar_OnEnter
 		scrollBar.OnLeave = ScrollBar_OnLeave
 
-		frame.OnMouseWheel = frame.OnMouseWheel + OnMouseWheel
-		frame.OnShow = frame.OnShow + OnShow
+		self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
+		self.OnShow = self.OnShow + OnShow
 
-		frame.__JustifyH = "LEFT"
-		frame.__Style = TEMPLATE_LIGHT
+		self.__JustifyH = "LEFT"
+		self.__Style = TEMPLATE_LIGHT
 
-		relayoutFrame(frame)
-
-		return frame
+		relayoutFrame(self)
 	end
 endclass "List"

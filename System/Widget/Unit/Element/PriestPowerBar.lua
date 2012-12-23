@@ -96,12 +96,11 @@ class "PriestPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function ShadowOrb(...)
-			local shadowOrb = Super(...)
-			shadowOrb:SetSize(38, 37)
+	    function ShadowOrb(self)
+			self:SetSize(38, 37)
 
 			-- BACKGROUND
-			local bg = Texture("Bg", shadowOrb, "BACKGROUND")
+			local bg = Texture("Bg", self, "BACKGROUND")
 			bg.Alpha = 0.5
 			bg.TexturePath = [[Interface\PlayerFrame\Priest-ShadowUI]]
 			bg:SetTexCoord(0.30078125, 0.44921875, 0.44531250, 0.73437500)
@@ -109,14 +108,14 @@ class "PriestPowerBar"
 			bg:SetPoint("CENTER")
 
 			-- ARTWORK
-			local orb = Texture("Orb", shadowOrb, "ARTWORK")
+			local orb = Texture("Orb", self, "ARTWORK")
 			orb.Alpha = 0
 			orb.TexturePath = [[Interface\PlayerFrame\Priest-ShadowUI]]
 			orb:SetTexCoord(0.45703125, 0.60546875, 0.44531250, 0.73437500)
 			orb:SetSize(38, 37)
 			orb:SetPoint("CENTER")
 
-			local highlight = Texture("Highlight", shadowOrb, "ARTWORK")
+			local highlight = Texture("Highlight", self, "ARTWORK")
 			highlight.Alpha = 0
 			highlight.TexturePath = [[Interface\PlayerFrame\Priest-ShadowUI]]
 			highlight:SetTexCoord(0.00390625, 0.29296875, 0.44531250, 0.78906250)
@@ -124,7 +123,7 @@ class "PriestPowerBar"
 			highlight:SetPoint("TOP", 0, -1)
 
 			-- OVERLAY
-			local glow = Texture("Glow", shadowOrb, "OVERLAY")
+			local glow = Texture("Glow", self, "OVERLAY")
 			glow.Alpha = 0
 			glow.BlendMode = "ADD"
 			glow.TexturePath = [[Interface\PlayerFrame\Priest-ShadowUI]]
@@ -200,8 +199,6 @@ class "PriestPowerBar"
 
 			animOut.OnPlay = AnimOut_OnPlay
 			animOut.OnFinished = AnimOut_OnFinished
-
-			return shadowOrb
 	    end
 	endclass "ShadowOrb"
 
@@ -239,34 +236,32 @@ class "PriestPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PriestPowerBar(name, parent)
-		local panel = Super(name, parent)
+	function PriestPowerBar(self, name, parent)
+		self.__Value = 0
 
-		panel.__Value = 0
-
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(159, 54)
-		panel.HitRectInsets = Inset(28, 33, 2, 22)
-		panel.MouseEnabled = true
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(159, 54)
+		self.HitRectInsets = Inset(28, 33, 2, 22)
+		self.MouseEnabled = true
 
 		-- BACKGROUND
-		local bg = Texture("Bg", panel, "BACKGROUND")
+		local bg = Texture("Bg", self, "BACKGROUND")
 		bg.TexturePath = [[Interface\PlayerFrame\Priest-ShadowUI]]
 		bg:SetTexCoord(0.00390625, 0.62500000, 0.00781250, 0.42968750)
 		bg:SetAllPoints()
 
 		-- ORBS
-		local orb1 = ShadowOrb("Orb1", panel)
+		local orb1 = ShadowOrb("Orb1", self)
 		orb1:SetPoint("TOPLEFT", 26, -1)
 
-		local orb2 = ShadowOrb("Orb2", panel)
+		local orb2 = ShadowOrb("Orb2", self)
 		orb2:SetPoint("LEFT", orb1, "RIGHT", -5, 0)
 
-		local orb3 = ShadowOrb("Orb3", panel)
+		local orb3 = ShadowOrb("Orb3", self)
 		orb3:SetPoint("LEFT", orb2, "RIGHT", -5, 0)
 
-		local showAnim = AnimationGroup("ShowAnim", panel)
+		local showAnim = AnimationGroup("ShowAnim", self)
 		local alpha = Alpha("Alpha", showAnim)
 		alpha.Duration = 0.5
 		alpha.Order = 1
@@ -274,8 +269,6 @@ class "PriestPowerBar"
 
 		showAnim.OnFinished = ShowAnim_OnFinished
 
-		panel.OnShow = panel.OnShow + OnShow
-
-		return panel
+		self.OnShow = self.OnShow + OnShow
 	end
 endclass "PriestPowerBar"

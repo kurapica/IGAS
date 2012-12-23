@@ -21,12 +21,8 @@ class "ResurrectIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ResurrectIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function ResurrectIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "ResurrectIcon"

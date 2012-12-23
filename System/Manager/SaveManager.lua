@@ -9,7 +9,5 @@ if not IGAS:NewAddon("IGAS.Manager.SaveManager", version) then
 end
 
 class "SaveManager"
-	
-	function SaveManager()
-	end
+
 endclass "SaveManager"

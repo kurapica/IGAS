@@ -459,19 +459,7 @@ class "VirtualUIObject"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function VirtualUIObject(name, parent)
-		local obj = Object()
-
-		SetName(obj, name)
-		SetParent(obj, parent)
-
-		return obj
-	end
-
-	------------------------------------------------------
-	-- Exist checking
-	------------------------------------------------------
-    --- Name Creator
+	--- Name Creator
 	local function NewName(cls, parent)
 		local i = 1
 		local name = Reflector.GetName(cls)
@@ -491,7 +479,28 @@ class "VirtualUIObject"
 		return name..i
 	end
 
-	function __exist(cls, name, parent, ...)
+	function VirtualUIObject(self, name, parent)
+		parent = parent or IGAS.UIParent
+
+		parent = IGAS:GetWrapper(parent)
+
+		-- Check parent
+		if not (Object.IsClass(parent, UIObject) or Object.IsClass(parent, VirtualUIObject)) then
+			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetName(cls)))
+		end
+
+		if type(name) ~= "string" then
+			name = NewName(Object.GetClass(self), parent)
+		end
+
+		SetName(self, name)
+		SetParent(self, parent)
+	end
+
+	------------------------------------------------------
+	-- Exist checking
+	------------------------------------------------------
+	function __exist(name, parent, ...)
 		parent = parent or IGAS.UIParent
 
 		parent = IGAS:GetWrapper(parent)
@@ -502,22 +511,8 @@ class "VirtualUIObject"
 		end
 
 		if type(name) == "string" then
-			local child = parent:GetChild(name)
-
-			if child then
-				if Object.IsClass(child, cls) then
-					return child
-				else
-					error(("%s already have a child named '%s' as type '%s'."):format(parent.Name, name, Reflector.GetName(Object.GetClass(child)) or ""))
-				end
-			end
-		elseif name == nil then
-			name = NewName(cls, parent)
-		else
-			error(("Usage : %s(name, parent, ...) : 'name' - string expected."):format(Reflector.GetName(cls)))
+			return parent:GetChild(name)
 		end
-
-		return false, name, parent, ...
 	end
 
 	------------------------------------------------------

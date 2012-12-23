@@ -255,7 +255,7 @@ class "Logger"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Logger(name)
+	function Logger(self, name)
 		if type(name) ~= "string" then
 			error(("Usage : Logger(name) : 'name' - string expected, got %s."):format(type(name)), 2)
 		end
@@ -264,25 +264,21 @@ class "Logger"
 
 		if not name or name == "" then return end
 
-		_Logger[name] = {}
+		_Logger[name] = self
 
-		local obj = _Logger[name]
-
-		_Info[obj] = {
-			Owner = obj,
+		_Info[self] = {
+			Owner = self,
 			Name = name,
 			Pool = {["StartLog"] = 0, ["EndLog"] = 1},
 			Handler = {},
 			Prefix = {},
 		}
-
-		return obj
 	end
 
 	------------------------------------------------------
 	-- Exist checking
 	------------------------------------------------------
-	function __exist(cls, name)
+	function __exist(name)
 		if type(name) ~= "string" then
 			return
 		end

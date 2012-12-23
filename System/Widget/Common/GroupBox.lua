@@ -125,20 +125,16 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function GroupBox(name, parent)
-        local frame = Frame(name,parent)
+    function GroupBox(self, name, parent)
+		self.__Style = TEMPLATE_CLASSIC
 
-		frame.__Style = TEMPLATE_CLASSIC
+        self:SetPoint("CENTER",parent,"CENTER",0,0)
+        self:SetBackdrop(_FrameBackdrop)
+        self:SetBackdropColor(0,0,0,1)
 
-        frame:SetPoint("CENTER",parent,"CENTER",0,0)
-        frame:SetBackdrop(_FrameBackdrop)
-        frame:SetBackdropColor(0,0,0,1)
-
-        local text = FontString("Text", frame, "OVERLAY","OptionsFontHighlight")
+        local text = FontString("Text", self, "OVERLAY","OptionsFontHighlight")
         text.JustifyH = "LEFT"
-        text:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 0)
+        text:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
         text.Text = "GroupBox"
-
-        return frame
     end
 endclass "GroupBox"

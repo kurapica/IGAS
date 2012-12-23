@@ -146,8 +146,8 @@ class "CheckButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CheckButton(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("CheckButton", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("CheckButton", nil, parent, ...)
 	end
 endclass "CheckButton"
 

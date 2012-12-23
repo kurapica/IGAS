@@ -193,14 +193,12 @@ class "RuneBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function RuneButton(name, parent)
-			local btn = Super(name, parent)
-
-			btn.Height = 18
-			btn.Width = 18
+		function RuneButton(self, name, parent)
+			self.Height = 18
+			self.Width = 18
 
 			-- Border
-			local border = Frame("Border", btn)
+			local border = Frame("Border", self)
 			border.FrameStrata = "LOW"
 			border:SetPoint("TOPLEFT", -3, 3)
 			border:SetPoint("BOTTOMRIGHT", 3, -3)
@@ -213,9 +211,9 @@ class "RuneBar"
 			border.FrameLevel = border.FrameLevel + 1
 
 			-- Shine
-			local shine = Frame("Shine", btn)
+			local shine = Frame("Shine", self)
 			shine.FrameStrata = "MEDIUM"
-			shine:SetAllPoints(btn)
+			shine:SetAllPoints(self)
 
 			local shineTexture = Texture("Texture", shine, "OVERLAY")
 			shineTexture.TexturePath = [[Interface\ComboFrame\ComboPoint]]
@@ -226,9 +224,9 @@ class "RuneBar"
 			shineTexture:SetTexCoord(0.5625, 1, 0, 1)
 
 			-- Glow
-			local glow = Frame("Glow", btn)
+			local glow = Frame("Glow", self)
 			glow.FrameStrata = "HIGH"
-			glow:SetAllPoints(btn)
+			glow:SetAllPoints(self)
 
 			local glowWhite = Texture("RuneWhiteGlow", glow, "OVERLAY", nil, -1)
 			glowWhite.TexturePath = [[Interface\PlayerFrame\Deathknight-Energize-White]]
@@ -243,7 +241,7 @@ class "RuneBar"
 			glowColor:SetPoint("BOTTOMRIGHT", 7, -7)
 
 			-- RuneTexture
-			local rune = Texture("Rune", btn, "ARTWORK")
+			local rune = Texture("Rune", self, "ARTWORK")
 			rune.TexturePath = [[Interface\PlayerFrame\UI-PlayerFrame-Deathknight-Blood]]
 			rune:SetPoint("TOPLEFT", -3, 3)
 			rune:SetPoint("BOTTOMRIGHT", 3, -3)
@@ -300,41 +298,36 @@ class "RuneBar"
 			alpha.Order = 2
 			alpha.Change = -1
 
-			btn.OnEnter = btn.OnEnter + OnEnter
-			btn.OnLeave = btn.OnLeave + OnLeave
-
-			return btn
+			self.OnEnter = self.OnEnter + OnEnter
+			self.OnLeave = self.OnLeave + OnLeave
 		end
 	endclass "RuneButton"
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RuneBar(name, parent)
-		local panel = Super(name, parent)
+	function RuneBar(self, name, parent)
 		local pct = floor(100 / MAX_RUNES)
 		local margin = (100 - pct * MAX_RUNES + 3) / 2
 
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel.Width = 130
-		panel.Height = 18
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self.Width = 130
+		self.Height = 18
 
 		local btnRune, pos
 
 		for i = 1, MAX_RUNES do
-			btnRune = RuneButton("Individual"..i, panel)
+			btnRune = RuneButton("Individual"..i, self)
 			btnRune.ID = i
 
-			panel:AddWidget(btnRune)
+			self:AddWidget(btnRune)
 
 			pos = RuneBtnMapping[i]
 
-			panel:SetWidgetLeftWidth(btnRune, margin + (pos-1)*pct, "pct", pct-3, "pct")
+			self:SetWidgetLeftWidth(btnRune, margin + (pos-1)*pct, "pct", pct-3, "pct")
 
-			panel[i] = btnRune
+			self[i] = btnRune
 		end
-
-		return panel
 	end
 endclass "RuneBar"

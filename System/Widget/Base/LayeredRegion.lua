@@ -88,7 +88,4 @@ class "LayeredRegion"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function LayeredRegion()
-		return
-	end
 endclass "LayeredRegion"

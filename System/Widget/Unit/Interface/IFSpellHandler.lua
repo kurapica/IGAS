@@ -802,12 +802,8 @@ interface "IFSpellHandler"
 			------------------------------------------------------
 			-- Constructor
 			------------------------------------------------------
-		    function DataAccessor(groupHandler)
-				local obj = {}
-
-				obj.__GroupHandler = groupHandler
-
-				return obj
+		    function DataAccessor(self, groupHandler)
+				self.__GroupHandler = groupHandler
 		    end
 
 			------------------------------------------------------
@@ -1043,28 +1039,22 @@ interface "IFSpellHandler"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function SpellHandlerGroup(group)
-			local obj = Super()
-
+	    function SpellHandlerGroup(self, group)
 	    	group = GetGroup(group)
 
-			obj.__Group = group
-			obj.__Accessor = DataAccessor(obj)
+			self.__Group = group
+			self.__Accessor = DataAccessor(self)
 
-			_IFSpellHandler_SpellHandlerGroup[group] = obj
+			_IFSpellHandler_SpellHandlerGroup[group] = self
 			_DBChar[group] = _DBChar[group] or {}
 
-			obj:ConvertClass(SpellHandlerGroup)
-
-			obj.OnSettingUpdate = obj.OnSettingUpdate + OnSettingUpdate
-
-			return obj
+			self.OnSettingUpdate = self.OnSettingUpdate + OnSettingUpdate
 	    end
 
 		------------------------------------------------------
 		-- Metamethod
 		------------------------------------------------------
-		function __exist(cls, group)
+		function __exist(group)
 	    	group = GetGroup(group)
 
 			return _IFSpellHandler_SpellHandlerGroup[group]

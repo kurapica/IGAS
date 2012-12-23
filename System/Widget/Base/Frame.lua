@@ -1203,8 +1203,8 @@ class "Frame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Frame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Frame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Frame", nil, parent, ...)
 	end
 endclass "Frame"
 

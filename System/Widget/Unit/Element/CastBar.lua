@@ -112,6 +112,7 @@ class "CastBar"
 		self.Icon.TexturePath = texture
 		self.Shield.Visible = not canInter
 		self.SpellName.Text = name
+		self.LineID = lineID
 
 		-- Init
 		self.DelayTime = 0
@@ -140,9 +141,12 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function Fail(self, spell, rank, lineID, spellID)
-		self:OnCooldownUpdate()
-		self.Alpha = 0
-		self.Duration = 0
+		if not lineID or lineID == self.LineID then
+			self:OnCooldownUpdate()
+			self.Alpha = 0
+			self.Duration = 0
+			self.LineID = nil
+		end
 	end
 
 	------------------------------------
@@ -155,9 +159,12 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function Stop(self, spell, rank, lineID, spellID)
-		self:OnCooldownUpdate()
-		self.Alpha = 0
-		self.Duration = 0
+		if not lineID or lineID == self.LineID then
+			self:OnCooldownUpdate()
+			self.Alpha = 0
+			self.Duration = 0
+			self.LineID = nil
+		end
 	end
 
 	------------------------------------
@@ -170,9 +177,12 @@ class "CastBar"
 	-- @param spellID - The id of the spell that's being casted. (number, spellID)
 	------------------------------------
 	function Interrupt(self, spell, rank, lineID, spellID)
-		self:OnCooldownUpdate()
-		self.Alpha = 0
-		self.Duration = 0
+		if not lineID or lineID == self.LineID then
+			self:OnCooldownUpdate()
+			self.Alpha = 0
+			self.Duration = 0
+			self.LineID = nil
+		end
 	end
 
 	------------------------------------
@@ -364,20 +374,18 @@ class "CastBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CastBar(name, parent)
-		local frame = Super(name, parent)
-
-		frame.Height = 16
-		frame.Width = 200
+	function CastBar(self, name, parent)
+		self.Height = 16
+		self.Width = 200
 
 		-- Icon
-		local icon = Texture("Icon", frame, "ARTWORK")
+		local icon = Texture("Icon", self, "ARTWORK")
 		icon:SetPoint("TOPLEFT")
 		icon:SetPoint("BOTTOMLEFT")
-		icon.Width = frame.Height
+		icon.Width = self.Height
 
 		-- Shield
-		local shield = Texture("Shield", frame, "OVERLAY")
+		local shield = Texture("Shield", self, "OVERLAY")
 		shield:SetPoint("TOPLEFT", icon,"TOPLEFT", -8, 8)
 		shield:SetPoint("BOTTOMRIGHT", icon,"BOTTOMRIGHT", 8, -8)
 		shield.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
@@ -385,19 +393,17 @@ class "CastBar"
 		shield.Visible = false
 
 		-- SpellName
-		local text = FontString("SpellName", frame, "ARTWORK", "TextStatusBarText")
+		local text = FontString("SpellName", self, "ARTWORK", "TextStatusBarText")
 		text:SetPoint("LEFT", shield, "RIGHT")
 		text.JustifyH = "LEFT"
-		text:SetFont(text:GetFont(), frame.Height * 4 / 7, "OUTLINE")
+		text:SetFont(text:GetFont(), self.Height * 4 / 7, "OUTLINE")
 
 		-- SafeZone
-		local safeZone = Texture("SafeZone", frame, "ARTWORK")
+		local safeZone = Texture("SafeZone", self, "ARTWORK")
 		safeZone.Color = ColorType(1, 0, 0)
 		safeZone.Visible = false
 
-		frame.OnSizeChanged = frame.OnSizeChanged + OnSizeChanged
-		frame.OnHide = frame.OnHide + OnHide
-
-		return frame
+		self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged
+		self.OnHide = self.OnHide + OnHide
 	end
 endclass "CastBar"

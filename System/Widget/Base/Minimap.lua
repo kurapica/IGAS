@@ -170,8 +170,8 @@ class "Minimap"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Minimap(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Minimap", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Minimap", nil, parent, ...)
 	end
 endclass "Minimap"
 

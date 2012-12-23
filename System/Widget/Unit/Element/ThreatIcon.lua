@@ -33,15 +33,11 @@ class "ThreatIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ThreatIcon(name, parent)
-		local icon = Super(name, parent)
+	function ThreatIcon(self)
+		self.TexturePath = [[Interface\Minimap\ObjectIcons]]
+		self:SetTexCoord(1/4, 3/8, 0, 1/4)
 
-		icon.TexturePath = [[Interface\Minimap\ObjectIcons]]
-		icon:SetTexCoord(1/4, 3/8, 0, 1/4)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "ThreatIcon"

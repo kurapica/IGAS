@@ -257,31 +257,29 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function OptionSlider(name, parent)
-		local frame = Super(name, parent)
-
-		frame.Width = 144
-		frame.Height = 26
+    function OptionSlider(self, name, parent)
+		self.Width = 144
+		self.Height = 26
 
 		-- Text part
-        local title = FontString("Title", frame, "ARTWORK", "GameFontHighlight")
+        local title = FontString("Title", self, "ARTWORK", "GameFontHighlight")
 		title:SetPoint("TOP")
 		title.Text = ""
 
-		local low = FontString("Low", frame, "ARTWORK", "GameFontHighlightSmall")
+		local low = FontString("Low", self, "ARTWORK", "GameFontHighlightSmall")
 		low:SetPoint("BOTTOMLEFT", 0, 3)
 		low.Text = "1"
 
-		local high = FontString("High", frame, "ARTWORK", "GameFontHighlightSmall")
+		local high = FontString("High", self, "ARTWORK", "GameFontHighlightSmall")
 		high:SetPoint("BOTTOMRIGHT", 0, 3)
 		high.Text = "10"
 
-		local text = FontString("Text", frame, "ARTWORK", "GameFontHighlightSmall")
+		local text = FontString("Text", self, "ARTWORK", "GameFontHighlightSmall")
 		text:SetPoint("BOTTOM")
 		text.Text = "1"
 
 		-- Slider part
-        local slider = Slider("Slider", frame)
+        local slider = Slider("Slider", self)
 		slider:SetPoint("TOP")
 		slider:SetPoint("LEFT")
 		slider:SetPoint("RIGHT")
@@ -305,7 +303,5 @@ class "OptionSlider"
 
 		slider.OnValueChanged = slider.OnValueChanged + OnValueChanged
 		slider.OnMinMaxChanged = slider.OnMinMaxChanged + OnMinMaxChanged
-
-        return frame
     end
 endclass "OptionSlider"

@@ -83,12 +83,8 @@ class "NameLabel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function NameLabel(...)
-		local label = Super(...)
-
-		label.DrawLayer = "BORDER"
-		label.TextColor = _DefaultColor
-
-		return label
+	function NameLabel(self)
+		self.DrawLayer = "BORDER"
+		self.TextColor = _DefaultColor
 	end
 endclass "NameLabel"

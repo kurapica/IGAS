@@ -2207,23 +2207,19 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function CodeEditor(name, parent)
-		local frame = MultiLineTextBox(name, parent)
-
+    function CodeEditor(self, name, parent)
 		-- Script Handlers
-		frame.OnEnterPressed = frame.OnEnterPressed + OnEnterPressed
-		frame.OnCursorChanged = frame.OnCursorChanged + OnCursorChanged
-		frame.OnChar = frame.OnChar + OnChar
-		frame.OnOperationListChanged = frame.OnOperationListChanged + OnOperationListChanged
-		frame.OnPasting = frame.OnPasting + OnPasting
-		frame.OnDeleteFinished = frame.OnDeleteFinished + OnDeleteFinished
-		frame.OnBackspaceFinished = frame.OnBackspaceFinished + OnBackspaceFinished
-		frame.OnCut = frame.OnCut + OnCut
+		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed
+		self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
+		self.OnChar = self.OnChar + OnChar
+		self.OnOperationListChanged = self.OnOperationListChanged + OnOperationListChanged
+		self.OnPasting = self.OnPasting + OnPasting
+		self.OnDeleteFinished = self.OnDeleteFinished + OnDeleteFinished
+		self.OnBackspaceFinished = self.OnBackspaceFinished + OnBackspaceFinished
+		self.OnCut = self.OnCut + OnCut
 
 		-- Enviroment
-		frame.__Env = _G
-		frame.__Definition = {}
-
-		return frame
+		self.__Env = _G
+		self.__Definition = {}
 	end
 endclass "CodeEditor"

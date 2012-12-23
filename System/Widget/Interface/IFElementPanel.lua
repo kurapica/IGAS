@@ -116,12 +116,8 @@ interface "IFElementPanel"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Element(elementPanel)
-			local obj = {}
-
-			obj.__ElementPanel = elementPanel
-
-			return obj
+	    function Element(self, elementPanel)
+			self.__ElementPanel = elementPanel
 	    end
 
 		------------------------------------------------------

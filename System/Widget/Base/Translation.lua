@@ -68,12 +68,12 @@ class "Translation"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Translation(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not Object.IsClass(parent, AnimationGroup) then
 			error("Usage : Translation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateAnimation("Translation", nil, ...))
+		return IGAS:GetUI(parent):CreateAnimation("Translation", nil, ...)
 	end
 endclass "Translation"
 

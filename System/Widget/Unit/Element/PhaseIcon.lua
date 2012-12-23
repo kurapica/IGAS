@@ -36,14 +36,10 @@ class "PhaseIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PhaseIcon(name, parent)
-		local icon = Super(name, parent)
+	function PhaseIcon(self)
+		self.TexturePath = [[Interface\TargetingFrame\UI-PhasingIcon]]
 
-		icon.TexturePath = [[Interface\TargetingFrame\UI-PhasingIcon]]
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "PhaseIcon"

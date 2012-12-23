@@ -145,38 +145,36 @@ class "PaladinPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PaladinPowerBar(name, parent)
-		local panel = Super(name, parent)
+	function PaladinPowerBar(self, name, parent)
+		self.__Value = 0
+		self.__Min = 0
+		self.__Max = 0
 
-		panel.__Value = 0
-		panel.__Min = 0
-		panel.__Max = 0
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(136, 39)
+		self.HitRectInsets = Inset(17, 17, 7, 4)
+		self.MouseEnabled = true
 
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(136, 39)
-		panel.HitRectInsets = Inset(17, 17, 7, 4)
-		panel.MouseEnabled = true
-
-		panel.OnEnter = panel.OnEnter + OnEnter
-		panel.OnLeave = panel.OnLeave + OnLeave
+		self.OnEnter = self.OnEnter + OnEnter
+		self.OnLeave = self.OnLeave + OnLeave
 
 		-------------------------------------
 		-- BACKGROUND
 		-------------------------------------
-		local bankBG = Texture("BankBG", panel, "BACKGROUND", nil, -7)
+		local bankBG = Texture("BankBG", self, "BACKGROUND", nil, -7)
 		bankBG:SetSize(69, 16)
 		bankBG:SetPoint("TOP", 0, -29)
 		bankBG.Alpha = 0
 		bankBG.TexturePath = [[Interface\PlayerFrame\PaladinPowerTextures]]
 		bankBG:SetTexCoord(0.00390625, 0.27343750, 0.64843750, 0.77343750)
 
-		local bg = Texture("BG", panel, "BACKGROUND", nil, -5)
+		local bg = Texture("BG", self, "BACKGROUND", nil, -5)
 		bg:SetAllPoints()
 		bg.TexturePath = [[Interface\PlayerFrame\PaladinPowerTextures]]
 		bg:SetTexCoord(0.00390625, 0.53515625, 0.00781250, 0.31250000)
 
-		local showAnim = AnimationGroup("ShowAnim", panel)
+		local showAnim = AnimationGroup("ShowAnim", self)
 		showAnim.OnFinished = ShowAnim_OnFinished
 
 		local alpha = Alpha("Alpha", showAnim)
@@ -195,9 +193,9 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- GlowBG
 		-------------------------------------
-		local glow = Frame("GlowBG", panel)
+		local glow = Frame("GlowBG", self)
 		glow:SetAllPoints()
-		glow.FrameLevel = panel.FrameLevel
+		glow.FrameLevel = self.FrameLevel
 		glow.Alpha = 0
 
 		local texture = Texture("Texture", glow, "BACKGROUND", nil, -1)
@@ -222,7 +220,7 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- Rune1
 		-------------------------------------
-		local rune1 = Frame("Rune1", panel)
+		local rune1 = Frame("Rune1", self)
 		rune1:SetSize(36, 22)
 		rune1:SetPoint("TOPLEFT", 21, -11)
 		rune1.Alpha = 0
@@ -251,7 +249,7 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- Rune2
 		-------------------------------------
-		local rune2 = Frame("Rune2", panel)
+		local rune2 = Frame("Rune2", self)
 		rune2:SetPoint("LEFT", rune1, "RIGHT")
 		rune2:SetSize(31, 17)
 		rune2.Alpha = 0
@@ -280,7 +278,7 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- Rune3
 		-------------------------------------
-		local rune3 = Frame("Rune3", panel)
+		local rune3 = Frame("Rune3", self)
 		rune3:SetPoint("LEFT", rune2, "RIGHT", 2, -1)
 		rune3:SetSize(27, 21)
 		rune3.Alpha = 0
@@ -309,7 +307,7 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- Rune4
 		-------------------------------------
-		local rune4 = Frame("Rune4", panel)
+		local rune4 = Frame("Rune4", self)
 		rune4:SetPoint("TOPLEFT", 43, -28)
 		rune4:SetSize(27, 12)
 		rune4.Alpha = 0
@@ -338,7 +336,7 @@ class "PaladinPowerBar"
 		-------------------------------------
 		-- Rune5
 		-------------------------------------
-		local rune5 = Frame("Rune5", panel)
+		local rune5 = Frame("Rune5", self)
 		rune5:SetPoint("TOPLEFT", 67, -28)
 		rune5:SetSize(26, 12)
 		rune5.Alpha = 0
@@ -363,7 +361,5 @@ class "PaladinPowerBar"
 		alpha.Duration = 0.3
 		alpha.Order = 1
 		alpha.Change = -1
-
-		return panel
 	end
 endclass "PaladinPowerBar"

@@ -88,8 +88,8 @@ class "Cooldown"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Cooldown(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Cooldown", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Cooldown", nil, parent, ...)
 	end
 endclass "Cooldown"
 

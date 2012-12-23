@@ -77,54 +77,47 @@ class "TotemBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Totem(...)
-			local obj = Super(...)
+	    function Totem(self)
+			self.Visible = false
+			self:SetSize(36, 36)
 
-			obj.Visible = false
-			obj:SetSize(36, 36)
+			self:RegisterForClicks("RightButtonUp")
 
-			obj:RegisterForClicks("RightButtonUp")
-
-			local icon = Texture("Icon", obj, "BACKGROUND")
+			local icon = Texture("Icon", self, "BACKGROUND")
 			icon:SetPoint("TOPLEFT", 1, -1)
 			icon:SetPoint("BOTTOMRIGHT", -1, 1)
 
-			obj.Backdrop = _Border
-			obj.BackdropBorderColor = _G.RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+			self.Backdrop = _Border
+			self.BackdropBorderColor = _G.RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 
-			obj.OnEnter = obj.OnEnter + OnEnter
-			obj.OnLeave = obj.OnLeave + OnLeave
-			IGAS:GetUI(obj).UpdateTooltip = UpdateTooltip
-
-			return obj
+			self.OnEnter = self.OnEnter + OnEnter
+			self.OnLeave = self.OnLeave + OnLeave
+			IGAS:GetUI(self).UpdateTooltip = UpdateTooltip
 	    end
 	endclass "Totem"
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TotemBar(name, parent)
-		local panel = Super(name, parent)
+	function TotemBar(self, name, parent)
 		local pct = floor(100 / MAX_TOTEMS)
 		local margin = (100 - pct * MAX_TOTEMS) / 2
 
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(108, 24)
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(108, 24)
 
 		local btnTotem
 
 		for i = 1, MAX_TOTEMS do
-			btnTotem = Totem("Totem"..i, panel)
+			btnTotem = Totem("Totem"..i, self)
 			btnTotem.ID = i
 
-			panel:AddWidget(btnTotem)
+			self:AddWidget(btnTotem)
 
-			panel:SetWidgetLeftWidth(btnTotem, margin + (i-1)*pct, "pct", pct-1, "pct")
+			self:SetWidgetLeftWidth(btnTotem, margin + (i-1)*pct, "pct", pct-1, "pct")
 
-			panel[i] = btnTotem
+			self[i] = btnTotem
 		end
-
-		return panel
 	end
 endclass "TotemBar"

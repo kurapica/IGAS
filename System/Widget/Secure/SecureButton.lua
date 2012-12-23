@@ -36,15 +36,11 @@ class "SecureButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SecureButton(name, parent, ...)
-		local button
-
+	function Constructor(self, name, parent, ...)
 		if select('#', ...) > 0 then
-			button = UIObject(name, parent, CreateFrame("Button", name, parent, ...))
+			return CreateFrame("Button", name, parent, ...)
 		else
-			button = UIObject(name, parent, CreateFrame("Button", name, parent, "SecureFrameTemplate"))
+			return CreateFrame("Button", name, parent, "SecureFrameTemplate")
 		end
-
-		return button
-    end
+	end
 endclass "SecureButton"

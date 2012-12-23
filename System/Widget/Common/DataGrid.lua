@@ -302,46 +302,43 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Column(name, parent)
-			-- New Frame
-			local button = Button(name, parent)
-
-			local t = Texture("Left", button, "BACKGROUND")
+		function Column(self, name, parent)
+			local t = Texture("Left", self, "BACKGROUND")
 			t:SetTexture([[Interface\FriendsFrame\WhoFrame-ColumnTabs]])
 			t.Width = 5
-			t:SetPoint("TOPLEFT", button, "TOPLEFT")
-			t:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT")
+			t:SetPoint("TOPLEFT", self, "TOPLEFT")
+			t:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT")
 			t:SetTexCoord(0, 0.078125, 0, 0.59375)
 
-			t = Texture("Right", button, "BACKGROUND")
+			t = Texture("Right", self, "BACKGROUND")
 			t:SetTexture([[Interface\FriendsFrame\WhoFrame-ColumnTabs]])
 			t.Width = 5
-			t:SetPoint("TOPRIGHT", button, "TOPRIGHT")
-			t:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
+			t:SetPoint("TOPRIGHT", self, "TOPRIGHT")
+			t:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT")
 			t:SetTexCoord(0.90625, 0.96875, 0, 0.59375)
 
-			t = Texture("Middle", button, "BACKGROUND")
+			t = Texture("Middle", self, "BACKGROUND")
 			t:SetTexture([[Interface\FriendsFrame\WhoFrame-ColumnTabs]])
 			t.Width = 5
-			t:SetPoint("TOPLEFT", button.Left, "TOPRIGHT")
-			t:SetPoint("BOTTOMRIGHT", button.Right, "BOTTOMLEFT")
+			t:SetPoint("TOPLEFT", self.Left, "TOPRIGHT")
+			t:SetPoint("BOTTOMRIGHT", self.Right, "BOTTOMLEFT")
 			t:SetTexCoord(0.078125, 0.90625, 0, 0.59375)
 
-			--[==[button:SetHighlightTexture([[Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight]])
-            t = button:GetHighlightTexture()
+			--[==[self:SetHighlightTexture([[Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight]])
+            t = self:GetHighlightTexture()
             t:SetBlendMode("ADD")
-            t:SetPoint("TOPLEFT",button,"TOPLEFT",2,-3)
-            t:SetPoint("BOTTOMRIGHT",button,"BOTTOMRIGHT",-2,3)--]==]
+            t:SetPoint("TOPLEFT",self,"TOPLEFT",2,-3)
+            t:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-2,3)--]==]
 
-			local f = FontString("ButtonText", button)
-			button:SetFontString(f)
+			local f = FontString("ButtonText", self)
+			self:SetFontString(f)
 			f.JustifyH = "LEFT"
-			f:SetPoint("LEFT", button, "LEFT", 8, 0)
+			f:SetPoint("LEFT", self, "LEFT", 8, 0)
 
-			button:SetNormalFontObject("GameFontHighlightSmall")
+			self:SetNormalFontObject("GameFontHighlightSmall")
 
-			--[==[button:SetNormalTexture([[Interface\Buttons\UI-Panel-Button-Up]])
-			t = button:GetNormalTexture()
+			--[==[self:SetNormalTexture([[Interface\Buttons\UI-Panel-Button-Up]])
+			t = self:GetNormalTexture()
 			t.Visible = false
 			t.Width = 9
 			t.Height = 8
@@ -349,12 +346,10 @@ class "DataGrid"
 			t:SetPoint("LEFT", f, "RIGHT", 3, -2)
 			t:SetTexCoord(0, 0.5625, 0, 1.0)--]==]
 
-			--button.OnClick = button.OnClick + OnClick
+			--self.OnClick = self.OnClick + OnClick
 
-			button.__CellType = "Label"
-			button.Locked = true
-
-			return button
+			self.__CellType = "Label"
+			self.Locked = true
 		end
 	endclass "Column"
 
@@ -519,12 +514,6 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Columns(name, parent)
-			-- New Cell
-			local cell = VirtualUIObject(name, parent)
-
-			return cell
-		end
 
 		------------------------------------------------------
 		-- __call
@@ -763,12 +752,6 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Cell(name, parent)
-			-- New Cell
-			local cell = VirtualUIObject(name, parent)
-
-			return cell
-		end
 	endclass "Cell"
 
 	------------------------------------
@@ -942,12 +925,6 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Cells(name, parent)
-			-- New Cell
-			local cell = VirtualUIObject(name, parent)
-
-			return cell
-		end
 
 		------------------------------------------------------
 		-- __call
@@ -1632,23 +1609,20 @@ class "DataGrid"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DataGrid(name, parent)
-		-- New Frame
-		local frame = Frame(name, parent)
-
-		frame.Visible = true
-		frame:ClearAllPoints()
-		frame:SetBackdropColor(0, 0, 0, 1)
+	function DataGrid(self, name, parent)
+		self.Visible = true
+		self:ClearAllPoints()
+		self:SetBackdropColor(0, 0, 0, 1)
 
 		-- Scroll Bar
-		local scrollBar = ScrollBar("ScrollBar", frame)
+		local scrollBar = ScrollBar("ScrollBar", self)
 		scrollBar:Hide()
 
 		-- Panel
-		local Panel = Frame("Panel", frame)
+		local Panel = Frame("Panel", self)
 		Panel.MouseWheelEnabled = true
-		Panel:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -26)
-		Panel:SetPoint("BOTTOM", frame, "BOTTOM")
+		Panel:SetPoint("TOPLEFT", self, "TOPLEFT", 0, -26)
+		Panel:SetPoint("BOTTOM", self, "BOTTOM")
 		Panel:SetPoint("RIGHT", scrollBar, "LEFT")
 
 		-- Event Handle
@@ -1656,8 +1630,6 @@ class "DataGrid"
 		Panel.OnSizeChanged = OnSizeChanged
 		Panel.OnMouseWheel = OnMouseWheel
 
-		frame.__CanSort = false
-
-		return frame
+		self.__CanSort = false
 	end
 endclass "DataGrid"

@@ -503,18 +503,14 @@ interface "Threading"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Thread(func)
+		function Thread(self, func)
 			assert((func == nil) or type(func) == "function" or type(func) == "thread", "Usage : System.Threading.Thread(func) - 'func' must be a function or thread or nil.")
-
-			local self = {}
 
 			if type(func) == "function" then
 				_Threads[self] = create(func)
 			elseif type(func) == "thread" then
 				_Threads[self] = func
 			end
-
-			return self
 		end
 
 		------------------------------------------------------

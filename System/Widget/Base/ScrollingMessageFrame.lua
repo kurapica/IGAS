@@ -405,8 +405,8 @@ class "ScrollingMessageFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ScrollingMessageFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("ScrollingMessageFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
 	end
 endclass "ScrollingMessageFrame"
 

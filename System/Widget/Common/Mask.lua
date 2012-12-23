@@ -588,51 +588,45 @@ class "Mask"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function Mask(name, parent)
-		local mask = Super(name, parent)
+    function Mask(self, name, parent)
+		self.Visible = false
 
-		mask.Visible = false
+		self:SetPoint("BOTTOMLEFT")
 
-		mask:SetPoint("BOTTOMLEFT")
-		mask.Width = parent.Width
-		mask.Height = parent.Height
+		self:SetNormalFontObject(GameFontNormal)
+		self.Text = ""
 
-		mask:SetNormalFontObject(GameFontNormal)
-		mask.Text = ""
+		self.TopLevel = true
+		self.FrameStrata = "TOOLTIP"
+		self.Movable = true
+		self.Resizable = true
+		self.MouseEnabled = true
+		self.MouseWheelEnabled = true
+		self:RegisterForClicks("anyUp")
 
-		mask.TopLevel = true
-		mask.FrameStrata = "TOOLTIP"
-		mask.Movable = true
-		mask.Resizable = true
-		mask.MouseEnabled = true
-		mask.MouseWheelEnabled = true
-		mask:RegisterForClicks("anyUp")
+		self.Backdrop = _FrameBackdrop
+		self.BackdropColor = ColorType(0, 1, 0, 0.4)
 
-		mask.Backdrop = _FrameBackdrop
-		mask.BackdropColor = ColorType(0, 1, 0, 0.4)
-
-		local txtSe = Texture("TextureSe", mask)
+		local txtSe = Texture("TextureSe", self)
 		txtSe:SetPoint("BOTTOMRIGHT")
 		txtSe:SetSize(16, 16)
 		txtSe.TexturePath = [[Interface\ChatFrame\UI-ChatIM-SizeGrabber-Up]]
 		txtSe.Visible = false
 
 		-- Move & Resize
-		mask.OnShow = mask.OnShow + OnShow
-		mask.OnHide = mask.OnHide + OnHide
+		self.OnShow = self.OnShow + OnShow
+		self.OnHide = self.OnHide + OnHide
 
-		mask.OnMouseDown = mask.OnMouseDown + Mask_OnMouseDown
-		mask.OnMouseUp = mask.OnMouseUp + Mask_OnMouseUp
+		self.OnMouseDown = self.OnMouseDown + Mask_OnMouseDown
+		self.OnMouseUp = self.OnMouseUp + Mask_OnMouseUp
 
 		-- Key Bind
-		mask.OnClick = mask.OnClick + OnClick
-		mask.OnMouseWheel = mask.OnMouseWheel + OnMouseWheel
-		mask.OnKeyDown = mask.OnKeyDown + OnKeyDown
-		mask.OnEnter = mask.OnEnter + OnEnter
-		mask.OnLeave = mask.OnLeave + OnLeave
+		self.OnClick = self.OnClick + OnClick
+		self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
+		self.OnKeyDown = self.OnKeyDown + OnKeyDown
+		self.OnEnter = self.OnEnter + OnEnter
+		self.OnLeave = self.OnLeave + OnLeave
 
-		mask.KeyboardEnabled = false
-
-		return mask
+		self.KeyboardEnabled = false
     end
 endclass "Mask"

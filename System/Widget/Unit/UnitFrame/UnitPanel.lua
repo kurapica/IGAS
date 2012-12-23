@@ -36,29 +36,24 @@ class "UnitPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function UnitPanel(...)
-		local obj = Super(...)
+    function UnitPanel(self)
+		self.ElementType = UnitFrame	-- Default Element, need override
 
-		-- Make sure obj can use methodes & properties now
-		obj:ConvertClass(UnitPanel)
+		self.RowCount = MEMBERS_PER_RAID_GROUP
+		self.ColumnCount = NUM_RAID_GROUPS
+		self.ElementWidth = 80
+		self.ElementHeight = 32
 
-		obj.ElementType = UnitFrame	-- Default Element, need override
+		self.Orientation = Orientation.VERTICAL
+		self.HSpacing = 2
+		self.VSpacing = 2
+		self.AutoSize = false		-- Since can't resize in combat, do it manually
 
-		obj.RowCount = MEMBERS_PER_RAID_GROUP
-		obj.ColumnCount = NUM_RAID_GROUPS
-		obj.ElementWidth = 80
-		obj.ElementHeight = 32
+		self.MarginTop = 0
+		self.MarginBottom = 0
+		self.MarginLeft = 0
+		self.MarginRight = 0
 
-		obj.Orientation = Orientation.VERTICAL
-		obj.HSpacing = 2
-		obj.VSpacing = 2
-		obj.AutoSize = false		-- Since can't resize in combat, do it manually
-
-		obj.MarginTop = 0
-		obj.MarginBottom = 0
-		obj.MarginLeft = 0
-		obj.MarginRight = 0
-
-		return obj
+		return self
     end
 endclass "UnitPanel"

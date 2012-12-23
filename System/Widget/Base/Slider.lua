@@ -247,8 +247,8 @@ class "Slider"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Slider(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("Slider", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Slider", nil, parent, ...)
 	end
 endclass "Slider"
 

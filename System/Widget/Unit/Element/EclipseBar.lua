@@ -222,35 +222,33 @@ class "EclipseBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function EclipseBar(name, parent)
-		local panel = Super(name, parent)
-
-		panel:SetSize(140, 38)
-		panel:SetHitRectInsets(4, 4, 6, 6)
+	function EclipseBar(self, name, parent)
+		self:SetSize(140, 38)
+		self:SetHitRectInsets(4, 4, 6, 6)
 
 		-- Bar
-		local bar = Texture("Bar", panel, "ARTWORK")
+		local bar = Texture("Bar", self, "ARTWORK")
 		bar.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		bar:SetSize(140, 38)
 		bar:SetPoint("CENTER")
 		bar:SetTexCoord(0.00390625, 0.55078125, 0.63281250, 0.92968750)
 
 		-- Sun
-		local sun = Texture("Sun", panel, "BACKGROUND")
+		local sun = Texture("Sun", self, "BACKGROUND")
 		sun.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		sun:SetSize(23, 23)
 		sun:SetPoint("CENTER", bar, "RIGHT", -17, 1)
 		sun:SetTexCoord(0.65625000, 0.74609375, 0.37500000, 0.55468750)
 
 		-- Moon
-		local moon = Texture("Moon", panel, "BACKGROUND")
+		local moon = Texture("Moon", self, "BACKGROUND")
 		moon.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		moon:SetSize(23, 23)
 		moon:SetPoint("CENTER", bar, "LEFT", 17, 1)
 		moon:SetTexCoord(0.55859375, 0.64843750, 0.57031250, 0.75000000)
 
 		-- DarkSun
-		local darkSun = Texture("DarkSun", panel, "BACKGROUND", nil, 1)
+		local darkSun = Texture("DarkSun", self, "BACKGROUND", nil, 1)
 		darkSun.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		darkSun.Alpha = 0
 		darkSun:SetSize(23, 23)
@@ -258,7 +256,7 @@ class "EclipseBar"
 		darkSun:SetTexCoord(0.55859375, 0.64843750, 0.76562500, 0.94531250)
 
 		-- DarkMoon
-		local darkMoon = Texture("DarkMoon", panel, "BACKGROUND", nil, 1)
+		local darkMoon = Texture("DarkMoon", self, "BACKGROUND", nil, 1)
 		darkMoon.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		darkMoon.Alpha = 0
 		darkMoon:SetSize(23, 23)
@@ -266,7 +264,7 @@ class "EclipseBar"
 		darkMoon:SetTexCoord(0.55859375, 0.64843750, 0.37500000, 0.55468750)
 
 		-- SunBar
-		local sunBar = Texture("SunBar", panel, "ARTWORK", nil, 1)
+		local sunBar = Texture("SunBar", self, "ARTWORK", nil, 1)
 		sunBar.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		sunBar.Alpha = 0
 		sunBar:SetSize(140, 38)
@@ -274,7 +272,7 @@ class "EclipseBar"
 		sunBar:SetTexCoord(0.00390625, 0.55078125, 0.32031250, 0.61718750)
 
 		-- MoonBar
-		local moonBar = Texture("MoonBar", panel, "ARTWORK", nil, 1)
+		local moonBar = Texture("MoonBar", self, "ARTWORK", nil, 1)
 		moonBar.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		moonBar.Alpha = 0
 		moonBar:SetSize(140, 38)
@@ -282,7 +280,7 @@ class "EclipseBar"
 		moonBar:SetTexCoord(0.00390625, 0.55078125, 0.00781250, 0.30468750)
 
 		-- Marker
-		local marker = Texture("Marker", panel, "OVERLAY")
+		local marker = Texture("Marker", self, "OVERLAY")
 		marker.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		marker.BlendMode = "ADD"
 		marker:SetSize(20, 20)
@@ -290,7 +288,7 @@ class "EclipseBar"
 		marker:SetTexCoord(1.0, 0.914, 0.82, 1.0)
 
 		-- Glow
-		local glow = Texture("Glow", panel, "OVERLAY")
+		local glow = Texture("Glow", self, "OVERLAY")
 		glow.TexturePath = [[Interface\PlayerFrame\UI-DruidEclipse]]
 		glow.Alpha = 0
 		glow.BlendMode = "ADD"
@@ -299,7 +297,7 @@ class "EclipseBar"
 		glow:SetTexCoord(0.55859375, 0.72656250, 0.00781250, 0.35937500)
 
 		-- PowerText
-		local powerText = FontString("PowerText", panel, "OVERLAY", "TextStatusBarText")
+		local powerText = FontString("PowerText", self, "OVERLAY", "TextStatusBarText")
 		powerText:SetPoint("CENTER")
 		powerText.Visible = false
 
@@ -416,9 +414,7 @@ class "EclipseBar"
 		alpha.Change = -1
 
 		-- Script Handler
-		panel.OnEnter = panel.OnEnter + OnEnter
-		panel.OnLeave = panel.OnLeave + OnLeave
-
-		return panel
+		self.OnEnter = self.OnEnter + OnEnter
+		self.OnLeave = self.OnLeave + OnLeave
 	end
 endclass "EclipseBar"

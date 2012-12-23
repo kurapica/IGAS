@@ -389,21 +389,18 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-   function ScrollBar(name, parent)
-        -- ScrollBar
-		local scrollBar = Frame(name,parent)
+   function ScrollBar(self, name, parent)
+        self:SetWidth(18)
+        self:ClearAllPoints()
+        self:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, -8)
+        self:SetPoint("BOTTOM", parent, "BOTTOM", 0, 8)
 
-        scrollBar:SetWidth(18)
-        scrollBar:ClearAllPoints()
-        scrollBar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, -8)
-        scrollBar:SetPoint("BOTTOM", parent, "BOTTOM", 0, 8)
-
-        local slider = Slider("Slider", scrollBar)
+        local slider = Slider("Slider", self)
         slider:ClearAllPoints()
-        slider:SetPoint("LEFT", scrollBar, "LEFT", 0, 0)
-        slider:SetPoint("RIGHT", scrollBar, "RIGHT", 0, 0)
-        slider:SetPoint("TOP", scrollBar, "TOP", 0, -24)
-        slider:SetPoint("BOTTOM", scrollBar, "BOTTOM", 0, 24)
+        slider:SetPoint("LEFT", self, "LEFT", 0, 0)
+        slider:SetPoint("RIGHT", self, "RIGHT", 0, 0)
+        slider:SetPoint("TOP", self, "TOP", 0, -24)
+        slider:SetPoint("BOTTOM", self, "BOTTOM", 0, 24)
         slider:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob.blp")
         slider.MouseWheelEnabled = true
 		slider.OnEnter = OnEnter
@@ -417,11 +414,11 @@ class "ScrollBar"
         slider:SetValueStep(1)
         slider:SetValue(1)
 
-        local btnScrollUp = Button("UpBtn", scrollBar)
+        local btnScrollUp = Button("UpBtn", self)
         btnScrollUp:SetWidth(32)
         btnScrollUp:SetHeight(32)
         btnScrollUp:ClearAllPoints()
-        btnScrollUp:SetPoint("TOP", scrollBar, "TOP", 0, 4)
+        btnScrollUp:SetPoint("TOP", self, "TOP", 0, 4)
         btnScrollUp:SetNormalTexture("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up.blp")
         btnScrollUp:SetPushedTexture("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Down.blp")
         btnScrollUp:SetDisabledTexture("Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Disabled.blp")
@@ -430,11 +427,11 @@ class "ScrollBar"
 		btnScrollUp.OnEnter = OnEnter
 		btnScrollUp.OnLeave = OnLeave
 
-        local btnScrollDown = Button("DownBtn", scrollBar)
+        local btnScrollDown = Button("DownBtn", self)
         btnScrollDown:SetWidth(32)
         btnScrollDown:SetHeight(32)
         btnScrollDown:ClearAllPoints()
-        btnScrollDown:SetPoint("BOTTOM", scrollBar, "BOTTOM", 0, -4)
+        btnScrollDown:SetPoint("BOTTOM", self, "BOTTOM", 0, -4)
         btnScrollDown:SetNormalTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up.blp")
         btnScrollDown:SetPushedTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Down.blp")
         btnScrollDown:SetDisabledTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Disabled.blp")
@@ -450,12 +447,10 @@ class "ScrollBar"
         slider.OnMouseWheel = OnMouseWheel
 
         -- Can be override, Special use.
-		scrollBar = ScrollBar(scrollBar)
-        scrollBar.OnValueChanged = OnValueChanged
+		self = ScrollBar(self)
+        self.OnValueChanged = OnValueChanged
 
         btnScrollUp:Disable()
         btnScrollDown:Disable()
-
-        return scrollBar
     end
 endclass "ScrollBar"

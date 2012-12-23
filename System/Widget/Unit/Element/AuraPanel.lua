@@ -145,33 +145,29 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function AuraIcon(name, parent)
-			local btn = Super(name, parent)
-
-			local icon = Texture("Icon", btn, "BORDER")
+		function AuraIcon(self, name, parent)
+			local icon = Texture("Icon", self, "BORDER")
 			icon:SetPoint("TOPLEFT", 1, -1)
 			icon:SetPoint("BOTTOMRIGHT", -1, 1)
 
-			local count = FontString("Count", btn, "OVERLAY", "NumberFontNormal")
+			local count = FontString("Count", self, "OVERLAY", "NumberFontNormal")
 			count:SetPoint("BOTTOMRIGHT", -1, 0)
 
-			local overlay = Texture("Overlay", btn, "OVERLAY")
-			overlay:SetAllPoints(btn)
+			local overlay = Texture("Overlay", self, "OVERLAY")
+			overlay:SetAllPoints(self)
 			overlay.TexturePath = [[Interface\Buttons\UI-Debuff-Overlays]]
 			overlay:SetTexCoord(.296875, .5703125, 0, .515625)
 
-			local stealable = Texture("Stealable", btn, "OVERLAY")
+			local stealable = Texture("Stealable", self, "OVERLAY")
 			stealable.TexturePath = [[Interface\TargetingFrame\UI-TargetingFrame-Stealable]]
 			stealable.BlendMode = "ADD"
 			stealable:SetPoint("TOPLEFT", -3, 3)
 			stealable:SetPoint("BOTTOMRIGHT", 3, -3)
 
-			btn.OnEnter = btn.OnEnter + OnEnter
-			btn.OnLeave = btn.OnLeave + OnLeave
+			self.OnEnter = self.OnEnter + OnEnter
+			self.OnLeave = self.OnLeave + OnLeave
 
-			IGAS:GetUI(btn).UpdateTooltip = UpdateTooltip
-
-			return btn
+			IGAS:GetUI(self).UpdateTooltip = UpdateTooltip
 		end
 	endclass "AuraIcon"
 
@@ -269,21 +265,15 @@ class "AuraPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function AuraPanel(name, parent)
-		local panel = Super(name, parent)
-
-		panel:ConvertClass(AuraPanel)
-
-		panel.FrameStrata = "MEDIUM"
-		panel.AutoSize = true
-		panel.ColumnCount = 7
-		panel.RowCount = 6
-		panel.ElementWidth = 16
-		panel.ElementHeight = 16
-		panel.HSpacing = 2
-		panel.VSpacing = 2
-		panel.ElementType = AuraIcon
-
-		return panel
+	function AuraPanel(self, name, parent)
+		self.FrameStrata = "MEDIUM"
+		self.AutoSize = true
+		self.ColumnCount = 7
+		self.RowCount = 6
+		self.ElementWidth = 16
+		self.ElementHeight = 16
+		self.HSpacing = 2
+		self.VSpacing = 2
+		self.ElementType = AuraIcon
 	end
 endclass "AuraPanel"

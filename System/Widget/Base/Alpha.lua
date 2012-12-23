@@ -64,12 +64,12 @@ class "Alpha"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Alpha(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not Object.IsClass(parent, AnimationGroup) then
 			error("Usage : Alpha(name, parent) : 'parent' - AnimationGroup element expected.", 2)
 		end
 
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...))
+		return IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...)
 	end
 endclass "Alpha"
 

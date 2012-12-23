@@ -522,7 +522,4 @@ class "Region"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Region()
-		return
-	end
 endclass "Region"

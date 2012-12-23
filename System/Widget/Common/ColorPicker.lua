@@ -331,35 +331,32 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ColorPicker(name, parent)
-		-- New Frame
-		local frame = ColorSelect(name,parent)
+	function ColorPicker(self, name, parent)
+		self.Width = 360
+		self.Height = 220
+		self.Movable = true
+		self.Resizable = true
+		self.FrameStrata = "FULLSCREEN_DIALOG"
+		self.Toplevel = true
+		self.MouseEnabled = true
+		self.KeyboardEnabled = true
 
-		frame.Width = 360
-		frame.Height = 220
-		frame.Movable = true
-		frame.Resizable = true
-		frame.FrameStrata = "FULLSCREEN_DIALOG"
-		frame.Toplevel = true
-		frame.MouseEnabled = true
-		frame.KeyboardEnabled = true
+		self:SetPoint("CENTER",parent,"CENTER",0,0)
+		self:SetMinResize(300,200)
+        self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0, 0, 0)
+		self:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
-		frame:SetPoint("CENTER",parent,"CENTER",0,0)
-		frame:SetMinResize(300,200)
-        frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0, 0, 0)
-		frame:SetBackdropBorderColor(0.4, 0.4, 0.4)
+		self.__DefaultValue = {}
 
-		frame.__DefaultValue = {}
-
-		frame.OnColorSelect = frame.OnColorSelect + OnColorSelect
+		self.OnColorSelect = self.OnColorSelect + OnColorSelect
 
 		-- Caption
-		local title = Frame("ColorPicker_Caption", frame)
+		local title = Frame("ColorPicker_Caption", self)
 		title.MouseEnabled = true
 		title.Height = 24
-		title:SetPoint("TOPLEFT", frame, "TOPLEFT", 6, 0)
-		title:SetPoint("RIGHT", frame, "RIGHT")
+		title:SetPoint("TOPLEFT", self, "TOPLEFT", 6, 0)
+		title:SetPoint("RIGHT", self, "RIGHT")
 		title:SetBackdrop(_FrameBackdropTitle)
 		title:SetBackdropColor(1, 0, 0, 0)
 		title.OnMouseDown = frameOnMouseDown
@@ -375,44 +372,44 @@ class "ColorPicker"
 		titleText.JustifyH = "CENTER"
 
 		-- ColorWheelTexture
-		local colorWheel = Texture("ColorWheel", frame)
+		local colorWheel = Texture("ColorWheel", self)
 		colorWheel.Width = 128
 		colorWheel.Height = 128
-		colorWheel:SetPoint("TOPLEFT", frame, "TOPLEFT", 32, -32)
-		frame:SetColorWheelTexture(colorWheel)
+		colorWheel:SetPoint("TOPLEFT", self, "TOPLEFT", 32, -32)
+		self:SetColorWheelTexture(colorWheel)
 
 		-- ColorWheelThumbTexture
-		local colorWheelThumb = Texture("ColorWheelThumb", frame)
+		local colorWheelThumb = Texture("ColorWheelThumb", self)
 		colorWheelThumb.Width = 10
 		colorWheelThumb.Height = 10
 		colorWheelThumb.TexturePath = [[Interface\Buttons\UI-ColorPicker-Buttons]]
 		colorWheelThumb:SetTexCoord(0, 0.15625, 0, 0.625)
-		frame:SetColorWheelThumbTexture(colorWheelThumb)
+		self:SetColorWheelThumbTexture(colorWheelThumb)
 
 		-- ColorValueTexture
-		local colorValue = Texture("ColorValue", frame)
+		local colorValue = Texture("ColorValue", self)
 		colorValue.Width = 32
 		colorValue.Height = 128
 		colorValue:SetPoint("TOPLEFT", colorWheel, "TOPRIGHT", 24, 0)
-		frame:SetColorValueTexture(colorValue)
+		self:SetColorValueTexture(colorValue)
 
 		-- ColorValueThumbTexture
-		local colorValueThumb = Texture("ColorValueThumb", frame)
+		local colorValueThumb = Texture("ColorValueThumb", self)
 		colorValueThumb.Width = 48
 		colorValueThumb.Height = 14
 		colorValueThumb.TexturePath = [[Interface\Buttons\UI-ColorPicker-Buttons]]
 		colorValueThumb:SetTexCoord(0.25, 1.0, 0, 0.875)
-		frame:SetColorValueThumbTexture(colorValueThumb)
+		self:SetColorValueThumbTexture(colorValueThumb)
 
 		-- ColorSwatch
-		local watch = Texture("ColorSwatch", frame, "ARTWORK")
+		local watch = Texture("ColorSwatch", self, "ARTWORK")
 		watch.Width = 32
 		watch.Height = 32
 		watch:SetPoint("TOPLEFT", colorValue, "TOPRIGHT", 24, 0)
 		watch:SetTexture(1, 1, 1, 1)
 
 		-- OpacitySlider
-		local sliderOpacity = Slider("OpacitySlider", frame)
+		local sliderOpacity = Slider("OpacitySlider", self)
 		sliderOpacity:SetMinMaxValues(0, 1)
 		sliderOpacity:SetPoint("TOPLEFT", watch, "TOPRIGHT", 24, 0)
 		sliderOpacity.Orientation = "VERTICAL"
@@ -444,23 +441,21 @@ class "ColorPicker"
 		sliderOpacity.OnValueChanged = Slider_OnValueChanged
 
 		-- Okay Button
-		local btnOkay = NormalButton("OkayBtn", frame)
+		local btnOkay = NormalButton("OkayBtn", self)
 		btnOkay.Style = "CLASSIC"
 		btnOkay.Height = 24
 		btnOkay.Text = "Okay"
-		btnOkay:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 12)
-		btnOkay:SetPoint("RIGHT", frame, "CENTER")
+		btnOkay:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT", 6, 12)
+		btnOkay:SetPoint("RIGHT", self, "CENTER")
 		btnOkay.OnClick = Okay_OnClick
 
 		-- Cancel Button
-		local btnCancel = NormalButton("CancelBtn", frame)
+		local btnCancel = NormalButton("CancelBtn", self)
 		btnCancel.Style = "CLASSIC"
 		btnCancel.Height = 24
 		btnCancel.Text = "Cancel"
-		btnCancel:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -6, 12)
-		btnCancel:SetPoint("LEFT", frame, "CENTER")
+		btnCancel:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -6, 12)
+		btnCancel:SetPoint("LEFT", self, "CENTER")
 		btnCancel.OnClick = Cancel_OnClick
-
-		return frame
 	end
 endclass "ColorPicker"

@@ -608,12 +608,11 @@ class "Texture"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Texture(name, parent, ...)
+	function Constructor(self, name, parent, ...)
 		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
 			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
 		end
-
-		return UIObject(name, parent, IGAS:GetUI(parent):CreateTexture(nil, ...))
+		return IGAS:GetUI(parent):CreateTexture(nil, ...)
 	end
 endclass "Texture"
 

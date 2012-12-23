@@ -652,8 +652,8 @@ class "EditBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function EditBox(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("EditBox", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("EditBox", nil, parent, ...)
 	end
 endclass "EditBox"
 

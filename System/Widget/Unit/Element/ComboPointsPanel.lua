@@ -27,27 +27,6 @@ class "ComboPointsPanel"
 	-----------------------------------------------
 	class "ComboPoint"
 		inherit "System.Object"
-
-		------------------------------------------------------
-		-- Script
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-	    function ComboPoint(...)
-			local obj = Super(...)
-
-			return obj
-	    end
 	endclass "ComboPoint"
 
 	------------------------------------------------------
@@ -74,25 +53,22 @@ class "ComboPointsPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboPointsPanel(name, parent)
-		local panel = Super(name, parent)
+	function ComboPointsPanel(self, name, parent)
 		local pct = floor(10000 / MAX_COMBO_POINTS)
 
 		for i = 1, MAX_COMBO_POINTS do
-			local point = Texture("ComboPoint_"..i, panel)
+			local point = Texture("ComboPoint_"..i, self)
 
-			panel:AddWidget(point)
+			self:AddWidget(point)
 
 			if i < MAX_COMBO_POINTS then
-				panel:SetWidgetLeftWidth(point, (i-1)*pct, "pct", pct, "pct")
+				self:SetWidgetLeftWidth(point, (i-1)*pct, "pct", pct, "pct")
 			else
-				panel:SetWidgetLeftWidth(point, 100 - (MAX_COMBO_POINTS - 1) * pct, "pct", pct, "pct")
+				self:SetWidgetLeftWidth(point, 100 - (MAX_COMBO_POINTS - 1) * pct, "pct", pct, "pct")
 			end
 
 			point.TexturePath = [[Interface\ComboFrame\ComboPoint]]
 			point:SetTexCoord(0, 0.375, 0, 1)
 		end
-
-		return panel
 	end
 endclass "ComboPointsPanel"

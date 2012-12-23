@@ -336,38 +336,37 @@ class "TabGroup"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-        function TabButton(name, parent)
-            local tab = Button(name,parent)
-			tab:RegisterForClicks("AnyDown")
-            tab.Width = BUTTON_MINWIDTH
-            tab.Height = BUTTON_HEIGHT
+        function TabButton(self, name, parent)
+			self:RegisterForClicks("AnyDown")
+            self.Width = BUTTON_MINWIDTH
+            self.Height = BUTTON_HEIGHT
 
-            tab:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
-            local t = tab:GetHighlightTexture()
+            self:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
+            local t = self:GetHighlightTexture()
             t:SetBlendMode("ADD")
-            t:SetPoint("TOPLEFT",tab,"TOPLEFT",2,-7)
-            t:SetPoint("BOTTOMRIGHT",tab,"BOTTOMRIGHT",-2,-3)
+            t:SetPoint("TOPLEFT",self,"TOPLEFT",2,-7)
+            t:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-2,-3)
 
-            local left = Texture("Left", tab, "BACKGROUND")
-            local middle = Texture("Middle", tab, "BACKGROUND")
-            local right = Texture("Right", tab, "BACKGROUND")
-            local text = FontString("Text", tab, "BACKGROUND","GameFontNormalSmall")
+            local left = Texture("Left", self, "BACKGROUND")
+            local middle = Texture("Middle", self, "BACKGROUND")
+            local right = Texture("Right", self, "BACKGROUND")
+            local text = FontString("Text", self, "BACKGROUND","GameFontNormalSmall")
 
-            text:SetPoint("LEFT",tab,"LEFT",5,-4)
-            text:SetPoint("RIGHT",tab,"RIGHT",-5,-4)
+            text:SetPoint("LEFT",self,"LEFT",5,-4)
+            text:SetPoint("RIGHT",self,"RIGHT",-5,-4)
             text:SetHeight(18)
             text:SetText("NewTab")
 
 			left.TexturePath = [[Interface\OptionsFrame\UI-OptionsFrame-InActiveTab]]
 			left.Width = 20
 			left.Height = BUTTON_HEIGHT
-			left:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT")
+			left:SetPoint("BOTTOMLEFT", self, "BOTTOMLEFT")
 			left:SetTexCoord(0, 0.15625, 0, 1.0)
 
 			right.TexturePath = [[Interface\OptionsFrame\UI-OptionsFrame-InActiveTab]]
 			right.Width = 20
 			right.Height = BUTTON_HEIGHT
-			right:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT")
+			right:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT")
 			right:SetTexCoord(0.84375, 1.0, 0, 1.0)
 
 			middle.TexturePath = [[Interface\OptionsFrame\UI-OptionsFrame-InActiveTab]]
@@ -385,25 +384,23 @@ class "TabGroup"
 			container.MouseWheelEnabled = true
 			container.MouseEnabled = true
 
-            tab.__Container = container
+            self.__Container = container
 
-			tab.OnClick = tab.OnClick + OnClick
+			self.OnClick = self.OnClick + OnClick
 
             -- Parent map
             parent.__TabNum = (parent.__TabNum or 0) + 1
-            tab.__TabIndex = parent.__TabNum
+            self.__TabIndex = parent.__TabNum
 
 			--- Anchor
-			if tab.__TabIndex == 1 then
-				tab:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
+			if self.__TabIndex == 1 then
+				self:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
 			else
-				tab:SetPoint("BOTTOMLEFT", parent:GetChild("TabButton"..(tab.__TabIndex-1)), "BOTTOMRIGHT", 0, 0)
+				self:SetPoint("BOTTOMLEFT", parent:GetChild("TabButton"..(self.__TabIndex-1)), "BOTTOMRIGHT", 0, 0)
 			end
 			container:SetAllPoints(parent.__Root:GetChild("Body"))
 			--container:FixHeight()
 			container:Hide()
-
-            return tab
         end
     endclass "TabButton"
 
@@ -675,20 +672,18 @@ class "TabGroup"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function TabGroup(name, parent)
-		local frame = Frame(name,parent)
-
-		local closeButton = NormalButton("CloseBtn",frame)
-		closeButton:SetPoint("TOPRIGHT",frame,"TOPRIGHT")
+    function TabGroup(self, name, parent)
+		local closeButton = NormalButton("CloseBtn",self)
+		closeButton:SetPoint("TOPRIGHT",self,"TOPRIGHT")
         closeButton:Hide()
         closeButton.Style = "CLOSE"
 		closeButton.OnClick = CloseButtOnClick
 
-        local btnScrollRight = Button("RightBtn", frame)
+        local btnScrollRight = Button("RightBtn", self)
         btnScrollRight:SetWidth(32)
         btnScrollRight:SetHeight(32)
         btnScrollRight:ClearAllPoints()
-        btnScrollRight:SetPoint("TOP", frame, "TOP", 0, 0)
+        btnScrollRight:SetPoint("TOP", self, "TOP", 0, 0)
         btnScrollRight:SetPoint("RIGHT", closeButton, "LEFT", 0, 0)
         btnScrollRight:SetNormalTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up.blp")
         btnScrollRight:SetPushedTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down.blp")
@@ -697,11 +692,11 @@ class "TabGroup"
         btnScrollRight:Hide()
 		btnScrollRight.OnClick = OnRightBtnClk
 
-        local btnScrollLeft = Button("LeftBtn", frame)
+        local btnScrollLeft = Button("LeftBtn", self)
         btnScrollLeft:SetWidth(32)
         btnScrollLeft:SetHeight(32)
         btnScrollLeft:ClearAllPoints()
-        btnScrollLeft:SetPoint("TOP", frame, "TOP", 0, 0)
+        btnScrollLeft:SetPoint("TOP", self, "TOP", 0, 0)
         btnScrollLeft:SetPoint("RIGHT", btnScrollRight, "LEFT", 0, 0)
         btnScrollLeft:SetNormalTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up.blp")
         btnScrollLeft:SetPushedTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down.blp")
@@ -710,8 +705,8 @@ class "TabGroup"
         btnScrollLeft:Hide()
 		btnScrollLeft.OnClick = OnLeftBtnClk
 
-        local header = ScrollFrame("Header",frame)
-        header:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+        local header = ScrollFrame("Header",self)
+        header:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
 		header:SetPoint("RIGHT", btnScrollLeft, "LEFT", 0, 0)
         header.Height = BUTTON_HEIGHT
 		header.MouseEnabled = true
@@ -724,16 +719,14 @@ class "TabGroup"
         headerContainer.Width = header.Width
         headerContainer.__TabNum = 0
 
-		local body = Frame("Body", frame)
-		body:SetPoint("LEFT", frame, "LEFT", 0,0)
-		body:SetPoint("RIGHT", frame, "RIGHT", 0,0)
-		body:SetPoint("BOTTOM", frame, "BOTTOM", 0,0)
+		local body = Frame("Body", self)
+		body:SetPoint("LEFT", self, "LEFT", 0,0)
+		body:SetPoint("RIGHT", self, "RIGHT", 0,0)
+		body:SetPoint("BOTTOM", self, "BOTTOM", 0,0)
 		body:SetPoint("TOP", header, "BOTTOM", 0,0)
 
-        frame.__HeaderContainer = headerContainer
-        headerContainer.__Root = frame
-
-        return frame
+        self.__HeaderContainer = headerContainer
+        headerContainer.__Root = self
     end
 
 	------------------------------------------------------

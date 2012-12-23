@@ -345,8 +345,8 @@ class "SimpleHTML"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function SimpleHTML(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("SimpleHTML", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("SimpleHTML", nil, parent, ...)
 	end
 endclass "SimpleHTML"
 

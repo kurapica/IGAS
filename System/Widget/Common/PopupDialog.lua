@@ -454,39 +454,36 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PopupDialog(name, parent)
-		-- New Frame
-		local frame = Frame(name,parent)
+	function PopupDialog(self, name, parent)
+		self.Width = 320
+		self.Height = 72
+		self.MouseEnabled = true
+        self.Movable = true
+		self.FrameStrata = "FULLSCREEN_DIALOG"
+		self.Visible = false
+		self.Toplevel = true
 
-		frame.Width = 320
-		frame.Height = 72
-		frame.MouseEnabled = true
-        frame.Movable = true
-		frame.FrameStrata = "FULLSCREEN_DIALOG"
-		frame.Visible = false
-		frame.Toplevel = true
-
-		frame:SetPoint("CENTER",UIParent,"CENTER",0,0)
-		--frame:ClearAllPoints()
-		frame:SetBackdrop(_FrameBackdrop)
-		frame:SetBackdropColor(0,0,0,1)
-		frame:SetMinResize(400,200)
+		self:SetPoint("CENTER",UIParent,"CENTER",0,0)
+		--self:ClearAllPoints()
+		self:SetBackdrop(_FrameBackdrop)
+		self:SetBackdropColor(0,0,0,1)
+		self:SetMinResize(400,200)
 
 		-- Layers
-		local text = FontString("AlertText", frame, "ARTWORK", "GameFontHighlight")
+		local text = FontString("AlertText", self, "ARTWORK", "GameFontHighlight")
 		text.Width = 290
 		text.Height = 0
-		text:SetPoint("TOP", frame, "TOP", 0, -16)
+		text:SetPoint("TOP", self, "TOP", 0, -16)
 
-		local icon = Texture("AlertIcon", frame, "ARTWORK")
+		local icon = Texture("AlertIcon", self, "ARTWORK")
 		icon:SetTexture("Interface\\DialogFrame\\DialogAlertIcon")
 		icon.Height = 64
 		icon.Width = 64
 		icon.Visible = false
-		icon:SetPoint("LEFT", frame, "LEFT", 12, 0)
+		icon:SetPoint("LEFT", self, "LEFT", 12, 0)
 
 		-- Okay Button
-		local btnOkay = NormalButton("OkayBtn", frame)
+		local btnOkay = NormalButton("OkayBtn", self)
 		btnOkay.Style = "CLASSIC"
 		btnOkay.Height = 20
 		btnOkay.Width = 128
@@ -494,7 +491,7 @@ class "PopupDialog"
 		btnOkay.Text = "Okay"
 
 		-- No Button
-		local btnNo = NormalButton("NoBtn", frame)
+		local btnNo = NormalButton("NoBtn", self)
 		btnNo.Style = "CLASSIC"
 		btnNo.Height = 20
 		btnNo.Width = 128
@@ -502,7 +499,7 @@ class "PopupDialog"
 		btnNo.Text = "No"
 
 		-- Cancel Button
-		local btnCancel = NormalButton("CancelBtn", frame)
+		local btnCancel = NormalButton("CancelBtn", self)
 		btnCancel.Style = "CLASSIC"
 		btnCancel.Height = 20
 		btnCancel.Width = 128
@@ -510,18 +507,18 @@ class "PopupDialog"
 		btnCancel.Text = "Cancel"
 
 		-- SingleTextBox
-		local txtInput = ComboBox("InputTxt", frame)
+		local txtInput = ComboBox("InputTxt", self)
 		txtInput.Height = 32
 		txtInput.Width = 240
 		txtInput.Visible = false
 		txtInput.HideDropDownButton = true
 		txtInput.Editable = true
 		txtInput.AutoFocus = true
-		txtInput:SetPoint("BOTTOM", frame, "BOTTOM", 0, 45)
+		txtInput:SetPoint("BOTTOM", self, "BOTTOM", 0, 45)
 
-		frame.OnMouseDown = frame.OnMouseDown + OnMouseDown
-		frame.OnMouseUp = frame.OnMouseUp + OnMouseUp
-		frame.OnShow = frame.OnShow + OnShow
+		self.OnMouseDown = self.OnMouseDown + OnMouseDown
+		self.OnMouseUp = self.OnMouseUp + OnMouseUp
+		self.OnShow = self.OnShow + OnShow
 
 		btnOkay.OnClick = Okay_OnClick
 		btnNo.OnClick = No_OnClick
@@ -530,7 +527,5 @@ class "PopupDialog"
 		txtInput.OnTextChanged = OnTextChanged
 		txtInput.OnEnterPressed = OnEnterPressed
 		txtInput.OnEscapePressed = OnEscapePressed
-
-		return frame
 	end
 endclass "PopupDialog"

@@ -61,8 +61,8 @@ class "DressUpModel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DressUpModel(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("DressUpModel", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("DressUpModel", nil, parent, ...)
 	end
 endclass "DressUpModel"
 

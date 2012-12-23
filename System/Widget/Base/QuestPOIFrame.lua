@@ -142,8 +142,8 @@ class "QuestPOIFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function QuestPOIFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("QuestPOIFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("QuestPOIFrame", nil, parent, ...)
 	end
 endclass "QuestPOIFrame"
 

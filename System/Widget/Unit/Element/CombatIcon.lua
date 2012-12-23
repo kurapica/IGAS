@@ -21,12 +21,8 @@ class "CombatIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CombatIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 32
-		icon.Width = 32
-
-		return icon
+	function CombatIcon(self)
+		self.Height = 32
+		self.Width = 32
 	end
 endclass "CombatIcon"

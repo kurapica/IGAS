@@ -137,41 +137,40 @@ class "SpellActivationAlert"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SpellActivationAlert(...)
-		local frame = Super(...)
-		frame.FrameStrata = "DIALOG"
-		frame.Visible = false
-		frame.OnUpdate = frame.OnUpdate + OnUpdate
-		frame.OnHide = frame.OnHide + OnHide
+    function SpellActivationAlert(self)
+		self.FrameStrata = "DIALOG"
+		self.Visible = false
+		self.OnUpdate = self.OnUpdate + OnUpdate
+		self.OnHide = self.OnHide + OnHide
 
 		-- BACKGROUND
-		local spark = Texture("Spark", frame, "BACKGROUND")
+		local spark = Texture("Spark", self, "BACKGROUND")
 		spark.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
 		spark:SetTexCoord(0.00781250, 0.61718750, 0.00390625, 0.26953125)
-		spark:SetAllPoints(frame)
+		spark:SetAllPoints(self)
 		spark.Alpha = 0
 
 		-- ARTWORK
-		local innerGlow = Texture("InnerGlow", frame, "ARTWORK")
+		local innerGlow = Texture("InnerGlow", self, "ARTWORK")
 		innerGlow.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
 		innerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-		innerGlow:SetAllPoints(frame)
+		innerGlow:SetAllPoints(self)
 		innerGlow.Alpha = 0
 
-		local innerGlowOver = Texture("InnerGlowOver", frame, "ARTWORK")
+		local innerGlowOver = Texture("InnerGlowOver", self, "ARTWORK")
 		innerGlowOver.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
 		innerGlow:SetTexCoord(0.00781250, 0.50781250, 0.53515625, 0.78515625)
 		innerGlowOver:SetPoint("TOPLEFT", innerGlow, "TOPLEFT")
 		innerGlowOver:SetPoint("BOTTOMRIGHT", innerGlow, "BOTTOMRIGHT")
 		innerGlowOver.Alpha = 0
 
-		local outerGlow = Texture("OuterGlow", frame, "ARTWORK")
+		local outerGlow = Texture("OuterGlow", self, "ARTWORK")
 		outerGlow.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
 		outerGlow:SetTexCoord(0.00781250, 0.50781250, 0.27734375, 0.52734375)
-		outerGlow:SetAllPoints(frame)
+		outerGlow:SetAllPoints(self)
 		outerGlow.Alpha = 1
 
-		local outerGlowOver = Texture("OuterGlowOver", frame, "ARTWORK")
+		local outerGlowOver = Texture("OuterGlowOver", self, "ARTWORK")
 		outerGlowOver.TexturePath = [[Interface\SpellActivationOverlay\IconAlert]]
 		outerGlowOver:SetTexCoord(0.00781250, 0.50781250, 0.53515625, 0.78515625)
 		outerGlowOver:SetPoint("TOPLEFT", outerGlow, "TOPLEFT")
@@ -179,9 +178,9 @@ class "SpellActivationAlert"
 		outerGlowOver.Alpha = 1
 
 		-- OVERLAY
-		local ants = Texture("Ants", frame, "OVERLAY")
+		local ants = Texture("Ants", self, "OVERLAY")
 		ants.TexturePath = [[Interface\SpellActivationOverlay\IconAlertAnts]]
-		ants:SetAllPoints(frame)
+		ants:SetAllPoints(self)
 		ants.Alpha = 1
 
 		local scale, alpha
@@ -304,7 +303,5 @@ class "SpellActivationAlert"
 		alpha.Change = -1
 
 		animOutOuterGlowOver.OnFinished = AnimOut_OnFinished
-
-		return frame
     end
 endclass "SpellActivationAlert"

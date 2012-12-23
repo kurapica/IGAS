@@ -67,19 +67,18 @@ class "ComboBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function ComboPoint(...)
-			local point = Super(...)
-			point:SetSize(18, 17)
+	    function ComboPoint(self)
+			self:SetSize(18, 17)
 
 			-- BACKGROUND
-			local bg = Texture("Bg", point, "BACKGROUND")
+			local bg = Texture("Bg", self, "BACKGROUND")
 			bg.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 			bg:SetTexCoord(0.09375000, 0.17578125, 0.71093750, 0.87500000)
 			bg:SetSize(21, 21)
 			bg:SetPoint("CENTER")
 
 			-- ARTWORK
-			local glow = Texture("Glow", point, "ARTWORK")
+			local glow = Texture("Glow", self, "ARTWORK")
 			glow.Alpha = 0
 			glow.TexturePath = [[Interface\PlayerFrame\MonkUI]]
 			glow:SetTexCoord(0.00390625, 0.08593750, 0.71093750, 0.87500000)
@@ -102,8 +101,6 @@ class "ComboBar"
 			alpha.Change = -1
 
 			deactivate.OnFinished = Deactivate_OnFinished
-
-			return point
 	    end
 	endclass "ComboPoint"
 
@@ -134,31 +131,27 @@ class "ComboBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboBar(name, parent)
-		local panel = Super(name, parent)
+	function ComboBar(self, name, parent)
+		self.__Value = 0
 
-		panel.__Value = 0
-
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(136, 20)
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(136, 20)
 
 		-- ComboPoint
 		local prev
 
 		for i = 1, MAX_COMBO_POINTS do
-			local light = ComboPoint("ComboPoint"..i, panel)
+			local light = ComboPoint("ComboPoint"..i, self)
 
 			if i == 1 then
-				light:SetPoint("LEFT", (panel.Width - light.Width * 5 - 6 * 3) / 2, 1)
+				light:SetPoint("LEFT", (self.Width - light.Width * 5 - 6 * 3) / 2, 1)
 			else
 				light:SetPoint("LEFT", prev, "RIGHT", 5, 0)
 			end
 
 			prev = light
-			panel[i] = light
+			self[i] = light
 		end
-
-		return panel
 	end
 endclass "ComboBar"

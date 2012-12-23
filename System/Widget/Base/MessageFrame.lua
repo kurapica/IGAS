@@ -192,8 +192,8 @@ class "MessageFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MessageFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("MessageFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("MessageFrame", nil, parent, ...)
 	end
 endclass "MessageFrame"
 

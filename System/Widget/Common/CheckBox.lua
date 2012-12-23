@@ -273,16 +273,13 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CheckBox(name, parent)
-		-- New Frame
-		local frame = Button(name,parent)
+	function CheckBox(self, name, parent)
+        self.Height = 24
+        self.Width = 100
+        self.MouseEnabled = true
 
-        frame.Height = 24
-        frame.Width = 100
-        frame.MouseEnabled = true
-
-        local chkBtn = CheckButton("ChkBtn", frame)
-        chkBtn:SetPoint("LEFT", frame, "LEFT")
+        local chkBtn = CheckButton("ChkBtn", self)
+        chkBtn:SetPoint("LEFT", self, "LEFT")
         chkBtn.MouseEnabled = false
 
 		chkBtn.Height = 26
@@ -293,23 +290,21 @@ class "CheckBox"
 		chkBtn:SetCheckedTexture([[Interface\Buttons\UI-CheckBox-Check]])
 		chkBtn:SetDisabledCheckedTexture([[Interface\Buttons\UI-CheckBox-Check-Disabled]])
 
-        local text = FontString("Text",frame,"OVERLAY","GameFontNormal")
+        local text = FontString("Text",self,"OVERLAY","GameFontNormal")
         text.JustifyH = "LEFT"
 		text.JustifyV = "MIDDLE"
-        text:SetPoint("TOP", frame, "TOP")
+        text:SetPoint("TOP", self, "TOP")
         text:SetPoint("LEFT", chkBtn, "RIGHT")
-        text:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+        text:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT")
         text.Text = ""
 
-        frame:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
-        local t = frame:GetHighlightTexture()
+        self:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
+        local t = self:GetHighlightTexture()
         t:SetBlendMode("ADD")
         t:SetAllPoints(text)
 
-        frame.OnEnter = frame.OnEnter + OnEnter
-        frame.OnLeave = frame.OnLeave + OnLeave
-        frame.OnClick = frame.OnClick + OnClick
-
-		return frame
+        self.OnEnter = self.OnEnter + OnEnter
+        self.OnLeave = self.OnLeave + OnLeave
+        self.OnClick = self.OnClick + OnClick
 	end
 endclass "CheckBox"

@@ -121,8 +121,8 @@ class "ArchaeologyDigSiteFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ArchaeologyDigSiteFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("ArchaeologyDigSiteFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ArchaeologyDigSiteFrame", nil, parent, ...)
 	end
 endclass "ArchaeologyDigSiteFrame"
 

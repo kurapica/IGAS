@@ -576,26 +576,22 @@ class "Array"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Array(cls)
-		local arr = {}
-
+	function Array(self, cls)
 		if type(cls) == "string" then
 			cls = Reflector.ForName(cls)
 		end
 
 		if cls and Reflector.IsClass(cls) then
-			_ArrayInfo[arr] = {
+			_ArrayInfo[self] = {
 				Type = cls,
 				IsClass = true,
 			}
 		elseif cls and Reflector.IsStruct(cls) then
-			_ArrayInfo[arr] = {
+			_ArrayInfo[self] = {
 				Type = cls,
 				IsStruct = true,
 			}
 		end
-
-		return arr
 	end
 
 	------------------------------------------------------

@@ -89,16 +89,12 @@ class "RoleIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RoleIcon(...)
-		local icon = Super(...)
+	function RoleIcon(self)
+		self.Height = 16
+		self.Width = 16
 
-		icon.Height = 16
-		icon.Width = 16
+		self.TexturePath = [[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]]
 
-		icon.TexturePath = [[Interface\LFGFrame\UI-LFG-ICON-PORTRAITROLES]]
-
-		_RoleIcon_HideInCombat[icon] = true
-
-		return icon
+		_RoleIcon_HideInCombat[self] = true
 	end
 endclass "RoleIcon"

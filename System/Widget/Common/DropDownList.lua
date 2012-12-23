@@ -708,53 +708,52 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-        function DropDownMenuButton(name, parent)
+        function DropDownMenuButton(self, name, parent)
 			parent = parent.__DdList or parent
 
-			local btn = Button(name, parent)
             local maxID = parent.__ItemCount or 0
 
-            btn.Width = 100
-            btn.Height = itemHeight
+            self.Width = 100
+            self.Height = itemHeight
 
             maxID = maxID + 1
-            btn.__Index = maxID
+            self.__Index = maxID
             parent.__ItemCount = maxID
 
             -- Anchor
-            btn:SetPoint("LEFT", parent, "LEFT", 4, 0)
-            btn:SetPoint("RIGHT", parent, "RIGHT", -4, 0)
-            btn:SetPoint("TOP", parent, "TOP", 0, - (16 + itemHeight * (maxID - 1)))
+            self:SetPoint("LEFT", parent, "LEFT", 4, 0)
+            self:SetPoint("RIGHT", parent, "RIGHT", -4, 0)
+            self:SetPoint("TOP", parent, "TOP", 0, - (16 + itemHeight * (maxID - 1)))
             parent.Height = 32 + itemHeight * maxID
 
             -- HighLightTexture
-            local highLight = Texture("HighLight", btn, "BACKGROUND")
+            local highLight = Texture("HighLight", self, "BACKGROUND")
             highLight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
             highLight:SetBlendMode("ADD")
-            highLight:SetAllPoints(btn)
+            highLight:SetAllPoints(self)
             highLight.Visible = false
 
             -- CheckTexture
-            local check = Texture("Check", btn, "ARTWORK")
+            local check = Texture("Check", self, "ARTWORK")
             check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
             check.Height = 18
             check.Width = 18
 			check.Visible = false
-            check:SetPoint("LEFT", btn, "LEFT")
+            check:SetPoint("LEFT", self, "LEFT")
 
             -- IconTexture
-            local icon = Texture("Icon", btn, "ARTWORK")
+            local icon = Texture("Icon", self, "ARTWORK")
             icon.Height = 16
             icon.Width = 16
             icon.Visible = false
-            icon:SetPoint("LEFT", btn, "LEFT")
+            icon:SetPoint("LEFT", self, "LEFT")
 
             -- ColorSwatch
-            local colorsWatch = Button("ColorSwatch", btn)
+            local colorsWatch = Button("ColorSwatch", self)
             colorsWatch.Height = 16
             colorsWatch.Width = 16
             colorsWatch.Visible = false
-            colorsWatch:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
+            colorsWatch:SetPoint("RIGHT", self, "RIGHT", -6, 0)
             colorsWatch:SetNormalTexture("Interface\\ChatFrame\\ChatFrameColorSwatch")
 
             local colorBack = Texture("SwatchBg", colorsWatch, "BACKGROUND")
@@ -769,11 +768,11 @@ class "DropDownList"
             colorsWatch.OnLeave = colorsWatch_OnLeave
 
             -- ExpandArrow
-            local expandArrow = Button("ExpandArrow", btn)
+            local expandArrow = Button("ExpandArrow", self)
             expandArrow.Height = 16
             expandArrow.Width = 16
             expandArrow.Visible = false
-            expandArrow:SetPoint("RIGHT", btn, "RIGHT", 0, 0)
+            expandArrow:SetPoint("RIGHT", self, "RIGHT", 0, 0)
             expandArrow:SetNormalTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
 
             expandArrow.OnClick = expandArrow_OnClick
@@ -781,23 +780,21 @@ class "DropDownList"
             expandArrow.OnLeave = expandArrow_OnLeave
 
             -- FontString
-            local text = FontString("Text",btn,"OVERLAY","GameFontNormal")
+            local text = FontString("Text",self,"OVERLAY","GameFontNormal")
             text.JustifyH = "LEFT"
-            text:SetPoint("LEFT", btn, "LEFT", 18, 0)
+            text:SetPoint("LEFT", self, "LEFT", 18, 0)
             text:SetHeight(16)
-            btn:SetFontString(text)
+            self:SetFontString(text)
 
             -- Script
-            btn.OnEnter = btn.OnEnter + item_OnEnter
-            btn.OnLeave = btn.OnLeave + item_OnLeave
-            btn.OnClick = btn.OnClick + OnClick
+            self.OnEnter = self.OnEnter + item_OnEnter
+            self.OnLeave = self.OnLeave + item_OnLeave
+            self.OnClick = self.OnClick + OnClick
 
             --- Font
-            btn:SetNormalFontObject(GameFontHighlightSmallLeft)
-            btn:SetDisabledFontObject(GameFontDisableSmallLeft)
-            btn:SetHighlightFontObject(GameFontHighlightSmallLeft)
-
-            return btn
+            self:SetNormalFontObject(GameFontHighlightSmallLeft)
+            self:SetDisabledFontObject(GameFontDisableSmallLeft)
+            self:SetHighlightFontObject(GameFontHighlightSmallLeft)
         end
     endclass "DropDownMenuButton"
 
@@ -1815,11 +1812,10 @@ class "DropDownList"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DropDownList(name, parent)
-		local mask = VirtualUIObject(name, parent)
+	function DropDownList(self, name, parent)
         local frame = Button(nil, _DropDownListContainer)
-		frame.__Mask = mask
-		mask.__DdList = frame
+		frame.__Mask = self
+		self.__DdList = frame
 
         frame.FrameStrata = "TOOLTIP"
         frame.MouseWheelEnabled = true
@@ -1846,7 +1842,5 @@ class "DropDownList"
 
         -- MenuLevel
         frame.__MenuLevel = 1
-
-		return mask
 	end
 endclass "DropDownList"

@@ -461,10 +461,8 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function HTMLViewer(name, parent)
-		local frame = ScrollForm(name, parent)
-
-		local container = frame.Container
+    function HTMLViewer(self, name, parent)
+		local container = self.Container
 
 		local html = SimpleHTML("HTMLViewer", container)
 		html:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -474,15 +472,13 @@ class "HTMLViewer"
 		html.HyperlinksEnabled = true
 		html:SetHyperlinkFormat("|H%s|h%s|h")
 
-		html.__Container = frame
-		frame.__HTMLViewer = html
+		html.__Container = self
+		self.__HTMLViewer = html
 
 		html.OnHyperlinkClick = html.OnHyperlinkClick + OnHyperlinkClick
 		html.OnHyperlinkEnter = html.OnHyperlinkEnter + OnHyperlinkEnter
 		html.OnHyperlinkLeave = html.OnHyperlinkLeave + OnHyperlinkLeave
 
-		frame:FixHeight()
-
-		return frame
+		self:FixHeight()
 	end
 endclass "HTMLViewer"

@@ -104,8 +104,8 @@ class "PlayerModel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PlayerModel(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("PlayerModel", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("PlayerModel", nil, parent, ...)
 	end
 endclass "PlayerModel"
 

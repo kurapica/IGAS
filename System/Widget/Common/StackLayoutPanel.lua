@@ -56,9 +56,4 @@ class "StackLayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function StackLayoutPanel(name, parent)
-		local panel = Super(name, parent)
-
-		return panel
-    end
 endclass "StackLayoutPanel"

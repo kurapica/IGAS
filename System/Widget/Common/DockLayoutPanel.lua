@@ -446,9 +446,4 @@ class "DockLayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DockLayoutPanel(name, parent)
-		local panel = Super(name, parent)
-
-		return panel
-	end
 endclass "DockLayoutPanel"

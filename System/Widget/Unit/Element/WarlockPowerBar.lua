@@ -108,12 +108,10 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Shard(...)
-			local obj = Super(...)
+	    function Shard(self)
+			self:SetSize(52, 29)
 
-			obj:SetSize(52, 29)
-
-			local glow = Texture("Glow", obj, "OVERLAY")
+			local glow = Texture("Glow", self, "OVERLAY")
 			glow.BlendMode = "ADD"
 			glow.Alpha = 0
 			glow.TexturePath = [[Interface\PlayerFrame\UI-WarlockShard]]
@@ -121,28 +119,28 @@ class "WarlockPowerBar"
 			glow:SetPoint("TOPLEFT", -2, 1)
 			glow:SetTexCoord(0.01562500, 0.42187500, 0.14843750, 0.32812500)
 
-			local smokeA = Texture("SmokeA", obj, "OVERLAY")
+			local smokeA = Texture("SmokeA", self, "OVERLAY")
 			smokeA.TexturePath = [[Interface\PlayerFrame\UI-WarlockShard]]
 			smokeA:SetSize(32, 32)
 			smokeA:SetPoint("TOPLEFT", -8, 5)
 			smokeA:SetTexCoord(0.01562500, 0.51562500, 0.34375000, 0.59375000)
 			smokeA.Alpha = 0
 
-			local smokeB = Texture("SmokeB", obj, "OVERLAY")
+			local smokeB = Texture("SmokeB", self, "OVERLAY")
 			smokeB.TexturePath = [[Interface\PlayerFrame\UI-WarlockShard]]
 			smokeB:SetSize(32, 32)
 			smokeB:SetPoint("TOPLEFT", smokeA, "TOPLEFT")
 			smokeB:SetTexCoord(0.01562500, 0.51562500, 0.34375000, 0.59375000)
 			smokeB.Alpha = 0
 
-			local fill = Texture("Fill", obj, "ARTWORK")
+			local fill = Texture("Fill", self, "ARTWORK")
 			fill.TexturePath = [[Interface\PlayerFrame\UI-WarlockShard]]
 			fill:SetSize(17, 16)
 			fill:SetPoint("TOPLEFT", 3, -2)
 			fill:SetTexCoord(0.01562500, 0.28125000, 0.00781250, 0.13281250)
 			fill.Visible = false
 
-			local border = Texture("Border", obj, "BORDER")
+			local border = Texture("Border", self, "BORDER")
 			border.TexturePath = [[Interface\PlayerFrame\UI-WarlockShard]]
 			border:SetSize(52, 29)
 			border:SetPoint("TOPLEFT", -5, 3)
@@ -234,8 +232,6 @@ class "WarlockPowerBar"
 			scale.Duration = 0.25
 			scale.Order = 2
 			scale.Scale = Dimension(0.4, 0.4)
-
-			return obj
 	    end
 	endclass "Shard"
 
@@ -297,36 +293,34 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function BurningEmber(...)
-			local obj = Super(...)
+	    function BurningEmber(self)
+			self:SetSize(36, 39)
 
-			obj:SetSize(36, 39)
-
-			local border = Texture("Border", obj, "BORDER")
+			local border = Texture("Border", self, "BORDER")
 			border:SetAllPoints()
 			border.TexturePath = [[Interface\PlayerFrame\Warlock-DestructionUI]]
 			border:SetTexCoord(0.15234375, 0.29296875, 0.32812500, 0.93750000)
 
-			local fill = Texture("Fill", obj, "ARTWORK")
+			local fill = Texture("Fill", self, "ARTWORK")
 			fill:SetSize(20, 22)
 			fill:SetPoint("BOTTOM", 0, 7)
 			fill.TexturePath = [[Interface\PlayerFrame\Warlock-DestructionUI]]
 			fill:SetTexCoord(0.30078125, 0.37890625, 0.32812500, 0.67187500)
 
-			local fireIcon = Texture("FireIcon", obj, "ARTWORK", nil, 1)
+			local fireIcon = Texture("FireIcon", self, "ARTWORK", nil, 1)
 			fireIcon.TexturePath = [[Interface\PlayerFrame\Warlock-DestructionUI]]
 			fireIcon:SetAllPoints()
 			fireIcon.Visible = false
 			fireIcon:SetTexCoord(0.00390625, 0.14453125, 0.32812500, 0.93750000)
 
-			local glow = Texture("Glow", obj, "OVERLAY")
+			local glow = Texture("Glow", self, "OVERLAY")
 			glow.TexturePath = [[Interface\PlayerFrame\Warlock-DestructionUI]]
 			glow:SetAllPoints()
 			glow.BlendMode = "ADD"
 			glow.Alpha = 0
 			glow:SetTexCoord(0.00390625, 0.14453125, 0.32812500, 0.93750000)
 
-			local glow2 = Texture("Glow2", obj, "OVERLAY")
+			local glow2 = Texture("Glow2", self, "OVERLAY")
 			glow2.TexturePath = [[Interface\PlayerFrame\Warlock-DestructionUI]]
 			glow2:SetAllPoints()
 			glow2.BlendMode = "ADD"
@@ -386,8 +380,6 @@ class "WarlockPowerBar"
 			alpha.Change = -1
 
 			animOut.OnFinished = AnimOut_OnFinished
-
-			return obj
 	    end
 	endclass "BurningEmber"
 
@@ -632,19 +624,17 @@ class "WarlockPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function WarlockPowerBar(name, parent)
-		local panel = Super(name, parent)
+	function WarlockPowerBar(self, name, parent)
+		self.__Value = 0
+		self.__Min, self.__Max = 0, 0
 
-		panel.__Value = 0
-		panel.__Min, panel.__Max = 0, 0
+		self.FrameStrata = "LOW"
+		self.Toplevel = true
+		self:SetSize(110, 25)
 
-		panel.FrameStrata = "LOW"
-		panel.Toplevel = true
-		panel:SetSize(110, 25)
+		self.OnEvent = UNIT_AURA
 
-		panel.OnEvent = UNIT_AURA
-
-		local showAnim = AnimationGroup("ShowAnim", panel)
+		local showAnim = AnimationGroup("ShowAnim", self)
 		showAnim.OnFinished = ShowAnim_OnFinished
 
 		local alpha = Alpha("Alpha", showAnim)
@@ -653,7 +643,7 @@ class "WarlockPowerBar"
 		alpha.Change = 1
 
 		-- ShardBarFrame
-		local shardBar = Frame("ShardBarFrame", panel)
+		local shardBar = Frame("ShardBarFrame", self)
 		shardBar.Visible = false
 		shardBar.MouseEnabled = true
 		shardBar:SetSize(110, 25)
@@ -676,7 +666,7 @@ class "WarlockPowerBar"
 		end
 
 		-- DemonicFuryBarFrame
-		local demonicBar = Frame("DemonicFuryBarFrame", panel)
+		local demonicBar = Frame("DemonicFuryBarFrame", self)
 		demonicBar.Visible = false
 		demonicBar.MouseEnabled = true
 		demonicBar:SetSize(169, 52)
@@ -713,7 +703,7 @@ class "WarlockPowerBar"
 		powerText:SetPoint("CENTER", 0, -2)
 
 		-- BurningEmbersBarFrame
-		local burningBar = Frame("BurningEmbersBarFrame", panel)
+		local burningBar = Frame("BurningEmbersBarFrame", self)
 		burningBar.Visible = false
 		burningBar.MouseEnabled = true
 		burningBar:SetSize(148, 18)
@@ -739,7 +729,5 @@ class "WarlockPowerBar"
 				burningBar[i]:SetPoint("LEFT", burningBar[i-1], "LEFT", 40, 0)
 			end
 		end
-
-		return panel
 	end
 endclass "WarlockPowerBar"

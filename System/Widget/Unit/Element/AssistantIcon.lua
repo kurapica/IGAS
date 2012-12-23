@@ -21,12 +21,8 @@ class "AssistantIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function AssistantIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function AssistantIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "AssistantIcon"

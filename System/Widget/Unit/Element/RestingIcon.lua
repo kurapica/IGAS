@@ -21,12 +21,8 @@ class "RestingIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RestingIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 16
-		icon.Width = 16
-
-		return icon
+	function RestingIcon(self)
+		self.Height = 16
+		self.Width = 16
 	end
 endclass "RestingIcon"

@@ -164,8 +164,8 @@ class "ScrollFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ScrollFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("ScrollFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollFrame", nil, parent, ...)
 	end
 endclass "ScrollFrame"
 

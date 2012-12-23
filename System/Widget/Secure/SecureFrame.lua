@@ -35,15 +35,11 @@ class "SecureFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SecureFrame(name, parent, ...)
-		local frame
-
+	function Constructor(self, name, parent, ...)
 		if select('#', ...) > 0 then
-			frame = UIObject(name, parent, CreateFrame("Frame", name, parent, ...))
+			return CreateFrame("Frame", name, parent, ...)
 		else
-			frame = UIObject(name, parent, CreateFrame("Frame", name, parent, "SecureFrameTemplate"))
+			return CreateFrame("Frame", name, parent, "SecureFrameTemplate")
 		end
-
-		return frame
-    end
+	end
 endclass "SecureFrame"

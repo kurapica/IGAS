@@ -41,12 +41,8 @@ class "PvpIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PvpIcon(...)
-		local icon = Super(...)
-
-		icon.Height = 64
-		icon.Width = 64
-
-		return icon
+	function PvpIcon(self)
+		self.Height = 64
+		self.Width = 64
 	end
 endclass "PvpIcon"

@@ -440,21 +440,22 @@ class "Font"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Font(name)
-		local fontObject = CreateFont(name)
-		local obj = Object()
+	function Font(self, name)
+		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
 
-		obj[0] = fontObject[0]
-		obj.__UI = fontObject
-		fontObject.__Wrapper = obj
+		if not fontObject or type(fontObject) ~= "table" or type(fontObject[0]) ~= "userdata" then
+			error("No font is found.", 2)
+		end
 
-		return obj
+		self[0] = fontObject[0]
+		self.__UI = fontObject
+		fontObject.__Wrapper = self
 	end
 
 	------------------------------------------------------
 	-- Exist checking
 	------------------------------------------------------
-	function __exist(cls, fontObject)
+	function __exist(fontObject)
 		if type(fontObject) == "string" then
 			fontObject = _G[fontObject] or fontObject
 		end
@@ -471,18 +472,6 @@ class "Font"
 			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
 				return fontObject.__Wrapper
 			end
-
-			local obj = Object()
-
-			obj[0] = fontObject[0]
-			obj.__UI = fontObject
-			fontObject.__Wrapper = obj
-
-			return obj
-		elseif type(fontObject) == "string" then
-			return nil
-		else
-			error(("Usage : %s(font) : 'font' - font object expected."):format(Reflector.GetName(cls)))
 		end
 	end
 endclass "Font"

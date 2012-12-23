@@ -152,22 +152,18 @@ class "SingleTextBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SingleTextBox(name, parent)
-		-- New Frame
-		local txtBox = EditBox(name, parent)
-		txtBox.Height = 25
-		txtBox.FontObject = "GameFontNormal"
-		txtBox:SetTextInsets(4 , -4, 0, 0)
-        txtBox.MouseEnabled = true
-        txtBox.AutoFocus = false
-		txtBox:SetBackdrop(_FrameBackdropLight)
-        txtBox:SetBackdropColor(0, 0, 0, 1)
-		txtBox.__Style = TEMPLATE_LIGHT
+    function SingleTextBox(self, name, parent)
+		self.Height = 25
+		self.FontObject = "GameFontNormal"
+		self:SetTextInsets(4 , -4, 0, 0)
+        self.MouseEnabled = true
+        self.AutoFocus = false
+		self:SetBackdrop(_FrameBackdropLight)
+        self:SetBackdropColor(0, 0, 0, 1)
+		self.__Style = TEMPLATE_LIGHT
 
-        txtBox.OnEscapePressed = txtBox.OnEscapePressed + OnEscapePressed
-        txtBox.OnEditFocusLost = txtBox.OnEditFocusLost + OnEditFocusLost
-        txtBox.OnEditFocusGained = txtBox.OnEditFocusGained + OnEditFocusGained
-
-		return txtBox
+        self.OnEscapePressed = self.OnEscapePressed + OnEscapePressed
+        self.OnEditFocusLost = self.OnEditFocusLost + OnEditFocusLost
+        self.OnEditFocusGained = self.OnEditFocusGained + OnEditFocusGained
 	end
 endclass "SingleTextBox"

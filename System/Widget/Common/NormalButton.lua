@@ -188,11 +188,7 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function NormalButton(name, parent, ...)
-		local frame = Button(name, parent)
-
-		frame.__Style = TEMPLATE_NONE
-
-		return frame
+	function NormalButton(self)
+		self.__Style = TEMPLATE_NONE
 	end
 endclass "NormalButton"

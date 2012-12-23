@@ -61,8 +61,8 @@ class "MovieFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MovieFrame(name, parent, ...)
-		return UIObject(name, parent, CreateFrame("MovieFrame", nil, parent, ...))
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("MovieFrame", nil, parent, ...)
 	end
 endclass "MovieFrame"
 
