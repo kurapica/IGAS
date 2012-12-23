@@ -11,13 +11,13 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealth", version) then
 	return
 end
 
 _IFHealthUnitList = _IFHealthUnitList or UnitList(_Name)
-
+_IFHealthUnitMaxHealthCache = _IFHealthUnitMaxHealthCache or {}
 _MinMax = MinMax(0, 1)
 
 function _IFHealthUnitList:OnUnitListChanged()
@@ -32,6 +32,12 @@ function _IFHealthUnitList:ParseEvent(event, unit)
 	if not self:HasUnit(unit) and event ~= "PLAYER_ENTERING_WORLD" then return end
 
 	if event == "UNIT_HEALTH" then
+		_MinMax.max = UnitHealthMax(unit)
+		if _IFHealthUnitMaxHealthCache[unit] ~= _MinMax.max then
+			_IFHealthUnitMaxHealthCache[unit] = _MinMax.max
+			self:EachK(unit, "MinMaxValue", _MinMax)
+		end
+
 		if UnitIsConnected(unit) then
 			self:EachK(unit, "Value", UnitHealth(unit))
 		else
@@ -39,6 +45,8 @@ function _IFHealthUnitList:ParseEvent(event, unit)
 		end
 	elseif event == "UNIT_MAXHEALTH" then
 		_MinMax.max = UnitHealthMax(unit)
+		_IFHealthUnitMaxHealthCache[unit] = _MinMax.max
+
 		self:EachK(unit, "MinMaxValue", _MinMax)
 		self:EachK(unit, "Value", UnitHealth(unit))
 	elseif event == "PLAYER_ENTERING_WORLD" then

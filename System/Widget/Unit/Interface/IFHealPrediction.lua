@@ -26,6 +26,7 @@ end
 
 _IFMyHealPredictionUnitList = _IFMyHealPredictionUnitList or UnitList(_Name.."My")
 _IFAllHealPredictionUnitList = _IFAllHealPredictionUnitList or UnitList(_Name.."All")
+_IFHealPredictionUnitMaxHealthCache = _IFHealPredictionUnitMaxHealthCache or {}
 
 _MinMax = MinMax(0, 1)
 
@@ -56,6 +57,13 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 			local health = UnitHealth(unit)
 			local maxHealth = UnitHealthMax(unit)
 
+			if _IFHealPredictionUnitMaxHealthCache[unit] ~= maxHealth then
+				_MinMax.max = maxHealth
+				_IFHealPredictionUnitMaxHealthCache[unit] = maxHealth
+				_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+				_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+			end
+
 			--See how far we're going over.
 			if ( health + allIncomingHeal > maxHealth * MAX_INCOMING_HEAL_OVERFLOW ) then
 				allIncomingHeal = maxHealth * MAX_INCOMING_HEAL_OVERFLOW - health
@@ -73,6 +81,7 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 			_IFAllHealPredictionUnitList:EachK(unit, "Value", allIncomingHeal)
 		elseif event == "UNIT_MAXHEALTH" then
 			_MinMax.max = UnitHealthMax(unit)
+			_IFHealPredictionUnitMaxHealthCache[unit] = _MinMax.max
 			_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
 			_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
 		end
