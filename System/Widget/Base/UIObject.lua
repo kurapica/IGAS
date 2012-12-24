@@ -134,9 +134,6 @@ class "UIObject"
 		if name and _G[name] == IGAS:GetUI(self) then
 			_G[name] = nil
 		end
-
-		-- Clear
-		return Object.Dispose(self)
 	end
 
 	------------------------------------

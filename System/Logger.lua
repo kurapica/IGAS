@@ -63,7 +63,6 @@ class "Logger"
 	function Dispose(self)
 		_Logger[_Info[self].Name] = nil
 		_Info[self] = nil
-		return Object.Dispose(self)
 	end
 
 	------------------------------------

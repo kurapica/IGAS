@@ -789,8 +789,6 @@ interface "IFModule"
 
 		wipe(info)
 		_Info[self] = nil
-
-		return Object.Dispose(self)
 	end
 
 	------------------------------------
@@ -1131,8 +1129,6 @@ class "Addon"
 					setfenv(2, _G)
 				end
 			end
-
-			return IFModule.Dispose(self)
 		end
 
 		RegisterEvent = IFModule.RegisterEvent
@@ -1349,8 +1345,6 @@ class "Addon"
 		if getfenv(2) == self then
 			setfenv(2, _G)
 		end
-
-		return IFModule.Dispose(self)
 	end
 
 	------------------------------------------------------

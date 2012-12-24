@@ -297,9 +297,6 @@ class "DropDownList"
 
 			self.Parent.__ItemCount = self.Parent.__ItemCount - 1
 			self.Parent.Height = self.Parent.Height - itemHeight
-
-			-- Call super's dispose
-			return Button.Dispose(self)
 		end
 
 		------------------------------------
@@ -992,9 +989,6 @@ class "DropDownList"
 	-- Dispose, release resource
 	function Dispose(self)
 		self.__DdList:Dispose()
-
-		-- Call super's dispose
-		return VirtualUIObject.Dispose(self)
 	end
 
 	------------------------------------

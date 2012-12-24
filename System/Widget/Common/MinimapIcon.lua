@@ -243,8 +243,6 @@ class "MinimapIcon"
 			self.__MiniMapBtn.__DropDownList.Parent = nil
 		end
 		self.__MiniMapBtn:Dispose()
-		-- Call super's dispose
-		return VirtualUIObject.Dispose(self)
 	end
 
 	------------------------------------

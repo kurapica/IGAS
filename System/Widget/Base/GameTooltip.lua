@@ -167,8 +167,6 @@ class "GameTooltip"
 			-- remove self
 			_G[name] = nil
 		end
-
-		return Frame.Dispose(self)
 	end
 
 	------------------------------------

@@ -289,9 +289,6 @@ class "Frame"
 	-- Dispose, release resource
 	function Dispose(self)
 		UnregisterAllEvents(self)
-
-		-- Call super's dispose
-		Region.Dispose(self)
 	end
 
 	------------------------------------

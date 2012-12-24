@@ -157,8 +157,6 @@ class "Form"
 			form.OnPositionChanged = form.OnPositionChanged - Form_OnPositionChanged
 
 			dockHeader:Dispose()
-
-			return Super.Dispose(self)
 		end
 
 		------------------------------------------------------
@@ -284,7 +282,6 @@ class "Form"
 		if self.__DockHeader then
 			self.__DockHeader:Dispose()
 		end
-		return Super.Dispose(self)
 	end
 
 	------------------------------------

@@ -66,9 +66,6 @@ class "Region"
 	function Dispose(self)
 		self:ClearAllPoints()
 		self:Hide()
-
-		-- Call super's dispose
-		UIObject.Dispose(self)
 	end
 
 	------------------------------------

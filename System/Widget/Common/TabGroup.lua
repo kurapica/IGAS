@@ -256,9 +256,6 @@ class "TabGroup"
 			end
 
 			parent.__TabNum = parent.__TabNum - 1
-
-			-- Call super's dispose
-			return Button.Dispose(self)
 		end
 
 		--[[----------------------------------
@@ -526,9 +523,6 @@ class "TabGroup"
 				header:GetChild("TabButton"..i):Dispose()
 			end
 		end
-
-		-- Call super's dispose
-		Frame.Dispose(self)
 	end
 
 	------------------------------------

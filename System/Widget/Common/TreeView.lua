@@ -216,9 +216,6 @@ class "TreeView"
 			if self.__Root.__SelectedItem == self then
 				self.__Root.__SelectedItem = nil
 			end
-
-			-- Call super's dispose
-			return VirtualUIObject.Dispose(self)
 		end
 
 		function _RemoveNode(self, index)
@@ -1614,9 +1611,6 @@ class "TreeView"
 		self.Visible = false
 
 		SetTree(self, nil)
-
-		-- Call super's dispose
-		return Frame.Dispose(self)
 	end
 
 	------------------------------------

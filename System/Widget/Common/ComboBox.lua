@@ -471,9 +471,6 @@ class "ComboBox"
 			_List:ClearAllPoints()
 			_List.__ComboBox = nil
 		end
-
-		-- Call super's dispose
-		return Frame.Dispose(self)
 	end
 
 	------------------------------------

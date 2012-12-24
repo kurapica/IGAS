@@ -98,7 +98,6 @@ class "Timer"
 	-- Dispose, release resource
 	function Dispose(self)
 		_Container[self] = nil
-		return VirtualUIObject.Dispose(self)
 	end
 
 	------------------------------------------------------

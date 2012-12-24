@@ -88,9 +88,6 @@ class "Font"
 		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
 			_G[self:GetName()] = nil
 		end
-
-		-- Clear
-		return Object.Dispose(self)
 	end
 
 	------------------------------------

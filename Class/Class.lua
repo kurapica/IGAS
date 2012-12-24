@@ -71,6 +71,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/11/14 Fix interface constructor systfem.
 --               2012/11/16 Extend interface order system added.
 --               2012/12/08 Re-order inherit & extend tree.
+--               2012/12/23 Class Constructor system modified.
+--               2012/12/24 Dispose system modified.
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -116,7 +118,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 60
+local version = 61
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -870,7 +872,16 @@ do
 				end
 			end
 
-			if type(key) == "string" and not key:find("^_") and key ~= _DisposeMethod and type(value) == "function" then
+			if key == _DisposeMethod then
+				if type(value) == "function" then
+					rawset(info, _DisposeMethod, value)
+					return
+				else
+					error(("'%s' must be a function as dispose method."):format(_DisposeMethod), 2)
+				end
+			end
+
+			if type(key) == "string" and not key:find("^_") and type(value) == "function" then
 				info.Method[key] = true
 				-- keep function in env, just register the method
 			end
@@ -1103,6 +1114,9 @@ do
 		-- Import
 		info.Import4Env = info.Import4Env or {}
 		wipe(info.Import4Env)
+
+		-- Clear dispose method
+		info[_DisposeMethod] = nil
 
 		-- Set the environment to interface's environment
 		setfenv(2, info.InterfaceEnv)
@@ -1537,9 +1551,9 @@ do
 
 			for i = #lst, 1, -1 do
 				IF = lst[i]
-				disfunc = rawget(_NSInfo[IF].InterfaceEnv, _DisposeMethod)
+				disfunc = _NSInfo[IF][_DisposeMethod]
 
-				if type(disfunc) == "function" then
+				if disfunc then
 					pcall(disfunc, self)
 				end
 			end
@@ -1547,9 +1561,15 @@ do
 			-- Recycle
 			_DisposeCache(lst)
 
-			-- Call Normal Dispose
-			if type(objCls[_DisposeMethod]) == "function" then
-				objCls[_DisposeMethod](self)
+			-- Call Class Dispose
+			while objCls and _NSInfo[objCls] do
+				disfunc = _NSInfo[objCls][_DisposeMethod]
+
+				if disfunc then
+					pcall(disfunc, self)
+				end
+
+				objCls = _NSInfo[objCls].SuperClass
 			end
 
 			-- Clear the table
@@ -1634,6 +1654,15 @@ do
 					return
 				else
 					error(("'%s' must be a function as constructor."):format(key), 2)
+				end
+			end
+
+			if key == _DisposeMethod then
+				if type(value) == "function" then
+					rawset(info, _DisposeMethod, value)
+					return
+				else
+					error(("'%s' must be a function as dispose method."):format(_DisposeMethod), 2)
 				end
 			end
 
@@ -2025,6 +2054,9 @@ do
 		-- Import
 		info.Import4Env = info.Import4Env or {}
 		wipe(info.Import4Env)
+
+		-- Clear dispose method
+		info[_DisposeMethod] = nil
 
 		-- MetaTable
 		info.MetaTable = info.MetaTable or {}

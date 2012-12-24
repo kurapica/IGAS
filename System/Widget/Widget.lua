@@ -587,16 +587,5 @@ function StoreBlzMethod(cls, managerCls)
 		if cls[fname] == nil then
 			clsEnv[fname] = func
 		end
-		--[[if rawget(clsEnv, fname) == nil and super[fname] == nil then
-			clsEnv[fname] = func
-		end--]]
 	end
-
-	--[[if sample ~= managerCls then
-		System.Widget.UIObject.Dispose(sample)
-	end
-
-	if manageSample then
-		System.Widget.UIObject.Dispose(manageSample)
-	end--]]
 end
