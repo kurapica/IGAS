@@ -73,6 +73,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/12/08 Re-order inherit & extend tree.
 --               2012/12/23 Class Constructor system modified.
 --               2012/12/24 Dispose system modified.
+--               2012/12/25 Doc system added.Interface system improved.
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -118,7 +119,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 61
+local version = 62
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -791,6 +792,69 @@ do
 end
 
 ------------------------------------------------------
+-- Documentation
+------------------------------------------------------
+do
+	_EnableDocument = _EnableDocument == nil and true or _EnableDocument
+	_MetaDoc = _MetaDoc or {}
+	do
+		_MetaDoc.__index = function(self,  key)
+			if type(key) ~= "string" or key:match("^_") then return end
+
+			local info = rawget(self, "__OwnerInfo")
+
+			-- Check SuperClass
+			while info and info.SuperClass do
+				info = _NSInfo[info.SuperClass]
+				if info.Documentation then
+					value = info.Documentation[key]
+					if value then return value end
+					break
+				end
+			end
+
+			-- Check Interface
+			info = rawget(self, "__OwnerInfo")
+
+			for _, IF in ipairs(info.ExtendInterface) do
+				if _NSInfo[IF].Documentation then
+					value = _NSInfo[IF].Documentation[key]
+					if value then return value end
+				end
+			end
+		end
+	end
+
+	function document(documentation)
+		if not _EnableDocument or type(documentation) ~= "string" then return end
+
+		local env = getfenv(2)
+		local info = _IFEnv2Info[env] or _ClsEnv2Info[env]
+
+		if not info then
+			return
+		end
+
+		info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
+		documentation = documentation:gsub("%s+@", "@")
+		local name = documentation:match("@name%s(%w+)")
+		if name and not name:match("^_") then
+			info.Documentation[name] = documentation
+		end
+	end
+
+	function GetDocumentPart(documentation, part)
+		if type(documentation) == "string" and type(part) == "string" then
+
+		end
+	end
+
+	function EnableDocument(enabled)
+		_EnableDocument = enabled and true or false
+	end
+end
+
+------------------------------------------------------
 -- Interface
 ------------------------------------------------------
 do
@@ -922,16 +986,34 @@ do
 		end
 
 		_Extend_Temp = {}
+
+		function CloneInterfaceCache(dest, src)
+			if not src then return end
+			for _, IF in ipairs(src) do
+				if not _Extend_Temp[IF] then
+					_Extend_Temp[IF] = true
+					tinsert(dest, IF)
+				end
+			end
+		end
+
 		function RefreshCache(ns)
 			local info = _NSInfo[ns]
 
+			-- Cache4Interface
 			wipe(_Extend_Temp)
-
-			if info.ExtendInterface then
-				for IF, index in pairs(info.ExtendInterface) do
-					_Extend_Temp[index] = IF
-				end
+			wipe(info.Cache4Interface)
+			-- superclass interface
+			if info.SuperClass then
+				CloneInterfaceCache(info.Cache4Interface, _NSInfo[info.SuperClass].Cache4Interface)
 			end
+			-- extend interface
+			for _, IF in ipairs(info.ExtendInterface) do
+				CloneInterfaceCache(info.Cache4Interface, _NSInfo[IF].Cache4Interface)
+			end
+			-- self interface
+			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface)
+			wipe(_Extend_Temp)
 
 			-- Cache4Script
 			wipe(info.Cache4Script)
@@ -944,7 +1026,7 @@ do
 				CloneWithoutOverride(info.Cache4Script, _NSInfo[info.SuperClass].Cache4Script)
 			end
 			--- extend script
-			for _, IF in ipairs(_Extend_Temp) do
+			for _, IF in ipairs(info.ExtendInterface) do
 				CloneWithoutOverride(info.Cache4Script, _NSInfo[IF].Cache4Script)
 			end
 
@@ -957,7 +1039,7 @@ do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[info.SuperClass].Cache4Property)
 			end
 			--- extend property
-			for _, IF in ipairs(_Extend_Temp) do
+			for _, IF in ipairs(info.ExtendInterface) do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
@@ -970,21 +1052,9 @@ do
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method)
 			end
 			--- extend method
-			for _, IF in ipairs(_Extend_Temp) do
+			for _, IF in ipairs(info.ExtendInterface) do
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
 			end
-
-			wipe(_Extend_Temp)
-
-			--[[ Property access method
-			for name, prop in pairs(info.Property) do
-				if prop.Get and info.Cache4Method["Get"..name] == nil then
-					info.Cache4Method["Get"..name] = prop.Get
-				end
-				if prop.Set and info.Cache4Method["Set"..name] == nil then
-					info.Cache4Method["Set"..name] = prop.Set
-				end
-			end--]]
 
 			-- Clear branch
 			if info.ChildClass then
@@ -999,7 +1069,6 @@ do
 		end
 	end
 
-
 	function IsExtend(IF, cls)
 		if not IF or not cls or not _NSInfo[IF] or _NSInfo[IF].Type ~= TYPE_INTERFACE or not _NSInfo[cls] then
 			return false
@@ -1007,18 +1076,12 @@ do
 
 		if IF == cls then return true end
 
-		if _NSInfo[cls].ExtendInterface then
-			if _NSInfo[cls].ExtendInterface[IF] then return true end
-
-			for pIF in pairs(_NSInfo[cls].ExtendInterface) do
-				if IsExtend(IF, pIF) then return true end
+		if _NSInfo[cls].Cache4Interface then
+			for _, pIF in ipairs(_NSInfo[cls].Cache4Interface) do
+				if pIF == IF then
+					return true
+				end
 			end
-		end
-
-		if _NSInfo[cls].Type == TYPE_CLASS then
-			cls = _NSInfo[cls].SuperClass
-
-			return cls and IsExtend(IF, cls) or false
 		end
 
 		return false
@@ -1100,16 +1163,17 @@ do
 		info.Cache4Script = info.Cache4Script or {}
 		info.Cache4Property = info.Cache4Property or {}
 		info.Cache4Method = info.Cache4Method or {}
+		info.Cache4Interface = info.Cache4Interface or {}
 
 		-- ExtendInterface
-		if info.ExtendInterface then
-			for pIF in pairs(info.ExtendInterface) do
-				if _NSInfo[pIF].ExtendClass then
-					_NSInfo[pIF].ExtendClass[info.Owner] = nil
-				end
+		info.ExtendInterface = info.ExtendInterface or {}
+
+		for _, pIF in ipairs(info.ExtendInterface) do
+			if _NSInfo[pIF].ExtendClass then
+				_NSInfo[pIF].ExtendClass[info.Owner] = nil
 			end
-			wipe(info.ExtendInterface)
 		end
+		wipe(info.ExtendInterface)
 
 		-- Import
 		info.Import4Env = info.Import4Env or {}
@@ -1190,33 +1254,20 @@ do
 		info.ExtendInterface = info.ExtendInterface or {}
 
 		-- Check if IF is already extend by extend tree
-		for pIF in pairs(info.ExtendInterface) do
+		for _, pIF in ipairs(info.ExtendInterface) do
 			if IsExtend(IF, pIF) then
 				return extend_IF
 			end
 		end
 
-		wipe(_Extend_Temp)
-
-		-- Then check if IF extend from exist and re-order
-		for pIF, index in pairs(info.ExtendInterface) do
-			_Extend_Temp[index] = pIF
-		end
-
-		for index = #_Extend_Temp, 1, -1 do
-			if IsExtend(_Extend_Temp[index], IF) then
-				info.ExtendInterface[_Extend_Temp[index]] = nil
-				tremove(_Extend_Temp, index)
+		-- Clear
+		for i = #(info.ExtendInterface), 1, -1 do
+			if IsExtend(info.ExtendInterface[i], IF) then
+				tremove(info.ExtendInterface, i)
 			end
 		end
 
-		tinsert(_Extend_Temp, IF)
-
-		for index, pIF in ipairs(_Extend_Temp) do
-			info.ExtendInterface[pIF] = index
-		end
-
-		wipe(_Extend_Temp)
+		tinsert(info.ExtendInterface, IF)
 
 		return extend_IF
 	end
@@ -1456,49 +1507,6 @@ do
 	-- Init & Dispose System
 	--------------------------------------------------
 	do
-		local function GetInterfaces(lst, ns)
-			if not ns then return end
-
-			local info = _NSInfo[ns]
-
-			if info.Type == TYPE_INTERFACE then
-				for _, eIF in ipairs(lst) do
-					if eIF == ns then
-						return
-					end
-				end
-			end
-
-			if info.SuperClass then
-				GetInterfaces(lst, info.SuperClass)
-			end
-
-			if info.ExtendInterface then
-				for IF in pairs(info.ExtendInterface) do
-					GetInterfaces(lst, IF)
-				end
-			end
-
-			if info.Type == TYPE_INTERFACE then
-				tinsert(lst, ns)
-			end
-		end
-
-		_DisposeCache = _DisposeCache or setmetatable({}, {
-			__call = function(self, lst)
-				if lst then
-					wipe(lst)
-					tinsert(self, lst)
-				else
-					if #self > 0 then
-						return tremove(self, #self)
-					else
-						return {}
-					end
-				end
-			end,
-		})
-
 		function InitObjectWithClass(cls, obj, ...)
 			local  info = _NSInfo[cls]
 
@@ -1512,13 +1520,9 @@ do
 		end
 
 		function InitObjectWithInterface(cls, obj)
-			local lst = _DisposeCache()
-
-			GetInterfaces(lst, cls)
-
 			local ok, msg, info
 
-			for _, IF in ipairs(lst) do
+			for _, IF in ipairs(_NSInfo[cls].Cache4Interface) do
 				info = _NSInfo[IF]
 				if info.Constructor then
 					ok, msg = pcall(info.Constructor, obj)
@@ -1528,9 +1532,6 @@ do
 					end
 				end
 			end
-
-			-- Recycle
-			_DisposeCache(lst)
 		end
 
 		------------------------------------
@@ -1539,27 +1540,21 @@ do
 		-- @class function
 		------------------------------------
 		function DisposeObject(self)
-			-- Clear form interface
-			-- Since we don't have right to do the true dispose
-			-- We need a special method named Dispose to do this job
-			local disfunc
-			local lst = _DisposeCache()
-			local objCls = Reflector.GetObjectClass(self)
-			local IF
+			local objCls = getmetatable(self)
+			local IF, info, disfunc
 
-			GetInterfaces(lst, objCls)
+			info = objCls and rawget(_NSInfo, objCls)
 
-			for i = #lst, 1, -1 do
-				IF = lst[i]
+			if not info then return end
+
+			for i = #(info.Cache4Interface), 1, -1 do
+				IF = info.Cache4Interface[i]
 				disfunc = _NSInfo[IF][_DisposeMethod]
 
 				if disfunc then
 					pcall(disfunc, self)
 				end
 			end
-
-			-- Recycle
-			_DisposeCache(lst)
 
 			-- Call Class Dispose
 			while objCls and _NSInfo[objCls] do
@@ -2031,6 +2026,7 @@ do
 		info.Cache4Script = info.Cache4Script or {}
 		info.Cache4Property = info.Cache4Property or {}
 		info.Cache4Method = info.Cache4Method or {}
+		info.Cache4Interface = info.Cache4Interface or {}
 
 		-- SuperClass
 		local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
@@ -2042,14 +2038,14 @@ do
 		info.SuperClass = nil
 
 		-- ExtendInterface
-		if info.ExtendInterface then
-			for IF in pairs(info.ExtendInterface) do
-				if _NSInfo[IF].ExtendClass then
-					_NSInfo[IF].ExtendClass[info.Owner] = nil
-				end
+		info.ExtendInterface = info.ExtendInterface or {}
+
+		for _, IF in ipairs(info.ExtendInterface) do
+			if _NSInfo[IF].ExtendClass then
+				_NSInfo[IF].ExtendClass[info.Owner] = nil
 			end
-			wipe(info.ExtendInterface)
 		end
+		wipe(info.ExtendInterface)
 
 		-- Import
 		info.Import4Env = info.Import4Env or {}
@@ -2266,6 +2262,9 @@ do
 		info.Cache4Script = info.Cache4Script or {}
 		info.Cache4Property = info.Cache4Property or {}
 		info.Cache4Method = info.Cache4Method or {}
+		info.Cache4Interface = info.Cache4Interface or {}
+
+		info.ExtendInterface = info.ExtendInterface or {}
 
 		-- Import
 		info.Import4Env = info.Import4Env or {}
@@ -2557,33 +2556,19 @@ do
 		info.ExtendInterface = info.ExtendInterface or {}
 
 		-- Check if IF is already extend by extend tree
-		for pIF in pairs(info.ExtendInterface) do
+		for _, pIF in ipairs(info.ExtendInterface) do
 			if IsExtend(IF, pIF) then
 				return extend_Cls
 			end
 		end
 
-		wipe(_Extend_Temp)
-
-		-- Then check if IF extend from exist and re-order
-		for pIF, index in pairs(info.ExtendInterface) do
-			_Extend_Temp[index] = pIF
-		end
-
-		for index = #_Extend_Temp, 1, -1 do
-			if IsExtend(_Extend_Temp[index], IF) then
-				info.ExtendInterface[_Extend_Temp[index]] = nil
-				tremove(_Extend_Temp, index)
+		for i = #(info.ExtendInterface), 1, -1 do
+			if IsExtend(info.ExtendInterface[i], IF) then
+				tremove(info.ExtendInterface, i)
 			end
 		end
 
-		tinsert(_Extend_Temp, IF)
-
-		for index, pIF in ipairs(_Extend_Temp) do
-			info.ExtendInterface[pIF] = index
-		end
-
-		wipe(_Extend_Temp)
+		tinsert(info.ExtendInterface, IF)
 
 		return extend_Cls
 	end
@@ -3536,7 +3521,7 @@ do
 			if info.ExtendInterface then
 				local ret = {}
 
-				for IF in pairs(info.ExtendInterface) do
+				for _, IF in ipairs(info.ExtendInterface) do
 					tinsert(ret, IF)
 				end
 
