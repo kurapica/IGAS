@@ -106,7 +106,7 @@ class "EclipseBar"
 			return self.__EclipseBar_Direction or IFEclipse.EclipseDirection.None
 		end,
 		Set = function(self, dir)
-			if self.__EclipseBar_Direction ~= dir then
+			if dir and self.__EclipseBar_Direction ~= dir then
 				self.__EclipseBar_Direction = dir
 				self.Marker:SetTexCoord(unpack(ECLIPSE_MARKER_COORDS[dir]))
 			end
