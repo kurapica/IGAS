@@ -119,7 +119,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 62
+local version = 63
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -985,13 +985,11 @@ do
 			end
 		end
 
-		_Extend_Temp = {}
-
-		function CloneInterfaceCache(dest, src)
+		function CloneInterfaceCache(dest, src, cache)
 			if not src then return end
 			for _, IF in ipairs(src) do
-				if not _Extend_Temp[IF] then
-					_Extend_Temp[IF] = true
+				if not cache[IF] then
+					cache[IF] = true
 					tinsert(dest, IF)
 				end
 			end
@@ -1001,19 +999,19 @@ do
 			local info = _NSInfo[ns]
 
 			-- Cache4Interface
-			wipe(_Extend_Temp)
+			local cache = {}
 			wipe(info.Cache4Interface)
 			-- superclass interface
 			if info.SuperClass then
-				CloneInterfaceCache(info.Cache4Interface, _NSInfo[info.SuperClass].Cache4Interface)
+				CloneInterfaceCache(info.Cache4Interface, _NSInfo[info.SuperClass].Cache4Interface, cache)
 			end
 			-- extend interface
 			for _, IF in ipairs(info.ExtendInterface) do
-				CloneInterfaceCache(info.Cache4Interface, _NSInfo[IF].Cache4Interface)
+				CloneInterfaceCache(info.Cache4Interface, _NSInfo[IF].Cache4Interface, cache)
 			end
 			-- self interface
-			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface)
-			wipe(_Extend_Temp)
+			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface, cache)
+			wipe(cache)
 
 			-- Cache4Script
 			wipe(info.Cache4Script)
@@ -3522,6 +3520,30 @@ do
 				local ret = {}
 
 				for _, IF in ipairs(info.ExtendInterface) do
+					tinsert(ret, IF)
+				end
+
+				return ret
+			end
+		end
+
+		------------------------------------
+		--- Get all the extend interfaces of the class
+		-- @name GetAllExtendInterfaces
+		-- @class function
+		-- @param class
+		-- @return table
+		-- @usage System.Reflector.GetAllExtendInterfaces(System.Object)
+		------------------------------------
+		function GetAllExtendInterfaces(cls)
+			if type(cls) == "string" then cls = ForName(cls) end
+
+			local info = cls and _NSInfo[cls]
+
+			if info.Cache4Interface then
+				local ret = {}
+
+				for _, IF in ipairs(info.Cache4Interface) do
 					tinsert(ret, IF)
 				end
 
