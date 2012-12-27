@@ -126,7 +126,7 @@ interface "IFReadyCheck"
 			local alpha = self.Alpha
 			local perSec = alpha / FADE_TIME / 10
 
-			if alpha > 0 then alpha = 0 end
+			if alpha > 1 then alpha = 1 end
 
 			while alpha > 0 do
 				self.Alpha = alpha
