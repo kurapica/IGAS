@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFReadyCheck", version) then
 	return
 end
@@ -125,6 +125,8 @@ interface "IFReadyCheck"
 			-- Fading
 			local alpha = self.Alpha
 			local perSec = alpha / FADE_TIME / 10
+
+			if alpha > 0 then alpha = 0 end
 
 			while alpha > 0 do
 				self.Alpha = alpha
