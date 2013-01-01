@@ -11,7 +11,7 @@
 --------------------------
 
 -- Check Version
-local version = 6
+local version = 7
 
 if not IGAS:NewAddon("IGAS.Widget.DataGrid", version) then
 	return
@@ -36,7 +36,7 @@ class "DataGrid"
 	_blKey = {true, false}
 	_blItem = {"True", "False"}
 
-	_DefaultBackColor = {red=0, blue=0, green=0, alpha=1}
+	_DefaultBackColor = ColorType(0, 0, 0)
 
 	_FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -80,7 +80,10 @@ class "DataGrid"
 		if cell then
 			display.DropdownBtn.OnClick = display.DropdownBtn.OnClick - DropdownBtn_OnClick
 
+			display.BackdropColor = cell.BackColor
+			display:GetChild("Text").NumericOnly = false
 			if cell.CellType == "Number" then
+				display:GetChild("Text").NumericOnly = true
 				display.Editable = true
 				display:GetChild("DropdownBtn").Visible = false
 			elseif cell.CellType == "String" then
@@ -952,7 +955,9 @@ class "DataGrid"
 	end
 
 	local function DisplayCell_OnEditFocusGained(self)
-		self.Parent.__ActiveCell = self.__Cell
+		--self.Parent.__ActiveCell = self.__Cell
+		local text = self:GetChild("Text").Text or ""
+		self:GetChild("Text"):HighlightText(0, text:len())
 	end
 
 	local function DisplayCell_OnEditFocusLost(self)
@@ -970,6 +975,30 @@ class "DataGrid"
 	local function DisplayCell_OnSizeChanged(self)
 		-- to fix the disappear text error
 		self:GetTextObject().CursorPosition = 0
+	end
+
+	local function DisplayCellText_OnEnter(self)
+		if self.Parent.__Cell then
+			self.Parent.__Cell.Parent:Fire("OnCellEnter", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
+		end
+	end
+
+	local function DisplayCellText_OnLeave(self)
+		if self.Parent.__Cell then
+			self.Parent.__Cell.Parent:Fire("OnCellLeave", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
+		end
+	end
+
+	local function DisplayCell_OnEnter(self)
+		if not self.Editable and self.__Cell then
+			self.__Cell.Parent:Fire("OnCellEnter", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
+		end
+	end
+
+	local function DisplayCell_OnLeave(self)
+		if not self.Editable and self.__Cell then
+			self.__Cell.Parent:Fire("OnCellLeave", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
+		end
 	end
 
 	local function RefreshColumn(self)
@@ -1054,8 +1083,12 @@ class "DataGrid"
 					cell:GetChild("DropdownBtn").Visible = false
 					cell.OnEditFocusLost = DisplayCell_OnEditFocusLost
 					cell.OnSizeChanged = DisplayCell_OnSizeChanged
-					--cell.OnEditFocusGained = DisplayCell_OnEditFocusGained
+					cell.OnEditFocusGained = DisplayCell_OnEditFocusGained
 					cell.OnValueChanged = DisplayCell_OnValueChanged
+					cell:GetChild("Text").OnEnter = DisplayCellText_OnEnter
+					cell:GetChild("Text").OnLeave = DisplayCellText_OnLeave
+					cell.OnEnter = DisplayCell_OnEnter
+					cell.OnLeave = DisplayCell_OnLeave
 					cell.Text = ""
 				else
 					Panel:GetChild("DisplayCell_"..i.."_"..j).Visible = true
@@ -1159,6 +1192,8 @@ class "DataGrid"
 	script "OnCellValueChanged"
 	script "OnCellTextChanged"
 	script "OnAdvance"
+	script "OnCellEnter"
+	script "OnCellLeave"
 
 	------------------------------------------------------
 	-- Method

@@ -808,7 +808,10 @@ do
 				info = _NSInfo[info.SuperClass]
 				if info.Documentation then
 					value = info.Documentation[key]
-					if value then return value end
+					if value then
+						rawset(self, key, value)
+						return value
+					end
 					break
 				end
 			end
@@ -819,7 +822,10 @@ do
 			for _, IF in ipairs(info.ExtendInterface) do
 				if _NSInfo[IF].Documentation then
 					value = _NSInfo[IF].Documentation[key]
-					if value then return value end
+					if value then
+						rawset(self, key, value)
+						return value
+					end
 				end
 			end
 		end
