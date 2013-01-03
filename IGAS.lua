@@ -16,6 +16,9 @@ end
 -- Keep this setting for gui lib, no need to set _AutoWrapper in other addons.
 _AutoWrapper = false
 
+-- Set true to enable document system, false to disable and reduce memory usage.
+System.Reflector.EnableDocumentSystem(true)
+
 ----------------------------------------------
 -- Looger
 ----------------------------------------------

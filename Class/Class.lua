@@ -242,24 +242,22 @@ do
 			elseif info.Type == TYPE_CLASS then
 				if info.SubNS and info.SubNS[key] then
 					return info.SubNS[key]
-				elseif type(key) == "string" and (not key:find("^__")) and info.Cache4Method and info.Cache4Method[key] then
-					return info.Cache4Method[key]
 				elseif _KeyMeta[key] ~= nil then
 					if _KeyMeta[key] then
 						return info.MetaTable[key]
 					else
 						return info.MetaTable["_"..key]
 					end
+				else
+					return info.Cache4Method[key]
 				end
 			elseif info.Type == TYPE_ENUM then
 				return type(key) == "string" and info.Enum[key:upper()] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
 			elseif info.Type == TYPE_INTERFACE then
 				if info.SubNS and info.SubNS[key] then
 					return info.SubNS[key]
-				elseif type(key) == "string" and (not key:find("^_")) and info.Cache4Method and info.Cache4Method[key] then
+				else
 					return info.Cache4Method[key]
-				elseif type(key) == "string" and type(rawget(info.InterfaceEnv, key)) == "function" then
-					return rawget(info.InterfaceEnv, key)
 				end
 			else
 				return info.SubNS and info.SubNS[key]
@@ -801,31 +799,33 @@ do
 		_MetaDoc.__index = function(self,  key)
 			if type(key) ~= "string" or key:match("^_") then return end
 
-			local info = rawget(self, "__OwnerInfo")
+			local value, sinfo
 
 			-- Check SuperClass
-			while info and info.SuperClass do
-				info = _NSInfo[info.SuperClass]
-				if info.Documentation then
-					value = info.Documentation[key]
-					if value then
-						rawset(self, key, value)
-						return value
-					end
-					break
+			local info = rawget(self, "__OwnerInfo")
+
+			if info.SuperClass then
+				sinfo = _NSInfo[info.SuperClass]
+
+				sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
+
+				value = sinfo.Documentation[key]
+				if value then
+					rawset(self, key, value)
+					return value
 				end
 			end
 
 			-- Check Interface
-			info = rawget(self, "__OwnerInfo")
-
 			for _, IF in ipairs(info.ExtendInterface) do
-				if _NSInfo[IF].Documentation then
-					value = _NSInfo[IF].Documentation[key]
-					if value then
-						rawset(self, key, value)
-						return value
-					end
+				sinfo = _NSInfo[IF]
+
+				sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
+
+				value = sinfo.Documentation[key]
+				if value then
+					rawset(self, key, value)
+					return value
 				end
 			end
 		end
@@ -837,22 +837,47 @@ do
 		local env = getfenv(2)
 		local info = _IFEnv2Info[env] or _ClsEnv2Info[env]
 
-		if not info then
-			return
-		end
+		if not info then return end
 
-		info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
-		documentation = documentation:gsub("%s+@", "@")
+		documentation = documentation:gsub("\n", ""):gsub("\r", ""):gsub("%s+@", "@")
+
 		local name = documentation:match("@name%s(%w+)")
-		if name and not name:match("^_") then
-			info.Documentation[name] = documentation
+		local doctype = documentation:match("@type%s(%w+)") or "default"
+
+		if name then
+			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
+			info.Documentation[doctype .. "-" .. name] = documentation
 		end
 	end
 
-	function GetDocumentPart(documentation, part)
-		if type(documentation) == "string" and type(part) == "string" then
-
+	function GetDocumentPart(ns, doctype, name, part)
+		if type(ns) == "string" then
+			ns = GetNameSpace(GetDefaultNameSpace(), ns)
 		end
+		local info = rawget(_NSInfo, ns)
+
+		doctype = type(doctype) == "string" and doctype or "default"
+
+		if info and type(name) == "string" then
+			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
+
+			local value = info.Documentation[doctype .. "-" .. name]
+
+			if value then
+				if type(part) == "string" then
+					if part == "param" or part == "return" then
+						return value:gmatch("@" .. part .. "%s+(%w+)%s*([^@]*)")
+					else
+						return value:gmatch("@" .. part .. "%s+([^@]*)")
+					end
+				else
+					return value:gmatch("@(%w+)%s+([^@]*)")
+				end
+			end
+		end
+
+		-- default empty iterator
+		return (""):gmatch("%w+")
 	end
 
 	function EnableDocument(enabled)
@@ -951,7 +976,7 @@ do
 				end
 			end
 
-			if type(key) == "string" and not key:find("^_") and type(value) == "function" then
+			if type(key) == "string" and type(value) == "function" then
 				info.Method[key] = true
 				-- keep function in env, just register the method
 			end
@@ -973,7 +998,7 @@ do
 			end
 		end
 
-		function CloneWithoutOverride4Method(dest, src, method)
+		function CloneWithoutOverride4Method(dest, src, method, isinterface)
 			if method then
 				for key in pairs(method) do
 					if dest[key] == nil and type(key) == "string" and type(src[key]) == "function" then
@@ -982,7 +1007,7 @@ do
 				end
 			else
 				for key, value in pairs(src) do
-					if type(key) == "string" and type(value) == "function" then
+					if type(key) == "string" and type(value) == "function" and (not isinterface or not key:match("^_")) then
 						if dest[key] == nil then
 							dest[key] = value
 						end
@@ -1057,7 +1082,7 @@ do
 			end
 			--- extend method
 			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
+				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method, nil, true)
 			end
 
 			-- Clear branch
@@ -1474,6 +1499,8 @@ do
 	_KeyWord4IFEnv.script = script_IF
 	_KeyWord4IFEnv.property = property_IF
 	_KeyWord4IFEnv.endinterface = endinterface
+
+	_KeyWord4IFEnv.doc = document
 end
 
 ------------------------------------------------------
@@ -2782,6 +2809,8 @@ do
 	_KeyWord4ClsEnv.script = script_Cls
 	_KeyWord4ClsEnv.property = property_Cls
 	_KeyWord4ClsEnv.endclass = endclass
+
+	_KeyWord4ClsEnv.doc = document
 end
 
 ------------------------------------------------------
@@ -3336,14 +3365,7 @@ do
 		TYPE_ENUM = TYPE_ENUM
 		TYPE_INTERFACE = TYPE_INTERFACE
 
-		local GetNameSpace = GetNameSpace
-		local GetDefaultNameSpace = GetDefaultNameSpace
-		local IsChildClass = IsChildClass
-		local IsExtend = IsExtend
-		local unpack = unpack
-		local tinsert = tinsert
 		local sort = table.sort
-		local IsType = IsType
 
 		------------------------------------
 		--- Get the namespace for the name
@@ -4141,6 +4163,13 @@ do
 			return value
 		end
 
+		function EnableDocumentSystem(enabled)
+			EnableDocument(enabled)
+		end
+
+		function GetDocument(ns, doctype, name, part)
+			return GetDocumentPart(ns, doctype, name, part)
+		end
 	endinterface "Reflector"
 end
 
