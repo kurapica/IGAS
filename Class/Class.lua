@@ -850,6 +850,23 @@ do
 		end
 	end
 
+	function HasDocumentPart(ns, doctype, name)
+		if type(ns) == "string" then
+			ns = GetNameSpace(GetDefaultNameSpace(), ns)
+		end
+		local info = rawget(_NSInfo, ns)
+
+		doctype = type(doctype) == "string" and doctype or "default"
+
+		if info and type(name) == "string" then
+			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
+
+			if info.Documentation[doctype .. "-" .. name] then
+				return true
+			end
+		end
+	end
+
 	function GetDocumentPart(ns, doctype, name, part)
 		if type(ns) == "string" then
 			ns = GetNameSpace(GetDefaultNameSpace(), ns)
@@ -3359,160 +3376,172 @@ end
 ------------------------------------------------------
 do
 	interface "Reflector"
+
+		doc [======[
+			@name Reflector
+			@type interface
+			@desc This interface contains much methodes to get the running object-oriented system's informations.
+		]======]
+
 		_NSInfo = _NSInfo
+
 		TYPE_CLASS = TYPE_CLASS
 		TYPE_STRUCT = TYPE_STRUCT
 		TYPE_ENUM = TYPE_ENUM
 		TYPE_INTERFACE = TYPE_INTERFACE
 
+		_STRUCT_TYPE_MEMBER = _STRUCT_TYPE_MEMBER
+		_STRUCT_TYPE_ARRAY = _STRUCT_TYPE_ARRAY
+		_STRUCT_TYPE_CUSTOM = _STRUCT_TYPE_CUSTOM
+
 		local sort = table.sort
 
-		------------------------------------
-		--- Get the namespace for the name
-		-- @name ForName
-		-- @class function
-		-- @param name the namespace's name, split by "."
-		-- @return namespace the namespace
-		-- @usage System.Reflector.ForName("System")
-		------------------------------------
+		doc [======[
+			@name ForName
+			@type method
+			@desc Get the namespace for the name
+			@param name the namespace's name, split by "."
+			@return namespace the namespace
+			@usage System.Reflector.ForName("System")
+		]======]
 		function ForName(name)
 			return GetNameSpace(GetDefaultNameSpace(), name)
 		end
 
-		------------------------------------
-		--- Get the type for the namespace
-		-- @name GetType
-		-- @class function
-		-- @param name the namespace
-		-- @return type
-		-- @usage System.Reflector.GetType("System.Object")
-		------------------------------------
+		doc [======[
+			@name GetType
+			@type method
+			@desc Get the class|enum|struct|interface for the namespace
+			@param name the namespace
+			@return type
+			@usage System.Reflector.GetType("System.Object")
+		]======]
 		function GetType(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type
 		end
 
-		------------------------------------
-		--- Get the name for the namespace
-		-- @name GetName
-		-- @class function
-		-- @param name the namespace
-		-- @return name
-		-- @usage System.Reflector.GetName(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetName
+			@type method
+			@desc Get the name for the namespace
+			@param namespace the namespace to query
+			@return name
+			@usage System.Reflector.GetName(System.Object)
+		]======]
 		function GetName(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Name
 		end
 
-		------------------------------------
-		--- Get the full name for the namespace
-		-- @name GetFullName
-		-- @class function
-		-- @param name the namespace
-		-- @return name
-		-- @usage System.Reflector.GetFullName(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetFullName
+			@type method
+			@desc Get the full name for the namespace
+			@param namespace the namespace to query
+			@return fullname
+			@usage System.Reflector.GetFullName(System.Object)
+		]======]
 		function GetFullName(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return GetFullName4NS(ns)
 		end
 
-		------------------------------------
-		--- Get the superclass for the class
-		-- @name GetSuperClass
-		-- @class function
-		-- @param class
-		-- @return superclass
-		-- @usage System.Reflector.GetSuperClass(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetSuperClass
+			@type method
+			@desc Get the superclass for the class
+			@param class the class object to query
+			@return superclass
+			@usage System.Reflector.GetSuperClass(System.Object)
+		]======]
 		function GetSuperClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].SuperClass
 		end
 
-		------------------------------------
-		--- Check if the object is a NameSpace
-		-- @name IsNameSpace
-		-- @class function
-		-- @param obj
-		-- @return boolean
-		-- @usage System.Reflector.IsNameSpace(System.Object)
-		------------------------------------
+		doc [======[
+			@name IsNameSpace
+			@type method
+			@desc Check if the object is a NameSpace
+			@param object the object to query
+			@return boolean true if the object is a NameSpace
+			@usage System.Reflector.IsNameSpace(System.Object)
+		]======]
 		function IsNameSpace(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and true or false
 		end
 
-		------------------------------------
-		--- Check if the namespace is a class
-		-- @name IsClass
-		-- @class function
-		-- @param namespace
-		-- @return boolean
-		-- @usage System.Reflector.IsClass(System.Object)
-		------------------------------------
+		doc [======[
+			@name IsClass
+			@type method
+			@desc Check if the namespace is a class
+			@param object
+			@return boolean true if the object is a class
+			@usage System.Reflector.IsClass(System.Object)
+		]======]
 		function IsClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_CLASS or false
 		end
 
-		------------------------------------
-		--- Check if the namespace is a struct
-		-- @name IsStruct
-		-- @class function
-		-- @param namespace
-		-- @return boolean
-		-- @usage System.Reflector.IsStruct(System.Object)
-		------------------------------------
+		doc [======[
+			@name IsStruct
+			@type method
+			@desc Check if the namespace is a struct
+			@param object
+			@return boolean true if the object is a struct
+			@usage System.Reflector.IsStruct(System.Object)
+		]======]
 		function IsStruct(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_STRUCT or false
 		end
 
-		------------------------------------
-		--- Check if the namespace is an enum
-		-- @name IsEnum
-		-- @class function
-		-- @param namespace
-		-- @return boolean
-		-- @usage System.Reflector.IsEnum(System.Object)
-		------------------------------------
+		doc [======[
+			@name IsEnum
+			@type method
+			@desc Check if the namespace is an enum
+			@param object
+			@return boolean true if the object is a enum
+			@usage System.Reflector.IsEnum(System.Object)
+		]======]
 		function IsEnum(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_ENUM or false
 		end
 
-		------------------------------------
-		--- Check if the namespace is an interface
-		-- @name IsInterface
-		-- @class function
-		-- @param namespace
-		-- @return boolean
-		-- @usage System.Reflector.IsInterface(System.IFSocket)
-		------------------------------------
+		doc [======[
+			@name IsInterface
+			@type method
+			@desc Check if the namespace is an interface
+			@param object
+			@return boolean true if the object is an Interface
+			@usage System.Reflector.IsInterface(System.IFSocket)
+		]======]
 		function IsInterface(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_INTERFACE or false
 		end
 
-		------------------------------------
-		--- Get the sub namespace of the namespace
-		-- @name GetSubNamespace
-		-- @class function
-		-- @param namespace
-		-- @return table
-		-- @usage System.Reflector.GetSubNamespace(System)
-		------------------------------------
+		doc [======[
+			@name GetSubNamespace
+			@type method
+			@desc Get the sub namespace of the namespace
+			@param namespace
+			@return table the sub-namespace list
+			@usage System.Reflector.GetSubNamespace(System)
+		]======]
 		function GetSubNamespace(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3531,14 +3560,14 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the extend interfaces of the class
-		-- @name GetExtendInterfaces
-		-- @class function
-		-- @param class
-		-- @return table
-		-- @usage System.Reflector.GetExtendInterfaces(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetExtendInterfaces
+			@type method
+			@desc Get the extend interfaces of the class
+			@param class
+			@return table the extend interface list
+			@usage System.Reflector.GetExtendInterfaces(System.Object)
+		]======]
 		function GetExtendInterfaces(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
 
@@ -3555,14 +3584,14 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get all the extend interfaces of the class
-		-- @name GetAllExtendInterfaces
-		-- @class function
-		-- @param class
-		-- @return table
-		-- @usage System.Reflector.GetAllExtendInterfaces(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetAllExtendInterfaces
+			@type method
+			@desc Get all the extend interfaces of the class
+			@param class
+			@return table the full extend interface list in the inheritance tree
+			@usage System.Reflector.GetAllExtendInterfaces(System.Object)
+		]======]
 		function GetAllExtendInterfaces(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
 
@@ -3579,14 +3608,14 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the child classes of the class
-		-- @name GetChildClasses
-		-- @class function
-		-- @param class
-		-- @return table
-		-- @usage System.Reflector.GetChildClasses(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetChildClasses
+			@type method
+			@desc Get the child classes of the class
+			@param class
+			@return table the child class list
+			@usage System.Reflector.GetChildClasses(System.Object)
+		]======]
 		function GetChildClasses(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
 
@@ -3603,15 +3632,16 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the scripts of the class
-		-- @name GetScripts
-		-- @class function
-		-- @param namespace
-		-- @param noSuper
-		-- @return table
-		-- @usage System.Reflector.GetScripts(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetScripts
+			@type method
+			@desc Get the scripts of the class
+			@params class|interface[, noSuper]
+			@param class|interface the class or interface to query
+			@param noSuper no super script handlers
+			@return table the script handler list
+			@usage System.Reflector.GetScripts(System.Object)
+		]======]
 		function GetScripts(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3632,15 +3662,16 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the properties of the class
-		-- @name GetProperties
-		-- @class function
-		-- @param namespace
-		-- @param [noSuper] true if only get the properties defined in the class.
-		-- @return table
-		-- @usage System.Reflector.GetProperties(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetProperties
+			@type method
+			@desc Get the properties of the class
+			@params class|interface[, noSuper]
+			@param class|interface the class or interface to query
+			@param noSuper no super properties
+			@return table the property list
+			@usage System.Reflector.GetProperties(System.Object)
+		]======]
 		function GetProperties(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3661,15 +3692,16 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the methods of the class
-		-- @name GetMethods
-		-- @class function
-		-- @param namespace
-		-- @param noSuper
-		-- @return table
-		-- @usage System.Reflector.GetMethods(System.Object)
-		------------------------------------
+		doc [======[
+			@name GetMethods
+			@type method
+			@desc Get the methods of the class
+			@params class|interface[, noSuper]
+			@param class|interface the class or interface to query
+			@param noSuper no super methodes
+			@return table the method list
+			@usage System.Reflector.GetMethods(System.Object)
+		]======]
 		function GetMethods(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3690,15 +3722,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the property type of the class
-		-- @name GetPropertyType
-		-- @class function
-		-- @param namespace
-		-- @param propName
-		-- @return table
-		-- @usage System.Reflector.GetPropertyType(System.Object, "Name")
-		------------------------------------
+		doc [======[
+			@name GetPropertyType
+			@type method
+			@desc Get the property type of the class
+			@param class|interface
+			@param propName the property name
+			@return type the property type
+			@usage System.Reflector.GetPropertyType(System.Object, "Name")
+		]======]
 		function GetPropertyType(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3711,15 +3743,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- whether the property is existed
-		-- @name HasProperty
-		-- @class function
-		-- @param namespace
-		-- @param propName
-		-- @return boolean
-		-- @usage System.Reflector.HasProperty(System.Object, "Name")
-		------------------------------------
+		doc [======[
+			@name HasProperty
+			@type method
+			@desc whether the property is existed
+			@param class|interface
+			@param propName
+			@return boolean true if the class|interface has the property
+			@usage System.Reflector.HasProperty(System.Object, "Name")
+		]======]
 		function HasProperty(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3732,15 +3764,15 @@ do
 			return false
 		end
 
-		------------------------------------
-		--- whether the property is readable
-		-- @name IsPropertyReadable
-		-- @class function
-		-- @param namespace
-		-- @param propName
-		-- @return boolean
-		-- @usage System.Reflector.IsPropertyReadable(System.Object, "Name")
-		------------------------------------
+		doc [======[
+			@name IsPropertyReadable
+			@type method
+			@desc whether the property is readable
+			@param class|interface
+			@param propName
+			@return boolean true if the property is readable
+			@usage System.Reflector.IsPropertyReadable(System.Object, "Name")
+		]======]
 		function IsPropertyReadable(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3751,15 +3783,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- whether the property is writable
-		-- @name IsPropertyWritable
-		-- @class function
-		-- @param namespace
-		-- @param propName
-		-- @return boolean
-		-- @usage System.Reflector.IsPropertyWritable(System.Object, "Name")
-		------------------------------------
+		doc [======[
+			@name IsPropertyWritable
+			@type method
+			@desc whether the property is writable
+			@param class|interface
+			@param propName
+			@return boolean true if the property is writable
+			@usage System.Reflector.IsPropertyWritable(System.Object, "Name")
+		]======]
 		function IsPropertyWritable(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3770,14 +3802,14 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the enums of the enum
-		-- @name GetEnums
-		-- @class function
-		-- @param namespace
-		-- @return table
-		-- @usage System.Reflector.GetEnums(System.SampleEnum)
-		------------------------------------
+		doc [======[
+			@name GetEnums
+			@type method
+			@desc Get the enums of the enum
+			@param enum
+			@return table the enum index list
+			@usage System.Reflector.GetEnums(System.SampleEnum)
+		]======]
 		function GetEnums(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3796,15 +3828,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the enum index of the enum value
-		-- @name ParseEnum
-		-- @class function
-		-- @param namespace
-		-- @param value
-		-- @return table
-		-- @usage System.Reflector.ParseEnum(System.SampleEnum, 1)
-		------------------------------------
+		doc [======[
+			@name ParseEnum
+			@type method
+			@desc Get the enum index of the enum value
+			@param enum
+			@param value
+			@return index
+			@usage System.Reflector.ParseEnum(System.SampleEnum, 1)
+		]======]
 		function ParseEnum(ns, value)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3817,15 +3849,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Check if the class has that script
-		-- @name System.Reflector.HasScript
-		-- @class function
-		-- @param class the class that need to check
-		-- @param script the script name
-		-- @return true if the class has this script, otherwise false, nil when no class is found.
-		-- @usage System.Reflector.HasScript(Addon, "OnEvent")
-		------------------------------------
+		doc [======[
+			@name HasScript
+			@type method
+			@desc Check if the class|interface has that script
+			@param class|interface
+			@param script the script handler name
+			@return true if the class|interface has the script
+			@usage System.Reflector.HasScript(Addon, "OnEvent")
+		]======]
 		function HasScript(cls, sc)
 			if type(cls) == "string" then cls = ForName(cls) end
 
@@ -3836,14 +3868,14 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the parts of the struct
-		-- @name System.Reflector.GetStructParts
-		-- @class function
-		-- @param struct the struct
-		-- @return a list to contains the parts' names
-		-- @usage System.Reflector.GetStructParts(Position)
-		------------------------------------
+		doc [======[
+			@name GetStructParts
+			@type method
+			@desc Get the parts of the struct
+			@param struct
+			@return table struct part name list
+			@usage System.Reflector.GetStructParts(Position)
+		]======]
 		function GetStructParts(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3860,15 +3892,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Get the part's type of the struct
-		-- @name System.Reflector.GetStructPart
-		-- @class function
-		-- @param struct the struct
-		-- @param part the name of the part
-		-- @return type of the part of the struct
-		-- @usage System.Reflector.GetStructPart(Position, "x")
-		------------------------------------
+		doc [======[
+			@name GetStructPart
+			@type method
+			@desc Get the part's type of the struct
+			@param struct
+			@param part the part's name
+			@return type the part's type
+			@usage System.Reflector.GetStructPart(Position, "x")
+		]======]
 		function GetStructPart(ns, part)
 			if type(ns) == "string" then ns = ForName(ns) end
 
@@ -3883,15 +3915,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Check if this first arg is a child class of the next arg
-		-- @name System.Reflector.IsSuperClass
-		-- @class function
-		-- @param child the child class
-		-- @param suepr the super class
-		-- @return flag
-		-- @usage System.Reflector.IsSuperClass(UIObject, Object)
-		------------------------------------
+		doc [======[
+			@name IsSuperClass
+			@type method
+			@desc Check if this first arg is a child class of the next arg
+			@param childclass
+			@param superclass
+			@return boolean true if the supeclass is the childclass's super class
+			@usage System.Reflector.IsSuperClass(UIObject, Object)
+		]======]
 		function IsSuperClass(child, super)
 			if type(child) == "string" then child = ForName(child) end
 			if type(super) == "string" then super = ForName(super) end
@@ -3899,15 +3931,15 @@ do
 			return IsClass(child) and IsClass(super) and IsChildClass(super, child)
 		end
 
-		------------------------------------
-		--- Check if the class is extended from the interface
-		-- @name System.Reflector.IsExtendedInterface
-		-- @class function
-		-- @param cls the class
-		-- @param IF the interface
-		-- @return flag
-		-- @usage System.Reflector.IsExtendedInterface(UIObject, IFSocket)
-		------------------------------------
+		doc [======[
+			@name IsExtendedInterface
+			@type method
+			@desc Check if the class is extended from the interface
+			@param class|interface
+			@param interface
+			@return boolean true if the first arg is extend from the second
+			@usage System.Reflector.IsExtendedInterface(UIObject, IFSocket)
+		]======]
 		function IsExtendedInterface(cls, IF)
 			if type(cls) == "string" then cls = ForName(cls) end
 			if type(IF) == "string" then IF = ForName(IF) end
@@ -3915,51 +3947,55 @@ do
 			return IsExtend(IF, cls)
 		end
 
-		------------------------------------
-		--- Get the class type of this object
-		-- @name System.Reflector.GetObjectClass
-		-- @class function
-		-- @param obj the object
-		-- @usage System.Reflector.GetObjectClass(obj)
-		------------------------------------
+		doc [======[
+			@name GetObjectClass
+			@type method
+			@desc Get the class type of this object
+			@param object
+			@return class the object's class
+			@usage System.Reflector.GetObjectClass(obj)
+		]======]
 		function GetObjectClass(obj)
 			return type(obj) == "table" and getmetatable(obj)
 		end
 
-		------------------------------------
-		--- Check if this object is an instance of the class
-		-- @name System.Reflector.ObjectIsClass
-		-- @class function
-		-- @param obj the object
-		-- @param class	the class type that you want to check if this object is an instance of.
-		-- @usage System.Reflector.ObjectIsClass(obj, Object)
-		------------------------------------
+		doc [======[
+			@name ObjectIsClass
+			@type method
+			@desc Check if this object is an instance of the class
+			@param object
+			@param class
+			@return true if the object is an instance of the class or it's child class
+			@usage System.Reflector.ObjectIsClass(obj, Object)
+		]======]
 		function ObjectIsClass(obj, cls)
 			if type(cls) == "string" then cls = ForName(cls) end
 			return (obj and cls and IsChildClass(cls, GetObjectClass(obj))) or false
 		end
 
-		------------------------------------
-		--- Check if this object is an instance of the interface
-		-- @name System.Reflector.ObjectIsClass
-		-- @class function
-		-- @param obj the object
-		-- @param class	the class type that you want to check if this object is an instance of.
-		-- @usage System.Reflector.ObjectIsClass(obj, Object)
-		------------------------------------
+		doc [======[
+			@name ObjectIsInterface
+			@type method
+			@desc Check if this object is an instance of the interface
+			@param object
+			@param interface
+			@return true if the object's class is extended from the interface
+			@usage System.Reflector.ObjectIsInterface(obj, IFSocket)
+		]======]
 		function ObjectIsInterface(obj, IF)
 			if type(IF) == "string" then IF = ForName(IF) end
 			return (obj and IF and IsExtend(IF, GetObjectClass(obj))) or false
 		end
 
-		------------------------------------
-		--- Active thread mode for special scripts.
-		-- @name ActiveThread
-		-- @class function
-		-- @param obj object
-		-- @param ... script name list
-		-- @usage System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")
-		------------------------------------
+		doc [======[
+			@name ActiveThread
+			@type method
+			@desc Active thread mode for special scripts.
+			@param object
+			@param ... script handler name list
+			@return nil
+			@usage System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")
+		]======]
 		function ActiveThread(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
@@ -3975,14 +4011,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Whether the thread mode is actived for special scripts.
-		-- @name IsThreadActived
-		-- @class function
-		-- @param obj object
-		-- @param script
-		-- @usage System.Reflector.IsThreadActived(obj, "OnClick")
-		------------------------------------
+		doc [======[
+			@name IsThreadActived
+			@type method
+			@desc Whether the thread mode is actived for special scripts.
+			@param obect
+			@param script
+			@return boolean true if the object has active thread mode for the given script.
+			@usage System.Reflector.IsThreadActived(obj, "OnClick")
+		]======]
 		function IsThreadActived(obj, sc)
 			local cls = GetObjectClass(obj)
 			local name
@@ -3994,14 +4031,15 @@ do
 			return false
 		end
 
-		------------------------------------
-		--- Inactive thread mode for special scripts.
-		-- @name InactiveThread
-		-- @class function
-		-- @param obj object
-		-- @param ... script name list
-		-- @usage System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")
-		------------------------------------
+		doc [======[
+			@name InactiveThread
+			@type method
+			@desc Inactive thread mode for special scripts.
+			@param object
+			@param ... script name list
+			@return nil
+			@usage System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")
+		]======]
 		function InactiveThread(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
@@ -4017,14 +4055,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Block script for object
-		-- @name BlockScript
-		-- @class function
-		-- @param obj object
-		-- @param ... script name list
-		-- @usage System.Reflector.BlockScript(obj, "OnClick", "OnEnter")
-		------------------------------------
+		doc [======[
+			@name BlockScript
+			@type method
+			@desc Block script for object
+			@param object
+			@param ... the script handler name list
+			@return nil
+			@usage System.Reflector.BlockScript(obj, "OnClick", "OnEnter")
+		]======]
 		function BlockScript(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
@@ -4040,14 +4079,15 @@ do
 			end
 		end
 
-		------------------------------------
-		--- Whether the script is blocked for object
-		-- @name IsScriptBlocked
-		-- @class function
-		-- @param obj object
-		-- @param script
-		-- @usage System.Reflector.IsScriptBlocked(obj, "OnClick")
-		------------------------------------
+		doc [======[
+			@name IsScriptBlocked
+			@type method
+			@desc Whether the script is blocked for object
+			@param object
+			@param script
+			@return boolean true if the script is blocked
+			@usage System.Reflector.IsScriptBlocked(obj, "OnClick")
+		]======]
 		function IsScriptBlocked(obj, sc)
 			local cls = GetObjectClass(obj)
 			local name
@@ -4059,14 +4099,15 @@ do
 			return false
 		end
 
-		------------------------------------
-		--- Un-Block script for object
-		-- @name UnBlockScript
-		-- @class function
-		-- @param obj object
-		-- @param ... script name list
-		-- @usage System.Reflector.UnBlockScript(obj, "OnClick", "OnEnter")
-		------------------------------------
+		doc [======[
+			@name UnBlockScript
+			@type method
+			@desc Un-Block script for object
+			@param object
+			@param ... script handler name list
+			@return nil
+			@usage System.Reflector.UnBlockScript(obj, "OnClick", "OnEnter")
+		]======]
 		function UnBlockScript(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
@@ -4082,39 +4123,21 @@ do
 			end
 		end
 
-		--[[----------------------------------
-		--- Build type.
-		-- @name BuildType
-		-- @class function
-		-- @param type value's type
-		-- @param name type's name
-		-- @usage System.Reflector.BuildType(System.String+nil, "Mark")
-		------------------------------------
-		function BuildType(types, name)
-			local ok, _type = pcall(_BuildType, types, name)
-
-			if not ok then
-				_type = strtrim(_type:match(":%d+:(.*)$") or _type)
-
-				error("Usage : System.Reflector.BuildType(type[, name]) : " .. _type, 2)
-			end
-
-			return _type
-		end--]]
-
 		_Test_Type = _BuildType(nil)
 
-		------------------------------------
-		--- Validating the value to the given type.
-		-- @name Validate
-		-- @class function
-		-- @param type value's type
-		-- @param value test value
-		-- @pram name the parameter's name
-		-- @param prefix optional, the prefix string
-		-- @param stacklevel optinal, number, set if not in the main function call, only work when prefix is setted
-		-- @usage System.Reflector.Validate(System.String+nil, "Test")
-		------------------------------------
+		doc [======[
+			@name Validate
+			@type method
+			@desc Validating the value to the given type.
+			@params type, value, name[, prefix[, stacklevel]]
+			@param type such like Object+String+nil
+			@param value the test value
+			@param name the parameter's name
+			@param prefix the prefix string
+			@param stacklevel set if not in the main function call, only work when prefix is setted
+			@return nil
+			@usage System.Reflector.Validate(System.String+nil, "Test")
+		]======]
 		function Validate(types, value, name, prefix, stacklevel)
 			stacklevel = type(stacklevel) == "number" and stacklevel > 0 and stacklevel or 0
 
@@ -4163,12 +4186,160 @@ do
 			return value
 		end
 
+		doc [======[
+			@name EnableDocumentSystem
+			@type method
+			@desc Enable or disbale the document system, only effect later created document
+			@param enabled true to enable the document system
+			@return nil
+			@usage System.Reflector.EnableDocumentSystem(true)
+		]======]
 		function EnableDocumentSystem(enabled)
 			EnableDocument(enabled)
 		end
 
+		doc [======[
+			@name GetDocument
+			@type method
+			@desc Get the document settings
+			@params namespace, docType, name[, part]
+			@param namespace
+			@param doctype such as "property"
+			@param name the query name
+			@param part the part name
+			@return Iterator the iterator to get detail
+			@usage for part, value in System.Reflector.GetDocument(System.Object, "method", "GetClass") do print(part, value) end
+		]======]
 		function GetDocument(ns, doctype, name, part)
 			return GetDocumentPart(ns, doctype, name, part)
+		end
+
+		doc [======[
+			@name HasDocument
+			@type method
+			@desc Check if has the document
+			@param namespace
+			@param doctype
+			@param name
+			@return true if the document is present
+		]======]
+		function HasDocument(ns, doctype, name)
+			return HasDocumentPart(ns, doctype, name)
+		end
+
+		doc [======[
+			@name Help
+			@type method
+			@desc Get the document detail
+			@params class|interface, script|property|method
+			@params enum|struct
+			@param class|interface|enum|struct
+			@param script|property|method the script or property or method name
+			@return string the detail information
+		]======]
+		function Help(ns, name)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			if ns and rawget(_NSInfo, ns) then
+				local info = _NSInfo[ns]
+
+				if info.Type == TYPE_ENUM then
+					-- Enum
+					local result = "[Enum] " .. GetFullName(ns) .. " :"
+					local value
+					for _, enums in ipairs(GetEnums(ns)) do
+						value = ns[enums]
+
+						if type(value) == "string" then
+							value = ("%q"):format(value)
+						else
+							value = tostring(value)
+						end
+
+						result = result .. "\n    " .. enums .. " = " .. value
+					end
+					return result
+				elseif info.Type == TYPE_STRUCT then
+					-- Struct
+					local result = "[Struct] " .. GetFullName(ns) .. " :"
+
+					-- SubNameSpace
+					if info.SubNS and next(info.SubNS) then
+						result = result .. "\n  Sub NameSpace :"
+						for _, sns in ipairs(GetSubNamespace(ns)) do
+							result = result .. "\n    " .. sns
+						end
+					end
+
+					if info.SubType == _STRUCT_TYPE_MEMBER then
+						-- Part
+						local parttype, typestring
+
+						result = result .. "\n  Member:"
+
+						for _, name in ipairs(GetStructParts(ns)) do
+							parttype = GetStructPart(ns, name)
+
+							typestring = ""
+
+							for _, tns in ipairs(parttype) do
+								typestring = typestring .. " + " .. GetFullName(tns)
+							end
+
+							-- NameSpace
+							local index = -1
+							while parttype[index] do
+								typestring = typestring .. " - " .. GetFullName(parttype[index])
+
+								index = index - 1
+							end
+
+							-- Allow nil
+							if parttype.AllowNil then
+								typestring = typestring .. " + nil"
+							end
+
+							if typestring:sub(1, 2) == " +" then
+								typestring = typestring:sub(3, -1)
+							end
+
+							result = result .. "\n    " .. name .. " =" .. typestring
+						end
+					elseif info.SubType == _STRUCT_TYPE_ARRAY then
+						local parttype = info.ArrayElement
+						local typestring = ""
+
+						if parttype then
+							for _, tns in ipairs(parttype) do
+								typestring = typestring .. " + " .. GetFullName(tns)
+							end
+
+							-- NameSpace
+							local index = -1
+							while parttype[index] do
+								typestring = typestring .. " - " .. GetFullName(parttype[index])
+
+								index = index - 1
+							end
+
+							-- Allow nil
+							if parttype.AllowNil then
+								typestring = typestring .. " + nil"
+							end
+
+							if typestring:sub(1, 2) == " +" then
+								typestring = typestring:sub(3, -1)
+							end
+
+							result = result .. "\n  Element :\n    Type =" .. typestring
+						end
+					end
+					return result
+				elseif info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS then
+					-- Interface & Class
+
+				end
+			end
 		end
 	endinterface "Reflector"
 end
