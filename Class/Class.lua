@@ -119,7 +119,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 63
+local version = 64
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -4231,13 +4231,15 @@ do
 			@name Help
 			@type method
 			@desc Get the document detail
-			@params class|interface, script|property|method
+			@params class|interface[, script|property|method, name]
+			@params class|interface, name
 			@params enum|struct
 			@param class|interface|enum|struct
-			@param script|property|method the script or property or method name
+			@param script|property|method
+			@param name the name to query
 			@return string the detail information
 		]======]
-		function Help(ns, name)
+		function Help(ns, doctype, name)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			if ns and rawget(_NSInfo, ns) then
@@ -4337,7 +4339,130 @@ do
 					return result
 				elseif info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS then
 					-- Interface & Class
+					if type(doctype) ~= "string" then
+						local result
+						local desc
 
+						if info.Type == TYPE_INTERFACE then
+							result = "[Interface] " .. GetFullName(ns) .. " :"
+
+							if HasDocumentPart(ns, "interface", GetName(ns)) then
+								desc = GetDocumentPart(ns, "interface", GetName(ns), "desc")
+							elseif HasDocumentPart(ns, "default", GetName(ns)) then
+								desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+							end
+						else
+							result = "[Class] " .. GetFullName(ns) .. " :"
+
+							if HasDocumentPart(ns, "class", GetName(ns)) then
+								desc = GetDocumentPart(ns, "class", GetName(ns), "desc")
+							elseif HasDocumentPart(ns, "default", GetName(ns)) then
+								desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+							end
+						end
+
+						-- Desc
+						desc = desc and desc()
+						if desc then
+							result = result .. "\n  Description :\n    " .. desc
+						end
+
+						-- Inherit
+						if info.SuperClass then
+							result = result .. "\n  Super Class :\n    " .. GetFullName(info.SuperClass)
+						end
+
+						-- Extend
+						if info.ExtendInterface and next(info.ExtendInterface) then
+							result = result .. "\n  Extend Interface :"
+							for _, IF in ipairs(info.ExtendInterface) do
+								result = result .. "\n    " .. GetFullName(IF)
+							end
+						end
+
+						-- SubNameSpace
+						if info.SubNS and next(info.SubNS) then
+							result = result .. "\n  Sub NameSpace :"
+							for _, sns in ipairs(GetSubNamespace(ns)) do
+								result = result .. "\n    " .. sns
+							end
+						end
+
+						-- Script
+						if next(info.Script) then
+							result = result .. "\n  Script :"
+							for sc in pairs(info.Script) do
+								result = result .. "\n    " .. sc
+							end
+						end
+
+						-- Property
+						if next(info.Property) then
+							result = result .. "\n  Property :"
+							for prop in pairs(info.Property) do
+								result = result .. "\n    " .. prop
+							end
+						end
+
+						-- Method
+						if next(info.Method) then
+							result = result .. "\n  Method :"
+							for method in pairs(info.Method) do
+								result = result .. "\n    " .. method
+							end
+						end
+
+						return result
+					else
+						local result
+
+						if info.Type == TYPE_INTERFACE then
+							result = "[Interface] " .. GetFullName(ns) .. " - "
+						else
+							result = "[Class] " .. GetFullName(ns) .. " - "
+						end
+
+						if type(name) ~= "string" then
+							doctype, name = nil, doctype
+						end
+
+						if not doctype then
+							if HasDocumentPart(ns, "script", name) then
+								doctype = "script"
+							elseif HasDocumentPart(ns, "property", name) then
+								doctype = "property"
+							elseif HasDocumentPart(ns, "method", name) then
+								doctype = "method"
+							elseif HasDocumentPart(ns, "default", name) then
+								doctype = "default"
+							end
+						end
+
+						if HasDocumentPart(ns, doctype, name) then
+							if doctype:match("^%a") then
+								result = result .. "[" .. doctype:match("^%a"):upper() .. doctype:sub(2, -1) .. "] " .. name .. " :"
+							else
+								result = result .. "[" .. doctype .. "] " .. name .. " :"
+							end
+
+							-- Desc
+							local desc = GetDocumentPart(ns, doctype, name, "desc")
+							desc = desc and desc()
+							if desc then
+								result = result .. "\n  Description :\n    " .. desc
+							end
+
+							if doctype == "script" then
+
+							elseif doctype == "property" then
+
+							elseif doctype == "method" then
+
+							else
+
+							end
+						end
+					end
 				end
 			end
 		end
