@@ -4,12 +4,6 @@
 --               2011/10/22 Stop UnregisterEvent when no thread in
 --               2012/04/05 Thread:Resume methods would call UnregisterAllEvent to clear it's settings
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Threading is a lib to control threads using in script handlers.
--- @name Thread
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 8
 
 if not IGAS:NewAddon("IGAS.Threading", version) then
@@ -26,6 +20,12 @@ wrap = coroutine.wrap
 yield = coroutine.yield
 
 interface "Threading"
+
+	doc [======[
+		@name Threading
+		@type interface
+		@desc Used for threading control
+	]======]
 
 	enum "ThreadStatus" {
 		"running",
@@ -101,13 +101,15 @@ interface "Threading"
 			end
 		end)
 
-		------------------------------------
-		--- Make current thread sleeping
-		-- @name Sleep
-		-- @class function
-		-- @param delay
-		-- @usage System.Threading.Sleep(10)
-		------------------------------------
+		doc [======[
+			@name Sleep
+			@type method
+			@method interface
+			@desc Make current thread sleep for a while
+			@param delay System.Number, the sleep time for current thread
+			@return nil
+			@usage System.Threading.Sleep(10)
+		]======]
 		function Sleep(delay)
 			local thread = running()
 
@@ -132,6 +134,9 @@ interface "Threading"
 	------------------------------------------------------
 	-- System.Threading.WaitEvent
 	------------------------------------------------------
+	local RegisterEvent
+	local UnregisterAllEvent
+
 	do
 		_EventManager = _EventManager or nil
 		if CreateFrame and not _EventManager then
@@ -263,13 +268,17 @@ interface "Threading"
 			end
 		end
 
-		------------------------------------
-		--- Make current thread sleeping until event triggered
-		-- @name WaitEvent
-		-- @class function
-		-- @param event
-		-- @usage System.Threading.WaitEvent(event[, ...])
-		------------------------------------
+		doc [======[
+			@name WaitEvent
+			@type method
+			@method interface
+			@desc Make current thread sleeping until event triggered
+			@format event[, ...]
+			@param event event to be waiting for
+			@param ... other events' list
+			@return nil
+			@usage System.Threading.WaitEvent(event1, event2, event3)
+		]======]
 		function WaitEvent(...)
 			local thread = running()
 			local hasEvent = false
@@ -297,13 +306,18 @@ interface "Threading"
 	do
 		_WaitThread = _WaitThread or setmetatable({}, {__mode = "k"})
 
-		------------------------------------
-		--- Make current thread sleeping until event triggered or meet the timeline
-		-- @name WaitEvent
-		-- @class function
-		-- @param delay|event
-		-- @usage System.Threading.Wait(delay|event[, ...])
-		------------------------------------
+		doc [======[
+			@name Wait
+			@type method
+			@method interface
+			@desc Make current thread sleeping until event triggered or meet the timeline
+			@format delay|event[, ...]
+			@param delay the waiting time's deadline
+			@param event the waiting event
+			@param ... other events' list
+			@return nil
+			@usage System.Threading.Wait(10, event1, event2)
+		]======]
 		function Wait(...)
 			local thread = running()
 
@@ -355,6 +369,13 @@ interface "Threading"
 	-- System.Threading.Thread
 	------------------------------------------------------
 	class "Thread"
+
+		doc [======[
+			@name Thread
+			@type class
+			@desc Used to control a thread
+		]======]
+
 		_Threads = _Threads or setmetatable({}, {__mode = "k"})
 
 		------------------------------------------------------
@@ -364,13 +385,16 @@ interface "Threading"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		------------------------------------
-		--- Make current thread sleeping until event triggered or meet the timeline
-		-- @name Wait
-		-- @class function
-		-- @param event
-		-- @usage thread:Wait(event[, ...])
-		------------------------------------
+		doc [======[
+			@name Wait
+			@type method
+			@desc Make current thread sleeping until event triggered or meet the timeline
+			@format delay|event[, ...]
+			@param delay the waiting time
+			@param event the waiting event
+			@param ... other events' list
+			@return nil
+		]======]
 		function Wait(self, ...)
 			local co = running()
 
@@ -381,13 +405,15 @@ interface "Threading"
 			return Threading.Wait(...)
 		end
 
-		------------------------------------
-		--- Make current thread sleeping until event triggered
-		-- @name WaitEvent
-		-- @class function
-		-- @param event
-		-- @usage thread:WaitEvent(event[, ...])
-		------------------------------------
+		doc [======[
+			@name WaitEvent
+			@type method
+			@desc Make current thread sleeping until event triggered
+			@format event[, ...]
+			@param event the waiting event
+			@param ... other events' list
+			@return nil
+		]======]
 		function WaitEvent(self, ...)
 			local co = running()
 
@@ -398,13 +424,14 @@ interface "Threading"
 			return Threading.WaitEvent(...)
 		end
 
-		------------------------------------
-		--- Make current thread sleeping
-		-- @name Sleep
-		-- @class function
-		-- @param delay
-		-- @usage thread:Sleep(10)
-		------------------------------------
+		doc [======[
+			@name Sleep
+			@type method
+			@desc Make current thread sleeping
+			@format delay
+			@param delay the waiting time
+			@return nil
+		]======]
 		function Sleep(self, delay)
 			local co = running()
 
@@ -415,13 +442,13 @@ interface "Threading"
 			return Threading.Sleep(delay)
 		end
 
-		------------------------------------
-		--- Resume the thread
-		-- @name Resume
-		-- @class function
-		-- @param ...
-		-- @usage thread:Resume(...)
-		------------------------------------
+		doc [======[
+			@name Resume
+			@type method
+			@desc Resume the thread
+			@param ... resume arguments
+			@return ... return values from thread
+		]======]
 		function Resume(self, ...)
 			if _Threads[self] then
 				UnregisterAllEvent(_Threads[self])
@@ -429,13 +456,12 @@ interface "Threading"
 			end
 		end
 
-		------------------------------------
-		--- Yield the thread
-		-- @name Yield
-		-- @class function
-		-- @param ...
-		-- @usage thread:Yield(...)
-		------------------------------------
+		doc [======[
+			@name Yield
+			@type method
+			@desc Yield the thread
+			@param ... return arguments
+		]======]
 		function Yield(self, ...)
 			local co = running()
 
@@ -446,32 +472,32 @@ interface "Threading"
 			end
 		end
 
-		------------------------------------
-		--- Whether the thread is running
-		-- @name IsRunning
-		-- @class function
-		-- @usage thread:IsRunning()
-		------------------------------------
+		doc [======[
+			@name IsRunning
+			@type method
+			@desc Whether the thread is running
+			@return boolean true if the thread is running
+		]======]
 		function IsRunning(self)
 			return _Threads[self] and (status(_Threads[self]) == "running" or status(_Threads[self]) == "normal") or false
 		end
 
-		------------------------------------
-		--- Whether the thread is running
-		-- @name IsSuspended
-		-- @class function
-		-- @usage thread:IsSuspended()
-		------------------------------------
+		doc [======[
+			@name IsSuspended
+			@type method
+			@desc Whether the thread is suspended
+			@return boolean true if the thread is suspended
+		]======]
 		function IsSuspended(self)
 			return _Threads[self] and status(_Threads[self]) == "suspended" or false
 		end
 
-		------------------------------------
-		--- Whether the thread is running
-		-- @name IsDead
-		-- @class function
-		-- @usage thread:IsDead()
-		------------------------------------
+		doc [======[
+			@name IsDead
+			@type method
+			@desc Whether the thread is dead
+			@return boolean true if the thread is dead
+		]======]
 		function IsDead(self)
 			return (_Threads[self] == nil) or status(_Threads[self]) == "dead" or false
 		end
@@ -485,6 +511,7 @@ interface "Threading"
 					return status(_Threads[self])
 				end
 			end,
+			Type = ThreadStatus,
 		}
 
 		property "Thread" {

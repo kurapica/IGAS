@@ -817,15 +817,17 @@ do
 			end
 
 			-- Check Interface
-			for _, IF in ipairs(info.ExtendInterface) do
-				sinfo = _NSInfo[IF]
+			if info.ExtendInterface then
+				for _, IF in ipairs(info.ExtendInterface) do
+					sinfo = _NSInfo[IF]
 
-				sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
+					sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
 
-				value = sinfo.Documentation[key]
-				if value then
-					rawset(self, key, value)
-					return value
+					value = sinfo.Documentation[key]
+					if value then
+						rawset(self, key, value)
+						return value
+					end
 				end
 			end
 		end
@@ -841,7 +843,7 @@ do
 
 		documentation = documentation:gsub("\n", ""):gsub("\r", ""):gsub("%s+@", "@")
 
-		local name = documentation:match("@name%s(%w+)")
+		local name = documentation:match("@name%s+([^@%s]+)")
 		local doctype = documentation:match("@type%s(%w+)") or "default"
 
 		if name then
@@ -883,18 +885,23 @@ do
 			if value then
 				if type(part) == "string" then
 					if part == "param" or part == "return" then
-						return value:gmatch("@" .. part .. "%s+(%w+)%s*([^@]*)")
+						if value:match("@" .. part .. "%s+([^@%s]+)%s*([^@]*)") then
+							return value:gmatch("@" .. part .. "%s+([^@%s]+)%s*([^@]*)")
+						end
 					else
-						return value:gmatch("@" .. part .. "%s+([^@]*)")
+						if value:match("@" .. part .. "%s+([^@]*)") then
+							return value:gmatch("@" .. part .. "%s+([^@]*)")
+						end
 					end
 				else
-					return value:gmatch("@(%w+)%s+([^@]*)")
+					if value:match("@(%w+)%s+([^@]*)") then
+						return value:gmatch("@(%w+)%s+([^@]*)")
+					end
 				end
 			end
 		end
 
-		-- default empty iterator
-		return (""):gmatch("%w+")
+		return
 	end
 
 	function EnableDocument(enabled)
@@ -3636,7 +3643,7 @@ do
 			@name GetScripts
 			@type method
 			@desc Get the scripts of the class
-			@params class|interface[, noSuper]
+			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
 			@param noSuper no super script handlers
 			@return table the script handler list
@@ -3666,7 +3673,7 @@ do
 			@name GetProperties
 			@type method
 			@desc Get the properties of the class
-			@params class|interface[, noSuper]
+			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
 			@param noSuper no super properties
 			@return table the property list
@@ -3696,7 +3703,7 @@ do
 			@name GetMethods
 			@type method
 			@desc Get the methods of the class
-			@params class|interface[, noSuper]
+			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
 			@param noSuper no super methodes
 			@return table the method list
@@ -4129,7 +4136,7 @@ do
 			@name Validate
 			@type method
 			@desc Validating the value to the given type.
-			@params type, value, name[, prefix[, stacklevel]]
+			@format type, value, name[, prefix[, stacklevel]]
 			@param type such like Object+String+nil
 			@param value the test value
 			@param name the parameter's name
@@ -4202,13 +4209,16 @@ do
 			@name GetDocument
 			@type method
 			@desc Get the document settings
-			@params namespace, docType, name[, part]
+			@format namespace, docType, name[, part]
 			@param namespace
 			@param doctype such as "property"
 			@param name the query name
 			@param part the part name
 			@return Iterator the iterator to get detail
-			@usage for part, value in System.Reflector.GetDocument(System.Object, "method", "GetClass") do print(part, value) end
+			@usage
+				for part, value in System.Reflector.GetDocument(System.Object, "method", "GetClass")
+			<br>	do print(part, value)
+			<br>end
 		]======]
 		function GetDocument(ns, doctype, name, part)
 			return GetDocumentPart(ns, doctype, name, part)
@@ -4231,9 +4241,9 @@ do
 			@name Help
 			@type method
 			@desc Get the document detail
-			@params class|interface[, script|property|method, name]
-			@params class|interface, name
-			@params enum|struct
+			@format class|interface[, script|property|method, name]
+			@format class|interface, name
+			@format enum|struct
 			@param class|interface|enum|struct
 			@param script|property|method
 			@param name the name to query
@@ -4276,36 +4286,41 @@ do
 					if info.SubType == _STRUCT_TYPE_MEMBER then
 						-- Part
 						local parttype, typestring
+						local parts = GetStructParts(ns)
 
-						result = result .. "\n  Member:"
+						if parts and next(parts) then
+							result = result .. "\n  Member:"
 
-						for _, name in ipairs(GetStructParts(ns)) do
-							parttype = GetStructPart(ns, name)
+							for _, name in ipairs(parts) do
+								parttype = GetStructPart(ns, name)
 
-							typestring = ""
+								typestring = ""
 
-							for _, tns in ipairs(parttype) do
-								typestring = typestring .. " + " .. GetFullName(tns)
+								for _, tns in ipairs(parttype) do
+									typestring = typestring .. " + " .. GetFullName(tns)
+								end
+
+								-- NameSpace
+								local index = -1
+								while parttype[index] do
+									typestring = typestring .. " - " .. GetFullName(parttype[index])
+
+									index = index - 1
+								end
+
+								-- Allow nil
+								if parttype.AllowNil then
+									typestring = typestring .. " + nil"
+								end
+
+								if typestring:sub(1, 2) == " +" then
+									typestring = typestring:sub(3, -1)
+								end
+
+								result = result .. "\n    " .. name .. " =" .. typestring
 							end
-
-							-- NameSpace
-							local index = -1
-							while parttype[index] do
-								typestring = typestring .. " - " .. GetFullName(parttype[index])
-
-								index = index - 1
-							end
-
-							-- Allow nil
-							if parttype.AllowNil then
-								typestring = typestring .. " + nil"
-							end
-
-							if typestring:sub(1, 2) == " +" then
-								typestring = typestring:sub(3, -1)
-							end
-
-							result = result .. "\n    " .. name .. " =" .. typestring
+						else
+							result = result .. "\n  Basic Element"
 						end
 					elseif info.SubType == _STRUCT_TYPE_ARRAY then
 						local parttype = info.ArrayElement
@@ -4364,7 +4379,7 @@ do
 						-- Desc
 						desc = desc and desc()
 						if desc then
-							result = result .. "\n  Description :\n    " .. desc
+							result = result .. "\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
 						end
 
 						-- Inherit
@@ -4412,9 +4427,12 @@ do
 							end
 						end
 
+						-- Constructor
+
 						return result
 					else
 						local result
+						local querytype
 
 						if info.Type == TYPE_INTERFACE then
 							result = "[Interface] " .. GetFullName(ns) .. " - "
@@ -4426,17 +4444,19 @@ do
 							doctype, name = nil, doctype
 						end
 
-						if not doctype then
-							if HasDocumentPart(ns, "script", name) then
-								doctype = "script"
-							elseif HasDocumentPart(ns, "property", name) then
-								doctype = "property"
-							elseif HasDocumentPart(ns, "method", name) then
-								doctype = "method"
-							elseif HasDocumentPart(ns, "default", name) then
-								doctype = "default"
+						querytype = doctype
+
+						if not querytype then
+							if HasScript(ns, name) then
+								querytype = "script"
+							elseif HasProperty(ns, name) then
+								querytype = "property"
+							elseif type(ns[name]) == "function" then
+								querytype = "method"
 							end
 						end
+
+						doctype = querytype or "default"
 
 						if HasDocumentPart(ns, doctype, name) then
 							if doctype:match("^%a") then
@@ -4449,20 +4469,160 @@ do
 							local desc = GetDocumentPart(ns, doctype, name, "desc")
 							desc = desc and desc()
 							if desc then
-								result = result .. "\n  Description :\n    " .. desc
+								result = result .. "\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
 							end
 
-							if doctype == "script" then
+							if querytype == "script" then
+								-- Format
+								desc = GetDocumentPart(ns, doctype, name, "format")
+								if desc then
+									result = result .. "\n  Format :"
+									for fmt in desc do
+										result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the script\n    end"
+									end
+								end
 
-							elseif doctype == "property" then
+								-- Params
+								desc = GetDocumentPart(ns, doctype, name, "param")
+								if desc then
+									result = result .. "\n  Parameter :"
+									for param, info in desc do
+										if info and info:len() > 0 then
+											result = result .. "\n    " .. param .. " - " .. info
+										else
+											result = result .. "\n    " .. param
+										end
+									end
+								end
+							elseif querytype == "property" then
+								local types = GetPropertyType(ns, name)
 
-							elseif doctype == "method" then
+								if types then
+									local parttype = types
+									local typestring = ""
 
+									for _, tns in ipairs(parttype) do
+										typestring = typestring .. " + " .. GetFullName(tns)
+									end
+
+									-- NameSpace
+									local index = -1
+									while parttype[index] do
+										typestring = typestring .. " - " .. GetFullName(parttype[index])
+
+										index = index - 1
+									end
+
+									-- Allow nil
+									if parttype.AllowNil then
+										typestring = typestring .. " + nil"
+									end
+
+									if typestring:sub(1, 2) == " +" then
+										typestring = typestring:sub(3, -1)
+									end
+
+									result = result .. "\n  Type :\n    " .. typestring
+								end
+
+								-- Readonly
+								result = result .. "\n  Readable : " .. tostring(IsPropertyReadable(ns, name))
+
+								-- Writable
+								result = result .. "\n  Writable : " .. tostring(IsPropertyWritable(ns, name))
+							elseif querytype == "method" then
+								local isGlobal = false
+
+								if info.Type == TYPE_INTERFACE then
+									if name:match("^_") then
+										isGlobal = true
+									else
+										desc = GetDocumentPart(ns, doctype, name, "method")
+										if desc and desc() == "interface" then
+											isGlobal = true
+										end
+									end
+								end
+
+								-- Format
+								desc = GetDocumentPart(ns, doctype, name, "format")
+								if desc then
+									result = result .. "\n  Format :"
+									for fmt in desc do
+										if isGlobal then
+											result = result .. "\n    " .. GetName(ns) .. "." .. name .. "(" .. fmt .. ")"
+										else
+											result = result .. "\n    object:" .. name .. "(" .. fmt .. ")"
+										end
+									end
+								end
+
+								-- Params
+								desc = GetDocumentPart(ns, doctype, name, "param")
+								if desc then
+									result = result .. "\n  Parameter :"
+									for param, info in desc do
+										if info and info:len() > 0 then
+											result = result .. "\n    " .. param .. " - " .. info
+										else
+											result = result .. "\n    " .. param
+										end
+									end
+								end
+
+								-- Returns
+								desc = GetDocumentPart(ns, doctype, name, "return")
+								if desc then
+									result = result .. "\n  Return :"
+									for ret, info in desc do
+										if info and info:len() > 0 then
+											result = result .. "\n    " .. ret .. " - " .. info
+										else
+											result = result .. "\n    " .. ret
+										end
+									end
+								end
 							else
-
+								-- skip
 							end
+
+							-- Usage
+							desc = GetDocumentPart(ns, doctype, name, "usage")
+							if desc then
+								result = result .. "\n  Usage :"
+								for usage in desc do
+									result = result .. "\n    " .. usage:gsub("<br>", "\n    ")
+								end
+							end
+
+							return result
 						end
 					end
+				else
+					local result = "[NameSpace] " .. GetFullName(ns) .. " :"
+					local desc
+
+					if HasDocumentPart(ns, "namespace", GetName(ns)) then
+						desc = GetDocumentPart(ns, "namespace", GetName(ns), "desc")
+					elseif HasDocumentPart(ns, "default", GetName(ns)) then
+						desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+					end
+
+					-- Desc
+					desc = desc and desc()
+					if desc then
+						result = result .. "\n  Description :\n    " .. desc
+					end
+
+					-- SubNameSpace
+					if info.SubNS and next(info.SubNS) then
+						result = result .. "\n  Sub NameSpace :"
+						for _, sns in ipairs(GetSubNamespace(ns)) do
+							result = result .. "\n    " .. sns
+						end
+					end
+
+					return result
 				end
 			end
 		end
