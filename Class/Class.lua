@@ -804,6 +804,10 @@ do
 			-- Check SuperClass
 			local info = rawget(self, "__OwnerInfo")
 
+			if key == "class-" .. info.Name or key == "interface-" .. info.Name or key == "default-" .. info.Name then
+				return
+			end
+
 			if info.SuperClass then
 				sinfo = _NSInfo[info.SuperClass]
 
@@ -4428,6 +4432,69 @@ do
 						end
 
 						-- Constructor
+						local isFormat = false
+
+						if info.Type == TYPE_CLASS then
+							while ns do
+								isFormat = true
+
+								if HasDocumentPart(ns, "class", GetName(ns)) then
+									desc = GetDocumentPart(ns, "class", GetName(ns), "format")
+									if not desc then
+										desc = GetDocumentPart(ns, "class", GetName(ns), "param")
+										isFormat = false
+									end
+								elseif HasDocumentPart(ns, "default", GetName(ns)) then
+									desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+									if not desc then
+										desc = GetDocumentPart(ns, "default", GetName(ns), "param")
+										isFormat = false
+									end
+								end
+
+								if desc then
+									-- Format
+									result = result .. "\n  Format :"
+									if isFormat then
+										for fmt in desc do
+											result = result .. "\n    " .. GetName(ns) .. "(" .. fmt .. ")"
+										end
+									else
+										result = result .. "\n    " .. GetName(ns) .. "("
+
+										local isFirst = true
+
+										for param in desc do
+											if isFirst then
+												isFirst = false
+												result = result .. param
+											else
+												result = result .. ", " .. param
+											end
+										end
+
+										result = result .. ")"
+									end
+
+									-- Params
+									desc = GetDocumentPart(ns, "class", GetName(ns), "param") or GetDocumentPart(ns, "default", GetName(ns), "param")
+									if desc then
+										result = result .. "\n  Parameter :"
+										for param, info in desc do
+											if info and info:len() > 0 then
+												result = result .. "\n    " .. param .. " - " .. info
+											else
+												result = result .. "\n    " .. param
+											end
+										end
+									end
+
+									break
+								end
+
+								ns = GetSuperClass(ns)
+							end
+						end
 
 						return result
 					else
@@ -4480,6 +4547,25 @@ do
 									for fmt in desc do
 										result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the script\n    end"
 									end
+								else
+									result = result .. "\n  Format :\n    function object:" .. name .. "("
+
+									desc = GetDocumentPart(ns, doctype, name, "param")
+
+									if desc then
+										local isFirst = true
+
+										for param in desc do
+											if isFirst then
+												isFirst = false
+												result = result .. param
+											else
+												result = result .. ", " .. param
+											end
+										end
+									end
+
+									result = result .. ")\n        -- Handle the script\n    end"
 								end
 
 								-- Params
@@ -4546,8 +4632,8 @@ do
 
 								-- Format
 								desc = GetDocumentPart(ns, doctype, name, "format")
+								result = result .. "\n  Format :"
 								if desc then
-									result = result .. "\n  Format :"
 									for fmt in desc do
 										if isGlobal then
 											result = result .. "\n    " .. GetName(ns) .. "." .. name .. "(" .. fmt .. ")"
@@ -4555,6 +4641,29 @@ do
 											result = result .. "\n    object:" .. name .. "(" .. fmt .. ")"
 										end
 									end
+								else
+									if isGlobal then
+										result = result .. "\n    " .. GetName(ns) .. "." .. name .. "("
+									else
+										result = result .. "\n    object:" .. name .. "("
+									end
+
+									desc = GetDocumentPart(ns, doctype, name, "param")
+
+									if desc then
+										local isFirst = true
+
+										for param in desc do
+											if isFirst then
+												isFirst = false
+												result = result .. param
+											else
+												result = result .. ", " .. param
+											end
+										end
+									end
+
+									result = result .. ")"
 								end
 
 								-- Params
