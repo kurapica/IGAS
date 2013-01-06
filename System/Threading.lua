@@ -146,7 +146,7 @@ interface "Threading"
 		_CstmEvtManager = _CstmEvtManager or System.Object()
 
 		_EventDistribution =  _EventDistribution or {}
-		_EventThreads = _EventThreads or setmetatable({}, {__mode = "k"})
+		_EventThreads = _EventThreads or {} -- setmetatable({}, {__mode = "k"})
 		_MetaWeakV = _MetaWeakV or {__mode = "v"}
 
 		-- RegisterEvent
