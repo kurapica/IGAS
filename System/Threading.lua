@@ -106,7 +106,7 @@ interface "Threading"
 			@type method
 			@method interface
 			@desc Make current thread sleep for a while
-			@param delay System.Number, the sleep time for current thread
+			@param delay number, the sleep time for current thread
 			@return nil
 			@usage System.Threading.Sleep(10)
 		]======]
@@ -274,7 +274,7 @@ interface "Threading"
 			@method interface
 			@desc Make current thread sleeping until event triggered
 			@format event[, ...]
-			@param event event to be waiting for
+			@param event string, event to be waiting for
 			@param ... other events' list
 			@return nil
 			@usage System.Threading.WaitEvent(event1, event2, event3)
@@ -312,8 +312,8 @@ interface "Threading"
 			@method interface
 			@desc Make current thread sleeping until event triggered or meet the timeline
 			@format delay|event[, ...]
-			@param delay the waiting time's deadline
-			@param event the waiting event
+			@param delay number, the waiting time's deadline
+			@param event string, the waiting event
 			@param ... other events' list
 			@return nil
 			@usage System.Threading.Wait(10, event1, event2)
@@ -373,7 +373,15 @@ interface "Threading"
 		doc [======[
 			@name Thread
 			@type class
-			@desc Used to control a thread
+			@format [function]
+			@param function the function to be convert to thread
+			@desc
+					Thread object is used to control lua coroutines.
+			<br><br>Thread object can be created with a default function that will be convert to coroutine, also can create a empty Thread object.
+			<br><br>Thread object can use 'Thread' property to receive function, coroutine, other Thread object as it's	control coroutine.
+			<br><br>Thread object can use 'Resume' method to resume coroutine like 'obj:Resume(arg1, arg2, arg3)'. Also can use 'obj(arg1, arg2, arg3)' for short.
+			<br><br>In the Thread object's controling function, can use the System.Threading's method to control the coroutine.
+			<br>
 		]======]
 
 		_Threads = _Threads or setmetatable({}, {__mode = "k"})

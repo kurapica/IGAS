@@ -193,7 +193,15 @@ endstruct "PositiveNumber"
 -- Object
 ------------------------------------------------------
 class "Object"
-	-- extend "IFDispose" -- not really need to extend IFDispose, just use it
+
+	doc [======[
+		@name Object
+		@type class
+		@desc
+				The root class of other classes. Object class contains several methodes for common use.
+		<br><br>The Object class also provide an event system to help objects sending messages to each others.
+		<br>
+	]======]
 
 	local create = coroutine.create
 	local resume = coroutine.resume
@@ -202,67 +210,62 @@ class "Object"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnEvent
+		@type interface
+		@desc Fired when registered event is happened.
+		@param event the trigger event name
+		@param ... the event's arguments
+	]======]
 	script "OnEvent"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Check if the script type is supported by the frame
-	-- @name Object:HasScript
-	-- @class function
-	-- @param name the script type's name
-	-- @return true if the frame has that script type
-	-- @usage Object:HasScript("OnEnter")
-	------------------------------------
+	doc [======[
+		@name HasScript
+		@type method
+		@desc Check if the script type is supported by the object
+		@param name the script's name
+		@return boolean true if the object has that script type
+	]======]
 	function HasScript(self, name)
 		if type(name) ~= "string" then
-			error(("Usage : Object:HasScript(name) : 'name' - string expected, got %s."):format(type(name)), 2)
+			error(("Usage : object:HasScript(name) : 'name' - string expected, got %s."):format(type(name)), 2)
 		end
 		return Reflector.HasScript(Reflector.GetObjectClass(self), name) or false
 	end
 
-	------------------------------------
-	--- Get the class type of this object
-	-- @name Object:GetClass
-	-- @class function
-	-- @usage Object:GetClass()
-	------------------------------------
+	doc [======[
+		@name GetClass
+		@type method
+		@desc Get the class type of the object
+		@return class the object's class
+	]======]
 	function GetClass(self)
 		return Reflector.GetObjectClass(self)
 	end
 
-	------------------------------------
-	--- Check if this object is an instance of the class
-	-- @name Object:IsClass
-	-- @class function
-	-- @param class	the class type that you want to check if this object is an instance of.
-	-- @usage Object:IsClass(Object)
-	------------------------------------
+	doc [======[
+		@name IsClass
+		@type method
+		@desc Check if the object is an instance of the class
+		@param class
+		@return boolean true if the object is an instance of the class
+	]======]
 	function IsClass(self, cls)
 		return Reflector.ObjectIsClass(self, cls)
 	end
 
-	------------------------------------
-	--- Check if this object is an instance of the interface
-	-- @name Object:IsInterface
-	-- @class function
-	-- @param IF the interface type that you want to check if this object is an instance of.
-	-- @usage Object:IsInterface(Object)
-	------------------------------------
+	doc [======[
+		@name IsInterface
+		@type method
+		@desc Check if the object is extend from the interface
+		@param interface
+		@return boolean true if the object is extend from the interface
+	]======]
 	function IsInterface(self, IF)
 		return Reflector.ObjectIsInterface(self, IF)
-	end
-
-	------------------------------------
-	--- Dispose this object
-	-- @name Object:Dispose
-	-- @class function
-	-- @usage Object:Dispose()
-	------------------------------------
-	function Dispose(self)
-		UnregisterAllEvents(self)
 	end
 
 	------------------------------------------------------
@@ -274,14 +277,13 @@ class "Object"
 	-- Weak Table
 	_MetaWeak = _MetaWeak or {__mode = "k"}
 
-	------------------------------------
-	--- Register an event
-	-- @name Object:RegisterEvent
-	-- @class function
-	-- @param event the event's name
-	-- @return nil
-	-- @usage Object:RegisterEvent("CUSTOM_EVENT_1")
-	------------------------------------
+	doc [======[
+		@name RegisterEvent
+		@type method
+		@desc Register an event
+		@param event the event's name
+		@return nil
+	]======]
 	function RegisterEvent(self, event)
 		if type(event) == "string" and event ~= "" then
 			_EventDistrbt[event] = _EventDistrbt[event] or setmetatable({}, _MetaWeak)
@@ -292,54 +294,49 @@ class "Object"
 		end
 	end
 
-	------------------------------------
-	--- Check if  a event is registered for an object
-	-- @name Object:IsEventRegistered
-	-- @class function
-	-- @param event the event's name
-	-- @return true if the event is registered to that object
-	-- @usage Object:IsEventRegistered("CUSTOM_EVENT_1")
-	------------------------------------
+	doc [======[
+		@name IsEventRegistered
+		@type method
+		@desc Check if the object has registered the event
+		@param event the event's name
+		@return boolean true if the object has registered the event
+	]======]
 	function IsEventRegistered(self, event)
 		return _EventDistrbt[event] and _EventDistrbt[event][self] or false
 	end
 
-	------------------------------------
-	--- Undo register all events for the object
-	-- @name Object:UnregisterAllEvents
-	-- @class function
-	-- @return nil
-	-- @usage Object:UnregisterAllEvents()
-	------------------------------------
+	doc [======[
+		@name UnregisterAllEvents
+		@type method
+		@desc Remove all registered events
+	]======]
 	function UnregisterAllEvents(self)
 		for _, s in pairs(_EventDistrbt) do
 			s[self] = nil
 		end
 	end
 
-	------------------------------------
-	--- Undo Register an event for an object
-	-- @name Object:UnregisterEvent
-	-- @class function
-	-- @param event the event's name
-	-- @return nil
-	-- @usage Object:UnregisterEvent("CUSTOM_EVENT_1")
-	------------------------------------
+	doc [======[
+		@name UnregisterEvent
+		@type method
+		@desc Un-register a event for the object
+		@param event the event's name
+		@return nil
+	]======]
 	function UnregisterEvent(self, event)
 		if _EventDistrbt[event] then
 			_EventDistrbt[event][self] = nil
 		end
 	end
 
-	------------------------------------
-	--- Fire an event
-	-- @name Object:FireEvent
-	-- @class function
-	-- @param event the event's name, must not be a system event's name
-	-- @param ... the parameters for the event
-	-- @return nil
-	-- @usage Object:FireEvent("CUSTOM_EVENT_1", arg1, arg2, arg3, ...)
-	------------------------------------
+	doc [======[
+		@name FireEvent
+		@type method
+		@desc Fire an event and with it's arguments
+		@param event the event's name
+		@param ... the event's arguments
+		@return nil
+	]======]
 	function FireEvent(self, event, ...)
 		if not _EventDistrbt[event] or _EventSource[event] then
 			-- On time one event can only have one source,
@@ -357,14 +354,14 @@ class "Object"
 		_EventSource[event] = nil
 	end
 
-	------------------------------------
-	--- Fire script, to trigger the object's script handlers
-	-- @name Object:Fire
-	-- @class function
-	-- @param scriptType the script type to be triggered
-	-- @param ... the parameters
-	-- @usage Object:Fire("OnChoose", 1)
-	------------------------------------
+	doc [======[
+		@name Fire
+		@type method
+		@desc Fire an object's script, to trigger the object's script handlers
+		@param script the script name
+		@param ... the scipt's arguments
+		@return nil
+	]======]
 	function Fire(self, sc, ...)
 		if type(sc) ~= "string" then
 			error(("Usage : Object:Fire(script [, args, ...]) : 'script' - string exepected, got %s."):format(type(sc)), 2)
@@ -377,84 +374,88 @@ class "Object"
 		end
 	end
 
-	------------------------------------
-	--- Active thread mode for special scripts.
-	-- @name Object:ActiveThread
-	-- @class function
-	-- @param ... script name list
-	-- @usage Object:ActiveThread("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name ActiveThread
+		@type method
+		@desc Active the thread mode for special script
+		@format script[, ...]
+		@param script the script name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function ActiveThread(self, ...)
 		return Reflector.ActiveThread(self, ...)
 	end
 
-	------------------------------------
-	--- Whether the thread mode is actived for special scripts.
-	-- @name Object:IsThreadActived
-	-- @class function
-	-- @param obj object
-	-- @param script
-	-- @usage Object:IsThreadActived("OnClick")
-	------------------------------------
+	doc [======[
+		@name IsThreadActived
+		@type method
+		@desc Check if the thread mode is actived for the script
+		@param script the script's name
+		@return boolean true if the script is in thread mode
+	]======]
 	function IsThreadActived(self, sc)
 		return Reflector.IsThreadActived(self, sc)
 	end
 
-	------------------------------------
-	--- Inactive thread mode for special scripts.
-	-- @name InactiveThread
-	-- @class function
-	-- @param obj object
-	-- @param ... script name list
-	-- @usage Object:InactiveThread("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name InactiveThread
+		@type method
+		@desc Turn off the thread mode for the scipts
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function InactiveThread(self, ...)
 		return Reflector.InactiveThread(self, ...)
 	end
 
-	------------------------------------
-	--- Block script for object
-	-- @name Object:BlockScript
-	-- @class function
-	-- @param ... script name list
-	-- @usage Object:BlockScript("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name BlockScript
+		@type method
+		@desc Block some script for the object
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function BlockScript(self, ...)
 		return Reflector.BlockScript(self, ...)
 	end
 
-	------------------------------------
-	--- Whether the script is blocked for object
-	-- @name Object:IsScriptBlocked
-	-- @class function
-	-- @param obj object
-	-- @param script
-	-- @usage Object:IsScriptBlocked("OnClick")
-	------------------------------------
+	doc [======[
+		@name IsScriptBlocked
+		@type method
+		@desc Check if the script is blocked for the object
+		@param script the script's name
+		@return boolean true if th script is blocked
+	]======]
 	function IsScriptBlocked(self, sc)
 		return Reflector.IsScriptBlocked(self, sc)
 	end
 
-	------------------------------------
-	--- Un-Block script for object
-	-- @name UnBlockScript
-	-- @class function
-	-- @param obj object
-	-- @param ... script name list
-	-- @usage Object:UnBlockScript("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name UnBlockScript
+		@type method
+		@desc Un-Block some scripts for the object
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function UnBlockScript(self, ...)
 		return Reflector.UnBlockScript(self, ...)
 	end
 
-	------------------------------------
-	--- Call method as thread, self would be the first arg to the method
-	-- @name ThreadCall
-	-- @class function
-	-- @param method method or method name
-	-- @param ... arguments
-	-- @usage Object:ThreadCall("Show")
-	------------------------------------
+	doc [======[
+		@name ThreadCall
+		@type method
+		@desc Call method or function as a thread
+		@param methodname|function
+		@param ... the arguments
+		@return nil
+	]======]
 	function ThreadCall(self, method, ...)
 		if type(method) == "string" then
 			method = self[method]
@@ -464,5 +465,12 @@ class "Object"
 			local thread = create(method)
 			return resume(thread, self, ...)
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		UnregisterAllEvents(self)
 	end
 endclass "Object"

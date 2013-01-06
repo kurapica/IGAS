@@ -4453,8 +4453,8 @@ do
 								end
 
 								if desc then
-									-- Format
-									result = result .. "\n  Format :"
+									-- Constructor
+									result = result .. "\n  Constructor :"
 									if isFormat then
 										for fmt in desc do
 											result = result .. "\n    " .. GetName(ns) .. "(" .. fmt .. ")"
@@ -4520,192 +4520,194 @@ do
 								querytype = "property"
 							elseif type(ns[name]) == "function" then
 								querytype = "method"
+							else
+								return
 							end
 						end
 
 						doctype = querytype or "default"
 
-						if HasDocumentPart(ns, doctype, name) then
-							if doctype:match("^%a") then
-								result = result .. "[" .. doctype:match("^%a"):upper() .. doctype:sub(2, -1) .. "] " .. name .. " :"
-							else
-								result = result .. "[" .. doctype .. "] " .. name .. " :"
-							end
-
-							-- Desc
-							local desc = GetDocumentPart(ns, doctype, name, "desc")
-							desc = desc and desc()
-							if desc then
-								result = result .. "\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
-							end
-
-							if querytype == "script" then
-								-- Format
-								desc = GetDocumentPart(ns, doctype, name, "format")
-								if desc then
-									result = result .. "\n  Format :"
-									for fmt in desc do
-										result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the script\n    end"
-									end
-								else
-									result = result .. "\n  Format :\n    function object:" .. name .. "("
-
-									desc = GetDocumentPart(ns, doctype, name, "param")
-
-									if desc then
-										local isFirst = true
-
-										for param in desc do
-											if isFirst then
-												isFirst = false
-												result = result .. param
-											else
-												result = result .. ", " .. param
-											end
-										end
-									end
-
-									result = result .. ")\n        -- Handle the script\n    end"
-								end
-
-								-- Params
-								desc = GetDocumentPart(ns, doctype, name, "param")
-								if desc then
-									result = result .. "\n  Parameter :"
-									for param, info in desc do
-										if info and info:len() > 0 then
-											result = result .. "\n    " .. param .. " - " .. info
-										else
-											result = result .. "\n    " .. param
-										end
-									end
-								end
-							elseif querytype == "property" then
-								local types = GetPropertyType(ns, name)
-
-								if types then
-									local parttype = types
-									local typestring = ""
-
-									for _, tns in ipairs(parttype) do
-										typestring = typestring .. " + " .. GetFullName(tns)
-									end
-
-									-- NameSpace
-									local index = -1
-									while parttype[index] do
-										typestring = typestring .. " - " .. GetFullName(parttype[index])
-
-										index = index - 1
-									end
-
-									-- Allow nil
-									if parttype.AllowNil then
-										typestring = typestring .. " + nil"
-									end
-
-									if typestring:sub(1, 2) == " +" then
-										typestring = typestring:sub(3, -1)
-									end
-
-									result = result .. "\n  Type :\n    " .. typestring
-								end
-
-								-- Readonly
-								result = result .. "\n  Readable : " .. tostring(IsPropertyReadable(ns, name))
-
-								-- Writable
-								result = result .. "\n  Writable : " .. tostring(IsPropertyWritable(ns, name))
-							elseif querytype == "method" then
-								local isGlobal = false
-
-								if info.Type == TYPE_INTERFACE then
-									if name:match("^_") then
-										isGlobal = true
-									else
-										desc = GetDocumentPart(ns, doctype, name, "method")
-										if desc and desc() == "interface" then
-											isGlobal = true
-										end
-									end
-								end
-
-								-- Format
-								desc = GetDocumentPart(ns, doctype, name, "format")
-								result = result .. "\n  Format :"
-								if desc then
-									for fmt in desc do
-										if isGlobal then
-											result = result .. "\n    " .. GetName(ns) .. "." .. name .. "(" .. fmt .. ")"
-										else
-											result = result .. "\n    object:" .. name .. "(" .. fmt .. ")"
-										end
-									end
-								else
-									if isGlobal then
-										result = result .. "\n    " .. GetName(ns) .. "." .. name .. "("
-									else
-										result = result .. "\n    object:" .. name .. "("
-									end
-
-									desc = GetDocumentPart(ns, doctype, name, "param")
-
-									if desc then
-										local isFirst = true
-
-										for param in desc do
-											if isFirst then
-												isFirst = false
-												result = result .. param
-											else
-												result = result .. ", " .. param
-											end
-										end
-									end
-
-									result = result .. ")"
-								end
-
-								-- Params
-								desc = GetDocumentPart(ns, doctype, name, "param")
-								if desc then
-									result = result .. "\n  Parameter :"
-									for param, info in desc do
-										if info and info:len() > 0 then
-											result = result .. "\n    " .. param .. " - " .. info
-										else
-											result = result .. "\n    " .. param
-										end
-									end
-								end
-
-								-- Returns
-								desc = GetDocumentPart(ns, doctype, name, "return")
-								if desc then
-									result = result .. "\n  Return :"
-									for ret, info in desc do
-										if info and info:len() > 0 then
-											result = result .. "\n    " .. ret .. " - " .. info
-										else
-											result = result .. "\n    " .. ret
-										end
-									end
-								end
-							else
-								-- skip
-							end
-
-							-- Usage
-							desc = GetDocumentPart(ns, doctype, name, "usage")
-							if desc then
-								result = result .. "\n  Usage :"
-								for usage in desc do
-									result = result .. "\n    " .. usage:gsub("<br>", "\n    ")
-								end
-							end
-
-							return result
+						if doctype:match("^%a") then
+							result = result .. "[" .. doctype:match("^%a"):upper() .. doctype:sub(2, -1) .. "] " .. name .. " :"
+						else
+							result = result .. "[" .. doctype .. "] " .. name .. " :"
 						end
+
+						local hasDocument = HasDocumentPart(ns, doctype, name)
+
+						-- Desc
+						local desc = hasDocument and GetDocumentPart(ns, doctype, name, "desc")
+						desc = desc and desc()
+						if desc then
+							result = result .. "\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
+						end
+
+						if querytype == "script" then
+							-- Format
+							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
+							if desc then
+								result = result .. "\n  Format :"
+								for fmt in desc do
+									result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the script\n    end"
+								end
+							else
+								result = result .. "\n  Format :\n    function object:" .. name .. "("
+
+								desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+
+								if desc then
+									local isFirst = true
+
+									for param in desc do
+										if isFirst then
+											isFirst = false
+											result = result .. param
+										else
+											result = result .. ", " .. param
+										end
+									end
+								end
+
+								result = result .. ")\n        -- Handle the script\n    end"
+							end
+
+							-- Params
+							desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+							if desc then
+								result = result .. "\n  Parameter :"
+								for param, info in desc do
+									if info and info:len() > 0 then
+										result = result .. "\n    " .. param .. " - " .. info
+									else
+										result = result .. "\n    " .. param
+									end
+								end
+							end
+						elseif querytype == "property" then
+							local types = GetPropertyType(ns, name)
+
+							if types then
+								local parttype = types
+								local typestring = ""
+
+								for _, tns in ipairs(parttype) do
+									typestring = typestring .. " + " .. GetFullName(tns)
+								end
+
+								-- NameSpace
+								local index = -1
+								while parttype[index] do
+									typestring = typestring .. " - " .. GetFullName(parttype[index])
+
+									index = index - 1
+								end
+
+								-- Allow nil
+								if parttype.AllowNil then
+									typestring = typestring .. " + nil"
+								end
+
+								if typestring:sub(1, 2) == " +" then
+									typestring = typestring:sub(3, -1)
+								end
+
+								result = result .. "\n  Type :\n    " .. typestring
+							end
+
+							-- Readonly
+							result = result .. "\n  Readable :\n    " .. tostring(IsPropertyReadable(ns, name))
+
+							-- Writable
+							result = result .. "\n  Writable :\n    " .. tostring(IsPropertyWritable(ns, name))
+						elseif querytype == "method" then
+							local isGlobal = false
+
+							if info.Type == TYPE_INTERFACE then
+								if name:match("^_") then
+									isGlobal = true
+								else
+									desc = hasDocument and GetDocumentPart(ns, doctype, name, "method")
+									if desc and desc() == "interface" then
+										isGlobal = true
+									end
+								end
+							end
+
+							-- Format
+							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
+							result = result .. "\n  Format :"
+							if desc then
+								for fmt in desc do
+									if isGlobal then
+										result = result .. "\n    " .. GetName(ns) .. "." .. name .. "(" .. fmt .. ")"
+									else
+										result = result .. "\n    object:" .. name .. "(" .. fmt .. ")"
+									end
+								end
+							else
+								if isGlobal then
+									result = result .. "\n    " .. GetName(ns) .. "." .. name .. "("
+								else
+									result = result .. "\n    object:" .. name .. "("
+								end
+
+								desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+
+								if desc then
+									local isFirst = true
+
+									for param in desc do
+										if isFirst then
+											isFirst = false
+											result = result .. param
+										else
+											result = result .. ", " .. param
+										end
+									end
+								end
+
+								result = result .. ")"
+							end
+
+							-- Params
+							desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+							if desc then
+								result = result .. "\n  Parameter :"
+								for param, info in desc do
+									if info and info:len() > 0 then
+										result = result .. "\n    " .. param .. " - " .. info
+									else
+										result = result .. "\n    " .. param
+									end
+								end
+							end
+
+							-- Returns
+							desc = hasDocument and GetDocumentPart(ns, doctype, name, "return")
+							if desc then
+								result = result .. "\n  Return :"
+								for ret, info in desc do
+									if info and info:len() > 0 then
+										result = result .. "\n    " .. ret .. " - " .. info
+									else
+										result = result .. "\n    " .. ret
+									end
+								end
+							end
+						else
+							-- skip
+						end
+
+						-- Usage
+						desc = hasDocument and GetDocumentPart(ns, doctype, name, "usage")
+						if desc then
+							result = result .. "\n  Usage :"
+							for usage in desc do
+								result = result .. "\n    " .. usage:gsub("<br>", "\n    ")
+							end
+						end
+
+						return result
 					end
 				else
 					local result = "[NameSpace] " .. GetFullName(ns) .. " :"

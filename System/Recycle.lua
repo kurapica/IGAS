@@ -10,21 +10,49 @@ end
 
 namespace "System"
 
------------------------------------------------
---- Recycle
--- @type class
--- @name Recycle
------------------------------------------------
 class "Recycle"
 	inherit "Object"
 
 	_RecycleInfo = _RecycleInfo or setmetatable({}, {__mode = "k",})
 
+	doc [======[
+		@name Recycle
+		@type class
+		@param class the class used to generate objects
+		@param ... the arguments that transform to the class's constructor
+		@desc
+				Recycle object is used as an object factory and manager.
+		<br><br>Recycle's constructor receive a class as it's first argument, the class would be used to generate new object to be recycle.
+		<br><br>The other arugments for the constructor is passed to the class's constructor as init arugments, and if one argument is string and containts '%d', the '%d' will be converted to the factory index.The factory index in alwasy increased by 1 when a new object is created.
+		<br><br>After the recycle object is created as recycleObject, can use 'recycleObject()' to get an un-used object, and use 'recycleObject(object)' to put no-use object back for another query.
+		<br>
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnPush
+		@type script
+		@desc Fired when an no-used object is put in
+		@param object no-used object
+	]======]
 	script "OnPush"
+
+	doc [======[
+		@name OnPop
+		@type script
+		@desc Fired when an un-used object is send out
+		@param object send-out object
+	]======]
 	script "OnPop"
+
+	doc [======[
+		@name OnInit
+		@type script
+		@desc Fired when a new object is created
+		@param object the new object
+	]======]
 	script "OnInit"
 
 	_Args = {}
@@ -52,13 +80,13 @@ class "Recycle"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Push object in recycle bin
-	-- @name Push
-	-- @type function
-	-- @param obj
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name Push
+		@type method
+		@desc Push object in recycle bin
+		@param object
+		@return nil
+	]======]
 	function Push(self, obj)
 		if obj then
 			-- Won't check obj because using cache means want quick-using.
@@ -69,12 +97,12 @@ class "Recycle"
 		end
 	end
 
-	------------------------------------
-	--- Pop object from recycle bin
-	-- @name Pop
-	-- @type function
-	-- @return obj
-	------------------------------------
+	doc [======[
+		@name Pop
+		@type method
+		@desc Pop object from recycle bin
+		@return object
+	]======]
 	function Pop(self)
 		-- give out item
 		if #self > 0 then

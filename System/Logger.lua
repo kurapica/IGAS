@@ -30,7 +30,7 @@
 -- %y	two-digit year (98) [00-99]<br>
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-local version = 6
+local version = 7
 
 if not IGAS:NewAddon("IGAS.Logger", version) then
 	return
@@ -43,27 +43,23 @@ floor = math.floor
 class "Logger"
 	inherit "Object"
 
+	doc [======[
+		@name Logger
+		@type class
+		@param name the Logger's name, must be an unique string
+		@desc Logger is used to keep and distribute log message.
+	]======]
+
 	_Logger = _Logger or {}
 	_Info = _Info or setmetatable({}, {__mode = "k"})
 
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	script "OnHandlerChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Dispose this object
-	-- @name Object:Dispose
-	-- @class function
-	-- @usage Object:Dispose()
-	------------------------------------
-	function Dispose(self)
-		_Logger[_Info[self].Name] = nil
-		_Info[self] = nil
-	end
 
 	------------------------------------
 	--- output message
@@ -142,7 +138,6 @@ class "Logger"
 		if type(handler) == "function" then
 			if not _Info[self].Handler[handler] then
 				_Info[self].Handler[handler] = loglevel and tonumber(loglevel) or true
-				self:Fire("OnHandlerChanged", handler, "ADD")
 			end
 		else
 			error(("Usage : Logger:AddHandler(handler) : 'handler' - function expected, got %s."):format(type(handler)), 2)
@@ -161,7 +156,6 @@ class "Logger"
 		if type(handler) == "function" then
 			if _Info[self].Handler[handler] then
 				_Info[self].Handler[handler] = nil
-				self:Fire("OnHandlerChanged", handler, "REMOVE")
 			end
 		else
 			error(("Usage : Logger:RemoveHandler(handler) : 'handler' - function expected, got %s."):format(type(handler)), 2)
@@ -250,6 +244,14 @@ class "Logger"
 		end,
 		Type = String + nil,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_Logger[_Info[self].Name] = nil
+		_Info[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor
