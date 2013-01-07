@@ -26,6 +26,13 @@ end
 class "Array"
 	extend "IFIterator"
 
+	doc [======[
+		@name Array
+		@type class
+		@desc Array object is used to control a group objects with same class, script handlers can be assign to all objects with one definition.
+		@param class|struct the array's element's type
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -112,14 +119,14 @@ class "Array"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Sort table
-	-- @name Array:Sort
-	-- @class function
-	-- @param optional compare function
-	-- @usage System.Array.Sort(tbl) || Array:Sort(func)
-	------------------------------------
+	doc [======[
+		@name Sort
+		@type method
+		@desc Sort array
+		@format [compfunc]
+		@param compfunc compare function with two args (v1, v2), true if the v1 < v2
+		@return nil
+	]======]
 	function Sort(self, comp)
 		if type(comp) ~= "function" then comp = defaultComp end
 
@@ -179,14 +186,15 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Insert table
-	-- @name Array:Insert
-	-- @class function
-	-- @param index
-	-- @param value
-	-- @usage Array:Insert(1, "test")
-	------------------------------------
+	doc [======[
+		@name Insert
+		@type method
+		@desc Insert object into the array
+		@format [index, ]object
+		@param index
+		@param object
+		@return nil
+	]======]
 	function Insert(self, ...)
 		if select('#', ...) == 2 then
 			local index, value = ...
@@ -267,13 +275,13 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Remove table
-	-- @name Array:Remove
-	-- @class function
-	-- @param index|object
-	-- @usage Array:Remove(1)
-	------------------------------------
+	doc [======[
+		@name Remove
+		@type method
+		@desc Remove object from array
+		@param index|object
+		@return object
+	]======]
 	function Remove(self, index)
 		if type(index) ~= "number" then
 			for i, ob in ipairs(self) do
@@ -311,25 +319,26 @@ class "Array"
 		return tremove(self, index)
 	end
 
-	------------------------------------
-	--- Check if the script type is supported by the frame
-	-- @name Array:HasScript
-	-- @class function
-	-- @param name the script type's name
-	-- @return true if the frame has that script type
-	-- @usage Array:HasScript("OnEnter")
-	------------------------------------
+	doc [======[
+		@name HasScript
+		@type method
+		@desc Check if the script type is supported by the array's element type
+		@param script the script's name
+		@return boolean true if the array's element's type has the script
+	]======]
 	function HasScript(self, key)
 		return type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasScript(_ArrayInfo[self].Type, key)
 	end
 
-	------------------------------------
-	--- Active thread mode for special scripts.
-	-- @name Array:ActiveThread
-	-- @class function
-	-- @param ... script name list
-	-- @usage Array:ActiveThread("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name ActiveThread
+		@type method
+		@desc Active the thread mode for special script
+		@format script[, ...]
+		@param script the script name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function ActiveThread(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
@@ -353,24 +362,26 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Whether the thread mode is actived for special scripts.
-	-- @name Array:IsThreadActived
-	-- @class function
-	-- @param script
-	-- @usage Array:IsThreadActived("OnClick")
-	------------------------------------
+	doc [======[
+		@name IsThreadActived
+		@type method
+		@desc Check if the thread mode is actived for the script
+		@param script the script's name
+		@return boolean true if the script is in thread mode
+	]======]
 	function IsThreadActived(self, sc)
 		return type(sc) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self]["_ArrayActive_" .. sc] or false
 	end
 
-	------------------------------------
-	--- Inactive thread mode for special scripts.
-	-- @name Array:InactiveThread
-	-- @class function
-	-- @param ... script name list
-	-- @usage Array:InactiveThread("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name InactiveThread
+		@type method
+		@desc Turn off the thread mode for the scipts
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function InactiveThread(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
@@ -394,13 +405,15 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Block script for array object
-	-- @name Array:BlockScript
-	-- @class function
-	-- @param ... script name list
-	-- @usage Array:BlockScript("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name BlockScript
+		@type method
+		@desc Block some script for the object
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function BlockScript(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
@@ -424,24 +437,26 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Whether the script is blocked for the array objects
-	-- @name Array:IsScriptBlocked
-	-- @class function
-	-- @param script
-	-- @usage Array:IsScriptBlocked("OnClick")
-	------------------------------------
+	doc [======[
+		@name IsScriptBlocked
+		@type method
+		@desc Check if the script is blocked for the object
+		@param script the script's name
+		@return boolean true if th script is blocked
+	]======]
 	function IsScriptBlocked(self, sc)
 		return type(sc) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self]["_ArrayBlock_" .. sc] or false
 	end
 
-	------------------------------------
-	--- Un-Block script for array objects
-	-- @name Array:UnBlockScript
-	-- @class function
-	-- @param ... script name list
-	-- @usage Array:UnBlockScript("OnClick", "OnEnter")
-	------------------------------------
+	doc [======[
+		@name UnBlockScript
+		@type method
+		@desc Un-Block some scripts for the object
+		@format script[, ...]
+		@param script the script's name
+		@param ... other script's name list
+		@return nil
+	]======]
 	function UnBlockScript(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
@@ -465,27 +480,27 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Add value into Array's end
-	-- @name Array:Push
-	-- @class function
-	-- @param value
-	-- @param [...]
-	-- @usage Array:Push("test")
-	------------------------------------
+	doc [======[
+		@name Push
+		@type method
+		@desc add object into Array's end
+		@format object[, ...]
+		@param object
+		@param ... other objects
+		@return nil
+	]======]
 	function Push(self, ...)
 		for i = 1, select('#', ...) do
 			self:Insert(select(i, ...))
 		end
 	end
 
-	------------------------------------
-	--- Remove and return the Array's end value
-	-- @name Array:Pop
-	-- @class function
-	-- @return value
-	-- @usage Array:Pop()
-	------------------------------------
+	doc [======[
+		@name Pop
+		@type method
+		@desc Remove and return the Array's last object
+		@return object
+	]======]
 	function Pop(self)
 		local value = self[#self]
 
@@ -496,27 +511,27 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Add value into Array's start
-	-- @name Array:Unshift
-	-- @class function
-	-- @param value
-	-- @param [...]
-	-- @usage Array:Unshift("test")
-	------------------------------------
+	doc [======[
+		@name Unshift
+		@type method
+		@desc Add value into the Array's first position
+		@format object[, ...]
+		@param object
+		@param ... other objects
+		@return nil
+	]======]
 	function Unshift(self, ...)
 		for i = select('#', ...), 1, -1 do
 			self:Insert(1, select(i, ...))
 		end
 	end
 
-	------------------------------------
-	--- Remove and return the Array's start value
-	-- @name Array:Shift
-	-- @class function
-	-- @return value
-	-- @usage Array:Shift()
-	------------------------------------
+	doc [======[
+		@name Shift
+		@type method
+		@desc Remove and return the Array's first element
+		@return object
+	]======]
 	function Shift(self)
 		local value = self[1]
 
@@ -527,26 +542,26 @@ class "Array"
 		end
 	end
 
-	------------------------------------
-	--- Get the next element, Overridable
-	-- @name Next
-	-- @class function
-	-- @param key
-	-- @return nextFunc
-	-- @return self
-	-- @return firstKey
-	------------------------------------
+	doc [======[
+		@name Next
+		@type method
+		@desc Get the next element, used for IFIterator operation
+		@param key
+		@return iterator
+		@return array
+		@return nextkey
+	]======]
 	function Next(self, key)
 		return ipairs(self), self, tonumber(key) or 0
 	end
 
-	------------------------------------
-	--- Check if the array contains item
-	-- @name Contain
-	-- @type function
-	-- @param item
-	-- @return boolean
-	------------------------------------
+	doc [======[
+		@name Contain
+		@type method
+		@desc Check if the array contains the object
+		@param object
+		@return boolean true if the array contains the object
+	]======]
 	function Contain(self, item)
 		if type(item) then
 			for i, ob in ipairs(self) do

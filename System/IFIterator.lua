@@ -2,12 +2,6 @@
 -- Create Date : 2012/08/10
 -- ChangeLog   :
 
----------------------------------------------------------------
---- IFIterator
--- @type Interface
--- @name IFIterator
----------------------------------------------------------------
-
 local version = 2
 
 if not IGAS:NewAddon("IGAS.IFIterator", version) then
@@ -17,16 +11,18 @@ end
 namespace "System"
 
 interface "IFIterator"
+
+	doc [======[
+		@name IFIterator
+		@type interface
+		@desc The IFiterator interface provide objrect Each, EachK method to help itertor object's element.
+		@need Next method return itertor, itertor object, first key to help traverse elements
+	]======]
+
 	local function SetObjectProperty(self, prop, value)
 		self[prop] = value
 	end
 
-	------------------------------------------------------
-	-- Enum
-	------------------------------------------------------
-	------------------------------------------------------
-	-- Script
-	------------------------------------------------------
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -39,18 +35,31 @@ interface "IFIterator"
 	-- @return self
 	-- @return firstKey
 	------------------------------------
+	doc [======[
+		@name Next
+		@type method
+		@desc return the itertor function, itertor object, first key to help traverse elements
+		@param key
+		@return itertor
+		@return self
+		@return firstkey
+	]======]
 	function Next(self, key)
 		return next, self, key and self[key] ~= nil and key or nil
 	end
 
-	------------------------------------
-	--- Each elements to do
-	-- @name EachK
-	-- @class function
-	-- @param key the index to start operation
-	-- @param oper
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name EachK
+		@type method
+		@desc Traverse the object's elements to perform operation
+		@format fisrtkey, method[, ...]
+		@format firstkey, propertyName, propertyValue
+		@param firstkey the start index
+		@param method function or method name to operation
+		@param propertyName property to be set
+		@param propertyValue property value
+		@return nil
+	]======]
 	function EachK(self, key, oper, ...)
 		if not oper then return end
 
@@ -101,24 +110,18 @@ interface "IFIterator"
 		end
 	end
 
-	------------------------------------
-	--- Each elements to do
-	-- @name Each
-	-- @class function
-	-- @param oper
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name EachK
+		@type method
+		@desc Traverse the object's all elements to perform operation
+		@format method[, ...]
+		@format propertyName, propertyValue
+		@param method function or method name to operation
+		@param propertyName property to be set
+		@param propertyValue property value
+		@return nil
+	]======]
 	function Each(self, oper, ...)
 		return EachK(self, nil, oper, ...)
 	end
-
-	------------------------------------------------------
-	-- Script Handler
-	------------------------------------------------------
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
 endinterface "IFIterator"

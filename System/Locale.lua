@@ -2,12 +2,7 @@
 -- Create Date : 2011/02/28
 -- ChangeLog   :
 --               2011/10/24 can use code like L"XXXX".
-
-----------------------------------------------------------------------------------------------------------------------------------------
---- Locale is used to store local text for addons.
--- @name Local
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
+--               2013/01/07 Recode with new class system.
 
 local version = 3
 
@@ -17,43 +12,54 @@ end
 
 namespace "System"
 
-class "Locale"
-	_Locale = _Locale or {}
+_GameLocale = GetLocale and GetLocale() or "enUS"
+if _GameLocale == "enGB" then
+	_GameLocale = "enUS"
+end
 
-	_GameLocale = GetLocale and GetLocale() or "enUS"
-	if _GameLocale == "enGB" then
-		_GameLocale = "enUS"
-	end
+class "Locale"
+
+	doc [======[
+		@name Locale
+		@type class
+		@desc Locale object is used as localization strings storage and manager.
+		@format name
+		@param name the Locale's name, must be an unique string
+ 	 ]======]
+
+	_Locale = _Locale or {}
 
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		for name, loc in pairs(_Locale) do
+			if loc == self then
+				_Locale[name] = nil
+				break
+			end
+		end
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Locale(self, name, language, asDefault)
-		if type(name) ~= "string" then
-			error(("Usage : Local(name[, language, asDefault]) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-
-		if language ~= nil and type(language) ~= "string" then
-			error(("Usage : Local(name[, language, asDefault]) : 'language' - string expected, got %s."):format(type(language)), 2)
-		end
-
-		name = name:match("%S+")
+	function Locale(self, name)
+		name = type(namd) == "string" and name:match("%S+")
 
 		if not name or name == "" then return end
-
-		if not asDefault and language and language:lower() ~= _GameLocale:lower() then
-			return
-		end
 
 		_Locale[name] = self
 	end
@@ -61,22 +67,14 @@ class "Locale"
 	------------------------------------------------------
 	-- Exist checking
 	------------------------------------------------------
-	function __exist(name, language, asDefault)
+	function __exist(name)
 		if type(name) ~= "string" then
 			return
 		end
 
-		if language ~= nil and type(language) ~= "string" then
-			return
-		end
-
-		name = name:match("%S+")
+		name = type(namd) == "string" and name:match("%S+")
 
 		if not name or name == "" then return end
-
-		if not asDefault and language and language:lower() ~= _GameLocale:lower() then
-			return
-		end
 
 		return _Locale[name]
 	end
@@ -132,5 +130,21 @@ endclass "Locale"
 -- @usage L = IGAS:NewLocale("HelloWorld", "zhCN")
 ------------------------------------
 function IGAS:NewLocale(name, language, asDefault)
-	return Locale(name, language, asDefault)
+	if type(name) ~= "string" then
+		error(("Usage : IGAS:NewLocale(name[, language, asDefault]) : 'name' - string expected, got %s."):format(type(name)), 2)
+	end
+
+	if language ~= nil and type(language) ~= "string" then
+		error(("Usage : IGAS:NewLocale(name[, language, asDefault]) : 'language' - string expected, got %s."):format(type(language)), 2)
+	end
+
+	name = name:match("%S+")
+
+	if not name or name == "" then return end
+
+	if not asDefault and language and language:lower() ~= _GameLocale:lower() then
+		return
+	end
+
+	return Locale(name)
 end

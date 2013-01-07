@@ -888,7 +888,7 @@ do
 
 			if value then
 				if type(part) == "string" then
-					if part == "param" or part == "return" then
+					if part == "param" or part == "return" or part == "need" then
 						if value:match("@" .. part .. "%s+([^@%s]+)%s*([^@]*)") then
 							return value:gmatch("@" .. part .. "%s+([^@%s]+)%s*([^@]*)")
 						end
@@ -4428,6 +4428,23 @@ do
 							result = result .. "\n  Method :"
 							for method in pairs(info.Method) do
 								result = result .. "\n    " .. method
+							end
+						end
+
+						-- Need
+						if info.Type == TYPE_INTERFACE then
+							desc = GetDocumentPart(ns, "interface", GetName(ns), "need")
+
+							if desc then
+								result = result .. "\n  Need :"
+
+								for need, info in desc do
+									if info and info:len() > 0 then
+										result = result .. "\n    " .. need .. " - " .. info
+									else
+										result = result .. "\n    " .. need
+									end
+								end
 							end
 						end
 

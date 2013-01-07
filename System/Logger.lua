@@ -3,34 +3,7 @@
 -- ChangeLog   :
 --				2011/03/17	the msg can be formatted string.
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Logger class used to keep logs for debugging.
--- @name Logger
--- @class table
--- @field LogLevel the logging system's loglevel, if log message's loglevel is lower than Logger.LogLevel, that message will be discarded.
--- @field MaxLog the log message will be stored in the Logger temporarily , you can using Logger[1], Logger[2] to access it, the less index the newest log message.When the message number is passed Logger.MaxLog, the oldest messages would be discarded, the default MaxLog is 1.
--- @field TimeFormat if the timeformat is setted, the log message will add a timestamp at the header.<br><br>
--- Time Format:<br>
--- %a	abbreviated weekday name (e.g., Wed)<br>
--- %A	full weekday name (e.g., Wednesday)<br>
--- %b	abbreviated month name (e.g., Sep)<br>
--- %B	full month name (e.g., September)<br>
--- %c	date and time (e.g., 09/16/98 23:48:10)<br>
--- %d	day of the month (16) [01-31]<br>
--- %H	hour, using a 24-hour clock (23) [00-23]<br>
--- %I	hour, using a 12-hour clock (11) [01-12]<br>
--- %M	minute (48) [00-59]<br>
--- %m	month (09) [01-12]<br>
--- %p	either "am" or "pm" (pm)<br>
--- %S	second (10) [00-61]<br>
--- %w	weekday (3) [0-6 = Sunday-Saturday]<br>
--- %x	date (e.g., 09/16/98)<br>
--- %X	time (e.g., 23:48:10)<br>
--- %Y	full year (1998)<br>
--- %y	two-digit year (98) [00-99]<br>
-----------------------------------------------------------------------------------------------------------------------------------------
-
-local version = 7
+local version = 8
 
 if not IGAS:NewAddon("IGAS.Logger", version) then
 	return
@@ -48,6 +21,9 @@ class "Logger"
 		@type class
 		@param name the Logger's name, must be an unique string
 		@desc Logger is used to keep and distribute log message.
+		<br><br>Logger object can use 'logObject(logLevel, logMessage, ...)' for short to send out log messages.
+		<br><br>Logger object also cache the log messages, like use 'logObject[1]' to get the lateset message, 'logObject[2]' to get the previous message, Logger object will cache messages for a count equal to it's MaxLog property value, the MaxLog default value is 1, always can be change.
+		<br>
 	]======]
 
 	_Logger = _Logger or {}
@@ -60,17 +36,16 @@ class "Logger"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- output message
-	-- @name Logger:Log
-	-- @class function
-	-- @param loglevel the output message's loglevel, if lower than Logger.LogLevel, the message will be discarded.
-	-- @param message the output message(can be formatted string )
-	-- @param ... A list of values to be included in the formatted string
-	-- @return nil
-	-- @usage Logger:Log(1, "Something wrong")
-	------------------------------------
+	doc [======[
+		@name Log
+		@type method
+		@desc log out message for log level
+		@format logLevel, message[, ...]
+		@param logLevel the message's log level, if lower than object.LogLevel, the message will be discarded
+		@param message the send out message, can be a formatted string
+		@param ... a list values to be included into the formatted string
+		@return nil
+	]======]
 	function Log(self, logLvl, msg, ...)
 		if type(logLvl) ~= "number" then
 			error(("Usage Logger:Log(logLvl, msg, ...) : logLvl - number expected, got %s."):format(type(logLvl)), 2)
@@ -125,15 +100,15 @@ class "Logger"
 		end
 	end
 
-	------------------------------------
-	--- Add a log handler, the handler must be a function and receive <b>message</b> as arg.
-	-- @name Logger:AddHandler
-	-- @class function
-	-- @param handler a function to handle the log message
-	-- @param [loglevel] binding log level
-	-- @return nil
-	-- @usage Logger:AddHandler(print) -- this would print the message out to the ChatFrame
-	------------------------------------
+	doc [======[
+		@name AddHandler
+		@type method
+		@desc Add a log handler, when Logger object send out log messages, the handler will receive the message as it's first argument
+		@format handler[, logLevel]
+		@param handler function, the log handler
+		@param logLevel the handler only receive this level's message if setted, or receive all level's message if keep nil
+		@return nil
+	]======]
 	function AddHandler(self, handler, loglevel)
 		if type(handler) == "function" then
 			if not _Info[self].Handler[handler] then
@@ -144,14 +119,13 @@ class "Logger"
 		end
 	end
 
-	------------------------------------
-	--- Remove a log handler
-	-- @name Logger:RemoveHandler
-	-- @class function
-	-- @param handler a function to handle the log message
-	-- @return nil
-	-- @usage Logger:RemoveHandler(print) -- this would print the message out to the ChatFrame
-	------------------------------------
+	doc [======[
+		@name RemoveHandler
+		@type method
+		@desc Remove a log handler
+		@param handler function, the handler need be removed
+		@return nil
+	]======]
 	function RemoveHandler(self, handler)
 		if type(handler) == "function" then
 			if _Info[self].Handler[handler] then
@@ -172,6 +146,19 @@ class "Logger"
 	-- @return nil
 	-- @usage Logger:SetPrefix(1, "[DEBUG]") -- this would print the message out to the ChatFrame
 	------------------------------------
+	doc [======[
+		@name SetPrefix
+		@type method
+		@desc Set a prefix for a log level, thre prefix will be added to the message when the message is with the same log level
+		@param logLevel, prefix[, methodname]
+		@param logLevel the log level
+		@param prefix string, the prefix string
+		@param methodname string, if not nil, will place a function with the methodname to be called as Log function
+		@return nil
+		@usage object:SetPrefix(2, "[Info]", "Info")
+		<br><br>-- Then you can use Info function to output log message with 2 log level
+		<br><br>Info("This is a test message") -- log out '[Info]This is a test message'
+	]======]
 	function SetPrefix(self, loglvl, prefix, method)
 		if type(prefix) == "string" then
 			if not prefix:match("%W+$") then
@@ -230,7 +217,29 @@ class "Logger"
 		end,
 		Type = Number,
 	}
-	-- TimeFormat
+	doc [======[
+		@name TimeFormat
+		@type property
+		@desc if the timeformat is setted, the log message will add a timestamp at the header
+		<br>Time Format:
+		<br>    %a abbreviated weekday name (e.g., Wed)
+		<br>    %A full weekday name (e.g., Wednesday)
+		<br>    %b abbreviated month name (e.g., Sep)
+		<br>    %B full month name (e.g., September)
+		<br>    %c date and time (e.g., 09/16/98 23:48:10)
+		<br>    %d day of the month (16) [01-31]
+		<br>    %H hour, using a 24-hour clock (23) [00-23]
+		<br>    %I hour, using a 12-hour clock (11) [01-12]
+		<br>    %M minute (48) [00-59]
+		<br>    %m month (09) [01-12]
+		<br>    %p either "am" or "pm" (pm)
+		<br>    %S second (10) [00-61]
+		<br>    %w weekday (3) [0-6 = Sunday-Saturday]
+		<br>    %x date (e.g., 09/16/98)
+		<br>    %X time (e.g., 23:48:10)
+		<br>    %Y full year (1998)
+		<br>    %y two-digit year (98) [00-99]
+	]======]
 	property "TimeFormat" {
 		Set = function(self, timeFormat)
 			if timeFormat and type(timeFormat) == "string" and timeFormat ~= "*t" then
