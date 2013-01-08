@@ -3,14 +3,6 @@
 -- ChangeLog
 --				2011/03/11	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Translation is an Animation type that applies an affine translation to its affected region automatically as it progresses.
--- <br><br>inherit <a href=".\Animation.html">Animation</a> For all methods, properties and scriptTypes
--- @name Translation
--- @class table
--- @field Offset the animation's translation offsets
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Translation", version) then
@@ -19,6 +11,12 @@ end
 
 class "Translation"
 	inherit "Animation"
+
+	doc [======[
+		@name Translation
+		@type class
+		@desc Translation is an Animation type that applies an affine translation to its affected region automatically as it progresses.
+	]======]
 
 	------------------------------------------------------
 	-- Script

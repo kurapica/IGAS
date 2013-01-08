@@ -117,6 +117,12 @@ issecurevariable = issecurevariable or function() return false end
 ------------------------------------------------------
 interface "IFModule"
 
+	doc [======[
+		@name IFModule
+		@type interface
+		@desc Common methods for class addon and interface
+	]======]
+
 	_MetaWK = _MetaWK
 	_MetaWV = _MetaWV
 	_MetaWKV = _MetaWKV
@@ -600,25 +606,63 @@ interface "IFModule"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnLoad
+		@type script
+		@desc Fired when the addon(module) and it's saved variables is loaded
+	]======]
 	script "OnLoad"
+
+	doc [======[
+		@name OnEnable
+		@type script
+		@desc Fired when the addon(module) is enabled
+	]======]
 	script "OnEnable"
+
+	doc [======[
+		@name OnDisable
+		@type script
+		@desc Fired when the addon(module) is disabled
+	]======]
 	script "OnDisable"
+
+	doc [======[
+		@name OnDispose
+		@type script
+		@desc Fired when the addon(module) is dispoing
+	]======]
 	script "OnDispose"
+
+	doc [======[
+		@name OnSlashCmd
+		@type script
+		@desc Fired when the addon(module) registered slash commands is called
+		@param option the first word in slash command
+		@param info remain string
+	]======]
 	script "OnSlashCmd"
+
+	doc [======[
+		@name OnHook
+		@type script
+		@desc Fired when the addon(module) hooked function is called, already has default handler, so no need to handle yourself
+		@param function the hooked function name
+		@param ... arguments from the hooked function
+	]======]
 	script "OnHook"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	if _EventManager then
-		------------------------------------
-		--- Register a event
-		-- @name RegisterEvent
-		-- @class function
-		-- @param event the event's name
-		-- @return nil
-		-- @Usage IFModule:RegisterEvent("CUSTOM_EVENT_1")
-		------------------------------------
+		doc [======[
+			@name RegisterEvent
+			@type method
+			@desc Register an event
+			@param event string, the event's name
+			@return nil
+		]======]
 		function RegisterEvent(self, event)
 			if type(event) == "string" and event ~= "" then
 				return _EventManager:Register(event, self)
@@ -627,14 +671,13 @@ interface "IFModule"
 			end
 		end
 
-		------------------------------------
-		--- Check if an event is registered for an Module
-		-- @name IsEventRegistered
-		-- @class function
-		-- @param event the event's name
-		-- @return true if the event is registered to that Module
-		-- @Usage IFModule:IsEventRegistered("CUSTOM_EVENT_1")
-		------------------------------------
+		doc [======[
+			@name IsEventRegistered
+			@type method
+			@desc Check if the addon(module) registered an event
+			@param event string, the event's name
+			@return boolean true if the event is registered
+		]======]
 		function IsEventRegistered(self, event)
 			if type(event) == "string" and event ~= "" then
 				return _EventManager:IsRegistered(event, self)
@@ -643,25 +686,23 @@ interface "IFModule"
 			end
 		end
 
-		------------------------------------
-		--- Undo register all events for the Module
-		-- @name UnregisterAllEvents
-		-- @class function
-		-- @return nil
-		-- @Usage IFModule:UnregisterAllEvents()
-		------------------------------------
+		doc [======[
+			@name UnregisterAllEvents
+			@type method
+			@desc Un-register all events for the addon(module)
+			@return nil
+		]======]
 		function UnregisterAllEvents(self)
 			return _EventManager:UnregisterAll(self)
 		end
 
-		------------------------------------
-		--- Undo Register a event for an Module
-		-- @name UnregisterEvent
-		-- @class function
-		-- @param event the event's name
-		-- @return nil
-		-- @Usage IFModule:UnregisterEvent("CUSTOM_EVENT_1")
-		------------------------------------
+		doc [======[
+			@name UnregisterEvent
+			@type method
+			@desc Un-register an event for the addon(module)
+			@param event string, the event's name
+			@return nil
+		]======]
 		function UnregisterEvent(self, event)
 			if type(event) == "string" and event ~= "" then
 				return _EventManager:Unregister(event, self)
@@ -672,27 +713,26 @@ interface "IFModule"
 	end
 
 	if _SlashCmdManager then
-		------------------------------------
-		--- Add slash commands to a module
-		-- @name AddSlashCmd
-		-- @class function
-		-- @param slash1 the slash commands, a string started with "/", if not started with "/", will auto add it.
-		-- @param slash2, ... Optional,other slash commands
-		-- @return nil
-		-- @usage IFModule:AddSlashCmd("/hw", hw2")
-		------------------------------------
+		doc [======[
+			@name AddSlashCmd
+			@type method
+			@desc Add some slash commands to the addon(module)
+			@format slashcmd[, ...]
+			@param slashcmd string, the slash command
+			@param ... other slash commands
+			@return nil
+		]======]
 		function AddSlashCmd(self, ...)
 			return _SlashCmdManager:AddSlashCmd(self, ...)
 		end
 	end
 
-	------------------------------------
-	--- Enable the Module.
-	-- @name Enable
-	-- @class function
-	-- @return nil
-	-- @usage IFModule:Enable()
-	------------------------------------
+	doc [======[
+		@name Enable
+		@type method
+		@desc Enable the addon(module)
+		@return nil
+	]======]
 	function Enable(self)
 		if _Info[self].Disabled then
 			if _Info[self].Parent and _Info[_Info[self].Parent].Disabled then
@@ -714,13 +754,12 @@ interface "IFModule"
 		end
 	end
 
-	------------------------------------
-	--- Disable the Module.The Module won't receive events.
-	-- @name Disable
-	-- @class function
-	-- @return nil
-	-- @usage IFModule:Disable()
-	------------------------------------
+	doc [======[
+		@name Disable
+		@type method
+		@desc Disable the addon(module)
+		@return nil
+	]======]
 	function Disable(self)
 		if not _Info[self].Disabled then
 			_Info[self].Disabled = true
@@ -740,66 +779,25 @@ interface "IFModule"
 		end
 	end
 
-	------------------------------------
-	--- Check if the Module is enabled
-	-- @name IsEnabled
-	-- @class function
-	-- @return true if the Module is enabled
-	-- @usage IFModule:IsEnabled()
-	------------------------------------
+	doc [======[
+		@name IsEnabled
+		@type method
+		@desc Check if the addon(module) is enabled
+		@return boolean true if the addon(module) is enabled
+	]======]
 	function IsEnabled(self)
 		return not _Info[self].Disabled
 	end
 
-	------------------------------------
-	--- This is using to dispose a module, and set the enviroment to it's container if needed.
-	-- @name Dispose
-	-- @class function
-	-- @return nil
-	-- @usage IFModule:Dispose()
-	------------------------------------
-	function Dispose(self)
-		local info = _Info[self]
-		local chk, ret
-
-		Object.Fire(self, "OnDispose")
-
-		if self.UnregisterAllEvents then
-			self:UnregisterAllEvents()
-		end
-
-		if info.Module then
-			for _, mdl in pairs(info.Module) do
-				chk, ret = pcall(mdl.Dispose, mdl)
-
-				if not chk then
-					errorhandler(ret)
-				end
-			end
-		end
-
-		if info.Parent then
-			if _Info[info.Parent].Module then
-				_Info[info.Parent].Module[info.Name] = nil
-			end
-			if info.Parent[info.Name] == self then
-				info.Parent[info.Name] = nil
-			end
-		end
-
-		wipe(info)
-		_Info[self] = nil
-	end
-
-	------------------------------------
-	--- Create or get a child-module of this module.And set the environment to the child-module
-	-- @name NewModule
-	-- @class function
-	-- @param name the child-module's name,can be "Mdl1.SubMdl1.SubSubMdl1", use dot to concat
-	-- @param version Optional,used for version control, if there is another version, and the old version is equal or great than this one, return nil, else return the child-module
-	-- @return the child-module
-	-- @usage IFModule:NewModule("Mdl_MyFrame1")
-	------------------------------------
+	doc [======[
+		@name NewModule
+		@type method
+		@desc Create or get a child-module of the the addon(module), and the environment will be changed to the child-module
+		@format name[, version]
+		@param name string, the child-module's name, like 'SubMdl1.SubSubMdl1', useing dot to concat
+		@param version number, used for version control, if there is an existed module with equal or big version number, no module would return
+		@return System.Addon.Module the child-module
+	]======]
 	function NewModule(self, name, version)
 		if type(name) ~= "string" or strtrim(name) == "" then
 			error(("Usage : IFModule:NewModule(name, [version]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
@@ -837,15 +835,15 @@ interface "IFModule"
 		return module
 	end
 
-	------------------------------------
-	--- Get the child-module of this module.
-	-- @name GetModule
-	-- @class function
-	-- @param name the child-module's name,can be "Mdl1.SubMdl1.SubSubMdl1", use dot to concat
-	-- @param create if true, the module will be created if not existed
-	-- @return the child-module
-	-- @usage IFModule:GetModule("Mdl_MyFrame1")
-	------------------------------------
+	doc [======[
+		@name GetModule
+		@type method
+		@desc Get the child-module with the name
+		@format name[, create]
+		@param name string, the child-module's name
+		@param create if true then create the module if not existed
+		@return System.Addon.Module the child-module
+	]======]
 	function GetModule(self, name, create)
 		if type(name) ~= "string" or strtrim(name) == "" then
 			error(("Usage : IFModule:GetModule(name, [create]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
@@ -878,13 +876,12 @@ interface "IFModule"
 		return module
 	end
 
-	------------------------------------
-	--- Get the child-modules of this module.
-	-- @name GetModules
-	-- @class function
-	-- @return the child-module list
-	-- @usage IFModule:GetModules()
-	------------------------------------
+	doc [======[
+		@name GetModules
+		@type method
+		@desc Get all child-modules of the addon(module)
+		@return table the list of the the child-modules
+	]======]
 	function GetModules(self)
 		if _Info[self].Module then
 			local lst = setmetatable({}, _MetaWV)
@@ -897,15 +894,16 @@ interface "IFModule"
 		end
 	end
 
-	------------------------------------
-	--- Hook taget's method.
-	-- @name Hook
-	-- @class function
-	-- @param [target] table
-	-- @param targetFunc method' name
-	-- @param [handler] hook function
-	-- @usage IFModule:Hook("print")
-	------------------------------------
+	doc [======[
+		@name Hook
+		@type method
+		@desc Hook a table's function
+		@format [target, ]targetFunction[, handler]
+		@param target table, default _G
+		@param targetFunction string, the hook function name
+		@param handler string|function the hook handler
+		@return nil
+	]======]
 	function Hook(self, target, targetFunc, handler)
 		if type(target) ~= "table" then
 			target, targetFunc, handler = _G, target, targetFunc
@@ -922,14 +920,15 @@ interface "IFModule"
 		_HookManager:Hook(self, target, targetFunc, handler)
 	end
 
-	------------------------------------
-	--- UnHook taget's method.
-	-- @name UnHook
-	-- @class function
-	-- @param [target] table
-	-- @param targetFunc method' name
-	-- @usage IFModule:UnHook("print")
-	------------------------------------
+	doc [======[
+		@name UnHook
+		@type method
+		@desc Un-hook a table's function
+		@format [target, ]targetFunction
+		@param target table, default _G
+		@param targetFunction taget function name
+		@return nil
+	]======]
 	function UnHook(self, target, targetFunc)
 		if type(target) ~= "table" then
 			target, targetFunc = _G, target
@@ -946,26 +945,26 @@ interface "IFModule"
 		_HookManager:UnHook(self, target, targetFunc)
 	end
 
-	------------------------------------
-	--- UnHookAll all for the module.
-	-- @name UnHookAll
-	-- @class function
-	-- @usage IFModule:UnHookAll()
-	------------------------------------
+	doc [======[
+		@name UnHookAll
+		@type class
+		@desc Un-hook all functions
+	]======]
 	function UnHookAll(self)
 		_HookManager:UnHookAll(self)
 	end
 
 	if _HookManager.SecureHook then
-		------------------------------------
-		--- SecureHook taget's method.
-		-- @name SecureHook
-		-- @class function
-		-- @param [target] table
-		-- @param targetFunc method' name
-		-- @param [handler] hook function
-		-- @usage IFModule:SecureHook("print")
-		------------------------------------
+		doc [======[
+			@name SecureHook
+			@type method
+			@desc Secure hook a table's function
+			@format [target, ]targetFunction[, handler]
+			@param target table, default _G
+			@param targetFunction string the function's name
+			@param handler string|function, the hook handler
+			@return nil
+		]======]
 		function SecureHook(self, target, targetFunc, handler)
 			if type(target) ~= "table" then
 				target, targetFunc, handler = _G, target, targetFunc
@@ -982,14 +981,15 @@ interface "IFModule"
 			_HookManager:SecureHook(self, target, targetFunc, handler)
 		end
 
-		------------------------------------
-		--- SecureUnHook taget's method.
-		-- @name SecureUnHook
-		-- @class function
-		-- @param [target] table
-		-- @param targetFunc method' name
-		-- @usage IFModule:SecureUnHook("print")
-		------------------------------------
+		doc [======[
+			@name SecureUnHook
+			@type method
+			@desc Un-hook a table's function
+			@format [target, ]targetFunction
+			@param target table, default _G
+			@param targetFunction string, the hooked function's name
+			@return nil
+		]======]
 		function SecureUnHook(self, target, targetFunc)
 			if type(target) ~= "table" then
 				target, targetFunc = _G, target
@@ -1006,12 +1006,12 @@ interface "IFModule"
 			_HookManager:SecureUnHook(self, target, targetFunc)
 		end
 
-		------------------------------------
-		--- SecureUnHookAll all for the module.
-		-- @name SecureUnHookAll
-		-- @class function
-		-- @usage IFModule:SecureUnHookAll()
-		------------------------------------
+		doc [======[
+			@name SecureUnHookAll
+			@type method
+			@desc Un-hook all functions
+			@return nil
+		]======]
 		function SecureUnHookAll(self)
 			_HookManager:SecureUnHookAll(self)
 		end
@@ -1020,13 +1020,22 @@ interface "IFModule"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- _Name
+	doc [======[
+		@name _Name
+		@type property
+		@desc The name of the addon(module)
+	]======]
 	property "_Name" {
 		Get = function(self)
 			return _Info[self].Name
 		end,
 	}
-	-- _Version
+
+	doc [======[
+		@name _Version
+		@type property
+		@desc The version of the addon(module)
+	]======]
 	property "_Version" {
 		Get = function(self)
 			return _Info[self].Version or 0
@@ -1040,7 +1049,12 @@ interface "IFModule"
 		end,
 		Type = Number,
 	}
-	-- _Enabled
+
+	doc [======[
+		@name _Enabled
+		@type property
+		@desc True if the addon(module) is enabled
+	]======]
 	property "_Enabled" {
 		Get = function(self)
 			return IsEnabled(self)
@@ -1054,7 +1068,12 @@ interface "IFModule"
 		end,
 		Type = Boolean,
 	}
-	-- _Parent
+
+	doc [======[
+		@name _Parent
+		@type property
+		@desc The parent addon(module) of this module
+	]======]
 	property "_Parent" {
 		Get = function(self)
 			return _Info[self].Parent
@@ -1079,7 +1098,43 @@ interface "IFModule"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		local info = _Info[self]
+		local chk, ret
+
+		Object.Fire(self, "OnDispose")
+
+		if self.UnregisterAllEvents then
+			self:UnregisterAllEvents()
+		end
+
+		if info.Module then
+			for _, mdl in pairs(info.Module) do
+				chk, ret = pcall(mdl.Dispose, mdl)
+
+				if not chk then
+					errorhandler(ret)
+				end
+			end
+		end
+
+		if info.Parent then
+			if _Info[info.Parent].Module then
+				_Info[info.Parent].Module[info.Name] = nil
+			end
+			if info.Parent[info.Name] == self then
+				info.Parent[info.Name] = nil
+			end
+		end
+
+		wipe(info)
+		_Info[self] = nil
+	end
+
+	------------------------------------------------------
+	-- Initialize
 	------------------------------------------------------
 	function IFModule(self)
 		self.OnEvent = self.OnEvent + OnEvent
@@ -1094,10 +1149,11 @@ class "Addon"
 	inherit "Object"
 	extend "IFModule"
 
-	_Class_KeyWords = _Class_KeyWords
-	_Special_KeyWord = _Special_KeyWord
-
-	_Info = _Info
+	doc [======[
+		@name Addon
+		@type class
+		@desc Addon object is used as a project's container and manager.
+	]======]
 
 	------------------------------------------------------
 	-- Module
@@ -1106,21 +1162,40 @@ class "Addon"
 		inherit "Object"
 		extend "IFModule"
 
-		_Class_KeyWords = _Class_KeyWords
-		_Special_KeyWord = _Special_KeyWord
-
-		_Info = _Info
+		doc [======[
+			@name Module
+			@type class
+			@desc Module object is used as a project's module's container and manager.
+			@param parent System.Addon|System.Addon.Module, the parent addon(module)
+			@param name string, the module's name
+		]======]
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		------------------------------------
-		--- This is using to dispose a Addon, and set the enviroment to it's container if needed.
-		-- @name Addon:Dispose
-		-- @class function
-		-- @return nil
-		-- @usage Addon:Dispose()
-		------------------------------------
+		-- Object has same name method, so need override
+		RegisterEvent = IFModule.RegisterEvent
+		IsEventRegistered = IFModule.IsEventRegistered
+		UnregisterAllEvents = IFModule.UnregisterAllEvents
+		UnregisterEvent = IFModule.UnregisterEvent
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name _M
+			@type property
+			@desc The module self
+		]======]
+		property "_M" {
+			Get = function(self)
+				return self
+			end,
+		}
+
+		------------------------------------------------------
+		-- Dispose
+		------------------------------------------------------
 		function Dispose(self)
 			if getfenv(2) == self then
 				if _Info[self].Parent then
@@ -1130,25 +1205,6 @@ class "Addon"
 				end
 			end
 		end
-
-		RegisterEvent = IFModule.RegisterEvent
-		IsEventRegistered = IFModule.IsEventRegistered
-		UnregisterAllEvents = IFModule.UnregisterAllEvents
-		UnregisterEvent = IFModule.UnregisterEvent
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-		-- _M
-		property "_M" {
-			Get = function(self)
-				return self
-			end,
-		}
-
-		------------------------------------------------------
-		-- Script Handler
-		------------------------------------------------------
 
 		------------------------------------------------------
 		-- Constructor
@@ -1275,14 +1331,13 @@ class "Addon"
 	UnregisterAllEvents = IFModule.UnregisterAllEvents
 	UnregisterEvent = IFModule.UnregisterEvent
 
-	------------------------------------
-	--- Add SaveVariables to the addon
-	-- @name Addon:AddSavedVariable
-	-- @class function
-	-- @param name the savevariable's name
-	-- @return the savevariable, no need to receive it, the name passed in this function will be the identify.
-	-- @usage Addon:AddSavedVariable("HelloWorld_SaveV")
-	------------------------------------
+	doc [======[
+		@name AddSavedVariable
+		@type method
+		@desc Add SaveVariables to the addon
+		@param name string, the savedvariables's name
+		@return table the savedvariables's container table, no need receive it, automatically install into the Addon with the name
+	]======]
 	function AddSavedVariable(self, name)
 		if type(name) ~= "string" or strtrim(name) == "" then
 			error(("Usage : Addon:AddSavedVariable(name) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
@@ -1300,14 +1355,13 @@ class "Addon"
 		return self[name]
 	end
 
-	------------------------------------
-	--- Get the addon's information by the given name.
-	-- @name Addon:GetMetadata
-	-- @class function
-	-- @param field the informations' name
-	-- @return informations stored in the addon
-	-- @usage Addon:GetMetadata("Author")    -- return "Kurapica"
-	------------------------------------
+	doc [======[
+		@name GetMetadata
+		@type method
+		@desc Get the addon's information by the given name
+		@param field string, the information's name
+		@return string information like 'Author'
+	]======]
 	function GetMetadata(self, field)
 		if type(field) ~= "string" or strtrim(field) == "" then
 			error(("Usage : Addon:GetMetadata(field) : 'field' - string expected, got %s."):format(type(field) == "string" and "empty string" or type(field)), 2)
@@ -1316,14 +1370,14 @@ class "Addon"
 		return self._Metadata[field]
 	end
 
-	------------------------------------
-	--- Set the addon's information by the given name.
-	-- @name Addon:SetMetadata
-	-- @class function
-	-- @param field the information's name
-	-- @param value the information's value
-	-- @usage Addon:SetMetadata("Author", "Kurapica")
-	------------------------------------
+	doc [======[
+		@name SetMetadata
+		@type method
+		@desc Set the addon's information
+		@param field string, the information's name
+		@param value any, the information's value
+		@return nil
+	]======]
 	function SetMetadata(self, field, value)
 		if type(field) ~= "string" or strtrim(field) == "" then
 			error(("Usage : Addon:SetMetadata(field, value) : 'field' - string expected, got %s."):format(type(field) == "string" and "empty string" or type(field)), 2)
@@ -1332,31 +1386,25 @@ class "Addon"
 		self._Metadata[field] = value
 	end
 
-	------------------------------------
-	--- This is using to dispose a Addon, and set the enviroment to it's container if needed.
-	-- @name Addon:Dispose
-	-- @class function
-	-- @return nil
-	-- @usage Addon:Dispose()
-	------------------------------------
-	function Dispose(self)
-		_Addon[_Info[self].Name] = nil
-
-		if getfenv(2) == self then
-			setfenv(2, _G)
-		end
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- _Addon
+	doc [======[
+		@name _Addon
+		@type property
+		@desc the addon's self
+	]======]
 	property "_Addon" {
 		Get = function(self)
 			return self
 		end,
 	}
-	-- _AutoWrapper
+
+	doc [======[
+		@name _AutoWrapper
+		@type property
+		@desc Auto wrapper blizzard's ui element to IGAS object when needed, default true
+	]======]
 	property "_AutoWrapper" {
 		Get = function(self)
 			return not _Info[self].NoAutoWrapper
@@ -1366,7 +1414,12 @@ class "Addon"
 		end,
 		Type = Boolean,
 	}
-	-- _Metadata
+
+	doc [======[
+		@name _Metadata
+		@type property
+		@desc a table to access the addon's informations
+	]======]
 	property "_Metadata" {
 		Get = function(self)
 			_Info[self].MetaData = _Info[self].MetaData or setmetatable({}, {
@@ -1389,6 +1442,17 @@ class "Addon"
 			return _Info[self].MetaData
 		end,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_Addon[_Info[self].Name] = nil
+
+		if getfenv(2) == self then
+			setfenv(2, _G)
+		end
+	end
 
 	------------------------------------------------------
 	-- Constructor
