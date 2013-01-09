@@ -25,25 +25,22 @@ class "Translation"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the animation's translation offsets
-	-- @name Translation:SetOffset
-	-- @class function
-	-- @param xOffset Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration (number)
-	-- @param yOffset Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration (number)
-	-- @usage Translation:SetOffset(10, 20)
-	------------------------------------
-	-- SetOffset
+	doc [======[
+		@name SetOffset
+		@type method
+		@desc Sets the animation's translation offsets
+		@param xOffset numner, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
+		@param yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Gets the animation's translation offsets
-	-- @name Translation:GetOffset
-	-- @class function
-	-- @return xOffset - Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration (number)
-	-- @return yOffset - Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration (number)
-	-- @usage Translation:GetOffset()
-	------------------------------------
-	-- GetOffset
+	doc [======[
+		@name GetOffset
+		@type method
+		@desc Gets the animation's translation offsets
+		@return xOffset number, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
+		@return yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
+	]======]
 
 	------------------------------------------------------
 	-- Property

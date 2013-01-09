@@ -30,6 +30,12 @@ _SetPortraitTexture = SetPortraitTexture
 class "Texture"
 	inherit "LayeredRegion"
 
+	doc [======[
+		@name Texture
+		@type class
+		@desc Texture is used to display pic or color
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -37,55 +43,53 @@ class "Texture"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the blend mode of the texture
-	-- @name Texture:GetBlendMode
-	-- @class function
-	-- @return mode - Blend mode of the texture (string) <ul><li>ADD - Adds texture color values to the underlying color values, using the alpha channel; light areas in the texture lighten the background while dark areas are more transparent
-	-- @return ALPHAKEY - One-bit transparency; pixels with alpha values greater than ~0.8 are treated as fully opaque and all other pixels are treated as fully transparent
-	-- @return BLEND - Normal color blending, using any alpha channel in the texture image
-	-- @return DISABLE - Ignores any alpha channel, displaying the texture as fully opaque
-	-- @return MOD - Ignores any alpha channel in the texture and multiplies texture color values by background color values; dark areas in the texture darken the background while light areas are more transparent
-	------------------------------------
-	-- GetBlendMode
+	doc [======[
+		@name GetBlendMode
+		@type method
+		@desc Returns the blend mode of the texture
+		@return System.Widget.AlphaMode
+	]======]
+
+	doc [======[
+		@name GetHorizTile
+		@type method
+		@desc
+		@return boolean
+	]======]
+
+	doc [======[
+		@name GetNonBlocking
+		@type method
+		@desc Returns whether the texture object loads its image file in the background
+		@return boolean 1 if the texture object loads its image file in the background
+	]======]
+
+	doc [======[
+		@name GetTexCoord
+		@type method
+		@desc Returns corner coordinates for scaling or cropping the texture image
+		@return ULx number, Upper left corner X position, as a fraction of the image's width from the left
+		@return ULy number, Upper left corner Y position, as a fraction of the image's height from the top
+		@return LLx number, Lower left corner X position, as a fraction of the image's width from the left
+		@return LLy number, Lower left corner Y position, as a fraction of the image's height from the top
+		@return URx number, Upper right corner X position, as a fraction of the image's width from the left
+		@return URy number, Upper right corner Y position, as a fraction of the image's height from the top
+		@return LRx number, Lower right corner X position, as a fraction of the image's width from the left
+		@return LRy number, Lower right corner Y position, as a fraction of the image's height from the top
+	]======]
 
 	------------------------------------
 	---
-	-- @name Texture:GetHorizTile
-	-- @class function
-	------------------------------------
-	-- GetHorizTile
-
-	------------------------------------
-	--- Returns whether the texture object loads its image file in the background. See :SetNonBlocking() for further details.
-	-- @name Texture:GetNonBlocking
-	-- @class function
-	-- @return nonBlocking - 1 if the texture object loads its image file in the background; nil if the game engine is halted while the texture loads (1nil)
-	------------------------------------
-	-- GetNonBlocking
-
-	------------------------------------
-	--- Returns corner coordinates for scaling or cropping the texture image. See Texture:SetTexCoord() example for details.
-	-- @name Texture:GetTexCoord
-	-- @class function
-	-- @return ULx - Upper left corner X position, as a fraction of the image's width from the left (number)
-	-- @return ULy - Upper left corner Y position, as a fraction of the image's height from the top (number)
-	-- @return LLx - Lower left corner X position, as a fraction of the image's width from the left (number)
-	-- @return LLy - Lower left corner Y position, as a fraction of the image's height from the top (number)
-	-- @return URx - Upper right corner X position, as a fraction of the image's width from the left (number)
-	-- @return URy - Upper right corner Y position, as a fraction of the image's height from the top (number)
-	-- @return LRx - Lower right corner X position, as a fraction of the image's width from the left (number)
-	-- @return LRy - Lower right corner Y position, as a fraction of the image's height from the top (number)
-	------------------------------------
-	-- GetTexCoord
-
-	------------------------------------
-	--- Returns the path to the texture's image file
 	-- @name Texture:GetTexture
 	-- @class function
 	-- @return texture - Path to the texture image file, or one of the following values: (string) <ul><li>Portrait1 - Texture is set to a generated image (e.g. via SetPortraitTexture())
 	-- @return SolidTexture - Texture is set to a solid color instead of an image
 	------------------------------------
+	doc [======[
+		@name GetTexture
+		@type method
+		@desc Returns the path to the texture's image file
+	]======]
 	function GetTexture(self, ...)
 		local value = self.__UI:GetTexture(...)
 
