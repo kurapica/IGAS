@@ -4701,27 +4701,10 @@ do
 
 							-- ReturnFormat
 							desc = hasDocument and GetDocumentPart(ns, doctype, name, "returnformat")
-							result = result .. "\n  Return Format :"
 							if desc then
+								result = result .. "\n  Return Format :"
 								for fmt in desc do
 									result = result .. "\n    " .. fmt
-								end
-							else
-								result = result .. "\n    "
-
-								desc = hasDocument and GetDocumentPart(ns, doctype, name, "return")
-
-								if desc then
-									local isFirst = true
-
-									for param in desc do
-										if isFirst then
-											isFirst = false
-											result = result .. param
-										else
-											result = result .. ", " .. param
-										end
-									end
 								end
 							end
 

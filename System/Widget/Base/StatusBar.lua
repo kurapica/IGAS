@@ -3,21 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- StatusBars are similar to Sliders, but they are generally used for display as they don't offer any tools to receive user input.
--- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name StatusBar
--- @class table
--- @field MinMaxValue the minimum and maximum values of the status bar
--- @field Orientation the orientation of the status bar
--- @field StatusBarColor the color shading for the status bar's texture
--- @field StatusBarTexture the texture used for drawing the filled-in portion of the status bar
--- @field StatusBarTexturePath the texture file used for drawing the filled-in portion of the status bar
--- @field Layer the layer used for drawing the filled-in portion of the status bar
--- @field Value the value of the status bar
--- @field RotatesTexture
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 if not IGAS:NewAddon("IGAS.Widget.StatusBar", version) then
@@ -27,147 +12,142 @@ end
 class "StatusBar"
 	inherit "Frame"
 
+	doc [======[
+		@name StatusBar
+		@type class
+		@desc StatusBars are similar to Sliders, but they are generally used for display as they don't offer any tools to receive user input.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	-----------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the slider's or status bar's minimum and maximum values change
-	-- @name StatusBar:OnMinMaxChanged
-	-- @class function
-	-- @param min New minimum value of the slider or the status bar
-	-- @param max New maximum value of the slider or the status bar
-	-- @usage function StatusBar:OnMinMaxChanged(min, max)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnMinMaxChanged
+		@type script
+		@desc Fired when the status bar's minimum and maximum values change
+		@param min new minimun value of the status bar
+		@param max new maximum value of the status bar
+	]======]
 	script "OnMinMaxChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the slider's or status bar's value changes
-	-- @name StatusBar:OnValueChanged
-	-- @class function
-	-- @param value New value of the slider or the status bar
-	-- @usage function StatusBar:OnValueChanged(value)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnValueChanged
+		@type script
+		@desc Fired when the status bar's value changes
+		@param value new value of the status bar
+	]======]
 	script "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the minimum and maximum values of the status bar
-	-- @name StatusBar:GetMinMaxValues
-	-- @class function
-	-- @return minValue - Lower boundary for values represented on the status bar (number)
-	-- @return maxValue - Upper boundary for values represented on the status bar (number)
-	------------------------------------
-	-- GetMinMaxValues
+	doc [======[
+		@name GetMinMaxValues
+		@type method
+		@desc Returns the minimum and maximum values of the status bar
+		@return minValue number, lower boundary for values represented on the status bar
+		@return maxValue number, upper boundary for values represented on the status bar
+	]======]
 
-	------------------------------------
-	--- Returns the orientation of the status bar
-	-- @name StatusBar:GetOrientation
-	-- @class function
-	-- @return orientation - Token describing the orientation and direction of the status bar (string) <ul><li>HORIZONTAL - Fills from left to right as the status bar value increases
-	-- @return VERTICAL - Fills from top to bottom as the status bar value increases
-	------------------------------------
-	-- GetOrientation
+	doc [======[
+		@name GetOrientation
+		@type method
+		@desc Returns the orientation of the status bar
+		@return System.Widget.Orientation
+	]======]
 
-	------------------------------------
-	--- Returns whether the status bar's texture is rotated to match its orientation
-	-- @name StatusBar:GetRotatesTexture
-	-- @class function
-	-- @return rotate - 1 if the status bar texture should be rotated 90 degrees counter-clockwise when the status bar is vertically oriented; otherwise nil (1nil)
-	------------------------------------
-	-- GetRotatesTexture
+	doc [======[
+		@name GetRotatesTexture
+		@type method
+		@desc Returns whether the status bar's texture is rotated to match its orientation
+		@return boolean 1 if the status bar texture should be rotated 90 degrees counter-clockwise when the status bar is vertically orientation, otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns the color shading used for the status bar's texture
-	-- @name StatusBar:GetStatusBarColor
-	-- @class function
-	-- @return red - Red component of the color (0.0 - 1.0) (number)
-	-- @return green - Green component of the color (0.0 - 1.0) (number)
-	-- @return blue - Blue component of the color (0.0 - 1.0) (number)
-	-- @return alpha - Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetStatusBarColor
+	doc [======[
+		@name GetStatusBarColor
+		@type method
+		@desc Returns the color shading used for the status bar's texture
+		@return red number, Red component of the color (0.0 - 1.0)
+		@return green number, Green component of the color (0.0 - 1.0)
+		@return blue number, Blue component of the color (0.0 - 1.0)
+		@return alpha number, Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 
-	------------------------------------
-	--- Returns the Texture object used for drawing the filled-in portion of the status bar
-	-- @name StatusBar:GetStatusBarTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used for drawing the filled-in portion of the status bar (texture)
-	------------------------------------
+	doc [======[
+		@name GetStatusBarTexture
+		@type method
+		@desc Returns the Texture object used for drawing the filled-in portion of the status bar
+		@return System.Widget.Texture the Texture object used for drawing the filled-in portion of the status bar
+	]======]
 	function GetStatusBarTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetStatusBarTexture(...))
 	end
 
-	------------------------------------
-	--- Returns the current value of the status bar
-	-- @name StatusBar:GetValue
-	-- @class function
-	-- @return value - Value indicating the amount of the status bar's area to be filled in (between minValue and maxValue, where minValue, maxValue = StatusBar:GetMinMaxValues()) (number)
-	------------------------------------
-	-- GetValue
+	doc [======[
+		@name GetValue
+		@type method
+		@desc Returns the current value of the status bar
+		@return number the value indicating the amount of the status bar's area to be filled in
+	]======]
 
-	------------------------------------
-	--- Sets the minimum and maximum values of the status bar
-	-- @name StatusBar:SetMinMaxValues
-	-- @class function
-	-- @param minValue Lower boundary for values represented on the status bar (number)
-	-- @param maxValue Upper boundary for values represented on the status bar (number)
-	------------------------------------
-	-- SetMinMaxValues
+	doc [======[
+		@name SetMinMaxValues
+		@type method
+		@desc Sets the minimum and maximum values of the status bar
+		@param minValue number, Lower boundary for values represented on the status bar
+		@param maxValue number, Upper boundary for values represented on the status bar
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the orientation of the status bar
-	-- @name StatusBar:SetOrientation
-	-- @class function
-	-- @param orientation Token describing the orientation and direction of the status bar (string) <ul><li>HORIZONTAL - Fills from left to right as the status bar value increases (default)
-	-- @param VERTICAL Fills from top to bottom as the status bar value increases
-	------------------------------------
-	-- SetOrientation
+	doc [======[
+		@name SetOrientation
+		@type method
+		@desc Sets the orientation of the status bar
+		@param orientation System.Widget.Orientation, token describing the orientation and direction of the status bar
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether the status bar's texture is rotated to match its orientation
-	-- @name StatusBar:SetRotatesTexture
-	-- @class function
-	-- @param rotate True to rotate the status bar texture 90 degrees counter-clockwise when the status bar is vertically oriented; false otherwise (1nil)
-	------------------------------------
-	-- SetRotatesTexture
+	doc [======[
+		@name SetRotatesTexture
+		@type method
+		@desc Sets whether the status bar's texture is rotated to match its orientation
+		@param boolean True to rotate the status bar texture 90 degrees counter-clockwise when the status bar is vertically oriented; false otherwise
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the color shading for the status bar's texture. As with :SetVertexColor(), this color is a shading applied to the texture image.
-	-- @name StatusBar:SetStatusBarColor
-	-- @class function
-	-- @param red Red component of the color (0.0 - 1.0) (number)
-	-- @param green Green component of the color (0.0 - 1.0) (number)
-	-- @param blue Blue component of the color (0.0 - 1.0) (number)
-	-- @param alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetStatusBarColor
+	doc [======[
+		@name SetStatusBarColor
+		@type method
+		@desc Sets the color shading for the status bar's texture. As with :SetVertexColor(), this color is a shading applied to the texture image.
+		@param red number, Red component of the color (0.0 - 1.0)
+		@param green number, Green component of the color (0.0 - 1.0)
+		@param blue number, Blue component of the color (0.0 - 1.0)
+		@param alpha number, Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used for drawing the filled-in portion of the status bar. The texture image is stretched to fill the dimensions of the entire status bar, then cropped to show only a portion corresponding to the status bar's current value.
-	-- @name StatusBar:SetStatusBarTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	-- @param layer Graphics layer in which the texture should be drawn; defaults to ARTWORK if not specified (string, layer)
-	------------------------------------
+	doc [======[
+		@name SetStatusBarTexture
+		@type method
+		@desc Sets the texture used for drawing the filled-in portion of the status bar. The texture image is stretched to fill the dimensions of the entire status bar, then cropped to show only a portion corresponding to the status bar's current value.
+		@format texture|filename[, layer]
+		@param texture System.Widget.Texture, Reference to an existing Texture object
+		@param filename string, Path to a texture image file
+		@param layer System.Widget.DrawLayer, Graphics layer in which the texture should be drawn; defaults to ARTWORK if not specified
+		@return nil
+	]======]
 	function SetStatusBarTexture(self, texture, layer)
 		self.__Layer = layer
 		return self.__UI:SetStatusBarTexture(IGAS:GetUI(texture), layer)
 	end
 
-	------------------------------------
-	--- Sets the value of the status bar
-	-- @name StatusBar:SetValue
-	-- @class function
-	-- @param value Value indicating the amount of the status bar's area to be filled in (between minValue and maxValue, where minValue, maxValue = StatusBar:GetMinMaxValues()) (number)
-	------------------------------------
-	-- SetValue
+	doc [======[
+		@name SetValue
+		@type method
+		@desc Sets the value of the status bar
+		@param value number, indicating the amount of the status bar's area to be filled in
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

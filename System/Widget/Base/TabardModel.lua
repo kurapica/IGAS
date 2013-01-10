@@ -3,13 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- TabardModel is a frame type provided specifically for designing or modifying guild tabards.
--- <br><br>inherit <a href=".\PlayerModel.html">PlayerModel</a> For all methods, properties and scriptTypes
--- @name TabardModel
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.TabardModel", version) then
@@ -19,6 +12,12 @@ end
 class "TabardModel"
 	inherit "PlayerModel"
 
+	doc [======[
+		@name TabardModel
+		@type class
+		@desc TabardModel is a frame type provided specifically for designing or modifying guild tabards.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	-----------------------------------------------------
@@ -26,67 +25,67 @@ class "TabardModel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the image file for the lower portion of the tabard model's current background design
-	-- @name TabardModel:GetLowerBackgroundFileName
-	-- @class function
-	-- @param filename Path to the texture image file for the lower portion of the tabard model's current background design (string)
-	------------------------------------
-	-- GetLowerBackgroundFileName
+	doc [======[
+		@name GetLowerBackgroundFileName
+		@type method
+		@desc Returns the image file for the lower portion of the tabard model's current background design
+		@return string the image file for the lower portion of the tabard model's current background design
+	]======]
 
-	------------------------------------
-	--- Returns the image file for the lower portion of the tabard model's current emblem design
-	-- @name TabardModel:GetLowerEmblemFileName
-	-- @class function
-	-- @param filename Path to the texture image file for the lower portion of the tabard model's current emblem design (string)
-	------------------------------------
-	-- GetLowerEmblemFileName
+	doc [======[
+		@name GetLowerEmblemFileName
+		@type method
+		@desc Returns the image file for the lower portion of the tabard model's current emblem design
+		@return string the image file for the lower portion of the tabard model's current emblem design
+	]======]
 
-	------------------------------------
-	--- Sets a Texture object to display the lower portion of the tabard model's current emblem design
-	-- @name TabardModel:GetLowerEmblemTexture
-	-- @class function
-	-- @param texture Reference to a Texture object (texture)
-	------------------------------------
-	-- GetLowerEmblemTexture
+	doc [======[
+		@name GetLowerEmblemTexture
+		@type method
+		@desc Gets the texture object to display the lower portion of the tabard model's current emblem design
+		@return System.Widget.Texture the texture object to display the lower portion of the tabard model's current emblem design
+	]======]
+	function GetLowerEmblemTexture(self)
+		return IGAS:GetWrapper(self.__UI:GetLowerEmblemTexture())
+	end
 
-	------------------------------------
-	--- Returns the image file for the upper portion of the tabard model's current background design
-	-- @name TabardModel:GetUpperBackgroundFileName
-	-- @class function
-	-- @param filename Path to the texture image file for the upper portion of the tabard model's current background design (string)
-	------------------------------------
-	-- GetUpperBackgroundFileName
+	doc [======[
+		@name GetUpperBackgroundFileName
+		@type method
+		@desc Returns the image file for the upper portion of the tabard model's current background design
+		@return string the image file path for the upper portion of the tabard model's current background design
+	]======]
 
-	------------------------------------
-	--- Returns the image file for the upper portion of the tabard model's current emblem design
-	-- @name TabardModel:GetUpperEmblemFileName
-	-- @class function
-	-- @param filename Path to the texture image file for the upper portion of the tabard model's current emblem design (string)
-	------------------------------------
-	-- GetUpperEmblemFileName
+	doc [======[
+		@name GetUpperEmblemFileName
+		@type method
+		@desc Returns the image file for the upper portion of the tabard model's current emblem design
+		@return string the image file path for the upper portion of the tabard model's current emblem design
+	]======]
 
-	------------------------------------
-	--- Sets a Texture object to display the upper portion of the tabard model's current emblem design
-	-- @name TabardModel:GetUpperEmblemTexture
-	-- @class function
-	-- @param texture Reference to a Texture object (texture)
-	------------------------------------
-	-- GetUpperEmblemTexture
+	doc [======[
+		@name GetUpperEmblemTexture
+		@type method
+		@desc Gets a Texture object to display the upper portion of the tabard model's current emblem design
+		@return System.Widget.Texture the texture object to display the upper portion of the tabard model's current emblem design
+	]======]
+	function GetUpperEmblemTexture(self)
+		return IGAS:GetWrapper(self.__UI:GetUpperEmblemTexture())
+	end
 
-	------------------------------------
-	--- Sets the tabard model's design to match the player's guild tabard. If the player is not in a guild or the player's guild does not yet have a tabard design, randomizes the tabard model's design.
-	-- @name TabardModel:InitializeTabardColors
-	-- @class function
-	------------------------------------
-	-- InitializeTabardColors
+	doc [======[
+		@name InitializeTabardColors
+		@type method
+		@desc Sets the tabard model's design to match the player's guild tabard. If the player is not in a guild or the player's guild does not yet have a tabard design, randomizes the tabard model's design.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Saves the current tabard model design as the player's guild tabard. Has no effect if the player is not a guild leader.
-	-- @name TabardModel:Save
-	-- @class function
-	------------------------------------
-	-- Save
+	doc [======[
+		@name Save
+		@type method
+		@desc Saves the current tabard model design as the player's guild tabard. Has no effect if the player is not a guild leader.
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

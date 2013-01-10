@@ -57,7 +57,7 @@ class "Locale"
 	-- Constructor
 	------------------------------------------------------
 	function Locale(self, name)
-		name = type(namd) == "string" and name:match("%S+")
+		name = type(name) == "string" and name:match("%S+")
 
 		if not name or name == "" then return end
 
@@ -72,7 +72,7 @@ class "Locale"
 			return
 		end
 
-		name = type(namd) == "string" and name:match("%S+")
+		name = type(name) == "string" and name:match("%S+")
 
 		if not name or name == "" then return end
 

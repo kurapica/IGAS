@@ -4,21 +4,6 @@
 --				2011/03/12	Recode as class
 --              2012/09/04  Rotate & Shear method added
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Texture is used to display pic or color.
--- <br><br>inherit <a href=".\LayeredRegion.html">LayeredRegion</a> For all methods, properties and scriptTypes
--- @name Texture
--- @class table
--- @field BlendMode the blend mode of the texture
--- @field Desaturated whether the texture image should be displayed with zero saturation (i.e. converted to grayscale)
--- @field TexturePath the texture object's image file path
--- @field PortraitUnit the unit be de displayed as a portrait, such as "player", "target"
--- @field PortraitTexture the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
--- @field Color the texture's color
--- @field VertexColor the color shading for the region's graphics
--- @field NonBlocking
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 12
 if not IGAS:NewAddon("IGAS.Widget.Texture", version) then
@@ -34,6 +19,12 @@ class "Texture"
 		@name Texture
 		@type class
 		@desc Texture is used to display pic or color
+		@format name, [parent], [layer], [inherits], [sublevel]
+		@param name string, the texture's name, access by it's parent
+		@param parent widgetObejct, the texture's parent, default UIParent
+		@param layer System.Widget.DrawLayer, Graphic layer on which to create the texture; defaults to ARTWORK if not specified
+		@param inherits string, Name of a template from which the new texture should inherit
+		@param sublevel number, The sub-level on the given graphics layer ranging from -8 to 7. The default value of this argument is 0
 	]======]
 
 	------------------------------------------------------
@@ -78,17 +69,17 @@ class "Texture"
 		@return LRy number, Lower right corner Y position, as a fraction of the image's height from the top
 	]======]
 
-	------------------------------------
-	---
-	-- @name Texture:GetTexture
-	-- @class function
-	-- @return texture - Path to the texture image file, or one of the following values: (string) <ul><li>Portrait1 - Texture is set to a generated image (e.g. via SetPortraitTexture())
-	-- @return SolidTexture - Texture is set to a solid color instead of an image
-	------------------------------------
 	doc [======[
 		@name GetTexture
 		@type method
-		@desc Returns the path to the texture's image file
+		@desc Returns the path to the texture's image file or the color settings
+		@returnformat texturePath
+		@returnformat red, green, blue, alpha
+		@return texturePath string, the path of the texture's image file
+		@return red number, the color's red part
+		@return green number, the color's green part
+		@return blue number, the color's blue part
+		@return alpha number, the color's alpha
 	]======]
 	function GetTexture(self, ...)
 		local value = self.__UI:GetTexture(...)
@@ -108,122 +99,132 @@ class "Texture"
 		return self.__UI:GetTexture(...)
 	end
 
-	------------------------------------
-	--- Returns the shading color of the texture. For details about vertex color shading, see LayeredRegion:SetVertexColor().
-	-- @name Texture:GetVertexColor
-	-- @class function
-	-- @return red - Red component of the color (0.0 - 1.0) (number)
-	-- @return green - Green component of the color (0.0 - 1.0) (number)
-	-- @return blue - Blue component of the color (0.0 - 1.0) (number)
-	-- @return alpha - Alpha (opacity) for the texture (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetVertexColor
+	doc [======[
+		@name GetVertexColor
+		@type method
+		@desc Returns the shading color of the texture. For details about vertex color shading
+		@return red number, the color's red part
+		@return green number, the color's green part
+		@return blue number, the color's blue part
+		@return alpha number, the color's alpha
+	]======]
 
-	------------------------------------
-	---
-	-- @name Texture:GetVertTile
-	-- @class function
-	------------------------------------
-	-- GetVertTile
+	doc [======[
+		@name GetVertTile
+		@type method
+		@desc
+		@return boolean
+	]======]
 
-	------------------------------------
-	--- Returns whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). The texture may not actually be displayed in grayscale if the current display hardware doesn't support that feature; see Texture:SetDesaturated() for details.
-	-- @name Texture:IsDesaturated
-	-- @class function
-	-- @return desaturated - 1 if the texture should be displayed in grayscale; otherwise nil (1nil)
-	------------------------------------
-	-- IsDesaturated
+	doc [======[
+		@name IsDesaturated
+		@type method
+		@desc Returns whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). The texture may not actually be displayed in grayscale if the current display hardware doesn't support that feature;
+		@return boolean 1 if the texture should be displayed in grayscale, otherwise nil
+	]======]
 
-	------------------------------------
-	--- Sets the blend mode of the texture
-	-- @name Texture:SetBlendMode
-	-- @class function
-	-- @param mode Blend mode of the texture (string) <ul><li>ADD - Adds texture color values to the underlying color values, using the alpha channel; light areas in the texture lighten the background while dark areas are more transparent
-	-- @param ALPHAKEY One-bit transparency; pixels with alpha values greater than ~0.8 are treated as fully opaque and all other pixels are treated as fully transparent
-	-- @param BLEND Normal color blending, using any alpha channel in the texture image
-	-- @param DISABLE Ignores any alpha channel, displaying the texture as fully opaque
-	-- @param MOD Ignores any alpha channel in the texture and multiplies texture color values by background color values; dark areas in the texture darken the background while light areas are more transparent
-	------------------------------------
-	-- SetBlendMode
+	doc [======[
+		@name SetBlendMode
+		@type method
+		@desc Sets the blend mode of the texture
+		@param mode System.Widget.AlphaMode, Blend mode of the texture
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). Returns nil if the current system does not support texture desaturation; in such cases, this method has no visible effect (but still flags the texture object as desaturated). Authors may wish to implement an alternative to desaturation for such cases (see example).
-	-- @name Texture:SetDesaturated
-	-- @class function
-	-- @param desaturate True to display the texture in grayscale; false to display original texture colors (boolean)
-	-- @return supported - 1 if the current system supports texture desaturation; otherwise nil (1nil)
-	------------------------------------
-	-- SetDesaturated
+	doc [======[
+		@name SetDesaturated
+		@type method
+		@desc Sets whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). Returns nil if the current system does not support texture desaturation; in such cases, this method has no visible effect
+		@param desaturate boolean, true to display the texture in grayscale, false to display original texture colors
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets a gradient color shading for the texture. Gradient color shading does not change the underlying color of the texture image, but acts as a filter: see LayeredRegion:SetVertexColor() for details.
-	-- @name Texture:SetGradient
-	-- @class function
-	-- @param VERTICAL Start color at the bottom, end color at the top
-	------------------------------------
-	-- SetGradient
+	doc [======[
+		@name SetGradient
+		@type method
+		@desc Sets a gradient color shading for the texture. Gradient color shading does not change the underlying color of the texture image, but acts as a filter
+		@param orientation System.Widget.Orientation, Token identifying the direction of the gradient
+		@param startR number, Red component of the start color (0.0 - 1.0)
+		@param startG number, Green component of the start color (0.0 - 1.0)
+		@param startB number, Blue component of the start color (0.0 - 1.0)
+		@param endR number, Red component of the end color (0.0 - 1.0)
+		@param endG number, Green component of the end color (0.0 - 1.0)
+		@param endB number, Blue component of the end color (0.0 - 1.0)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets a gradient color shading for the texture (including opacity in the gradient). Gradient color shading does not change the underlying color of the texture image, but acts as a filter: see LayeredRegion:SetVertexColor() for details.
-	-- @name Texture:SetGradientAlpha
-	-- @class function
-	-- @param VERTICAL Start color at the bottom, end color at the top
-	------------------------------------
-	-- SetGradientAlpha
+	doc [======[
+		@name SetGradientAlpha
+		@type method
+		@desc Sets a gradient color shading for the texture (including opacity in the gradient). Gradient color shading does not change the underlying color of the texture image, but acts as a filter
+		@param orientation System.Widget.Orientation, Token identifying the direction of the gradient (string)
+		@param startR number, Red component of the start color (0.0 - 1.0)
+		@param startG number, Green component of the start color (0.0 - 1.0)
+		@param startB number, Blue component of the start color (0.0 - 1.0)
+		@param startAlpha number, Alpha (opacity) for the start side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)
+		@param endR number, Red component of the end color (0.0 - 1.0)
+		@param endG number, Green component of the end color (0.0 - 1.0)
+		@param endB number, Blue component of the end color (0.0 - 1.0)
+		@param endAlpha number, Alpha (opacity) for the end side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name Texture:SetHorizTile
-	-- @class function
-	------------------------------------
-	-- SetHorizTile
+	doc [======[
+		@name SetHorizTile
+		@type method
+		@desc
+		@param boolean
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether the texture object loads its image file in the background. Texture loading is normally synchronous, so that UI objects are not shown partially textured while loading; however, non-blocking (asynchronous) texture loading may be desirable in some cases where large numbers of textures need to be loaded in a short time. This feature is used in the default UI's icon chooser window for macros and equipment sets, allowing a large number of icon textures to be loaded without causing the game's frame rate to stagger.
-	-- @name Texture:SetNonBlocking
-	-- @class function
-	-- @param nonBlocking True to allow the texture object to load its image file in the background; false (default) to halt the game engine while the texture loads (boolean)
-	------------------------------------
-	-- SetNonBlocking
+	doc [======[
+		@name SetNonBlocking
+		@type method
+		@desc Sets whether the texture object loads its image file in the background. Texture loading is normally synchronous, so that UI objects are not shown partially textured while loading; however, non-blocking (asynchronous) texture loading may be desirable in some cases where large numbers of textures need to be loaded in a short time. This feature is used in the default UI's icon chooser window for macros and equipment sets, allowing a large number of icon textures to be loaded without causing the game's frame rate to stagger.
+		@param nonBlocking boolean, true to allow texture object to load it's image file in background
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Rotates the texture image. This is an efficient shorthand for the more complex Texture:SetTexCoord().
-	-- @name Texture:SetRotation
-	-- @class function
-	-- @param radians Amount by which the texture image should be rotated (in radians; positive values for counter-clockwise rotation, negative for clockwise)  (number)
-	------------------------------------
-	-- SetRotation
+	doc [======[
+		@name SetRotation
+		@type method
+		@desc Rotates the texture image
+		@param radians number, Amount by which the texture image should be rotated, positive values for counter-clockwise rotation, negative for clockwise
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets corner coordinates for scaling or cropping the texture image. See example for details.
-	-- @name Texture:SetTexCoord
-	-- @class function
-	-- @param left Left edge of the scaled/cropped image, as a fraction of the image's width from the left (number)
-	-- @param right Right edge of the scaled/cropped image, as a fraction of the image's width from the left (number)
-	-- @param top Top edge of the scaled/cropped image, as a fraction of the image's height from the top (number)
-	-- @param bottom Bottom edge of the scaled/cropped image, as a fraction of the image's height from the top (number)
-	-- @param ULx Upper left corner X position, as a fraction of the image's width from the left (number)
-	-- @param ULy Upper left corner Y position, as a fraction of the image's height from the top (number)
-	-- @param LLx Lower left corner X position, as a fraction of the image's width from the left (number)
-	-- @param LLy Lower left corner Y position, as a fraction of the image's height from the top (number)
-	-- @param URx Upper right corner X position, as a fraction of the image's width from the left (number)
-	-- @param URy Upper right corner Y position, as a fraction of the image's height from the top (number)
-	-- @param LRx Lower right corner X position, as a fraction of the image's width from the left (number)
-	-- @param LRy Lower right corner Y position, as a fraction of the image's height from the top (number)
-	------------------------------------
-	-- SetTexCoord
+	doc [======[
+		@name SetTexCoord
+		@type method
+		@desc Sets corner coordinates for scaling or cropping the texture image
+		@format left, right, top, bottom
+		@format ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
+		@param left number, Left edge of the scaled/cropped image, as a fraction of the image's width from the left
+		@param right number, Right edge of the scaled/cropped image, as a fraction of the image's width from the left
+		@param top number, Top edge of the scaled/cropped image, as a fraction of the image's height from the top
+		@param bottom number, Bottom edge of the scaled/cropped image, as a fraction of the image's height from the top
+		@param ULx number, Upper left corner X position, as a fraction of the image's width from the left
+		@param ULy number, Upper left corner Y position, as a fraction of the image's height from the top
+		@param LLx number, Lower left corner X position, as a fraction of the image's width from the left
+		@param LLy number, Lower left corner Y position, as a fraction of the image's height from the top
+		@param URx number, Upper right corner X position, as a fraction of the image's width from the left
+		@param URy number, Upper right corner Y position, as a fraction of the image's height from the top
+		@param LRx number, Lower right corner X position, as a fraction of the image's width from the left
+		@param LRy number, Lower right corner Y position, as a fraction of the image's height from the top
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture object's image or color. Returns nil if the texture could not be set (e.g. if the file path is invalid or points to a file which cannot be used as a texture).
-	-- @name Texture:SetTexture
-	-- @class function
-	-- @param texture Path to a texture image (string)
-	-- @param red Red component of the color (0.0 - 1.0) (number)
-	-- @param green Green component of the color (0.0 - 1.0) (number)
-	-- @param blue Blue component of the color (0.0 - 1.0) (number)
-	-- @param alpha Alpha (opacity) for the color (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	-- @return visible - 1 if the texture was successfully changed; otherwise nil (1nil)
-	------------------------------------
+	doc [======[
+		@name SetTexture
+		@type method
+		@desc Sets the texture object's image or color
+		@param texture string, Path to a texture image
+		@param red number, Red component of the color (0.0 - 1.0)
+		@param green number, Green component of the color (0.0 - 1.0)
+		@param blue number, Blue component of the color (0.0 - 1.0)
+		@param alpha number, Alpha (opacity) for the color (0.0 = fully transparent, 1.0 = fully opaque)
+		@return boolean 1 if the texture was successfully changed; otherwise nil (1nil)
+	]======]
 	function SetTexture(self, ...)
 		self.__Color = nil
 		self.__Unit = nil
@@ -249,20 +250,21 @@ class "Texture"
 		return self.__UI:SetTexture(nil)
 	end
 
-	------------------------------------
-	---
-	-- @name Texture:SetVertTile
-	-- @class function
-	------------------------------------
-	-- SetVertTile
+	doc [======[
+		@name SetVertTile
+		@type method
+		@desc
+		@param boolean
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Paint a Texture object with the specified unit's portrait.
-	-- @name Texture:SetPortraitUnit
-	-- @class function
-	-- @param unit the unit to be painted
-	-- @usage Texture:SetPortraitUnit("player")
-	------------------------------------
+	doc [======[
+		@name SetPortraitUnit
+		@type method
+		@desc Paint a Texture object with the specified unit's portrait
+		@param unit string, the unit to be painted
+		@return nil
+	]======]
 	function SetPortraitUnit(self, ...)
 		self.__Color = nil
 		self.__Unit = nil
@@ -280,13 +282,13 @@ class "Texture"
 		end
 	end
 
-	------------------------------------
-	--- Sets the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
-	-- @name Texture:SetPortraitTexture
-	-- @class function
-	-- @param texture the texture to be displayed
-	-- @usage Texture:SetPortraitTexture([[Interface\Texture\Test]])
-	------------------------------------
+	doc [======[
+		@name SetPortraitTexture
+		@type method
+		@desc Sets the texture to be displayed from a file applying circular opacity mask making it look round like portraits
+		@param texture string, the texture file path
+		@return nil
+	]======]
 	function SetPortraitTexture(self, ...)
 		local path = select(1, ...)
 
@@ -300,12 +302,13 @@ class "Texture"
 		return SetPortraitToTexture(self.__UI, nil)
 	end
 
-	------------------------------------
-	--- Rotate texture for rfadian
-	-- @name RotateRaid
-	-- @type function
-	-- @param radian
-	------------------------------------
+	doc [======[
+		@name RotateRaid
+		@type method
+		@desc Rotate texture for radian with current texcoord settings
+		@param radian number, the rotation raidian
+		@return nil
+	]======]
 	function RotateRadian(self, radian)
 		if type(radian) ~= "number" then
 			error("Usage: Texture:RotateRadian(radian) - 'radian' must be number.", 2)
@@ -409,12 +412,13 @@ class "Texture"
 		self.Height = newHeight
 	end
 
-	------------------------------------
-	--- Rotate texture for degree
-	-- @name RotateDegree
-	-- @type function
-	-- @param degree
-	------------------------------------
+	doc [======[
+		@name RotateDegree
+		@type method
+		@desc Rotate texture for degree with current texcoord settings
+		@param degree number, the rotation degree
+		@return nil
+	]======]
 	function RotateDegree(self, degree)
 		if type(degree) ~= "number" then
 			error("Usage: Texture:RotateDegree(degree) - 'degree' must be number.", 2)
@@ -422,12 +426,13 @@ class "Texture"
 		return RotateRadian(self, math.rad(degree))
 	end
 
-	------------------------------------
-	--- Shear texture for raidian
-	-- @name Shear
-	-- @type function
-	-- @param radian
-	------------------------------------
+	doc [======[
+		@name Shear
+		@type method
+		@desc Shear texture for raidian
+		@param radian number, the shear radian
+		@return nil
+	]======]
 	function ShearRadian(self, radian)
 		if type(radian) ~= "number" then
 			error("Usage: Texture:ShearRadian(radian) - 'radian' must be number.", 2)
@@ -467,13 +472,13 @@ class "Texture"
 		self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
 	end
 
-	------------------------------------
-	--- function_description
-	-- @name Shear
-	-- @type function
-	-- @param degree
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name Shear
+		@type method
+		@desc Shear texture with degree
+		@param degree number, the shear degree
+		@return nil
+	]======]
 	function ShearDegree(self, degree)
 		if type(degree) ~= "number" then
 			error("Usage: Texture:ShearDegree(degree) - 'degree' must be number.", 2)
