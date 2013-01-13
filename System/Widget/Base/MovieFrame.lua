@@ -2,13 +2,6 @@
 -- Create Date : 2011/03/13
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- MovieFrame
--- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name MovieFrame
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.MovieFrame", version) then
@@ -18,6 +11,12 @@ end
 class "MovieFrame"
 	inherit "Frame"
 
+	doc [======[
+		@name MovieFrame
+		@type class
+		@desc
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	-----------------------------------------------------
@@ -25,30 +24,29 @@ class "MovieFrame"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	-----------------------------------
-	--- Enables or disables subtitles for movies played in the frame. Subtitles are not automatically displayed by the MovieFrame; enabling subtitles causes the frame's OnMovieShowSubtitle and OnMovieHideSubtitle script handlers to be run when subtitle text should be displayed.
-	-- @name MovieFrame:EnableSubtitles
-	-- @class function
-	-- @param enable True to enable display of movie subtitles; false to disable (boolean)
-	------------------------------------
-	-- EnableSubtitles
+	doc [======[
+		@name EnableSubtitles
+		@type method
+		@desc Enables or disables subtitles for movies played in the frame. Subtitles are not automatically displayed by the MovieFrame; enabling subtitles causes the frame's OnMovieShowSubtitle and OnMovieHideSubtitle script handlers to be run when subtitle text should be displayed.
+		@param enable boolean, true to enable display of movie subtitles; false to disable
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Plays a specified movie in the frame. Note: Size and position of the movie display is unaffected by that of the MovieFrame -- movies are automatically centered and sized proportionally to fill the screen in their largest dimension (i.e. a widescreen movie will fill the width of the screen but not necessarily its full height).
-	-- @name MovieFrame:StartMovie
-	-- @class function
-	-- @param filename Path to a movie file (excluding filename extension) (string)
-	-- @param volume Audio volume for movie playback (0 = minimum, 255 = maximum) (number)
-	-- @return enabled - 1 if a valid movie was loaded and playback begun; otherwise nil (1nil)
-	------------------------------------
-	-- StartMovie
+	doc [======[
+		@name StartMovie
+		@type method
+		@desc Plays a specified movie in the frame. Note: Size and position of the movie display is unaffected by that of the MovieFrame -- movies are automatically centered and sized proportionally to fill the screen in their largest dimension (i.e. a widescreen movie will fill the width of the screen but not necessarily its full height).
+		@param filename string, path to a movie file (excluding filename extension)
+		@param volume number, audio volume for movie playback (0 = minimum, 255 = maximum)
+		@return boolean 1 if a valid movie was loaded and playback begun; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Stops the movie currently playing in the frame
-	-- @name MovieFrame:StopMovie
-	-- @class function
-	------------------------------------
-	-- StopMovie
+	doc [======[
+		@name StopMovie
+		@type method
+		@desc Stops the movie currently playing in the frame
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

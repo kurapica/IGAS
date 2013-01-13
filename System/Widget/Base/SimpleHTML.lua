@@ -256,42 +256,6 @@ class "SimpleHTML"
 		@return nil
 	]======]
 
-	------------------------------------
-	--- Sets the text to be displayed in the SimpleHTML frame. Text for display in the frame can be formatted using a simplified version of HTML markup:</p>
-	--- <ul>
-	--- <li>For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.</li>
-	--- <li>All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br&gt;).</li>
-	--- <li>Tags are case insensitive, but closing tags must match the case of opening tags.</li>
-	--- <li>Attribute values must be enclosed in single or double quotation marks (" or ').</li>
-	--- <li>Characters occurring in HTML markup must be entity-escaped (&amp;quot; &amp;lt; &amp;gt; &amp;amp;); no other entity-escapes are supported.</li>
-	--- <li>Unrecognized tags and their contents are ignored (e.g. given &lt;h1&gt;&lt;foo&gt;bar&lt;/foo&gt;baz&lt;/h1&gt;, only "baz" will appear).</li>
-	--- <li>Any HTML parsing error will result in the raw HTML markup being displayed.</li>
-	--- </ul>
-	--- <p>Only the following tags and attributes are supported:</p>
-	--- <ul>
-	--- <li><p>p, h1, h2, h3 - Block elements; e.g. &lt;p align="left"&gt;</p>
-	--- <ul>
-	--- 	<li>align - Text alignment style (optional); allowed values are left, center, and right.</li>
-	--- </ul></li>
-	--- <li><p>img - Image; may only be used as a block element (not inline with text); e.g. &lt;img src="Interface\Icons\INV_Misc_Rune_01" /&gt;.</p>
-	--- <ul>
-	--- 	<li>src - Path to the image file (filename extension omitted).</li>
-	--- 	<li>align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.</li>
-	--- 	<li>width - Width at which to display the image (in pixels; optional).</li>
-	--- 	<li>height - Height at which to display the image (in pixels; optional).</li>
-	--- </ul></li>
-	--- <li><p>a - Inline hyperlink; e.g. &lt;a href="aLink"&gt;text&lt;/a&gt;</p>
-	--- <ul>
-	--- 	<li>href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.</li>
-	--- </ul></li>
-	--- <li><p>br - Explicit line break in text; e.g. &lt;br /&gt;.</p></li>
-	--- </ul>
-	--- <p>Inline escape sequences used in FontStrings (e.g. colorStrings) may also be used.
-	-- @name SimpleHTML:SetText
-	-- @class function
-	-- @param text Text (with HTML markup) to be displayed (string)
-	------------------------------------
-	-- SetText
 	doc [======[
 		@name SetText
 		@type method

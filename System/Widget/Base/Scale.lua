@@ -3,15 +3,6 @@
 -- ChangeLog
 --				2011/03/11	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Button is the primary means for users to control the game and their characters.
--- <br><br>inherit <a href=".\Animation.html">Animation</a> For all methods, properties and scriptTypes
--- @name Scale
--- @class table
--- @field Scale the animation's scaling factors
--- @field Origin the scale animation's origin point
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Scale", version) then
@@ -20,6 +11,13 @@ end
 
 class "Scale"
 	inherit "Animation"
+
+	doc [======[
+		@name Scale
+		@type class
+		@desc Scale is an Animation type that automatically applies an affine scalar transformation to the region being animated as it progresses. You can set both the multiplier by which it scales, and the point from which it is scaled.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -27,43 +25,39 @@ class "Scale"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
-	-- @name Scale:GetOrigin
-	-- @class function
-	-- @return point - Anchor point for the scale origin (string, anchorPoint)
-	-- @return xOffset - Horizontal distance from the anchor point to the scale origin (in pixels) (number)
-	-- @return yOffset - Vertical distance from the anchor point to the scale origin (in pixels) (number)
-	------------------------------------
-	-- GetOrigin
+	doc [======[
+		@name GetOrigin
+		@type method
+		@desc Returns the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
+		@return point System.Widget.FramePoint, Anchor point for the scale origin
+		@return xOffset number, Horizontal distance from the anchor point to the scale origin (in pixels)
+		@return yOffset number, Vertical distance from the anchor point to the scale origin (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
-	-- @name Scale:GetScale
-	-- @class function
-	-- @return xFactor - Horizontal scaling factor (number)
-	-- @return yFactor - Vertical scaling factor (number)
-	------------------------------------
-	-- GetScale
+	doc [======[
+		@name GetScale
+		@type method
+		@desc Returns the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
+		@return xFactor number, Horizontal scaling factor
+		@return yFactor number, Vertical scaling factor
+	]======]
 
-	------------------------------------
-	--- Sets the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
-	-- @name Scale:SetOrigin
-	-- @class function
-	-- @param point Anchor point for the scale origin (string, anchorPoint)
-	-- @param xOffset Horizontal distance from the anchor point to the scale origin (in pixels) (number)
-	-- @param yOffset Vertical distance from the anchor point to the scale origin (in pixels) (number)
-	------------------------------------
-	-- SetOrigin
+	doc [======[
+		@name SetOrigin
+		@type method
+		@desc Sets the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
+		@param point System.Widget.FramePoint, anchor point for the scale origin
+		@param xOffset number, horizontal distance from the anchor point to the scale origin (in pixels)
+		@param yOffset number, vertical distance from the anchor point to the scale origin (in pixels)
+	]======]
 
-	------------------------------------
-	--- Sets the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
-	-- @name Scale:SetScale
-	-- @class function
-	-- @param xFactor Horizontal scaling factor (number)
-	-- @param yFactor Vertical scaling factor (number)
-	------------------------------------
-	-- SetScale
+	doc [======[
+		@name SetScale
+		@type method
+		@desc Sets the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
+		@param xFactor number, Horizontal scaling factor
+		@param yFactor number, Vertical scaling factor
+	]======]
 
 	------------------------------------------------------
 	-- Property

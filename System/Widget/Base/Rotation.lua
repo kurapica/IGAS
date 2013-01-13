@@ -3,17 +3,6 @@
 -- ChangeLog
 --				2011/03/11	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Rotation is an Animation that automatically applies an affine rotation to the region being animated. You can set the origin around which the rotation is being done, and the angle of rotation in either degrees or radians.<br>
--- Rotation animations have no effect on FontStrings.
--- <br><br>inherit <a href=".\Animation.html">Animation</a> For all methods, properties and scriptTypes
--- @name Rotation
--- @class table
--- @field Degrees the animation's rotation amount (in degrees)
--- @field Radians the animation's rotation amount (in radians)
--- @field Origin the rotation animation's origin point
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Rotation", version) then
@@ -23,6 +12,12 @@ end
 class "Rotation"
 	inherit "Animation"
 
+	doc [======[
+		@name Rotation
+		@type class
+		@desc Rotation is an Animation that automatically applies an affine rotation to the region being animated. You can set the origin around which the rotation is being done, and the angle of rotation in either degrees or radians.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -30,57 +25,53 @@ class "Rotation"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the animation's rotation amount (in degrees)
-	-- @name Rotation:GetDegrees
-	-- @class function
-	-- @return degrees - Amount by which the region rotates over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise) (number)
-	------------------------------------
-	-- GetDegrees
+	doc [======[
+		@name GetDegrees
+		@type method
+		@desc Returns the animation's rotation amount (in degrees)
+		@return number Amount by which the region rotates over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)
+	]======]
 
-	------------------------------------
-	--- Returns the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
-	-- @name Rotation:GetOrigin
-	-- @class function
-	-- @return point - Anchor point for the rotation origin (string, anchorPoint)
-	-- @return xOffset - Horizontal distance from the anchor point to the rotation origin (in pixels) (number)
-	-- @return yOffset - Vertical distance from the anchor point to the rotation origin (in pixels) (number)
-	------------------------------------
-	-- GetOrigin
+	doc [======[
+		@name GetOrigin
+		@type method
+		@desc Returns the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
+		@return point System.Widget.FramePoint, anchor point for the rotation origin
+		@return xOffset number, horizontal distance from the anchor point to the rotation origin (in pixels)
+		@return yOffset number, vertical distance from the anchor point to the rotation origin (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the animation's rotation amount (in radians)
-	-- @name Rotation:GetRadians
-	-- @class function
-	-- @return radians - Amount by which the region rotates over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise) (number)
-	------------------------------------
-	-- GetRadians
+	doc [======[
+		@name GetRadians
+		@type method
+		@desc Returns the animation's rotation amount (in radians)
+		@return number Amount by which the region rotates over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)
+	]======]
 
-	------------------------------------
-	--- Sets the animation's rotation amount (in degrees)
-	-- @name Rotation:SetDegrees
-	-- @class function
-	-- @param degrees Amount by which the region should rotate over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise) (number)
-	------------------------------------
-	-- SetDegrees
+	doc [======[
+		@name SetDegrees
+		@type method
+		@desc Sets the animation's rotation amount (in degrees)
+		@param degrees number, Amount by which the region should rotate over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
-	-- @name Rotation:SetOrigin
-	-- @class function
-	-- @param point Anchor point for the rotation origin (string, anchorPoint)
-	-- @param xOffset Horizontal distance from the anchor point to the rotation origin (in pixels) (number)
-	-- @param yOffset Vertical distance from the anchor point to the rotation origin (in pixels) (number)
-	------------------------------------
-	-- SetOrigin
+	doc [======[
+		@name SetOrigin
+		@type method
+		@desc Sets the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
+		@param point System.Widget.FramePoint, anchor point for the rotation origin
+		@param xOffset number, horizontal distance from the anchor point to the rotation origin (in pixels)
+		@param yOffset number, vertical distance from the anchor point to the rotation origin (in pixels)
+	]======]
 
-	------------------------------------
-	--- Sets the animation's rotation amount (in radians)
-	-- @name Rotation:SetRadians
-	-- @class function
-	-- @param radians Amount by which the region should rotate over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise) (number)
-	------------------------------------
-	-- SetRadians
+	doc [======[
+		@name SetRadians
+		@type method
+		@desc Sets the animation's rotation amount (in radians)
+		@param radians number, amount by which the region should rotate over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

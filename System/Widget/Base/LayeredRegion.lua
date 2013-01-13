@@ -3,15 +3,6 @@
 -- ChangeLog
 --				2011/03/12	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- LayeredRegion is an abstract UI type that groups together the functionality of layered graphical regions, specifically Textures and FontStrings.
--- <br><br>inherit <a href=".\Region.html">Region</a> For all methods, properties and scriptTypes
--- @name LayeredRegion
--- @class table
--- @field DrawLayer the layer at which the region's graphics are drawn relative to others in its frame
--- @field VertexColor the color shading for the region's graphics
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 4
 if not IGAS:NewAddon("IGAS.Widget.LayeredRegion", version) then
@@ -21,41 +12,67 @@ end
 class "LayeredRegion"
 	inherit "Region"
 
+	doc [======[
+		@name LayeredRegion
+		@type class
+		@desc LayeredRegion is an abstract UI type that groups together the functionality of layered graphical regions, specifically Textures and FontStrings.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the draw layer for the Region
-	-- @name LayeredRegion:GetDrawLayer
-	-- @class function
-	-- @return the draw layer for the Region
-	-- @usage LayeredRegion:GetDrawLayer()
-	------------------------------------
-	-- GetDrawLayer
+	doc [======[
+		@name GetDrawLayer
+		@type method
+		@desc Returns the draw layer for the Region
+		@return System.Widget.DrawLayer
+	]======]
 
-	------------------------------------
-	--- Sets the draw layer for the Region
-	-- @name LayeredRegion:SetDrawLayer
-	-- @class function
-	-- @param layer String identifying a graphics layer;
-	-- @usage LayeredRegion:SetDrawLayer("ARTWORK")
-	------------------------------------
-	-- SetDrawLayer
+	doc [======[
+		@name SetDrawLayer
+		@type method
+		@desc Sets the draw layer for the Region
+		@param layer System.Widget.DrawLayer
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets a color shading for the region's graphics. The effect of changing this property differs by the type of region:
-	-- @name LayeredRegion:SetVertexColor
-	-- @class function
-	-- @param red Red component of the color (0.0 - 1.0)
-	-- @param green Green component of the color (0.0 - 1.0)
-	-- @param blue Blue component of the color (0.0 - 1.0)
-	-- @param alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage LayeredRegion:SetVertexColor(1, 1, 1, 1)
-	------------------------------------
-	-- SetVertexColor
+	doc [======[
+		@name SetVertexColor
+		@type method
+		@desc Sets a color shading for the region's graphics.
+		@param red number, red component of the color (0.0 - 1.0)
+		@param green number, green component of the color (0.0 - 1.0)
+		@param blue number, blue component of the color (0.0 - 1.0)
+		@param alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
+	function SetVertexColor(self, r, g, b, a)
+		self.__VertexColor = self.__VertexColor or {}
+		self.__VertexColor.r = r
+		self.__VertexColor.g = g
+		self.__VertexColor.b = b
+		self.__VertexColor.a = a
+
+		return IGAS:GetUI(self):SetVertexColor(r, g, b, a)
+	end
+
+	doc [======[
+		@name GetVertexColor
+		@type method
+		@desc Gets a color shading for the region's graphics.
+		@return red number, red component of the color (0.0 - 1.0)
+		@return green number, green component of the color (0.0 - 1.0)
+		@return blue number, blue component of the color (0.0 - 1.0)
+		@return alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
+	function GetVertexColor(self)
+		self.__VertexColor = self.__VertexColor or ColorType(1, 1, 1, 1)
+
+		return self.__VertexColor.r, self.__VertexColor.g, self.__VertexColor.b, self.__VertexColor.a
+	end
 
 	------------------------------------------------------
 	-- Property
@@ -73,10 +90,9 @@ class "LayeredRegion"
 	-- VertexColor
 	property "VertexColor" {
 		Get = function(self)
-			return self.__VertexColor or ColorType(1, 1, 1, 1)
+			return self:GetVertexColor()
 		end,
 		Set = function(self, color)
-			self.__VertexColor = color
 			self:SetVertexColor(color.r, color.g, color.b, color.a)
 		end,
 		Type = ColorType,

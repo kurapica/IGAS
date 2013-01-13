@@ -4,31 +4,6 @@
 --				2010.10.18	Remove Style properties, since button is a base widget, should not have style.
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Button is the primary means for users to control the game and their characters.
--- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name Button
--- @class table
--- @field Enabled true if the button is enabled
--- @field ButtonState the button's current state: DISABLED, NORMAL, PUSHED
--- @field Locked true if the button is locked
--- @field HighlightLocked true if the button's highlight state is locked
--- @field DisabledTexture the texture used when the button is disabled
--- @field DisabledTexturePath the texture file used when the button is disabled
--- @field HighlightTexture the texture used when the button is highlighted
--- @field HighlightTexturePath the texture file used when the button is highlighted
--- @field NormalTexture the texture used for the button's normal state
--- @field NormalTexturePath the texture file used for the button's normal state
--- @field PushedTexture the texture used when the button is pushed
--- @field PushedTexturePath the texture file used when the button is pushed
--- @field FontString the `FontString` object used for the button's label text
--- @field DisabledFontObject the font object used for the button's disabled state
--- @field HighlightFontObject the font object used when the button is highlighted
--- @field NormalFontObject the font object used for the button's normal state
--- @field PushedTextOffset the offset for moving the button's label text when pushed
--- @field Text the text displayed as the button's label
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 if not IGAS:NewAddon("IGAS.Widget.Button", version) then
@@ -38,244 +13,229 @@ end
 class "Button"
 	inherit "Frame"
 
+	doc [======[
+		@name Button
+		@type class
+		@desc Button is the primary means for users to control the game and their characters.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the button is clicked
-	-- @name Button:OnClick
-	-- @class function
-	-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-	-- @param down True for a mouse button down action; false for button up or other actions
-	-- @usage function Button:OnClick(button, down)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnClick
+		@type script
+		@desc Run when the button is clicked
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+		@param down boolean, true for a mouse button down action; false for button up or other actions
+	]======]
 	script "OnClick"
 
-	------------------------------------
-	--- ScriptType, Run when the button is double-clicked
-	-- @name Button:OnDoubleClick
-	-- @class function
-	-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-	-- @usage function Button:OnDoubleClick(button)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnDoubleClick
+		@type script
+		@desc Run when the button is double-clicked
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+	]======]
 	script "OnDoubleClick"
 
-	------------------------------------
-	--- ScriptType, Run immediately following the button's `OnClick` handler with the same arguments
-	-- @name Button:PostClick
-	-- @class function
-	-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-	-- @param down True for a mouse button down action; false for button up or other actions
-	-- @usage function Button:PostClick(button, down)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name PostClick
+		@type script
+		@desc Run immediately following the button's `OnClick` handler with the same arguments
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+		@param down boolean, true for a mouse button down action; false for button up or other actions
+	]======]
 	script "PostClick"
 
-	------------------------------------
-	--- ScriptType, Run immediately before the button's `OnClick` handler with the same arguments
-	-- @name Button:PreClick
-	-- @class function
-	-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-	-- @param down True for a mouse button down action; false for button up or other actions
-	-- @usage function Button:PreClick(button, down)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name PreClick
+		@type script
+		@desc Run immediately before the button's `OnClick` handler with the same arguments
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+		@param down boolean, true for a mouse button down action; false for button up or other actions
+	]======]
 	script "PreClick"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Performs a (virtual) mouse click on the button. Causes any of the button's mouse click-related scripts to be run as if the button were clicked by the user.</p>
-	--- <p>Calling this method can result in an error if the button inherits from a secure frame template and performs protected actions.
-	-- @name Button:Click
-	-- @class function
-	------------------------------------
-	-- Click
+	doc [======[
+		@name Click
+		@type method
+		@desc Performs a (virtual) mouse click on the button.
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Disallows user interaction with the button. Automatically changes the visual state of the button if its DisabledTexture, DisabledTextColor or DisabledFontObject are set.
-	-- @name Button:Disable
-	-- @class function
-	------------------------------------
-	-- Disable
+	doc [======[
+		@name Disable
+		@type method
+		@desc Disallows user interaction with the button. Automatically changes the visual state of the button if its DisabledTexture, DisabledTextColor or DisabledFontObject are set.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Allows user interaction with the button. If a disabled appearance was specified for the button, automatically returns the button to its normal appearance.
-	-- @name Button:Enable
-	-- @class function
-	------------------------------------
-	-- Enable
+	doc [======[
+		@name Enable
+		@type method
+		@desc Allows user interaction with the button. If a disabled appearance was specified for the button, automatically returns the button to its normal appearance.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Returns the button's current state
-	-- @name Button:GetButtonState
-	-- @class function
-	-- @return state - State of the button (string) <ul><li>DISABLED - Button is disabled and cannot receive user input
-	-- @return NORMAL - Button is in its normal state
-	-- @return PUSHED - Button is pushed (as during a click on the button)
-	------------------------------------
-	-- GetButtonState
+	doc [======[
+		@name GetButtonState
+		@type method
+		@desc Returns the button's current state
+		@return System.Widget.ButtonStateType State of the button
+	]======]
 
-	------------------------------------
-	--- Returns the font object used for the button's disabled state
-	-- @name Button:GetDisabledFontObject
-	-- @class function
-	-- @return font - Reference to the Font object used when the button is disabled (font)
-	------------------------------------
+	doc [======[
+		@name GetDisabledFontObject
+		@type method
+		@desc Returns the font object used for the button's disabled state
+		@return System.Widget.Font
+	]======]
 	function GetDisabledFontObject(self)
 		return IGAS:GetWrapper(self.__UI:GetDisabledFontObject())
 	end
 
-	------------------------------------
-	--- Returns the texture used when the button is disabled
-	-- @name Button:GetDisabledTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used when the button is disabled (texture)
-	------------------------------------
+	doc [======[
+		@name GetDisabledTexture
+		@type method
+		@desc Returns the texture used when the button is disabled
+		@return System.Widget.Texture
+	]======]
 	function GetDisabledTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetDisabledTexture(...))
 	end
 
-	------------------------------------
-	--- Returns the FontString object used for the button's label text
-	-- @name Button:GetFontString
-	-- @class function
-	-- @return fontstring - Reference to the FontString object used for the button's label text (fontstring)
-	------------------------------------
+	doc [======[
+		@name GetFontString
+		@type method
+		@desc Returns the FontString object used for the button's label text
+		@return System.Widget.FontString Reference to the FontString object used for the button's label text
+	]======]
 	function GetFontString(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetFontString(...))
 	end
 
-	------------------------------------
-	--- Returns the font object used when the button is highlighted
-	-- @name Button:GetHighlightFontObject
-	-- @class function
-	-- @return font - Reference to the Font object used when the button is highlighted (font)
-	------------------------------------
+	doc [======[
+		@name GetHighlightFontObject
+		@type method
+		@desc  Returns the font object used when the button is highlighted
+		@return System.Widget.Font Reference to the Font object used when the button is highlighted
+	]======]
 	function GetHighlightFontObject(self)
 		return IGAS:GetWrapper(self.__UI:GetHighlightFontObject())
 	end
 
-	------------------------------------
-	--- Returns the texture used when the button is highlighted
-	-- @name Button:GetHighlightTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used when the button is highlighted (texture)
-	------------------------------------
+	doc [======[
+		@name GetHighlightTexture
+		@type method
+		@desc Returns the texture used when the button is highlighted
+		@return System.Widget.Texture Reference to the Texture object used when the button is highlighted
+	]======]
 	function GetHighlightTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetHighlightTexture(...))
 	end
 
-	------------------------------------
-	--- Determines whether OnEnter/OnLeave scripts will fire while the button is disabled
-	-- @name Button:GetMotionScriptsWhileDisabled
-	-- @class function
-	-- @return isEnabled - 1 if motion scripts run while hidden; otherwise nil (1nil)
-	------------------------------------
-	-- GetMotionScriptsWhileDisabled
+	doc [======[
+		@name GetMotionScriptsWhileDisabled
+		@type method
+		@desc Determines whether OnEnter/OnLeave scripts will fire while the button is disabled
+		@return boolean 1 if motion scripts run while hidden; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns the font object used for the button's normal state
-	-- @name Button:GetNormalFontObject
-	-- @class function
-	-- @return font - Reference to the Font object used for the button's normal state (font)
-	------------------------------------
+	doc [======[
+		@name GetNormalFontObject
+		@type method
+		@desc Returns the font object used for the button's normal state
+		@return System.Widget.Font Reference to the Font object used for the button's normal state
+	]======]
 	function GetNormalFontObject(self)
 		return IGAS:GetWrapper(self.__UI:GetNormalFontObject())
 	end
 
-	------------------------------------
-	--- Returns the texture used for the button's normal state
-	-- @name Button:GetNormalTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used for the button's normal state (texture)
-	------------------------------------
+	doc [======[
+		@name GetNormalTexture
+		@type method
+		@desc Returns the texture used for the button's normal state
+		@return System.Widget.Texture Reference to the Texture object used for the button's normal state
+	]======]
 	function GetNormalTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetNormalTexture(...))
 	end
 
-	------------------------------------
-	--- Returns the offset for moving the button's label text when pushed
-	-- @name Button:GetPushedTextOffset
-	-- @class function
-	-- @return x - Horizontal offset for the text (in pixels; values increasing to the right) (number)
-	-- @return y - Vertical offset for the text (in pixels; values increasing upward) (number)
-	------------------------------------
-	-- GetPushedTextOffset
+	doc [======[
+		@name GetPushedTextOffset
+		@type method
+		@desc Returns the offset for moving the button's label text when pushed
+		@return x number, horizontal offset for the text (in pixels; values increasing to the right)
+		@return y number, vertical offset for the text (in pixels; values increasing upward)
+	]======]
 
-	------------------------------------
-	--- Returns the texture used when the button is pushed
-	-- @name Button:GetPushedTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used when the button is pushed (texture)
-	------------------------------------
+	doc [======[
+		@name GetPushedTexture
+		@type method
+		@desc Returns the texture used when the button is pushed
+		@return System.Widget.Texture Reference to the Texture object used when the button is pushed
+	]======]
 	function GetPushedTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetPushedTexture(...))
 	end
 
-	------------------------------------
-	--- Returns the text of the button's label
-	-- @name Button:GetText
-	-- @class function
-	-- @return text - Text of the button's label (string)
-	------------------------------------
-	-- GetText
+	doc [======[
+		@name GetText
+		@type method
+		@desc Returns the text of the button's label
+		@return string Text of the button's label
+	]======]
 
-	------------------------------------
-	--- Returns the height of the button's text label. Reflects the height of the rendered text (which increases if the text wraps onto two lines), not the point size of the text's font.
-	-- @name Button:GetTextHeight
-	-- @class function
-	-- @return height - Height of the button's text (in pixels) (number)
-	------------------------------------
-	-- GetTextHeight
+	doc [======[
+		@name GetTextHeight
+		@type method
+		@desc Returns the height of the button's text label. Reflects the height of the rendered text (which increases if the text wraps onto two lines), not the point size of the text's font.
+		@return number Height of the button's text (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the width of the button's text label
-	-- @name Button:GetTextWidth
-	-- @class function
-	-- @return width - Width of the button's text (in pixels) (number)
-	------------------------------------
-	-- GetTextWidth
+	doc [======[
+		@name GetTextWidth
+		@type method
+		@desc Returns the width of the button's text label
+		@return number Width of the button's text (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns whether user interaction with the button is allowed
-	-- @name Button:IsEnabled
-	-- @class function
-	-- @return enabled - 1 if user interaction with the button is allowed; otherwise nil (1nil)
-	------------------------------------
-	-- IsEnabled
+	doc [======[
+		@name IsEnabled
+		@type method
+		@desc Returns whether user interaction with the button is allowed
+		@return boolean 1 if user interaction with the button is allowed; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Locks the button in its highlight state. When the highlight state is locked, the button will always appear highlighted regardless of whether it is moused over.
-	-- @name Button:LockHighlight
-	-- @class function
-	------------------------------------
-	-- LockHighlight
+	doc [======[
+		@name LockHighlight
+		@type method
+		@desc Locks the button in its highlight state. When the highlight state is locked, the button will always appear highlighted regardless of whether it is moused over.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Registers a button to receive mouse clicks
-	-- @name Button:RegisterForClicks
-	-- @class function
-	-- @param ... A list of strings, each the combination of a button name and click action for which the button's click-related script handlers should be run. Possible values: (list) <ul><li>Button4Down
-	-- @param AnyDown Responds to the down action of any mouse button
-	-- @param AnyUp Responds to the up action of any mouse button
-	------------------------------------
-	-- RegisterForClicks
+	doc [======[
+		@name RegisterForClicks
+		@type method
+		@desc Registers a button to receive mouse clicks
+		@param ... A list of strings, each the combination of a button name and click action for which the button's click-related script handlers should be run.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the button's state
-	-- @name Button:SetButtonState
-	-- @class function
-	-- @param NORMAL Button is in its normal state
-	-- @param PUSHED Button is pushed (as during a click on the button)
-	------------------------------------
+	doc [======[
+		@name SetButtonState
+		@type method
+		@desc Sets the button's state
+		@format state[, locked]
+		@param state System.Widget.ButtonStateType
+		@param locked boolean
+		@return nil
+	]======]
 	function SetButtonState(self, state, locked)
 		if locked ~= nil then
 			self.__Locked = locked
@@ -284,119 +244,119 @@ class "Button"
 		self.__UI:SetButtonState(state, self.__Locked)
 	end
 
-	------------------------------------
-	--- Sets the font object used for the button's disabled state
-	-- @name Button:SetDisabledFontObject
-	-- @class function
-	-- @param font Reference to a Font object to be used when the button is disabled (font)
-	------------------------------------
-	-- SetDisabledFontObject
+	doc [======[
+		@name SetDisabledFontObject
+		@type method
+		@desc Sets the font object used for the button's disabled state
+		@param font System.Widget.Font, reference to a Font object to be used when the button is disabled
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used when the button is disabled
-	-- @name Button:SetDisabledTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	------------------------------------
-	-- SetDisabledTexture
+	doc [======[
+		@name SetDisabledTexture
+		@type method
+		@desc Sets the texture used when the button is disabled
+		@format texture|filename
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the FontString object used for the button's label text
-	-- @name Button:SetFontString
-	-- @class function
-	-- @param fontstring Reference to a FontString object to be used for the button's label text (fontstring)
-	------------------------------------
-	-- SetFontString
+	doc [======[
+		@name SetFontString
+		@type method
+		@desc Sets the FontString object used for the button's label text
+		@param fontstring System.Widget.FontString, reference to a FontString object to be used for the button's label text
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the button's label text using format specifiers. Equivalent to :SetText(format(format, ...)), but does not create a throwaway Lua string object, resulting in greater memory-usage efficiency.
-	-- @name Button:SetFormattedText
-	-- @class function
-	-- @param formatString A string containing format specifiers (as with string.format()) (string)
-	-- @param ... A list of values to be included in the formatted string (list)
-	------------------------------------
-	-- SetFormattedText
+	doc [======[
+		@name SetFormattedText
+		@type method
+		@desc Sets the button's label text using format specifiers.
+		@param formatString string, a string containing format specifiers (as with string.format())
+		@param ... A list of values to be included in the formatted string
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font object used when the button is highlighted
-	-- @name Button:SetHighlightFontObject
-	-- @class function
-	-- @param font Reference to a Font object to be used when the button is highlighted (font)
-	------------------------------------
-	-- SetHighlightFontObject
+	doc [======[
+		@name SetHighlightFontObject
+		@type method
+		@desc Sets the font object used when the button is highlighted
+		@param font System.Widget.Font, reference to a Font object to be used when the button is highlighted
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used when the button is highlighted. Unlike the other button textures for which only one is visible at a time, the button's highlight texture is drawn on top of its existing (normal or pushed) texture; thus, this method also allows specification of the texture's blend mode.
-	-- @name Button:SetHighlightTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	-- @param mode Blend mode for the texture; defaults to ADD if omitted (string) <ul><li>ADD - Adds texture color values to the underlying color values, using the alpha channel; light areas in the texture lighten the background while dark areas are more transparent
-	-- @param ALPHAKEY One-bit transparency; pixels with alpha values greater than ~0.8 are treated as fully opaque and all other pixels are treated as fully transparent
-	-- @param BLEND Normal color blending, using any alpha channel in the texture image
-	-- @param DISABLE Ignores any alpha channel, displaying the texture as fully opaque
-	-- @param MOD Ignores any alpha channel in the texture and multiplies texture color values by background color values; dark areas in the texture darken the background while light areas are more transparent
-	------------------------------------
-	-- SetHighlightTexture
+	doc [======[
+		@name SetHighlightTexture
+		@type method
+		@desc Sets the texture used when the button is highlighted. Unlike the other button textures for which only one is visible at a time, the button's highlight texture is drawn on top of its existing (normal or pushed) texture; thus, this method also allows specification of the texture's blend mode.
+		@format texture|filename[, mode]
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@param mode System.Widget.AlphaMode, Blend mode for the texture; defaults to ADD if omitted
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether the button should fire OnEnter/OnLeave events while disabled
-	-- @name Button:SetMotionScriptsWhileDisabled
-	-- @class function
-	-- @param enabled True to enable the scripts while the button is disabled, false otherwise (boolean)
-	------------------------------------
-	-- SetMotionScriptsWhileDisabled
+	doc [======[
+		@name SetMotionScriptsWhileDisabled
+		@type method
+		@desc Sets whether the button should fire OnEnter/OnLeave events while disabled
+		@param enable boolean, true to enable the scripts while the button is disabled, false otherwise
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font object used for the button's normal state
-	-- @name Button:SetNormalFontObject
-	-- @class function
-	-- @param font Reference to a Font object to be used in the button's normal state (font)
-	------------------------------------
-	-- SetNormalFontObject
+	doc [======[
+		@name SetNormalFontObject
+		@type method
+		@desc Sets the font object used for the button's normal state
+		@param font System.Widget.Font, reference to a Font object to be used in the button's normal state
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used for the button's normal state
-	-- @name Button:SetNormalTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	------------------------------------
-	-- SetNormalTexture
+	doc [======[
+		@name SetNormalTexture
+		@type method
+		@desc Sets the texture used for the button's normal state
+		@format texture|filename
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the offset for moving the button's label text when pushed. Moving the button's text while it is being clicked can provide an illusion of 3D depth for the button -- in the default UI's standard button templates, this offset matches the apparent movement seen in the difference between the buttons' normal and pushed textures.
-	-- @name Button:SetPushedTextOffset
-	-- @class function
-	-- @param x Horizontal offset for the text (in pixels; values increasing to the right) (number)
-	-- @param y Vertical offset for the text (in pixels; values increasing upward) (number)
-	------------------------------------
-	-- SetPushedTextOffset
+	doc [======[
+		@name SetPushedTextOffset
+		@type method
+		@desc Sets the offset for moving the button's label text when pushed. Moving the button's text while it is being clicked can provide an illusion of 3D depth for the button -- in the default UI's standard button templates, this offset matches the apparent movement seen in the difference between the buttons' normal and pushed textures.
+		@param x number, horizontal offset for the text (in pixels; values increasing to the right)
+		@param y number, vertical offset for the text (in pixels; values increasing upward)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used when the button is pushed
-	-- @name Button:SetPushedTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	------------------------------------
-	-- SetPushedTexture
+	doc [======[
+		@name SetPushedTexture
+		@type method
+		@desc Sets the texture used when the button is pushed
+		@format texture|filename
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the text displayed as the button's label
-	-- @name Button:SetText
-	-- @class function
-	-- @param text Text to be displayed as the button's label (string)
-	------------------------------------
-	-- SetText
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the text displayed as the button's label
+		@param text string, text to be displayed as the button's label
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Unlocks the button's highlight state. Can be used after a call to :LockHighlight() to restore the button's normal mouseover behavior.
-	-- @name Button:UnlockHighlight
-	-- @class function
-	------------------------------------
-	-- UnlockHighlight
+	doc [======[
+		@name UnlockHighlight
+		@type method
+		@desc Unlocks the button's highlight state. Can be used after a call to :LockHighlight() to restore the button's normal mouseover behavior.
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

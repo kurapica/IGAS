@@ -5,18 +5,6 @@
 --              2012/04/13  ShowDialog is added
 --              2012/07/09  OnVisibleChanged Script is added
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- Button is the primary means for users to control the game and their characters.
--- <br><br>inherit <a href=".\UIObject.html">UIObject</a> For all methods, properties and scriptTypes
--- @name Region
--- @class table
--- @field Alpha Set or get the frame's transparency value(0-1)
--- @field Height the height of the region
--- @field Width the width of the region
--- @field Visible the visible of the region
--- @field Size the size of the region
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 9
 if not IGAS:NewAddon("IGAS.Widget.Region", version) then
@@ -26,62 +14,52 @@ end
 class "Region"
 	inherit "UIObject"
 
+	doc [======[
+		@name Region
+		@type class
+		@desc Region is the basic type for anything that can occupy an area of the screen. As such, Frames, Textures and FontStrings are all various kinds of Region. Region provides most of the functions that support size, position and anchoring, including animation. It is a "real virtual" type; it cannot be instantiated, but objects can return true when asked if they are Regions.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the Region becomes visible
-	-- @name Region:OnShow
-	-- @class function
-	-- @usage function Region:OnShow()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnShow
+		@type script
+		@desc Run when the Region becomes visible
+	]======]
 	script "OnShow"
 
-	------------------------------------
-	--- ScriptType, Run when the Region's visbility changes to hidden
-	-- @name Region:OnHide
-	-- @class function
-	-- @usage function Region:OnHide()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHide
+		@type script
+		@desc Run when the Region's visbility changes to hidden
+	]======]
 	script "OnHide"
 
-	------------------------------------
-	--- ScriptType, Run when the Region's visible state is changed
-	-- @name Region:OnVisibleChanged
-	-- @class function
-	-- @usage function Region:OnVisibleChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnVisibleChanged
+		@type script
+		@desc Run when the Region's visible state is changed
+	]======]
 	script "OnVisibleChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	-- Dispose, release resource
-	function Dispose(self)
-		self:ClearAllPoints()
-		self:Hide()
-	end
+	doc [======[
+		@name GetAlpha
+		@type method
+		@desc Returns the opacity of the region relative to its parent
+		@return number Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 
-	------------------------------------
-	--- Returns the opacity of the region relative to its parent
-	-- @name VisibleRegion:GetAlpha
-	-- @class function
-	-- @return alpha - Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetAlpha
-
-	------------------------------------
-	--- Hides the region
-	-- @name VisibleRegion:Hide
-	-- @class function
-	------------------------------------
-	-- Hide
+	doc [======[
+		@name Hide
+		@type method
+		@desc Hide the region
+		@return nil
+	]======]
 	function Hide(self)
 		local flag = self:IsShown()
 
@@ -98,37 +76,34 @@ class "Region"
 		return self.__ShowDialogThread and self.__ShowDialogThread()
 	end
 
-	------------------------------------
-	--- Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.
-	-- @name VisibleRegion:IsShown
-	-- @class function
-	-- @return shown - 1 if the region is shown; otherwise nil (1nil)
-	------------------------------------
-	-- IsShown
+	doc [======[
+		@name IsShown
+		@type method
+		@desc Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.
+		@return boolean 1 if the region is shown; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown).</p>
-	--- <p>A region may be "visible" and not appear on screen -- it may not have any anchor points set, its position and size may be outside the bounds of the screen, or it may not draw anything (e.g. a FontString with no text, a Texture with no image, or a Frame with no visible children).
-	-- @name VisibleRegion:IsVisible
-	-- @class function
-	-- @return visible - 1 if the region is visible; otherwise nil (1nil)
-	------------------------------------
-	-- IsVisible
+	doc [======[
+		@name IsVisible
+		@type method
+		@desc Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)
+		@return boolean 1 if the region is visible; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Sets the opacity of the region relative to its parent
-	-- @name VisibleRegion:SetAlpha
-	-- @class function
-	-- @param alpha Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetAlpha
+	doc [======[
+		@name SetAlpha
+		@type method
+		@desc Sets the opacity of the region relative to its parent
+		@param alpha number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Shows the region
-	-- @name VisibleRegion:Show
-	-- @class function
-	------------------------------------
-	-- Show
+	doc [======[
+		@name Show
+		@type method
+		@desc Show the region
+		@return nil
+	]======]
 	function Show(self)
 		local flag = self:IsShown()
 
@@ -143,12 +118,12 @@ class "Region"
 		end
 	end
 
-	------------------------------------
-	--- Shows the region
-	-- @name VisibleRegion:ShowDialog
-	-- @class function
-	------------------------------------
-	-- ShowDialog
+	doc [======[
+		@name ShowDialog
+		@type method
+		@desc Show the region and stop parent's calling thread
+		@return nil
+	]======]
 	function ShowDialog(self)
 		local flag = self:IsShown()
 
@@ -166,39 +141,38 @@ class "Region"
 		return self.__ShowDialogThread:Yield()
 	end
 
-	------------------------------------
-	--- Returns whether protected properties of the region can be changed by non-secure scripts. Addon scripts are allowed to change protected properties for non-secure frames, or for secure frames while the player is not in combat.
-	-- @name Region:CanChangeProtectedState
-	-- @class function
-	-- @return canChange - 1 if addon scripts are currently allowed to change protected properties of the region (e.g. showing or hiding it, changing its position, or altering frame attributes); otherwise nil (value, 1nil)
-	------------------------------------
-	-- CanChangeProtectedState
+	doc [======[
+		@name CanChangeProtectedState
+		@type method
+		@desc Returns whether protected properties of the region can be changed by non-secure scripts. Addon scripts are allowed to change protected properties for non-secure frames, or for secure frames while the player is not in combat.
+		@return boolean 1 if addon scripts are currently allowed to change protected properties of the region (e.g. showing or hiding it, changing its position, or altering frame attributes); otherwise nil
+	]======]
 
-	------------------------------------
-	--- Removes all anchor points from the region
-	-- @name Region:ClearAllPoints
-	-- @class function
-	------------------------------------
-	-- ClearAllPoints
+	doc [======[
+		@name ClearAllPoints
+		@type method
+		@desc Removes all anchor points from the region
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Creates a new AnimationGroup as a child of the region
-	-- @name Region:CreateAnimationGroup
-	-- @class function
-	-- @param name A global name to use for the new animation group (string)
-	-- @param inheritsFrom Template from which the new animation group should inherit (string)
-	-- @return animationGroup - The newly created AnimationGroup (animgroup)
-	------------------------------------
+	doc [======[
+		@name CreateAnimationGroup
+		@type method
+		@desc Creates a new AnimationGroup as a child of the region
+		@param name string, name to use for the new animation group
+		@param inheritsFrom string, template from which the new animation group should inherit
+		@return System.Widget.AnimationGroup The newly created AnimationGroup
+	]======]
 	function CreateAnimationGroup(self, name, inheritsFrom)
 		return Widget["AnimationGroup"] and Widget["AnimationGroup"](name, self, inheritsFrom)
 	end
 
-	------------------------------------
-	--- Returns a list of animation groups belonging to the region
-	-- @name Region:GetAnimationGroups
-	-- @class function
-	-- @return ... - A list of AnimationGroup objects for which the region is parent (list)
-	------------------------------------
+	doc [======[
+		@name GetAnimationGroups
+		@type method
+		@desc Returns a list of animation groups belonging to the region
+		@return ... - A list of AnimationGroup objects for which the region is parent
+	]======]
 	function GetAnimationGroups(self)
 		local lst = {self.__UI:GetAnimationGroups()}
 
@@ -209,210 +183,182 @@ class "Region"
 		return unpack(lst)
 	end
 
-	------------------------------------
-	--- Returns the distance from the bottom of the screen to the bottom of the region
-	-- @name Region:GetBottom
-	-- @class function
-	-- @return bottom - Distance from the bottom edge of the screen to the bottom edge of the region (in pixels) (number)
-	------------------------------------
-	-- GetBottom
+	doc [======[
+		@name GetBottom
+		@type method
+		@desc Returns the distance from the bottom of the screen to the bottom of the region
+		@return number Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the screen coordinates of the region's center
-	-- @name Region:GetCenter
-	-- @class function
-	-- @return x - Distance from the left edge of the screen to the center of the region (in pixels) (number)
-	-- @return y - Distance from the bottom edge of the screen to the center of the region (in pixels) (number)
-	------------------------------------
-	-- GetCenter
+	doc [======[
+		@name GetCenter
+		@type method
+		@desc Returns the screen coordinates of the region's center
+		@return x number, distance from the left edge of the screen to the center of the region (in pixels)
+		@return y number, distance from the bottom edge of the screen to the center of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the height of the region
-	-- @name Region:GetHeight
-	-- @class function
-	-- @return height - Height of the region (in pixels) (number)
-	------------------------------------
-	-- GetHeight
+	doc [======[
+		@name GetHeight
+		@type method
+		@desc Returns the height of the region
+		@return number Height of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the distance from the left edge of the screen to the left edge of the region
-	-- @name Region:GetLeft
-	-- @class function
-	-- @return left - Distance from the left edge of the screen to the left edge of the region (in pixels) (number)
-	------------------------------------
-	-- GetLeft
+	doc [======[
+		@name GetLeft
+		@type method
+		@desc Returns the distance from the left edge of the screen to the left edge of the region
+		@return number Distance from the left edge of the screen to the left edge of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the number of anchor points defined for the region
-	-- @name Region:GetNumPoints
-	-- @class function
-	-- @return numPoints - Number of defined anchor points for the region (number)
-	------------------------------------
-	-- GetNumPoints
+	doc [======[
+		@name GetNumPoints
+		@type method
+		@desc Returns the number of anchor points defined for the region
+		@return number Number of defined anchor points for the region
+	]======]
 
-	------------------------------------
-	--- Returns information about one of the region's anchor points
-	-- @name Region:GetPoint
-	-- @class function
-	-- @param index Index of an anchor point defined for the region (between 1 and region:GetNumPoints()) (number)
-	-- @return point - Point on this region at which it is anchored to another (string, anchorPoint)
-	-- @return relativeTo - Reference to the other region to which this region is anchored (region)
-	-- @return relativePoint - Point on the other region to which this region is anchored (string, anchorPoint)
-	-- @return xOffset - Horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint) (number)
-	-- @return yOffset - Vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint) (number)
-	------------------------------------
+	doc [======[
+		@name GetPoint
+		@type method
+		@desc Returns information about one of the region's anchor points
+		@param index number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())
+		@return point System.Widget.FramePoint, point on this region at which it is anchored to another
+		@return relativeTo System.Widget.Region, reference to the other region to which this region is anchored
+		@return relativePoint System.Widget.FramePoint, point on the other region to which this region is anchored
+		@return xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)
+		@return yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)
+	]======]
 	function GetPoint(self, pointNum)
 		local point, frame, relativePoint, x, y = self.__UI:GetPoint(pointNum)
 		frame = IGAS:GetWrapper(frame)
 		return point, frame, relativePoint, x, y
 	end
 
-	------------------------------------
-	--- Returns the position and dimensions of the region
-	-- @name Region:GetRect
-	-- @class function
-	-- @return left - Distance from the left edge of the screen to the left edge of the region (in pixels) (number)
-	-- @return bottom - Distance from the bottom edge of the screen to the bottom of the region (in pixels) (number)
-	-- @return width - Width of the region (in pixels) (number)
-	-- @return height - Height of the region (in pixels) (number)
-	------------------------------------
-	-- GetRect
+	doc [======[
+		@name GetRect
+		@type method
+		@desc Returns the position and dimensions of the region
+		@return left number, Distance from the left edge of the screen to the left edge of the region (in pixels)
+		@return bottom number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)
+		@return width number, Width of the region (in pixels)
+		@return height number, Height of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the distance from the left edge of the screen to the right edge of the region
-	-- @name Region:GetRight
-	-- @class function
-	-- @return right - Distance from the left edge of the screen to the right edge of the region (in pixels) (number)
-	------------------------------------
-	-- GetRight
+	doc [======[
+		@name GetRight
+		@type method
+		@desc Returns the distance from the left edge of the screen to the right edge of the region
+		@return number Distance from the left edge of the screen to the right edge of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the width and height of the region
-	-- @name Region:GetSize
-	-- @class function
-	-- @return width - The width of the region (number)
-	-- @return height - The height of the region (number)
-	------------------------------------
-	-- GetSize
+	doc [======[
+		@name GetSize
+		@type method
+		@desc Returns the width and height of the region
+		@return width number, the width of the region
+		@return height number, the height of the region
+	]======]
 
-	------------------------------------
-	--- Returns the distance from the bottom of the screen to the top of the region
-	-- @name Region:GetTop
-	-- @class function
-	-- @return top - Distance from the bottom edge of the screen to the top edge of the region (in pixels) (number)
-	------------------------------------
-	-- GetTop
+	doc [======[
+		@name GetTop
+		@type method
+		@desc Returns the distance from the bottom of the screen to the top of the region
+		@return number Distance from the bottom edge of the screen to the top edge of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the width of the region
-	-- @name Region:GetWidth
-	-- @class function
-	-- @return width - Width of the region (in pixels) (number)
-	------------------------------------
-	-- GetWidth
+	doc [======[
+		@name GetWidth
+		@type method
+		@desc Returns the width of the region
+		@return number Width of the region (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns whether the region is currently being dragged
-	-- @name Region:IsDragging
-	-- @class function
-	-- @return isDragging - 1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil (1nil)
-	------------------------------------
-	-- IsDragging
+	doc [======[
+		@name IsDragging
+		@type method
+		@desc Returns whether the region is currently being dragged
+		@return boolean 1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns whether the mouse cursor is over the given region. This function replaces the previous MouseIsOver FrameXML function.</p>
-	--- <p>If provided, the arguments are treated as offsets by which to adjust the hit rectangle when comparing it to the mouse. They are in screen coordinates; positive offsets move an edge right or up, negative values move it left or down. No frame edges are actually moved. For example:     </p>
-	--- <pre> if button:IsMouseOver(2, -2, -2, 2) then
-	--- </pre>
-	--- <p>will return true if the mouse is within 2 pixels of the given frame.
-	-- @name Region:IsMouseOver
-	-- @class function
-	-- @param topOffset The amount by which to displace the top edge of the test rectangle (number)
-	-- @param leftOffset The amount by which to displace the left edge of the test rectangle (number)
-	-- @param bottomOffset The amount by which to displace the bottom edge of the test rectangle (number)
-	-- @param rightOffset The amount by which to displace the right edge of the test rectangle (number)
-	-- @return isOver - 1 if the mouse is over the region; otherwise nil (1nil)
-	------------------------------------
-	-- IsMouseOver
+	doc [======[
+		@name IsMouseOver
+		@type method
+		@desc Returns whether the mouse cursor is over the given region. This function replaces the previous MouseIsOver FrameXML function.
+		@param topOffset number, the amount by which to displace the top edge of the test rectangle
+		@param leftOffset number, the amount by which to displace the left edge of the test rectangle
+		@param bottomOffset number, the amount by which to displace the bottom edge of the test rectangle
+		@param rightOffset number, the amount by which to displace the right edge of the test rectangle
+		@return boolean 1 if the mouse is over the region; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns whether the region is protected. Non-secure scripts may change certain properties of a protected region (e.g. showing or hiding it, changing its position, or altering frame attributes) only while the player is not in combat. Regions may be explicitly protected by Blizzard scripts or XML; other regions can become protected by becoming children of protected regions or by being positioned relative to protected regions.
-	-- @name Region:IsProtected
-	-- @class function
-	-- @return isProtected - 1 if the region is protected; otherwise nil (value, 1nil)
-	-- @return explicit - 1 if the region is explicitly protected; nil if the frame is only protected due to relationship with a protected region (value, 1nil)
-	------------------------------------
-	-- IsProtected
+	doc [======[
+		@name IsProtected
+		@type method
+		@desc Returns whether the region is protected. Non-secure scripts may change certain properties of a protected region (e.g. showing or hiding it, changing its position, or altering frame attributes) only while the player is not in combat. Regions may be explicitly protected by Blizzard scripts or XML; other regions can become protected by becoming children of protected regions or by being positioned relative to protected regions.
+		@return isProtected boolean, 1 if the region is protected; otherwise nil
+		@return explicit boolean, 1 if the region is explicitly protected; nil if the frame is only protected due to relationship with a protected region
+	]======]
 
-	------------------------------------
-	--- Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.
-	-- @name Region:SetAllPoints
-	-- @class function
-	-- @param region Reference to a region (region)
-	-- @param name Global name of a region (string)
-	------------------------------------
-	-- SetAllPoints
+	doc [======[
+		@name SetAllPoints
+		@type method
+		@desc Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.
+		@format [name|region]
+		@param name global name of a System.Widget.Region
+		@param region System.Widget.Region
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the region's height
-	-- @name Region:SetHeight
-	-- @class function
-	-- @param height New height for the region (in pixels); if 0, causes the region's height to be determined automatically according to its anchor points (number)
-	------------------------------------
-	-- SetHeight
+	doc [======[
+		@name SetHeight
+		@type method
+		@desc Sets the region's height
+		@param height number, New height for the region (in pixels); if 0, causes the region's height to be determined automatically according to its anchor points
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Gets the region's height
-	-- @name Region:GetHeight
-	-- @class function
-	-- @return height New height for the region (in pixels); if 0, causes the region's height to be determined automatically according to its anchor points (number)
-	------------------------------------
-	-- GetHeight
+	doc [======[
+		@name GetHeight
+		@type method
+		@desc Gets the region's height
+		@return number the height of the region
+	]======]
 
-	------------------------------------
-	--- Makes another frame the parent of this region
-	-- @name Region:SetParent
-	-- @class function
-	-- @param frame The new parent frame (frame)
-	-- @param name Global name of a frame (string)
-	------------------------------------
-	-- SetParent
+	doc [======[
+		@name SetPoint
+		@type method
+		@desc Sets an anchor point for the region
+		@param point System.Widget.FramePoint, point on this region at which it is to be anchored to another
+		@param relativeTo System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)
+		@param relativePoint System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point
+		@param xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0
+		@param yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0
+	]======]
 
-	------------------------------------
-	--- Sets an anchor point for the region
-	-- @name Region:SetPoint
-	-- @class function
-	-- @param point Point on this region at which it is to be anchored to another (string, anchorPoint)
-	-- @param relativeTo Reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent) (region)
-	-- @param relativePoint Point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point (string, anchorPoint)
-	-- @param xOffset Horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0 (number)
-	-- @param yOffset Vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0 (number)
-	------------------------------------
-	-- SetPoint
+	doc [======[
+		@name SetSize
+		@type method
+		@desc Sets the size of the region to the specified values
+		@param width number, the width to set for the region
+		@param height number, the height to set for the region
+	]======]
 
-	------------------------------------
-	--- Sets the size of the region to the specified values
-	-- @name Region:SetSize
-	-- @class function
-	-- @param width The width to set for the region (number)
-	-- @param height The height to set for the region (number)
-	------------------------------------
-	-- SetSize
+	doc [======[
+		@name SetWidth
+		@type method
+		@desc Sets the region's width
+		@param width number,New width for the region (in pixels); if 0, causes the region's width to be determined automatically according to its anchor points
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the region's width
-	-- @name Region:SetWidth
-	-- @class function
-	-- @param width New width for the region (in pixels); if 0, causes the region's width to be determined automatically according to its anchor points (number)
-	------------------------------------
-	-- SetWidth
-
-	------------------------------------
-	--- Stops any active animations involving the region or its children
-	-- @name Region:StopAnimating
-	-- @class function
-	------------------------------------
-	-- StopAnimating
+	doc [======[
+		@name StopAnimating
+		@type method
+		@desc Stops any active animations involving the region or its children
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property
@@ -516,6 +462,15 @@ class "Region"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		self:ClearAllPoints()
+		self:Hide()
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------

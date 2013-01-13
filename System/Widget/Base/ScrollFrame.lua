@@ -3,15 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- ScrollFrame is how a large body of content can be displayed through a small window. The ScrollFrame is the size of the "window" through which you want to see the larger content, and it has another frame set as a "ScrollChild" containing the full content.
--- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name ScrollFrame
--- @class table
--- @field HorizontalScroll the scroll frame's current horizontal scroll position
--- @field VerticalScroll the scroll frame's vertical scroll position
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.ScrollFrame", version) then
@@ -21,117 +12,108 @@ end
 class "ScrollFrame"
 	inherit "Frame"
 
+	doc [======[
+		@name ScrollFrame
+		@type class
+		@desc ScrollFrame is how a large body of content can be displayed through a small window. The ScrollFrame is the size of the "window" through which you want to see the larger content, and it has another frame set as a "ScrollChild" containing the full content.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the scroll frame's horizontal scroll position changes
-	-- @name ScrollFrame:OnHorizontalScroll
-	-- @class function
-	-- @param offset New horizontal scroll position (in pixels, measured from the leftmost scroll position)
-	-- @usage function ScrollFrame:OnHorizontalScroll(offset)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHorizontalScroll
+		@type script
+		@desc Run when the scroll frame's horizontal scroll position changes
+		@param offset number, new horizontal scroll position (in pixels, measured from the leftmost scroll position)
+	]======]
 	script "OnHorizontalScroll"
 
-	------------------------------------
-	--- ScriptType, Run when the scroll frame's scroll position is changed
-	-- @name ScrollFrame:OnScrollRangeChanged
-	-- @class function
-	-- @param xOffset New horizontal scroll range (in pixels, measured from the leftmost scroll position)
-	-- @param yOffset New vertical scroll range (in pixels, measured from the topmost scroll position)
-	-- @usage function ScrollFrame:OnScrollRangeChanged(xOffset, yOffset)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnScrollRangeChanged
+		@type script
+		@desc Run when the scroll frame's scroll position is changed
+		@param xOffset number, new horizontal scroll range (in pixels, measured from the leftmost scroll position)
+		@param yOffset number, new vertical scroll range (in pixels, measured from the topmost scroll position)
+	]======]
 	script "OnScrollRangeChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the scroll frame's vertical scroll position changes
-	-- @name ScrollFrame:OnVerticalScroll
-	-- @class function
-	-- @param offset New vertical scroll position (in pixels, measured from the topmost scroll position)
-	-- @usage function ScrollFrame:OnVerticalScroll(offset)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnVerticalScroll
+		@type script
+		@desc Run when the scroll frame's vertical scroll position changes
+		@param offset number, new vertical scroll position (in pixels, measured from the topmost scroll position)
+	]======]
 	script "OnVerticalScroll"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns the scroll frame's current horizontal scroll position
-	-- @name ScrollFrame:GetHorizontalScroll
-	-- @class function
-	-- @return scroll - Current horizontal scroll position (0 = at left edge, frame:GetHorizontalScrollRange() = at right edge) (number)
-	------------------------------------
-	-- GetHorizontalScroll
+	doc [======[
+		@name GetHorizontalScroll
+		@type method
+		@desc Returns the scroll frame's current horizontal scroll position
+		@return number Current horizontal scroll position
+	]======]
 
-	------------------------------------
-	--- Returns the scroll frame's maximum horizontal (rightmost) scroll position
-	-- @name ScrollFrame:GetHorizontalScrollRange
-	-- @class function
-	-- @return maxScroll - Maximum horizontal scroll position (representing the right edge of the scrolled area) (number)
-	------------------------------------
-	-- GetHorizontalScrollRange
+	doc [======[
+		@name GetHorizontalScrollRange
+		@type method
+		@desc Returns the scroll frame's maximum horizontal (rightmost) scroll position
+		@return number Maximum horizontal scroll position
+	]======]
 
-	------------------------------------
-	--- Returns the frame scrolled by the scroll frame
-	-- @name ScrollFrame:GetScrollChild
-	-- @class function
-	-- @return scrollChild - Reference to the Frame object scrolled by the scroll frame (frame)
-	------------------------------------
-	-- GetScrollChild
+	doc [======[
+		@name GetScrollChild
+		@type method
+		@desc Returns the frame scrolled by the scroll frame
+		@return widgetObject Reference to the Frame object scrolled by the scroll frame
+	]======]
 
-	------------------------------------
-	--- Returns the scroll frame's current vertical scroll position
-	-- @name ScrollFrame:GetVerticalScroll
-	-- @class function
-	-- @return scroll - Current vertical scroll position (0 = at top edge, frame:GetVerticalScrollRange() = at bottom edge) (number)
-	------------------------------------
-	-- GetVerticalScroll
+	doc [======[
+		@name GetVerticalScroll
+		@type method
+		@desc Returns the scroll frame's current vertical scroll position
+		@return number Current vertical scroll position
+	]======]
 
-	------------------------------------
-	--- Returns the scroll frame's maximum vertical (bottom) scroll position
-	-- @name ScrollFrame:GetVerticalScrollRange
-	-- @class function
-	-- @return maxScroll - Maximum vertical scroll position (representing the bottom edge of the scrolled area) (number)
-	------------------------------------
-	-- GetVerticalScrollRange
+	doc [======[
+		@name GetVerticalScrollRange
+		@type method
+		@desc Returns the scroll frame's maximum vertical (bottom) scroll position
+		@return number Maximum vertical scroll position
+	]======]
 
-	------------------------------------
-	--- Sets the scroll frame's horizontal scroll position
-	-- @name ScrollFrame:SetHorizontalScroll
-	-- @class function
-	-- @param scroll Current horizontal scroll position (0 = at left edge, frame:GetHorizontalScrollRange() = at right edge) (number)
-	------------------------------------
-	-- SetHorizontalScroll
+	doc [======[
+		@name SetHorizontalScroll
+		@type method
+		@desc Sets the scroll frame's horizontal scroll position
+		@param scroll number, Current horizontal scroll position
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the scroll child for the scroll frame. The scroll child frame represents the (generally larger) area into which the scroll frame provides a (generally smaller) movable "window". The child must have an absolute size, set either by &lt;AbsDimension&gt; in XML or using both SetWidth() and SetHeight() in Lua.</p>
-	--- <p>Setting a frame's scroll child involves changing the child frame's parent -- thus, if the frame's scroll child is protected, this operation cannot be performed while in combat.
-	-- @name ScrollFrame:SetScrollChild
-	-- @class function
-	-- @param frame Reference to another frame to be the ScrollFrame's child. (frame)
-	------------------------------------
-	-- SetScrollChild
+	doc [======[
+		@name SetScrollChild
+		@type method
+		@desc Sets the scroll child for the scroll frame. The scroll child frame represents the (generally larger) area into which the scroll frame provides a (generally smaller) movable "window". The child must have an absolute size
+		@param frame widgetObject, Reference to another frame to be the ScrollFrame's child.
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the scroll frame's vertical scroll position
-	-- @name ScrollFrame:SetVerticalScroll
-	-- @class function
-	-- @param scroll Current vertical scroll position (0 = at top edge, frame:GetVerticalScrollRange() = at bottom edge) (number)
-	------------------------------------
-	-- SetVerticalScroll
+	doc [======[
+		@name SetVerticalScroll
+		@type method
+		@desc Sets the scroll frame's vertical scroll position
+		@param scroll number, Current vertical scroll position
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Updates the position of the scroll frame's child. The ScrollFrame automatically adjusts the position of the child frame when scrolled, but manually updating its position may be necessary when changing the size or contents of the child frame.
-	-- @name ScrollFrame:UpdateScrollChildRect
-	-- @class function
-	------------------------------------
-	-- UpdateScrollChildRect
+	doc [======[
+		@name UpdateScrollChildRect
+		@type method
+		@desc Updates the position of the scroll frame's child. The ScrollFrame automatically adjusts the position of the child frame when scrolled, but manually updating its position may be necessary when changing the size or contents of the child frame.
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

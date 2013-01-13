@@ -2,15 +2,6 @@
 -- ChangeLog
 --				2011/03/07	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- VirtualUIObject is an abstract UI object type that is used to group together methods that are common to all Virtual interface types
--- @name VirtualUIObject
--- @class table
--- @field Name Set or get the frame's name, it's an unique identify in it's parent's childs
--- @field InDesignMode Check if the frame is under design
--- @field Parent Set or Get the frame's parent
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 11
 

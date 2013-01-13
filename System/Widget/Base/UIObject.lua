@@ -5,15 +5,6 @@
 --				2010/11/28	Remove fake UIObject
 --				2011/03/01	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- UIObject is the base Widget class that is used to group together methods that are common to all user interface types
--- @name UIObject
--- @class table
--- @field Name Set or get the frame's name, it's an unique identify in it's parent's childs
--- @field InDesignMode Check if the frame is under design
--- @field Parent Set or Get the frame's parent
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 14
 if not IGAS:NewAddon("IGAS.Widget.UIObject", version) then

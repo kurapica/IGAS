@@ -3,24 +3,6 @@
 -- ChangeLog
 --				2011/03/12	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- The Font object is the only type of object that is not attached to a parent widget; indeed, its purpose is to be shared between other objects that share font characteristics.<br>
--- In this way, changes to the Font object will update the text appearance of all text objects that have it set as their Font using :SetFontObject().
--- <br><br>inherit <a href=".\Font.html">Font</a> For all methods, properties and scriptTypes
--- @name Font
--- @class table
--- @field Font the font's defined table, contains font path, height and flags' settings
--- @field FontObject the `Font` object
--- @field JustifyH the font instance's horizontal text alignment style
--- @field JustifyV the font instance's vertical text alignment style
--- @field ShadowColor the color of the font's text shadow
--- @field ShadowOffset the offset of the font instance's text shadow from its text
--- @field Spacing the font instance's amount of spacing between lines
--- @field TextColor the font instance's default text color
--- @field Alpha the opacity for text displayed by the font
--- @field IndentedWordWrap Whether long lines of text are indented when wrapping
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Font", version) then
@@ -30,6 +12,13 @@ end
 class "Font"
 	inherit "Object"
 
+	doc [======[
+		@name Font
+		@type class
+		@desc The Font object is to be shared between other objects that share font characteristics.
+		@param name the Font's name
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -37,25 +26,23 @@ class "Font"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Get the type of this object.
-	-- @name Font:GetObjectType
-	-- @class function
-	-- @return the object type of the frame(the type is defined in IGAS)
-	-- @usage Font:GetObjectType()
-	------------------------------------
+	doc [======[
+		@name GetObjectType
+		@type method
+		@desc Get the type of this object.
+		@return string the object's class' name
+	]======]
 	function GetObjectType(self)
 		return Reflector.GetName(self:GetClass())
 	end
 
-	------------------------------------
-	--- Determine if this object is of the specified type, or a subclass of that type.
-	-- @name Font:IsObjectType
-	-- @class function
-	-- @param type the object type to determined
-	-- @return true if the frame's type is the given type or the given type's sub-type.
-	-- @usage Font:IsObjectType("Form")
-	------------------------------------
+	doc [======[
+		@name IsObjectType
+		@type method
+		@desc Determine if this object is of the specified type, or a subclass of that type.
+		@param type string, the object type to determined
+		@return boolean true if the frame's type is the given type or the given type's sub-type.
+	]======]
 	function IsObjectType(self, objType)
 		if objType then
 			if type(objType) == "string" then
@@ -68,227 +55,195 @@ class "Font"
 		return false
 	end
 
-	------------------------------------
-	--- Get the full path of this object.
-	-- @name Font:GetName
-	-- @class function
-	-- @return the full path of the object
-	-- @usage Font:GetName()
-	------------------------------------
-	-- GetName
+	doc [======[
+		@name GetName
+		@type method
+		@desc Get the full path of this object.
+		@return string the full path of the object
+	]======]
 
-	------------------------------------
-	--- Release resource, will dipose it's childs the same time
-	-- @name Font:Dispose
-	-- @class function
-	-- @usage Font:Dispose()
-	------------------------------------
-	function Dispose(self)
-		-- Remove from _G if it exists
-		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
-			_G[self:GetName()] = nil
-		end
-	end
+	doc [======[
+		@name GetFont
+		@type method
+		@desc Returns the font instance's basic font properties
+		@return filename string, path to a font file (string)
+		@return fontHeight number, height (point size) of the font to be displayed (in pixels) (number)
+		@return flags string, additional properties for the font specified by one or more (separated by commas)
+	]======]
 
-	------------------------------------
-	--- Returns the font instance's basic font properties
-	-- @name Font:GetFont
-	-- @class function
-	-- @return filename - Path to a font file (string)
-	-- @return fontHeight - Height (point size) of the font to be displayed (in pixels) (number)
-	-- @return flags - Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string) <ul><li>MONOCHROME - Font is rendered without antialiasing
-	-- @return OUTLINE - Font is displayed with a black outline
-	-- @return THICKOUTLINE - Font is displayed with a thick black outline
-	------------------------------------
-	-- GetFont
-
-	------------------------------------
-	--- Returns the Font object from which the font instance's properties are inherited. See Font:SetFontObject() for details.
-	-- @name Font:GetFontObject
-	-- @class function
-	-- @return font - Reference to the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties (font)
-	------------------------------------
+	doc [======[
+		@name GetFontObject
+		@type method
+		@desc Returns the Font object from which the font instance's properties are inherited
+		@return System.Widget.Font the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties
+	]======]
 	function GetFontObject(self)
 		return IGAS:GetWrapper(self.__UI:GetFontObject())
 	end
 
-	------------------------------------
-	--- Returns the font instance's horizontal text alignment style
-	-- @name Font:GetJustifyH
-	-- @class function
-	-- @return justify - Horizontal text alignment style (string, justifyH) <ul><li>CENTER
-	------------------------------------
-	-- GetJustifyH
+	doc [======[
+		@name GetJustifyH
+		@type method
+		@desc Returns the font instance's horizontal text alignment style
+		@return System.Widget.JustifyHType
+	]======]
 
-	------------------------------------
-	--- Returns the font instance's vertical text alignment style
-	-- @name Font:GetJustifyV
-	-- @class function
-	-- @return justify - Vertical text alignment style (string, justifyV) <ul><li>BOTTOM
-	------------------------------------
-	-- GetJustifyV
+	doc [======[
+		@name GetJustifyV
+		@type method
+		@desc Returns the font instance's vertical text alignment style
+		@return System.Widget.JustifyVType
+	]======]
 
-	------------------------------------
-	--- Returns the color of the font's text shadow
-	-- @name Font:GetShadowColor
-	-- @class function
-	-- @return shadowR - Red component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowG - Green component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowB - Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowAlpha - Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetShadowColor
+	doc [======[
+		@name GetShadowColor
+		@type method
+		@desc Returns the color of the font's text shadow
+		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 
-	------------------------------------
-	--- Returns the offset of the font instance's text shadow from its text
-	-- @name Font:GetShadowOffset
-	-- @class function
-	-- @return xOffset - Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @return yOffset - Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
-	-- GetShadowOffset
+	doc [======[
+		@name GetShadowOffset
+		@type method
+		@desc Returns the offset of the font instance's text shadow from its text
+		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the font instance's amount of spacing between lines
-	-- @name Font:GetSpacing
-	-- @class function
-	-- @return spacing - Amount of space between lines of text (in pixels) (number)
-	------------------------------------
-	-- GetSpacing
+	doc [======[
+		@name GetSpacing
+		@type method
+		@desc Returns the font instance's amount of spacing between lines
+		@return number amount of space between lines of text (in pixels)
+	]======]
 
-	------------------------------------
-	--- Returns the font instance's default text color
-	-- @name Font:GetTextColor
-	-- @class function
-	-- @return textR - Red component of the text color (0.0 - 1.0) (number)
-	-- @return textG - Green component of the text color (0.0 - 1.0) (number)
-	-- @return textB - Blue component of the text color (0.0 - 1.0) (number)
-	-- @return textAlpha - Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetTextColor
+	doc [======[
+		@name GetTextColor
+		@type method
+		@desc Returns the font instance's default text color
+		@return textR number, Red component of the text color (0.0 - 1.0)
+		@return textG number, Green component of the text color (0.0 - 1.0)
+		@return textB number, Blue component of the text color (0.0 - 1.0)
+		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 
-	------------------------------------
-	--- Sets the font instance's basic font properties. Font files included with the default WoW client:</p>
-	--- <ul>
-	--- <li>Fonts\\FRIZQT__.TTF - Friz Quadrata, used by default for player names and most UI text</li>
-	--- <li>Fonts\\ARIALN.TTF - Arial Narrow, used by default for chat windows, action button numbers, etc.</li>
-	--- <li>Fonts\\skurri.ttf - Skurri, used by default for incoming damage/parry/miss/etc indicators on the Player and Pet frames</li>
-	--- <li>Fonts\\MORPHEUS.ttf - Morpheus, used by default for quest title headers, mail, and readable in-game objects.</li>
-	--- </ul>
-	--- <p>Font files can also be included in addons.
-	-- @name Font:SetFont
-	-- @class function
-	-- @param filename Path to a font file (string)
-	-- @param fontHeight Height (point size) of the font to be displayed (in pixels) (number)
-	-- @param flags Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string) <ul><li>MONOCHROME - Font is rendered without antialiasing
-	-- @param OUTLINE Font is displayed with a black outline
-	-- @param THICKOUTLINE Font is displayed with a thick black outline
-	-- @return isValid - 1 if filename refers to a valid font file; otherwise nil (1nil)
-	------------------------------------
-	-- SetFont
+	doc [======[
+		@name SetFont
+		@type method
+		@desc Sets the font instance's basic font properties
+		@param filename string, path to a font file
+		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
+		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
+		@return boolean 1 if filename refers to a valid font file; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Sets the Font object from which the font instance's properties are inherited. This method allows for easy standardization and reuse of font styles. For example, a button's normal font can be set to appear in the same style as many default UI elements by setting its font to "GameFontNormal" -- if Blizzard changes the main UI font in a future patch, or if the user installs another addon which changes the main UI font, the button's font will automatically change to match.
-	-- @name Font:SetFontObject
-	-- @class function
-	-- @param object Reference to a Font object (font)
-	-- @param name Global name of a Font object (string)
-	------------------------------------
-	-- SetFontObject
+	doc [======[
+		@name SetFontObject
+		@type method
+		@desc Sets the Font object from which the font instance's properties are inherited
+		@format fontObject|fontName
+		@param fontObject System.Widget.Font, a font object
+		@param fontName string, global font object's name
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font instance's horizontal text alignment style
-	-- @name Font:SetJustifyH
-	-- @class function
-	-- @param justify Horizontal text alignment style (string, justifyH) <ul><li>CENTER
-	------------------------------------
-	-- SetJustifyH
+	doc [======[
+		@name SetJustifyH
+		@type method
+		@desc Sets the font instance's horizontal text alignment style
+		@param justifyH System.Widget.JustifyHType
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font instance's vertical text alignment style
-	-- @name Font:SetJustifyV
-	-- @class function
-	-- @param justify Vertical text alignment style (string, justifyV) <ul><li>BOTTOM
-	------------------------------------
-	-- SetJustifyV
+	doc [======[
+		@name SetJustifyV
+		@type method
+		@desc Sets the font instance's vertical text alignment style
+		@param justifyV System.Widget.JustifyVType
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the color of the font's text shadow
-	-- @name Font:SetShadowColor
-	-- @class function
-	-- @param shadowR Red component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowG Green component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowB Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowAlpha Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetShadowColor
+	doc [======[
+		@name SetShadowColor
+		@type method
+		@desc Sets the color of the font's text shadow
+		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the offset of the font instance's text shadow from its text
-	-- @name Font:SetShadowOffset
-	-- @class function
-	-- @param xOffset Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @param yOffset Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
-	-- SetShadowOffset
+	doc [======[
+		@name SetShadowOffset
+		@type method
+		@desc Sets the offset of the font instance's text shadow from its text
+		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font instance's amount of spacing between lines
-	-- @name Font:SetSpacing
-	-- @class function
-	-- @param spacing Amount of space between lines of text (in pixels) (number)
-	------------------------------------
-	-- SetSpacing
+	doc [======[
+		@name SetSpacing
+		@type method
+		@desc Sets the font instance's amount of spacing between lines
+		@param spacing number, amount of space between lines of text (in pixels)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance; however, portions of the text may be colored differently using the colorString format (commonly seen in hyperlinks).
-	-- @name Font:SetTextColor
-	-- @class function
-	-- @param textR Red component of the text color (0.0 - 1.0) (number)
-	-- @param textG Green component of the text color (0.0 - 1.0) (number)
-	-- @param textB Blue component of the text color (0.0 - 1.0) (number)
-	-- @param textAlpha Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetTextColor
+	doc [======[
+		@name SetTextColor
+		@type method
+		@desc Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance
+		@param textR number, Red component of the text color (0.0 - 1.0)
+		@param textG number, Green component of the text color (0.0 - 1.0)
+		@param textB number, Blue component of the text color (0.0 - 1.0)
+		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
-	-- @name Font:CopyFontObject
-	-- @class function
-	-- @param object Reference to a Font object (font)
-	-- @param name Global name of a Font object (string)
-	------------------------------------
-	-- CopyFontObject
+	doc [======[
+		@name CopyFontObject
+		@type method
+		@desc Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
+		@format object|name
+		@param object System.Widget.Font, reference to a Font object
+		@param name string, global name of a Font object
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Returns the opacity for text displayed by the font
-	-- @name Font:GetAlpha
-	-- @class function
-	-- @return alpha - Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetAlpha
+	doc [======[
+		@name GetAlpha
+		@type method
+		@desc Returns the opacity for text displayed by the font
+		@return number Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 
-	------------------------------------
-	--- Gets whether long lines of text are indented when wrapping
-	-- @name Font:GetIndentedWordWrap
-	-- @class function
-	------------------------------------
-	-- GetIndentedWordWrap
+	doc [======[
+		@name GetIndentedWordWrap
+		@type method
+		@desc Gets whether long lines of text are indented when wrapping
+		@return boolean
+	]======]
 
-	------------------------------------
-	--- Sets the opacity for text displayed by the font
-	-- @name Font:SetAlpha
-	-- @class function
-	-- @param alpha Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetAlpha
+	doc [======[
+		@name SetAlpha
+		@type method
+		@desc Sets the opacity for text displayed by the font
+		@param alpha number, alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether long lines of text are indented when wrapping
-	-- @name Font:SetIndentedWordWrap
-	-- @class function
-	------------------------------------
-	-- SetIndentedWordWrap
+	doc [======[
+		@name SetIndentedWordWrap
+		@type method
+		@desc Sets whether long lines of text are indented when wrapping
+		@param boolean
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property
@@ -433,6 +388,16 @@ class "Font"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		-- Remove from _G if it exists
+		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
+			_G[self:GetName()] = nil
+		end
+	end
 
 	------------------------------------------------------
 	-- Constructor

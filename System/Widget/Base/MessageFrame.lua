@@ -3,18 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- MessageFrames are used to present series of messages or other lines of text, usually stacked on top of each other.
--- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name MessageFrame
--- @class table
--- @field Fading whether messages added to the frame automatically fade out after a period of time
--- @field TimeVisible the amount of time for which a message remains visible before beginning to fade out
--- @field FadeDuration the duration of the fade-out animation for disappearing messages
--- @field InsertMode the position at which new messages are added to the frame
--- @field IndentedWordWrap whether long lines of text are indented when wrapping
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 if not IGAS:NewAddon("IGAS.Widget.MessageFrame", version) then
@@ -25,6 +13,12 @@ class "MessageFrame"
 	inherit "Frame"
 	extend "IFFont"
 
+	doc [======[
+		@name MessageFrame
+		@type class
+		@desc MessageFrames are used to present series of messages or other lines of text, usually stacked on top of each other.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -32,104 +26,99 @@ class "MessageFrame"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Adds a message to those listed in the frame. If the frame was already 'full' with messages, then the oldest message is discarded when the new one is added.
-	-- @name MessageFrame:AddMessage
-	-- @class function
-	-- @param text Text of the message (string)
-	-- @param red Red component of the text color for the message (0.0 - 1.0) (number)
-	-- @param green Green component of the text color for the message (0.0 - 1.0) (number)
-	-- @param blue Blue component of the text color for the message (0.0 - 1.0) (number)
-	-- @param alpha Alpha (opacity) for the message (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- AddMessage
+	doc [======[
+		@name AddMessage
+		@type method
+		@desc Adds a message to those listed in the frame. If the frame was already 'full' with messages, then the oldest message is discarded when the new one is added.
+		@param text string, text of the message
+		@param red number, red component of the text color for the message (0.0 - 1.0)
+		@param green number, green component of the text color for the message (0.0 - 1.0)
+		@param blue number, blue component of the text color for the message (0.0 - 1.0)
+		@param alpha number, alpha (opacity) for the message (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Removes all messages displayed in the frame
-	-- @name MessageFrame:Clear
-	-- @class function
-	------------------------------------
-	-- Clear
+	doc [======[
+		@name Clear
+		@type method
+		@desc Removes all messages displayed in the frame
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Returns the duration of the fade-out animation for disappearing messages. For the amount of time a message remains in the frame before beginning to fade, see :GetTimeVisible().
-	-- @name MessageFrame:GetFadeDuration
-	-- @class function
-	-- @return duration - Duration of the fade-out animation for disappearing messages (in seconds) (number)
-	------------------------------------
-	-- GetFadeDuration
+	doc [======[
+		@name GetFadeDuration
+		@type method
+		@desc Returns the duration of the fade-out animation for disappearing messages.
+		@return number Duration of the fade-out animation for disappearing messages (in seconds)
+	]======]
 
-	------------------------------------
-	--- Returns whether messages added to the frame automatically fade out after a period of time
-	-- @name MessageFrame:GetFading
-	-- @class function
-	-- @return fading - 1 if messages added to the frame automatically fade out after a period of time; otherwise nil (1nil)
-	------------------------------------
-	-- GetFading
+	doc [======[
+		@name GetFading
+		@type method
+		@desc Returns whether messages added to the frame automatically fade out after a period of time
+		@return boolean 1 if messages added to the frame automatically fade out after a period of time; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns whether long lines of text are indented when wrapping
-	-- @name MessageFrame:GetIndentedWordWrap
-	-- @class function
-	-- @return indent - 1 if long lines of text are indented when wrapping; otherwise nil (1nil)
-	------------------------------------
-	-- GetIndentedWordWrap
+	doc [======[
+		@name GetIndentedWordWrap
+		@type method
+		@desc Returns whether long lines of text are indented when wrapping
+		@return boolean 1 if long lines of text are indented when wrapping; otherwise nil
+	]======]
 
-	------------------------------------
-	--- Returns the position at which new messages are added to the frame
-	-- @name MessageFrame:GetInsertMode
-	-- @class function
-	-- @return position - Token identifying the position at which new messages are added to the frame (string) <ul><li>BOTTOM
-	------------------------------------
-	-- GetInsertMode
+	doc [======[
+		@name GetInsertMode
+		@type method
+		@desc Returns the position at which new messages are added to the frame
+		@return System.Widget.InsertMode Token identifying the position at which new messages are added to the frame
+	]======]
 
-	------------------------------------
-	--- Returns the amount of time for which a message remains visible before beginning to fade out. For the duration of the fade-out animation, see :GetFadeDuration().
-	-- @name MessageFrame:GetTimeVisible
-	-- @class function
-	-- @return time - Amount of time for which a message remains visible before beginning to fade out (in seconds) (number)
-	------------------------------------
-	-- GetTimeVisible
+	doc [======[
+		@name GetTimeVisible
+		@type method
+		@desc Returns the amount of time for which a message remains visible before beginning to fade out. For the duration of the fade-out animation, see :GetFadeDuration().
+		@return number Amount of time for which a message remains visible before beginning to fade out (in seconds)
+	]======]
 
-	------------------------------------
-	--- Sets the duration of the fade-out animation for disappearing messages. For the amount of time a message remains in the frame before beginning to fade, see :SetTimeVisible().
-	-- @name MessageFrame:SetFadeDuration
-	-- @class function
-	-- @param duration Duration of the fade-out animation for disappearing messages (in seconds) (number)
-	------------------------------------
-	-- SetFadeDuration
+	doc [======[
+		@name SetFadeDuration
+		@type method
+		@desc Sets the duration of the fade-out animation for disappearing messages.
+		@param duration number, duration of the fade-out animation for disappearing messages (in seconds)
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether messages added to the frame automatically fade out after a period of time
-	-- @name MessageFrame:SetFading
-	-- @class function
-	-- @param fading True to cause messages added to the frame to automatically fade out after a period of time; false to leave message visible (boolean)
-	------------------------------------
-	-- SetFading
+	doc [======[
+		@name SetFading
+		@type method
+		@desc Sets whether messages added to the frame automatically fade out after a period of time
+		@param fading boolean, true to cause messages added to the frame to automatically fade out after a period of time; false to leave message visible
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets whether long lines of text are indented when wrapping
-	-- @name MessageFrame:SetIndentedWordWrap
-	-- @class function
-	-- @param indent True to indent wrapped lines of text; false otherwise (boolean)
-	------------------------------------
-	-- SetIndentedWordWrap
+	doc [======[
+		@name SetIndentedWordWrap
+		@type method
+		@desc Sets whether long lines of text are indented when wrapping
+		@param indent boolean, true to indent wrapped lines of text; false otherwise
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the position at which new messages are added to the frame
-	-- @name MessageFrame:SetInsertMode
-	-- @class function
-	-- @param position Token identifying the position at which new messages should be added to the frame (string) <ul><li>BOTTOM
-	------------------------------------
-	-- SetInsertMode
+	doc [======[
+		@name SetInsertMode
+		@type method
+		@desc Sets the position at which new messages are added to the frame
+		@param position System.Widget.InsertMode, token identifying the position at which new messages should be added to the frame
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the amount of time for which a message remains visible before beginning to fade out. For the duration of the fade-out animation, see :SetFadeDuration().
-	-- @name MessageFrame:SetTimeVisible
-	-- @class function
-	-- @param time Amount of time for which a message remains visible before beginning to fade out (in seconds) (number)
-	------------------------------------
-	-- SetTimeVisible
+	doc [======[
+		@name SetTimeVisible
+		@type method
+		@desc Sets the amount of time for which a message remains visible before beginning to fade out.
+		@param time number, amount of time for which a message remains visible before beginning to fade out (in seconds)
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

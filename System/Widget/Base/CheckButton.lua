@@ -3,18 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- CheckButtons are a specialized form of Button; they maintain an on/off state, which toggles automatically when they are clicked, and additional textures for when they are checked, or checked while disabled.
--- <br><br>inherit <a href=".\Button.html">Button</a> For all methods, properties and scriptTypes
--- @name CheckButton
--- @class table
--- @field Checked true if the checkbutton is checked
--- @field CheckedTexture the texture used when the button is checked
--- @field CheckedTexturePath the texture file used when the button is checked
--- @field DisabledCheckedTexture the texture used when the button is disabled and checked
--- @field DisabledCheckedTexturePath the texture file used when the button is disabled and checked
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 7
 if not IGAS:NewAddon("IGAS.Widget.CheckButton", version) then
@@ -24,6 +12,12 @@ end
 class "CheckButton"
 	inherit "Button"
 
+	doc [======[
+		@name CheckButton
+		@type class
+		@desc CheckButtons are a specialized form of Button; they maintain an on/off state, which toggles automatically when they are clicked, and additional textures for when they are checked, or checked while disabled.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	-----------------------------------------------------
@@ -31,59 +25,60 @@ class "CheckButton"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns whether the check button is checked
-	-- @name CheckButton:GetChecked
-	-- @class function
-	-- @return enabled - 1 if the button is checked; nil if the button is unchecked (1nil)
-	------------------------------------
-	-- GetChecked
+	doc [======[
+		@name GetChecked
+		@type method
+		@desc Returns whether the check button is checked
+		@return boolean 1 if the button is checked; nil if the button is unchecked
+	]======]
 
-	------------------------------------
-	--- Returns the texture used when the button is checked
-	-- @name CheckButton:GetCheckedTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used when the button is checked (texture)
-	------------------------------------
+	doc [======[
+		@name GetCheckedTexture
+		@type method
+		@desc Returns the texture used when the button is checked
+		@return System.Widget.Texture Reference to the Texture object used when the button is checked
+	]======]
 	function GetCheckedTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetCheckedTexture(...))
 	end
 
-	------------------------------------
-	--- Returns the texture used when the button is disabled and checked
-	-- @name CheckButton:GetDisabledCheckedTexture
-	-- @class function
-	-- @return texture - Reference to the Texture object used when the button is disabled and checked (texture)
-	------------------------------------
+	doc [======[
+		@name GetDisabledCheckedTexture
+		@type method
+		@desc Returns the texture used when the button is disabled and checked
+		@return  System.Widget.Texture Reference to the Texture object used when the button is disabled and checked
+	]======]
 	function GetDisabledCheckedTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetDisabledCheckedTexture(...))
 	end
 
-	------------------------------------
-	--- Sets whether the check button is checked
-	-- @name CheckButton:SetChecked
-	-- @class function
-	-- @param enable True to check the button; false to uncheck (boolean)
-	------------------------------------
-	-- SetChecked
+	doc [======[
+		@name SetChecked
+		@type method
+		@desc Sets whether the check button is checked
+		@param enable boolean, true to check the button; false to uncheck
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used when the button is checked
-	-- @name CheckButton:SetCheckedTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	------------------------------------
-	-- SetCheckedTexture
+	doc [======[
+		@name SetCheckedTexture
+		@type method
+		@desc Sets the texture used when the button is checked
+		@format texture|filename
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the texture used when the button is disabled and checked
-	-- @name CheckButton:SetDisabledCheckedTexture
-	-- @class function
-	-- @param texture Reference to an existing Texture object (texture)
-	-- @param filename Path to a texture image file (string)
-	------------------------------------
-	-- SetDisabledCheckedTexture
+	doc [======[
+		@name SetDisabledCheckedTexture
+		@type method
+		@desc Sets the texture used when the button is disabled and checked
+		@format texture|filename
+		@param texture System.Widget.Texture, reference to an existing Texture object
+		@param filename string, path to a texture image file
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property

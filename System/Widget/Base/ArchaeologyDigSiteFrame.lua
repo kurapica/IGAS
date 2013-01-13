@@ -3,9 +3,7 @@
 -- Change Log  :
 
 ----------------------------------------------------------------------------------------------------------------------------------------
---- ArchaeologyDigSiteFrame is a frame that is used to display digsites. Any one frame can be used to display any number of digsites, called blobs. Each blob is a polygon with a border and a filling texture.
---- <br>To draw a blob onto the frame use the DrawBlob function. This will draw a polygon representing the specified digsite. It seems that it's only possible to draw digsites where you can dig and is on the current map.
---- <br>Changes to how the blobs should render will only affect newly drawn blobs. That means that if you want to change the opacity of a blob you must first clear all blobs using the DrawNone function and then redraw the blobs.
+---
 -- <br><br>inherit <a href=".\Frame.html">Frame</a> For all methods, properties and scriptTypes
 -- @name ArchaeologyDigSiteFrame
 -- @class table
@@ -20,6 +18,15 @@ end
 class "ArchaeologyDigSiteFrame"
 	inherit "Frame"
 
+	doc [======[
+		@name ArchaeologyDigSiteFrame
+		@type class
+		@desc ArchaeologyDigSiteFrame is a frame that is used to display digsites. Any one frame can be used to display any number of digsites, called blobs. Each blob is a polygon with a border and a filling texture.
+		<br><br>To draw a blob onto the frame use the DrawBlob function. This will draw a polygon representing the specified digsite. It seems that it's only possible to draw digsites where you can dig and is on the current map.
+		<br><br>Changes to how the blobs should render will only affect newly drawn blobs. That means that if you want to change the opacity of a blob you must first clear all blobs using the DrawNone function and then redraw the blobs.
+		<br>
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	-----------------------------------------------------
@@ -27,88 +34,93 @@ class "ArchaeologyDigSiteFrame"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Draws a blob onto the frame. This will render the specified blob onto the frame with the current settings. </p>
-	--- <p>Blob IDs for the current map can be recovered using the ArcheologyGetVisibleBlobID function.
-	-- @name ArchaeologyDigSiteFrame:DrawBlob
-	-- @class function
-	-- @param blobId The numeric ID of the blob to draw (number)
-	-- @param draw Draw the Blob (True = Yes, False = No) (bool)
-	------------------------------------
-	-- DrawBlob
+	doc [======[
+		@name function_name
+		@type method
+		@desc  Draws a blob onto the frame. This will render the specified blob onto the frame with the current settings.
+		@param blobId numeric, the numeric ID of the blob to draw
+		@param draw boolean, draw the blob
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Removes all drawn blobs on the frame. Removes all blobs from the frame. </p>
-	--- <p>To redraw use ArchaeologyDigSiteFrame:DrawBlob
-	-- @name ArchaeologyDigSiteFrame:DrawNone
-	-- @class function
-	------------------------------------
-	-- DrawNone
+	doc [======[
+		@name DrawNone
+		@type method
+		@desc Removes all drawn blobs on the frame. Removes all blobs from the frame.
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:EnableMerging
-	-- @class function
-	------------------------------------
-	-- EnableMerging
+	doc [======[
+		@name EnableMerging
+		@type method
+		@desc
+		@param boolean
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:EnableSmoothing
-	-- @class function
-	------------------------------------
-	-- EnableSmoothing
+	doc [======[
+		@name EnableSmoothing
+		@type method
+		@desc
+		@param boolean
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetBorderAlpha
-	-- @class function
-	------------------------------------
-	-- SetBorderAlpha
+	doc [======[
+		@name SetBorderAlpha
+		@type method
+		@desc
+		@param alpha number, (0-255)
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetBorderScalar
-	-- @class function
-	------------------------------------
-	-- SetBorderScalar
+	doc [======[
+		@name SetBorderScalar
+		@type method
+		@desc
+		@param scala number
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetBorderTexture
-	-- @class function
-	------------------------------------
-	-- SetBorderTexture
+	doc [======[
+		@name SetBorderTexture
+		@type method
+		@desc
+		@param filename string
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetFillAlpha
-	-- @class function
-	------------------------------------
-	-- SetFillAlpha
+	doc [======[
+		@name SetFillAlpha
+		@type method
+		@desc
+		@param
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetFillTexture
-	-- @class function
-	------------------------------------
-	-- SetFillTexture
+	doc [======[
+		@name SetFillTexture
+		@type method
+		@desc
+		@param
+		@return nil
+	]======]
 
-	------------------------------------
-	---
-	-- @name ArchaeologyDigSiteFrame:SetMergeThreshold
-	-- @class function
-	------------------------------------
-	-- SetMergeThreshold
+	doc [======[
+		@name SetMergeThreshold
+		@type method
+		@desc
+		@param
+		@return nil
+	]======]
 
-	------------------------------------
-	--- Sets the number of points used in the blob polygon. Sets the number of corners of the polygon used when a drawing a blob using the DrawBlob function.
-	--- The blob will allways have a minimum of 8 points, any number below that will default to 8.
-	-- @name ArchaeologyDigSiteFrame:SetNumSplinePoints
-	-- @class function
-	-- @param points The number of points in the polygon used to draw the blobs. (number)
-	------------------------------------
-	-- SetNumSplinePoints
+	doc [======[
+		@name SetNumSplinePoints
+		@type method
+		@desc Sets the number of points used in the blob polygon. Sets the number of corners of the polygon used when a drawing a blob using the DrawBlob function.The blob will allways have a minimum of 8 points, any number below that will default to 8.
+		@param points number, the number of points in the polygon used to draw the blobs.
+		@return nil
+	]======]
 
 	------------------------------------------------------
 	-- Property
