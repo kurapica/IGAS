@@ -12,7 +12,7 @@
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 5
+local version = 6
 
 if not IGAS:NewAddon("IGAS.Widget.SingleTextBox", version) then
 	return
@@ -120,6 +120,8 @@ class "SingleTextBox"
 			self:SetBackdrop(_FrameBackdropLight)
 			self:SetBackdropColor(0, 0, 0, 1)
 		end
+
+		self.__Style = style
 	end
 
 	------------------------------------
