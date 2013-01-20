@@ -3,8 +3,9 @@
 -- ChangeLog   :
 --               2011/10/22 Stop UnregisterEvent when no thread in
 --               2012/04/05 Thread:Resume methods would call UnregisterAllEvent to clear it's settings
+--               2012/01/17 Fix local error
 
-local version = 8
+local version = 9
 
 if not IGAS:NewAddon("IGAS.Threading", version) then
 	return
@@ -33,6 +34,9 @@ interface "Threading"
 		"normal",
 		"dead",
 	}
+
+	local RegisterEvent
+	local UnregisterAllEvent
 
 	------------------------------------------------------
 	-- System.Threading.Sleep
@@ -134,9 +138,6 @@ interface "Threading"
 	------------------------------------------------------
 	-- System.Threading.WaitEvent
 	------------------------------------------------------
-	local RegisterEvent
-	local UnregisterAllEvent
-
 	do
 		_EventManager = _EventManager or nil
 		if CreateFrame and not _EventManager then

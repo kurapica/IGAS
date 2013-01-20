@@ -21,6 +21,12 @@ class "CodeEditor"
 
 	import "System.Threading"
 
+	doc [======[
+		@name CodeEditor
+		@type class
+		@desc CodeEditor object is using as a lua code editor
+	]======]
+
 	GRN    ='	'
 	YEL    ='|cffffff00'
 	RED    ='|cffff0000'
@@ -1866,14 +1872,13 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Sets the edit box's text contents
-	-- @name  CodeEditor:SetText
-	-- @class function
-	-- @param text Text to be placed in the edit box
-	-- @usage  CodeEditor:SetText("Hello World")
-	------------------------------------
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the code editor's code content
+		@param text string, the lua code
+		@return nil
+	]======]
 	function SetText(self, str)
 		if type(str) ~= "string" then
 			error("Usage : CodeEditor:SetText(text) : 'text' - string expected.", 2)
@@ -1884,19 +1889,18 @@ class "CodeEditor"
 		MultiLineTextBox.SetText(self, FormatAll(str, self))
 	end
 
-	------------------------------------
-	--- Get the current text contained in the edit box.
-	-- @name  CodeEditor:GetText
-	-- @class function
-	-- @return the current text contained in the edit box
-	-- @usage  CodeEditor:GetText()
-	------------------------------------
+	doc [======[
+		@name GetText
+		@type method
+		@desc Get the content lua code
+		@return string the lua code
+	]======]
 	function GetText(self)
 		local str = RemoveColor(self.FullText)
         str = str:gsub("\124\124", "\124")
         return str
 	end
-
+	--[[
 	function ShowCodeHelper(self, list)
 		if type(list) == "table" and #list > 0 then
 			_CodeSmartHelper.__CodeEditor = self
@@ -1919,7 +1923,7 @@ class "CodeEditor"
 	function ResetEnviroment(self)
 		self.Enviroment = nil
 		wipe(self.__Definition)
-	end
+	end--]]
 
 	------------------------------------------------------
 	-- Property

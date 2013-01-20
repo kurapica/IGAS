@@ -2,17 +2,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- CheckBox is a widget type using for boolean selection with a label.
--- <br><br>inherit <a href="..\Base\Button.html">Button</a> For all methods, properties and scriptTypes
--- @name CheckBox
--- @class table
--- @field Checked whether the checkbox is checked
--- @field Text the text to be displayed for informations
--- @filed TrueText the text to be displayed when the checkbox is checked
--- @field FalseText the text to be displyed when the checkbox is un-checked
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 11
 
@@ -22,6 +11,12 @@ end
 
 class "CheckBox"
 	inherit "Button"
+
+	doc [======[
+		@name CheckBox
+		@type class
+		@desc CheckBox is a widget type using for boolean selection with a label
+	]======]
 
 	-- Script
     GameTooltip = IGAS.GameTooltip
@@ -93,94 +88,85 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the checkbox's checking state is changed
-	-- @name CheckBox:OnValueChanged
-	-- @class function
-	-- @param checked true if the checkbox is checked
-	-- @usage function CheckBox:OnValueChanged(checked)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnValueChanged
+		@type script
+		@desc Run when the checkbox's checking state is changed
+		@param checked boolean, true if the checkbox is checked
+	]======]
 	script "OnValueChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse is over an item, and the tooltip is setted.
-	-- @name List:OnGameTooltipShow
-	-- @class function
-	-- @param GameTooltip the GameTooltip object
-	-- @usage function List:OnGameTooltipShow(GameTooltip)<br>
-	--    -- do someting like<br>
-	--    GameTooltip:AddLine("Version 1")
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnGameTooltipShow
+		@type script
+		@desc Run when the mouse is over an item, and the tooltip is setted
+		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
+	]======]
 	script "OnGameTooltipShow"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the checkbox's checking state
-	-- @name CheckBox:SetChecked
-	-- @class function
-	-- @param checked true if set the checkbox to be checked
-	-- @usage CheckBox:SetChecked(true)
-	------------------------------------
+	doc [======[
+		@name SetChecked
+		@type method
+		@desc Sets the checkbox's checking state
+		@param checked boolean, true if set the checkbox to be checked
+		@return nil
+	]======]
 	function SetChecked(self, flag)
 		self:GetChild("ChkBtn").Checked = (flag and true) or false
 		UpdateText(self)
 	end
 
-	------------------------------------
-	--- Gets the checkbox's checking state
-	-- @name CheckBox:GetChecked
-	-- @class function
-	-- @return checked - true if set the checkbox to be checked
-	-- @usage CheckBox:GetChecked()
-	------------------------------------
+	doc [======[
+		@name GetChecked
+		@type method
+		@desc  Gets the checkbox's checking state
+		@return boolean true if set the checkbox to be checked
+	]======]
 	function GetChecked(self)
 		return self:GetChild("ChkBtn").Checked or false
 	end
 
-	------------------------------------
-	--- Sets the checkbox's label
-	-- @name CheckBox:SetText
-	-- @class function
-	-- @param text the text to be displyed
-	-- @usage CheckBox:SetText("Enable the addon")
-	------------------------------------
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the checkbox's label
+		@param text string, the text to be displyed
+		@return nil
+	]======]
 	function SetText(self, text)
 		self:GetChild("Text").Text = text
 	end
 
-	------------------------------------
-	--- Gets the checkbox's label
-	-- @name CheckBox:GetText
-	-- @class function
-	-- @return text - the text to be displyed
-	-- @usage CheckBox:GetText()
-	------------------------------------
+	doc [======[
+		@name GetText
+		@type method
+		@desc Gets the checkbox's label
+		@return string the text to be displyed
+	]======]
 	function GetText(self)
 		return self:GetChild("Text").Text
 	end
 
-	------------------------------------
-	--- Enable the checkbox, make it clickable
-	-- @name CheckBox:Enable
-	-- @class function
-	-- @usage CheckBox:Enable()
-	------------------------------------
+	doc [======[
+		@name Enable
+		@type method
+		@desc Enable the checkbox, make it clickable
+		@return nil
+	]======]
 	function Enable(self)
 		self.__UI:Enable()
 		self:GetChild("ChkBtn"):Enable()
 	end
 
-	------------------------------------
-	--- Disable the checkbox, make it un-clickable
-	-- @name CheckBox:Disable
-	-- @class function
-	-- @usage CheckBox:Disable()
-	------------------------------------
+	doc [======[
+		@name Disable
+		@type method
+		@desc Disable the checkbox, make it un-clickable
+		@return nil
+	]======]
 	function Disable(self)
 		self.__UI:Disable()
 		self:GetChild("ChkBtn"):Disable()

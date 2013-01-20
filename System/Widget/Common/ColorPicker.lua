@@ -2,21 +2,6 @@
 -- ChangreLog  :
 --				2011/03/13	Recode as class
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
---- ColorPicker is using to pick color for special using.
--- <br><br>inherit <a href="..\Base\ColorSelect.html">ColorSelect</a> For all methods, properties and scriptTypes
--- @name ColorPicker
--- @class table
--- @field CaptionAlign the caption's align:LEFT, RIGHT, CENTER
--- @field TitleBarColor the title bar's color, default a is 0, so make it can't be see
--- @field Caption The text to be displayed at the top of the ColorPicker.
--- @field Color The color that the colorPicker is picked or to be displayed
--- @field OkayButtonText the text that displayed on the okay button
--- @field CancelButtonText the text that displayed on the cancel button
--- @field Style the colorPicker's style: CLASSIC, LIGHT
--- @field HasOpacity Whether the opacity should be used
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.ColorPicker", version) then
@@ -25,6 +10,12 @@ end
 
 class "ColorPicker"
 	inherit "ColorSelect"
+
+	doc [======[
+		@name ColorPicker
+		@type class
+		@desc ColorPicker is using to pick color for special using
+	]======]
 
 	-- Define Style
     -- Style
@@ -105,26 +96,28 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the color is selected
-	-- @name ColorPicker:OnColorPicked
-	-- @class function
-	-- @usage function ColorPicker:OnColorPicked(r, g, b, a)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnColorPicked
+		@type method
+		@desc Run when the color is selected
+		@param r number, [0-1] the red parent
+		@param g number, [0-1] the green parent
+		@param b number, [0-1] the blue parent
+		@param a number, [0-1] the alpha parent
+		@return nil
+	]======]
 	script "OnColorPicked"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the ColorPicker's style
-	-- @name ColorPicker:SetStyle
-	-- @class function
-	-- @param style the style of the ColorPicker : CLASSIC, LIGHT
-	-- @usage ColorPicker:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the ColorPicker's style
+		@param style System.Widget.ColorPicker.ColorPickerStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -178,27 +171,26 @@ class "ColorPicker"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the ColorPicker's style
-	-- @name ColorPicker:GetStyle
-	-- @class function
-	-- @return the style of the ColorPicker : CLASSIC, LIGHT
-	-- @usage ColorPicker:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the ColorPicker's style
+		@return System.Widget.ColorPicker.ColorPickerStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	------------------------------------
-	--- Sets the ColorPicker's default color
-	-- @name ColorPicker:SetColor
-	-- @class function
-	-- @param r component of the color (0.0 - 1.0)
-	-- @param g component of the color (0.0 - 1.0)
-	-- @param b component of the color (0.0 - 1.0)
-	-- @param a Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage ColorPicker:SetColor(1, 0.7, 0, 0.6)
-	------------------------------------
+	doc [======[
+		@name SetColor
+		@type method
+		@desc Sets the ColorPicker's default color
+		@param r number, component of the color (0.0 - 1.0)
+		@param g number, component of the color (0.0 - 1.0)
+		@param b number, component of the color (0.0 - 1.0)
+		@param a number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetColor(self, r, g, b, a)
 		a = (a and type(a) == "number" and a >= 0 and a <= 1 and a) or 1
 
@@ -214,16 +206,15 @@ class "ColorPicker"
 		self.__DefaultValue.r, self.__DefaultValue.g, self.__DefaultValue.b, self.__DefaultValue.a = Format(r), Format(g), Format(b), Format(a)
 	end
 
-	------------------------------------
-	--- Gets the ColorPicker's default color
-	-- @name ColorPicker:GetColor
-	-- @class function
-	-- @return r component of the color (0.0 - 1.0)
-	-- @return g component of the color (0.0 - 1.0)
-	-- @return b component of the color (0.0 - 1.0)
-	-- @return a Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage ColorPicker:GetColor()
-	------------------------------------
+	doc [======[
+		@name GetColor
+		@type method
+		@desc Gets the ColorPicker's default color
+		@return r number, component of the color (0.0 - 1.0)
+		@return g number, component of the color (0.0 - 1.0)
+		@return b number, component of the color (0.0 - 1.0)
+		@return a number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetColor(self)
 		local r, g, b = self:GetColorRGB()
 

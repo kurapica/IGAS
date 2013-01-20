@@ -9,7 +9,7 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -30,6 +30,12 @@ class "UnitFrame"
 
 		if self.__OnUpdateTimer > self.Interval then
 			self.__OnUpdateTimer = 0
+			return self:UpdateElements()
+		end
+	end
+
+	local function UNIT_NAME_UPDATE(self, unit)
+		if self.Unit and UnitIsUnit(self.Unit, unit) then
 			return self:UpdateElements()
 		end
 	end
@@ -138,6 +144,14 @@ class "UnitFrame"
 			else
 				self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
 				self.PLAYER_FOCUS_CHANGED = nil
+			end
+
+			if unit and (unit:match("^party%d") or unit:match("^raid%d")) then
+				self:RegisterEvent("UNIT_NAME_UPDATE")
+				self.UNIT_NAME_UPDATE = UNIT_NAME_UPDATE
+			else
+				self:UnregisterEvent("UNIT_NAME_UPDATE")
+				self.UNIT_NAME_UPDATE = nil
 			end
 
 			--if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then

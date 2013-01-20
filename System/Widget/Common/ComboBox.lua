@@ -7,30 +7,11 @@
 --				12/10/2009	Remove List widget, it's public now.
 --				2010.01.10	Add icons and frames settings
 --				2010.01.13	Change the List's Parent to WorldFrame
---				2010/02/08  Make the list FrameStrata to TOOLTIP\
+--				2010/02/08  Make the list FrameStrata to TOOLTIP
 --				2010/02/23  Add some properties
---				2010/06/21   Use # to instead of getn, make proxy can be used as keys, items, icons or frames
+--				2010/06/21  Use # to instead of getn, make proxy can be used as keys, items, icons or frames
 --				2011/03/13	Recode as class
 --              2011/11/02  remove _List:Refresh, so it will refresh when onshow
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
---- ComboBox is using for choosing one item from a list
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name ComboBox
--- @class table
--- @field AutoFocus true if the ComboBox automatically acquires keyboard input focus
--- @field DisplayItemCount the count of items to be displayed in the dropdown list of the comboBox
--- @field Value the choosed item's value
--- @field Text the text displayed on the combobox
--- @field Editable true if the combobox's text can be edited, false if the combobox is only selectable
--- @field HideDropDownButton true to hide the drop down button, make it just look like a textbox
--- @field Keys a table that contains keys of the items
--- @field Items a table that contains Text of the items
--- @field Icons a table that contains icons of the items
--- @field Frames a table that contains frames of the items
--- @field ItemCount the item's count
--- @field Style the combobox's style: CLASSIC, LIGHT
-----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
 local version = 14
@@ -40,6 +21,12 @@ end
 
 class "ComboBox"
 	inherit "Frame"
+
+	doc [======[
+		@name ComboBox
+		@type class
+		@desc ComboBox is using for choosing one item from a list
+	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -272,88 +259,67 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the choosed item is changed
-	-- @name ComboBox:OnValueChanged
-	-- @class function
-	-- @param value the choosed item's value
-	-- @usage function ComboBox:OnValueChanged(value)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnValueChanged
+		@type script
+		@desc Run when the choosed item is changed
+		@param value any, the choosed item's value
+	]======]
 	script "OnValueChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the comboBox's text is changed
-	-- @name EditBox:OnTextChanged
-	-- @class function
-	-- @param text the text displayed on the combobox
-	-- @usage function EditBox:OnTextChanged(text)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTextChanged
+		@type script
+		@desc Run when the comboBox's text is changed
+		@param text the text displayed on the combobox
+	]======]
 	script "OnTextChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the comboBox becomes focused for keyboard input
-	-- @name ComboBox:OnEditFocusGained
-	-- @class function
-	-- @usage function ComboBox:OnEditFocusGained()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEditFocusGained
+		@type script
+		@desc Run when the comboBox becomes focused for keyboard input
+	]======]
 	script "OnEditFocusGained"
 
-	------------------------------------
-	--- ScriptType, Run when the comboBox loses keyboard input focus
-	-- @name ComboBox:OnEditFocusLost
-	-- @class function
-	-- @usage function ComboBox:OnEditFocusLost()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEditFocusLost
+		@type script
+		@desc Run when the comboBox loses keyboard input focus
+	]======]
 	script "OnEditFocusLost"
 
-	------------------------------------
-	--- ScriptType, Run when the Enter (or Return) key is pressed while the comboBox has keyboard focus
-	-- @name ComboBox:OnEnterPressed
-	-- @class function
-	-- @usage function ComboBox:OnEnterPressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEnterPressed
+		@type script
+		@desc Run when the Enter (or Return) key is pressed while the comboBox has keyboard focus
+	]======]
 	script "OnEnterPressed"
 
-	------------------------------------
-	--- ScriptType, Run when the Escape key is pressed while the comboBox has keyboard focus
-	-- @name ComboBox:OnEscapePressed
-	-- @class function
-	-- @usage function ComboBox:OnEscapePressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEscapePressed
+		@type script
+		@desc Run when the Escape key is pressed while the comboBox has keyboard focus
+	]======]
 	script "OnEscapePressed"
 
-	------------------------------------
-	--- ScriptType, Run when the Tab key is pressed while the comboBox has keyboard focus
-	-- @name ComboBox:OnTabPressed
-	-- @class function
-	-- @usage function ComboBox:OnTabPressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTabPressed
+		@type script
+		@desc Run when the Tab key is pressed while the comboBox has keyboard focus
+	]======]
 	script "OnTabPressed"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the ComboBox's style
-	-- @name ComboBox:SetStyle
-	-- @class function
-	-- @param style the style of the ComboBox : CLASSIC, LIGHT
-	-- @usage ComboBox:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the ComboBox's style
+		@param style System.Widget.ComboBoxStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -453,32 +419,22 @@ class "ComboBox"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the ComboBox's style
-	-- @name ComboBox:GetStyle
-	-- @class function
-	-- @return the style of the ComboBox : CLASSIC, LIGHT
-	-- @usage ComboBox:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the ComboBox's style
+		@return System.Widget.ComboBoxStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	-- Dispose, release resource
-	function Dispose(self)
-		if _List.__ComboBox == self then
-			_List.Visible = false
-			_List:ClearAllPoints()
-			_List.__ComboBox = nil
-		end
-	end
-
-	------------------------------------
-	--- Clear item list
-	-- @name ComboBox:Clear
-	-- @class function
-	-- @usage ComboBox:Clear()
-	------------------------------------
+	doc [======[
+		@name Clear
+		@type method
+		@desc Clear item list
+		@return nil
+	]======]
 	function Clear(self)
 		for i = #self.Keys, 1, -1 do
 			self.Keys[i] = nil
@@ -496,16 +452,16 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Add an item to the comboBox
-	-- @name ComboBox:AddItem
-	-- @class function
-	-- @param key the key of the item
-	-- @param text the text of the item, to be displayed for informations
-	-- @param icon Optional,the icon of the item, will be shown at the left of the text if setted
-	-- @param frame Optional,the frame of the item, for some special need
-	-- @usage ComboBox:AddItem(true, "True")
-	------------------------------------
+	doc [======[
+		@name AddItem
+		@type method
+		@desc Add an item to the comboBox
+		@format key, text[, icon]
+		@param key any, the key of the item
+		@param text string, the text to be displayed for the item
+		@param icon string, the item icon's texture path
+		@return nil
+	]======]
 	function AddItem(self, key, text, icon, frame)
 		if key ~= nil then
 			self.Keys[#self.Keys + 1] = key
@@ -523,16 +479,16 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Modify or add an item in the item list
-	-- @name ComboBox:SetItem
-	-- @class function
-	-- @param key the key of the item
-	-- @param text the text of the item, to be displayed for informations
-	-- @param icon Optional,the icon of the item, will be shown at the left of the text if setted
-	-- @param frame Optional,the frame of the item, for some special need
-	-- @usage ComboBox:SetItem(true, "True")
-	------------------------------------
+	doc [======[
+		@name SetItem
+		@type method
+		@desc Modify or add an item in the item list
+		@format key, text[, icon]
+		@param key any, the key of the item
+		@param text string, the text to be displayed for the item
+		@param icon string, the item icon's texture path
+		@return nil
+	]======]
 	function SetItem(self, key, text, icon, frame)
 		local idx = 1
 		if key == nil then
@@ -555,17 +511,15 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Get an item's info from the item list by key
-	-- @name ComboBox:GetItem
-	-- @class function
-	-- @param key the key of the item
-	-- @return key - the key of the item
-	-- @return text - the text of the item, to be displayed for informations
-	-- @return icon - the icon of the item, will be shown at the left of the text if setted
-	-- @return frame - the frame of the item, for some special need
-	-- @usage ComboBox:GetItem(true)
-	------------------------------------
+	doc [======[
+		@name GetItem
+		@type method
+		@desc Get an item's info from the item list by key
+		@param key any, the key of the item
+		@return key any, the key of the item
+		@return text string, the text of the item, to be displayed for informations
+		@return icon string, the icon of the item, will be shown at the left of the text if setted
+	]======]
 	function GetItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -579,30 +533,28 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Get an item's info from the item list by index
-	-- @name ComboBox:GetItemByIndex
-	-- @class function
-	-- @param index the index of the item
-	-- @return key - the key of the item
-	-- @return text - the text of the item, to be displayed for informations
-	-- @return icon - the icon of the item, will be shown at the left of the text if setted
-	-- @return frame - the frame of the item, for some special need
-	-- @usage ComboBox:GetItemByIndex(1)
-	------------------------------------
+	doc [======[
+		@name GetItemByIndex
+		@type method
+		@desc Get an item's info from the item list by index
+		@param index number, the index of the item
+		@return key any, the key of the item
+		@return text string, the text of the item, to be displayed for informations
+		@return icon string, the icon of the item, will be shown at the left of the text if setted
+	]======]
 	function GetItemByIndex(self, idx)
 		if self.Keys[idx] then
 			return self.Keys[idx], self.Items[idx], self.Icons[idx], self.Frames[idx]
 		end
 	end
 
-	------------------------------------
-	--- Remove an item from the item list by key
-	-- @name ComboBox:RemoveItem
-	-- @class function
-	-- @param key the key of the item
-	-- @usage ComboBox:RemoveItem(true)
-	------------------------------------
+	doc [======[
+		@name RemoveItem
+		@type method
+		@desc Remove an item from the item list by key
+		@param key any, the key of the item
+		@return nil
+	]======]
 	function RemoveItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -628,13 +580,14 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Build item list from a table
-	-- @name ComboBox:SetList
-	-- @class function
-	-- @param list a table contains key-value pairs
-	-- @usage ComboBox:SetList{[true] = "True", [false] = "False"}
-	------------------------------------
+	doc [======[
+		@name SetList
+		@type method
+		@desc Build item list from a table
+		@param list table, a table contains key-value pairs
+		@return nil
+		@usage object::SetList{[true] = "True", [false] = "False"}
+	]======]
 	function SetList(self, list)
 		self:Clear()
 		if type(list) == "table" then
@@ -646,22 +599,23 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Gets the display item count of the comboBox
-	-- @name ComboBox:GetDisplayItemCount
-	-- @class function
-	-- @usage ComboBox:GetDisplayItemCount()
-	------------------------------------
+	doc [======[
+		@name GetDisplayItemCount
+		@type method
+		@desc Gets the display item count of the comboBox
+		@return number the displayed item count
+	]======]
 	function GetDisplayItemCount(self)
 		return self.__DisplayItemCount
 	end
 
-	------------------------------------
-	--- Sets the display item count of the comboBox
-	-- @name ComboBox:SetDisplayItemCount
-	-- @class function
-	-- @usage ComboBox:SetDisplayItemCount(6)
-	------------------------------------
+	doc [======[
+		@name SetDisplayItemCount
+		@type method
+		@desc Sets the display item count of the comboBox
+		@param count number, the displayed item count
+		@return nil
+	]======]
 	function SetDisplayItemCount(self, cnt)
 		self.__DisplayItemCount = cnt
 		if _List.Visible and _List.__ComboBox == self then
@@ -669,23 +623,23 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Gets the choosed item's value of the comboBox
-	-- @name ComboBox:GetValue
-	-- @class function
-	-- @usage ComboBox:GetValue()
-	------------------------------------
+	doc [======[
+		@name GetValue
+		@type method
+		@desc Gets the choosed item's value of the comboBox=
+		@return any the choosed item's key
+	]======]
 	function GetValue(self)
 		return self.__Value
 	end
 
-	------------------------------------
-	--- Sets a value to the comboBox, make it select the match item
-	-- @name ComboBox:SetValue
-	-- @class function
-	-- @param value the item's value that need to be choosed
-	-- @usage ComboBox:SetValue(true)
-	------------------------------------
+	doc [======[
+		@name SetValue
+		@type method
+		@desc Sets a value to the comboBox, make it select the match item
+		@param value the item's key that need to be choosed
+		@return nil
+	]======]
 	function SetValue(self, value)
 		local text, icon
 		if self.__Value == value then
@@ -731,23 +685,23 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Gets the text of the comboBox
-	-- @name ComboBox:GetText
-	-- @class function
-	-- @usage ComboBox:GetText()
-	------------------------------------
+	doc [======[
+		@name GetText
+		@type method
+		@desc Gets the text of the comboBox
+		@return string the combobox's displayed text
+	]======]
 	function GetText(self)
 		return self:GetChild("Text"):GetText()
 	end
 
-	------------------------------------
-	--- Sets the text of the comboBox, if a item is match for that text, would be selected
-	-- @name ComboBox:SetText
-	-- @class function
-	-- @param text the text to be displayed
-	-- @usage ComboBox:SetText("True")
-	------------------------------------
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the text of the comboBox, if a item is match for that text, would be selected
+		@param text string, the text to be displayed
+		@return nil
+	]======]
 	function SetText(self, text)
 		local value, icon
 		if text and type(text) == "string" and self:GetChild("Text").Text ~= text then
@@ -791,23 +745,23 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Return whether the comboBox is editable
-	-- @name ComboBox:GetEditable
-	-- @class function
-	-- @usage ComboBox:GetEditable()
-	------------------------------------
+	doc [======[
+		@name GetEditable
+		@type method
+		@desc Whether the comboBox is editable
+		@return boolean true if the combobox is ediatable
+	]======]
 	function GetEditable(self)
 		return self:GetChild("Text").MouseEnabled
 	end
 
-	------------------------------------
-	--- Set the comboBox's editable
-	-- @name ComboBox:SetEditable
-	-- @class function
-	-- @param enable true if the comboBox is ediatable
-	-- @usage ComboBox:SetEditable(false)
-	------------------------------------
+	doc [======[
+		@name SetEditable
+		@type method
+		@desc Set the comboBox's editable
+		@param editable boolean, true if the combobox should be ediatable
+		@return nil
+	]======]
 	function SetEditable(self, flag)
 		self:GetChild("Text").MouseEnabled = flag
 		if not flag then
@@ -818,23 +772,23 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Return the text object of the comboBox, using for special needs
-	-- @name ComboBox:GetTextObject
-	-- @class function
-	-- @usage ComboBox:GetTextObject()
-	------------------------------------
+	doc [======[
+		@name GetTextObject
+		@type method
+		@desc Return the text object of the comboBox, using for special needs
+		@return System.Widget.EditBox
+	]======]
 	function GetTextObject(self)
 		return self:GetChild("Text")
 	end
 
-	------------------------------------
-	--- Set whether or not the comboBox will attempt to get input focus when it gets shown
-	-- @name ComboBox:SetAutoFocus
-	-- @class function
-	-- @param enable True to enable the comboBox to automatically acquire keyboard input focus; false to disable
-	-- @usage ComboBox:SetAutoFocus()
-	------------------------------------
+	doc [======[
+		@name SetAutoFocus
+		@type method
+		@desc Set whether or not the comboBox will attempt to get input focus when it gets shown
+		@param enable boolean, true to enable the comboBox to automatically acquire keyboard input focus; false to disable
+		@return nil
+	]======]
 	function SetAutoFocus(self, flag)
 		if flag and self:GetChild("Text").MouseEnabled then
 			self:GetChild("Text").AutoFocus = true
@@ -843,44 +797,42 @@ class "ComboBox"
 		end
 	end
 
-	------------------------------------
-	--- Determine if the ComboBox has autofocus enabled
-	-- @name ComboBox:IsAutoFocus
-	-- @class function
-	-- @return true if the ComboBox has autofocus enabled
-	-- @usage ComboBox:IsAutoFocus()
-	------------------------------------
+	doc [======[
+		@name function_name
+		@type method
+		@desc Whether if the ComboBox has autofocus enabled
+		@return boolean true if the combobox is auto focus
+	]======]
 	function IsAutoFocus(self)
 		return self:GetChild("Text").AutoFocus
 	end
 
-	------------------------------------
-	--- Releases keyboard input focus from the ComboBox
-	-- @name ComboBox:ClearFocus
-	-- @class function
-	-- @usage ComboBox:ClearFocus()
-	------------------------------------
+	doc [======[
+		@name ClearFocus
+		@type method
+		@desc Releases keyboard input focus from the ComboBox
+		@return nil
+	]======]
 	function ClearFocus(self)
 		self:GetChild("Text"):ClearFocus()
 	end
 
-	------------------------------------
-	--- Returns whether the ComboBox is currently focused for keyboard input
-	-- @name ComboBox:HasFocus
-	-- @class function
-	-- @return True if the ComboBox is currently focused for keyboard input
-	-- @usage ComboBox:HasFocus()
-	------------------------------------
+	doc [======[
+		@name function_name
+		@type method
+		@desc Returns whether the ComboBox is currently focused for keyboard input
+		@return boolean true if the combobox is focused
+	]======]
 	function HasFocus(self)
 		return self:GetChild("Text"):HasFocus()
 	end
 
-	------------------------------------
-	--- Move input focus (the cursor) to this ComboBox
-	-- @name ComboBox:SetFocus
-	-- @class function
-	-- @usage ComboBox:SetFocus()
-	------------------------------------
+	doc [======[
+		@name SetFocus
+		@type method
+		@desc Move input focus (the cursor) to this ComboBox
+		@return nil
+	]======]
 	function SetFocus(self)
 		if self:GetChild("Text").MouseEnabled then
 			self:GetChild("Text"):SetFocus()
@@ -1071,6 +1023,17 @@ class "ComboBox"
 
 		Type = JustifyHType,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		if _List.__ComboBox == self then
+			_List.Visible = false
+			_List:ClearAllPoints()
+			_List.__ComboBox = nil
+		end
+	end
 
 	------------------------------------------------------
 	-- Constructor
