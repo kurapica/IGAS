@@ -3,13 +3,6 @@
 --				2011/03/13	Recode as class
 --              2012/04/22  Fix some bug
 
---------------------------
---- DataGrid
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name GroupBox
--- @class table
---------------------------
-
 -- Check Version
 local version = 7
 
@@ -19,6 +12,12 @@ end
 
 class "DataGrid"
 	inherit "Frame"
+
+	doc [======[
+		@name DataGrid
+		@type class
+		@desc DataGrid is used to display data settings. Beta version
+	]======]
 
 	_Height = 26
 
@@ -120,6 +119,12 @@ class "DataGrid"
 	------------------------------------
 	class "Column"
 		inherit "Button"
+
+		doc [======[
+			@name Column
+			@type class
+			@desc Column object using in the DataGrid
+		]======]
 
 		-- Script
 		--[[
@@ -362,6 +367,13 @@ class "DataGrid"
 	class "Columns"
 		inherit "VirtualUIObject"
 
+		doc [======[
+			@name Columns
+			@type class
+			@desc Column accessor
+			@usage object.Columns(startColumn, endColumn).CellType = "number"
+		]======]
+
 		------------------------------------------------------
 		-- Script
 		------------------------------------------------------
@@ -539,6 +551,12 @@ class "DataGrid"
 	------------------------------------
 	class "Cell"
 		inherit "VirtualUIObject"
+
+		doc [======[
+			@name Cell
+			@type class
+			@desc Cell object in the DataGrid
+		]======]
 
 		-- Script
 		local function Refresh(self)
@@ -762,6 +780,14 @@ class "DataGrid"
 	------------------------------------
 	class "Cells"
 		inherit "VirtualUIObject"
+
+		doc [======[
+			@name Cells
+			@type class
+			@desc Cells accessor
+			@usage object.Cells(startRow, startColumn, endRow, endColumn).CellType = "number"
+			<br>object.Cells(row, column).CellType = "number"
+		]======]
 
 		------------------------------------------------------
 		-- Script
@@ -1189,16 +1215,64 @@ class "DataGrid"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnCellValueChanged
+		@type script
+		@desc Fired when a cell's value is changed
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+		@param value any
+	]======]
 	script "OnCellValueChanged"
+
+	doc [======[
+		@name OnCellTextChanged
+		@type script
+		@desc Fired when a cells's text is changed
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+		@param text string
+	]======]
 	script "OnCellTextChanged"
+
+	doc [======[
+		@name OnAdvance
+		@type script
+		@desc Fired when click the cell's dropdownbutton and this cell's celltype is 'advance'
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+	]======]
 	script "OnAdvance"
+
+	doc [======[
+		@name OnCellEnter
+		@type script
+		@desc Fired when cursor move into the cell
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+	]======]
 	script "OnCellEnter"
+
+	doc [======[
+		@name OnCellLeave
+		@type script
+		@desc Fired when the cursor move out the cell
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+	]======]
 	script "OnCellLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	-- SetColumnLabel
+	doc [======[
+		@name SetColumnLabel
+		@type method
+		@desc Set a column's label
+		@param index number, the column's index
+		@param text string, the column's label
+		@return nil
+	]======]
 	function SetColumnLabel(self, index, label)
 		if not index or type(index) ~= "number" then
 			error("the column index is not set.", 2)
@@ -1211,7 +1285,13 @@ class "DataGrid"
 		self:GetChild("Column"..index).Text = tostring(label or "")
 	end
 
-	-- GetColumnLabel
+	doc [======[
+		@name GetColumnLabel
+		@type method
+		@desc Return the column's label
+		@param index number, the column's index
+		@return string
+	]======]
 	function GetColumnLabel(self, index)
 		if not index or type(index) ~= "number" then
 			error("the column index is not set.", 2)
@@ -1224,7 +1304,13 @@ class "DataGrid"
 		return self:GetChild("Column"..index).Text
 	end
 
-	-- SetColumnCount
+	doc [======[
+		@name SetColumnCount
+		@type method
+		@desc Set the column's count
+		@param count number
+		@return nil
+	]======]
 	function SetColumnCount(self, count)
 		local btn
 		local splitWidth
@@ -1307,12 +1393,24 @@ class "DataGrid"
 		Refresh(self)
 	end
 
-	-- GetColumnCount
+	doc [======[
+		@name GetColumnCount
+		@type method
+		@desc Return the column's count
+		@return number
+	]======]
 	function GetColumnCount(self)
 		return (self.__ColumnWidth and getn(self.__ColumnWidth)) or 0
 	end
 
-	-- SetColumnWidth
+	doc [======[
+		@name SetColumnWidth
+		@type method
+		@desc Set one column's width
+		@param index number, the column's index
+		@param percent number, 1-100, the width percent
+		@return nil
+	]======]
 	function SetColumnWidth(self, index, percent)
 		self.__ColumnWidth = self.__ColumnWidth or {}
 
@@ -1341,39 +1439,56 @@ class "DataGrid"
 		RefreshColumn(self)
 	end
 
-	-- GetColumnWidth
+	doc [======[
+		@name GetColumnWidth
+		@type method
+		@desc Return the column's width percent
+		@param index number the column's index
+		@return number the width percent
+	]======]
 	function GetColumnWidth(self, index)
 		self.__ColumnWidth = self.__ColumnWidth or {}
 
 		return self.__ColumnWidth[index]
 	end
 
-	-- SetCellType
+	doc [======[
+		@name SetCellType
+		@type method
+		@desc description
+		@format row, column, cellType[, keyList, itemList]
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+		@param cellType System.Widget.DataGrid.DataGridCellType
+		@param keyList table, key values
+		@param itemList table, label string for each value
+		@return nil
+	]======]
 	function SetCellType(self, row, column, cellType, keyList, itemList)
-		-- Check Style
-		if not cellType or type(cellType) ~= "string" then
-			return
-		end
+		local prefix = "object:SetCellType(row, column, cellType[, keyList, itemList]) - "
 
-		if (not DataGridCellType[cellType]) then
-			return
-		end
-
-		if not row or not column or type(row)~= "number" or type(column) ~= "number" then
-			error("No such cell.", 2)
-		end
+		row = Reflector.Validate(Number, row, "row", prefix)
+		column = Reflector.Validate(Number, column, "column", prefix)
+		cellType = Reflector.Validate(DataGridCellType, cellType, "cellType", prefix)
 
 		local cell = self:GetChild("Cell_"..row.."_"..column)
 
 		if not cell then
-			error("No such cell.", 2)
+			error(prefix .. "No such cell.", 2)
 		end
 
 		cell.CellType = cellType
 		cell.Keys, cell.Items = ConvertLst(keyList, itemList)
 	end
 
-	-- GetCellType
+	doc [======[
+		@name GetCellType
+		@type method
+		@desc Return the cell's celltype
+		@param row number, the cell's row index
+		@param column number, the cell's column index
+		@return System.Widget.DataGrid.DataGridCellType
+	]======]
 	function GetCellType(self, row, column)
 		if not row or not column or type(row)~= "number" or type(column) ~= "number" then
 			error("No such cell.", 2)
@@ -1388,28 +1503,40 @@ class "DataGrid"
 		return cell.CellType
 	end
 
-	-- SetColumnCellType
+	doc [======[
+		@name SetColumnCellType
+		@type method
+		@desc Set the column's default cellType
+		@format column, cellType[, keyList, itemList]
+		@param column number, the column index
+		@param cellType System.Widget.DataGrid.DataGridCellType
+		@param keyList table, key values
+		@param itemList table, label string for each value
+		@return nil
+	]======]
 	function SetColumnCellType(self, index, cellType, keyList, itemList)
-		-- Check Style
-		if not cellType or type(cellType) ~= "string" then
-			return
-		end
+		local prefix = "object:SetColumnCellType(column, cellType[, keyList, itemList]) - "
 
-		if (not DataGridCellType[cellType]) then
-			return
-		end
+		index = Reflector.Validate(Number, index, "column", prefix)
+		cellType = Reflector.Validate(DataGridCellType, cellType, "cellType", prefix)
 
 		local column = self:GetChild("Column"..index)
 
 		if not column then
-			error("No such column.", 2)
+			error(prefix .. "No such column.", 2)
 		end
 
 		column.CellType = cellType
 		column.Keys, column.Items = ConvertLst(keyList, itemList)
 	end
 
-	-- GetColumnCellType
+	doc [======[
+		@name GetColumnCellType
+		@type method
+		@desc Return the colunn's defalut celltype
+		@param column number, the column index
+		@return System.Widget.DataGrid.DataGridCellType
+	]======]
 	function GetColumnCellType(self, index)
 		local column = self:GetChild("Column"..index)
 
@@ -1420,7 +1547,13 @@ class "DataGrid"
 		return column.CellType
 	end
 
-	-- SetRowCount
+	doc [======[
+		@name SetRowCount
+		@type method
+		@desc Set the row count
+		@param count number, the row count
+		@return nil
+	]======]
 	function SetRowCount(self, count)
 		if not count or type(count) ~= "number" then
 			error("the column count must be a number.", 2)
@@ -1435,27 +1568,48 @@ class "DataGrid"
 		Refresh(self)
 	end
 
-	-- GetRowCount
+	doc [======[
+		@name GetRowCount
+		@type method
+		@desc Return the row count
+		@return number
+	]======]
 	function GetRowCount(self)
 		return self.__RowCount or 0
 	end
 
-	-- SetCellValue
+	doc [======[
+		@name SetCellValue
+		@type method
+		@desc Set the cell's value
+		@param row number, the row index
+		@param column number, the column index
+		@param value any
+		@return nil
+	]======]
 	function SetCellValue(self, row, column, value)
-		if not row or not column or type(row)~= "number" or type(column) ~= "number" then
-			error("No such cell.", 2)
-		end
+		local prefix = "object:SetCellValue(row, column, value) - "
+
+		row = Reflector.Validate(Number, row, "row", prefix)
+		column = Reflector.Validate(Number, column, "column", prefix)
 
 		local cell = self:GetChild("Cell_"..row.."_"..column)
 
 		if not cell then
-			error("No such cell.", 2)
+			error(prefix .. "No such cell.", 2)
 		end
 
 		cell.Value = value
 	end
 
-	-- GetCellValue
+	doc [======[
+		@name GetCellValue
+		@type method
+		@desc Return the cell's value
+		@param row number, the row index
+		@param column number, the column index
+		@return value any
+	]======]
 	function GetCellValue(self, row, column)
 		if not row or not column or type(row)~= "number" or type(column) ~= "number" then
 			error("No such cell.", 2)
@@ -1470,7 +1624,13 @@ class "DataGrid"
 		return cell.Value
 	end
 
-	-- GetColumn
+	doc [======[
+		@name GetColumn
+		@type method
+		@desc Return the column object
+		@param column number, the column index
+		@return System.Widget.DataGrid.Column
+	]======]
 	function GetColumn(self, index)
 		local column = self:GetChild("Column"..index)
 
@@ -1481,7 +1641,14 @@ class "DataGrid"
 		return column
 	end
 
-	-- GetCell
+	doc [======[
+		@name GetCell
+		@type method
+		@desc Get the cell object
+		@param row number, the row index
+		@param column number, the column index
+		@return System.Widget.DataGrid.Cell
+	]======]
 	function GetCell(self, row, column)
 		if not row or not column or type(row)~= "number" or type(column) ~= "number" then
 			error("No such cell.", 2)
@@ -1496,7 +1663,13 @@ class "DataGrid"
 		return cell
 	end
 
-	-- SetDataSource
+	doc [======[
+		@name SetDataSource
+		@type method
+		@desc Set the data source
+		@param datasource table, datatable like {{filed1=value1, field2=value2}, {...}}
+		@return nil
+	]======]
 	function SetDataSource(self, ds)
 		if ds and type(ds) ~= "table" then
 			error("The data source must be a table", 2)
@@ -1527,7 +1700,13 @@ class "DataGrid"
 		end
 	end
 
-	-- SaveDataSource
+	doc [======[
+		@name SaveDataSource
+		@type method
+		@desc Save data to datasource
+		@param datasource table
+		@return nil
+	]======]
 	function SaveDataSource(self, ds)
 		if ds and type(ds) ~= "table" then
 			error("The data source must be a table", 2)
