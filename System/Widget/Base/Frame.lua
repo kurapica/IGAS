@@ -884,7 +884,11 @@ class "Frame"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- KeyboardEnabled
+	doc [======[
+		@name KeyboardEnabled
+		@type property
+		@desc whether keyboard interactivity is enabled for the frame
+	]======]
 	property "KeyboardEnabled" {
 		Get = function(self)
 			return self:IsKeyboardEnabled()
@@ -894,7 +898,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- MouseEnabled
+
+	doc [======[
+		@name MouseEnabled
+		@type property
+		@desc whether mouse interactivity is enabled for the frame
+	]======]
 	property "MouseEnabled" {
 		Get = function(self)
 			return self:IsMouseEnabled()
@@ -904,7 +913,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- Movable
+
+	doc [======[
+		@name Movable
+		@type property
+		@desc whether the frame can be moved by the user
+	]======]
 	property "Movable" {
 		Get = function(self)
 			return self:IsMovable()
@@ -914,7 +928,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- Resizable
+
+	doc [======[
+		@name Resizable
+		@type property
+		@desc whether the frame can be resized by the user
+	]======]
 	property "Resizable" {
 		Get = function(self)
 			return self:IsResizable()
@@ -924,7 +943,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- MouseWheelEnabled
+
+	doc [======[
+		@name MouseWheelEnabled
+		@type property
+		@desc whether mouse wheel interactivity is enabled for the frame
+	]======]
 	property "MouseWheelEnabled" {
 		Get = function(self)
 			return (self:IsMouseWheelEnabled() and true) or false
@@ -934,7 +958,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- Backdrop
+
+	doc [======[
+		@name Backdrop
+		@type property
+		@desc the backdrop graphic for the frame
+	]======]
 	property "Backdrop" {
 		Get = function(self)
 			return self:GetBackdrop()
@@ -944,7 +973,12 @@ class "Frame"
 		end,
 		Type = BackdropType,
 	}
-	-- BackdropBorderColor
+
+	doc [======[
+		@name BackdropBorderColor
+		@type property
+		@desc the shading color for the frame's border graphic
+	]======]
 	property "BackdropBorderColor" {
 		Get = function(self)
 			return ColorType(self:GetBackdropBorderColor())
@@ -954,7 +988,12 @@ class "Frame"
 		end,
 		Type = ColorType,
 	}
-	-- BackdropColor
+
+	doc [======[
+		@name BackdropColor
+		@type property
+		@desc the shading color for the frame's background graphic
+	]======]
 	property "BackdropColor" {
 		Get = function(self)
 			return ColorType(self:GetBackdropColor())
@@ -964,7 +1003,12 @@ class "Frame"
 		end,
 		Type = ColorType,
 	}
-	-- ClampedToScreen
+
+	doc [======[
+		@name ClampedToScreen
+		@type property
+		@desc whether the frame's boundaries are limited to those of the screen
+	]======]
 	property "ClampedToScreen" {
 		Get = function(self)
 			return (self:IsClampedToScreen() and true) or false
@@ -974,7 +1018,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- ClampRectInsets
+
+	doc [======[
+		@name ClampRectInsets
+		@type property
+		@desc offsets from the frame's edges used when limiting user movement or resizing of the frame
+	]======]
 	property "ClampRectInsets" {
 		Get = function(self)
 			return Inset(self:GetClampRectInsets())
@@ -984,7 +1033,12 @@ class "Frame"
 		end,
 		Type = Inset,
 	}
-	-- FrameLevel
+
+	doc [======[
+		@name FrameLevel
+		@type property
+		@desc the level at which the frame is layered relative to others in its strata
+	]======]
 	property "FrameLevel" {
 		Get = function(self)
 			return self:GetFrameLevel()
@@ -994,7 +1048,12 @@ class "Frame"
 		end,
 		Type = Number,
 	}
-	-- FrameStrata
+
+	doc [======[
+		@name FrameStrata
+		@type property
+		@desc the general layering strata of the frame
+	]======]
 	property "FrameStrata" {
 		Get = function(self)
 			return self:GetFrameStrata()
@@ -1004,7 +1063,12 @@ class "Frame"
 		end,
 		Type = FrameStrata,
 	}
-	-- HitRectInsets
+
+	doc [======[
+		@name HitRectInsets
+		@type property
+		@desc the insets from the frame's edges which determine its mouse-interactable area
+	]======]
 	property "HitRectInsets" {
 		Get = function(self)
 			return Inset(self:GetHitRectInsets())
@@ -1014,7 +1078,12 @@ class "Frame"
 		end,
 		Type = Inset,
 	}
-	-- ID
+
+	doc [======[
+		@name ID
+		@type property
+		@desc a numeric identifier for the frame
+	]======]
 	property "ID" {
 		Get = function(self)
 			return self:GetID()
@@ -1024,7 +1093,12 @@ class "Frame"
 		end,
 		Type = Number,
 	}
-	-- MaxResize
+
+	doc [======[
+		@name MaxResize
+		@type property
+		@desc the maximum size of the frame for user resizing
+	]======]
 	property "MaxResize" {
 		Get = function(self)
 			return Size(self:GetMaxResize())
@@ -1034,7 +1108,12 @@ class "Frame"
 		end,
 		Type = Size,
 	}
-	-- MinResize
+
+	doc [======[
+		@name MinResize
+		@type property
+		@desc the minimum size of the frame for user resizing
+	]======]
 	property "MinResize" {
 		Get = function(self)
 			return Size(self:GetMinResize())
@@ -1044,7 +1123,12 @@ class "Frame"
 		end,
 		Type = Size,
 	}
-	-- Scale
+
+	doc [======[
+		@name Scale
+		@type property
+		@desc the frame's scale factor
+	]======]
 	property "Scale" {
 		Get = function(self)
 			return self:GetScale()
@@ -1054,7 +1138,12 @@ class "Frame"
 		end,
 		Type = Number,
 	}
-	-- Toplevel
+
+	doc [======[
+		@name Toplevel
+		@type property
+		@desc whether the frame should automatically come to the front when clicked
+	]======]
 	property "Toplevel" {
 		Get = function(self)
 			return (self:IsToplevel() and true) or false
@@ -1064,7 +1153,12 @@ class "Frame"
 		end,
 		Type = Boolean,
 	}
-	-- Depth
+
+	doc [======[
+		@name Depth
+		@type property
+		@desc the 3D depth of the frame (for stereoscopic 3D setups)
+	]======]
 	property "Depth" {
 		Get = function(self)
 			return self:GetDepth()
@@ -1074,7 +1168,12 @@ class "Frame"
 		end,
 		Type = Number,
 	}
-	-- DepthIgnored
+
+	doc [======[
+		@name DepthIgnored
+		@type property
+		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
+	]======]
 	property "DepthIgnored" {
 		Get = function(self)
 			return (self:IsIgnoringDepth() and true) or false

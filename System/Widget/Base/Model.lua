@@ -253,7 +253,11 @@ class "Model"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- FogColor
+	doc [======[
+		@name FogColor
+		@type property
+		@desc the model's current fog color
+	]======]
 	property "FogColor" {
 		Get = function(self)
 			return ColorType(self:GetFogColor())
@@ -263,7 +267,12 @@ class "Model"
 		end,
 		Type = ColorType,
 	}
-	-- FogFar
+
+	doc [======[
+		@name FogFar
+		@type property
+		@desc the far clipping distance for the model's fog
+	]======]
 	property "FogFar" {
 		Get = function(self)
 			return self:GetFogFar()
@@ -273,7 +282,12 @@ class "Model"
 		end,
 		Type = Number,
 	}
-	-- FogNear
+
+	doc [======[
+		@name FogNear
+		@type property
+		@desc the near clipping distance for the model's fog
+	]======]
 	property "FogNear" {
 		Get = function(self)
 			return self:GetFogNear()
@@ -283,7 +297,12 @@ class "Model"
 		end,
 		Type = Number,
 	}
-	-- ModelScale
+
+	doc [======[
+		@name ModelScale
+		@type property
+		@desc the scale factor determining the size at which the 3D model appears
+	]======]
 	property "ModelScale" {
 		Get = function(self)
 			return self:GetModelScale()
@@ -293,7 +312,12 @@ class "Model"
 		end,
 		Type = Number,
 	}
-	-- Model
+
+	doc [======[
+		@name Model
+		@type property
+		@desc the model file to be displayed
+	]======]
 	property "Model" {
 		Get = function(self)
 			return self:GetModel()
@@ -307,7 +331,12 @@ class "Model"
 		end,
 		Type = String + nil,
 	}
-	-- Position
+
+	doc [======[
+		@name Position
+		@type property
+		@desc the position of the 3D model within the frame
+	]======]
 	property "Position" {
 		Get = function(self)
 			return Position(self:GetPosition())
@@ -317,7 +346,12 @@ class "Model"
 		end,
 		Type = Position,
 	}
-	-- Light
+
+	doc [======[
+		@name Light
+		@type property
+		@desc the light sources used when rendering the model
+	]======]
 	property "Light" {
 		Get = function(self)
 			return LightType(self:GetLight())

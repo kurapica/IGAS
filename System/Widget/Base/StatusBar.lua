@@ -152,7 +152,11 @@ class "StatusBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- MinMaxValue
+	doc [======[
+		@name MinMaxValue
+		@type property
+		@desc the minimum and maximum values of the status bar
+	]======]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())
@@ -162,7 +166,12 @@ class "StatusBar"
 		end,
 		Type = MinMax,
 	}
-	-- Orientation
+
+	doc [======[
+		@name Orientation
+		@type property
+		@desc the orientation of the status bar
+	]======]
 	property "Orientation" {
 		Get = function(self)
 			return self:GetOrientation()
@@ -172,7 +181,12 @@ class "StatusBar"
 		end,
 		Type = Orientation,
 	}
-	-- StatusBarColor
+
+	doc [======[
+		@name StatusBarColor
+		@type property
+		@desc the color shading for the status bar's texture
+	]======]
 	property "StatusBarColor" {
 		Get = function(self)
 			return ColorType(self:GetStatusBarColor())
@@ -182,7 +196,12 @@ class "StatusBar"
 		end,
 		Type = ColorType,
 	}
-	-- StatusBarTexture
+
+	doc [======[
+		@name StatusBarTexture
+		@type property
+		@desc the texture used for drawing the filled-in portion of the status bar
+	]======]
 	property "StatusBarTexture" {
 		Get = function(self)
 			return self:GetStatusBarTexture()
@@ -192,7 +211,12 @@ class "StatusBar"
 		end,
 		Type = Texture + nil,
 	}
-	-- StatusBarTexturePath
+
+	doc [======[
+		@name StatusBarTexturePath
+		@type property
+		@desc the texture file used for drawing the filled-in portion of the status bar
+	]======]
 	property "StatusBarTexturePath" {
 		Get = function(self)
 			return self:GetStatusBarTexture() and self:GetStatusBarTexture().TexturePath
@@ -202,7 +226,12 @@ class "StatusBar"
 		end,
 		Type = String + nil,
 	}
-	-- Layer
+
+	doc [======[
+		@name Layer`
+		@type property
+		@desc the layer used for drawing the filled-in portion of the status bar
+	]======]
 	property "Layer" {
 		Get = function(self)
 			return self.__Layer or "ARTWORK"
@@ -212,7 +241,12 @@ class "StatusBar"
 		end,
 		Type = DrawLayer,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc  the value of the status bar
+	]======]
 	property "Value" {
 		Get = function(self)
 			return self:GetValue()
@@ -222,7 +256,12 @@ class "StatusBar"
 		end,
 		Type = Number,
 	}
-	-- RotatesTexture
+
+	doc [======[
+		@name RotatesTexture
+		@type property
+		@desc whether the status bar's texture is rotated to match its orientation
+	]======]
 	property "RotatesTexture" {
 		Get = function(self)
 			return self:GetRotatesTexture() and true or false

@@ -83,7 +83,11 @@ class "CheckButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Checked
+	doc [======[
+		@name Checked
+		@type property
+		@desc true if the checkbutton is checked
+	]======]
 	property "Checked" {
 		Get = function(self)
 			return (self:GetChecked() and true) or false
@@ -93,7 +97,12 @@ class "CheckButton"
 		end,
 		Type = Boolean,
 	}
-	-- CheckedTexture
+
+	doc [======[
+		@name CheckedTexture
+		@type property
+		@desc the texture object used when the button is checked
+	]======]
 	property "CheckedTexture" {
 		Get = function(self)
 			return self:GetCheckedTexture()
@@ -103,7 +112,12 @@ class "CheckButton"
 		end,
 		Type = Texture + nil,
 	}
-	-- CheckedTexturePath
+
+	doc [======[
+		@name CheckedTexturePath
+		@type property
+		@desc the texture file path used when the button is checked
+	]======]
 	property "CheckedTexturePath" {
 		Get = function(self)
 			return self:GetCheckedTexture() and self:GetCheckedTexture().TexturePath
@@ -113,7 +127,12 @@ class "CheckButton"
 		end,
 		Type = String + nil,
 	}
-	-- DisabledCheckedTexture
+
+	doc [======[
+		@name DisabledCheckedTexture
+		@type property
+		@desc the texture object used when the button is disabled and checked
+	]======]
 	property "DisabledCheckedTexture" {
 		Get = function(self)
 			return self:GetDisabledCheckedTexture()
@@ -123,7 +142,12 @@ class "CheckButton"
 		end,
 		Type = Texture + nil,
 	}
-	-- DisabledCheckedTexturePath
+
+	doc [======[
+		@name DisabledCheckedTexturePath
+		@type property
+		@desc the texture file path used when the button is disabled and checked
+	]======]
 	property "DisabledCheckedTexturePath" {
 		Get = function(self)
 			return self:GetDisabledCheckedTexture() and self:GetDisabledCheckedTexture().TexturePath

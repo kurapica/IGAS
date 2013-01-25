@@ -67,6 +67,11 @@ class "Cooldown"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Reverse
+		@type property
+		@desc true if the cooldown animation "sweeps" an area of darkness over the underlying image; false if the animation darkens the underlying image and "sweeps" the darkened area away
+	]======]
 	property "Reverse" {
 		Get = function(self)
 			return self:GetReverse() and true or false

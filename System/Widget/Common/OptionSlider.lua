@@ -3,15 +3,6 @@
 --				2011/03/13	Recode as class
 --              2012/06/10  Inherit change to Frame
 
----------------------------------------------------------------------------------------------------------------------------------------
---- OptionSlider is using to make settings in numbers
--- <br><br>inherit <a href="..\Base\Slider.html">Slider</a> For all methods, properties and scriptTypes
--- @name OptionSlider
--- @class table
--- @field Title the text to be diplayed at the topleft of the slide bar
--- @field TooltipText  the tooltip to be shown when mouse is over the silder bar
--- @field TooltipAnchor the tooltip's position
----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
 local version = 7
@@ -22,6 +13,12 @@ end
 
 class "OptionSlider"
 	inherit "Frame"
+
+	doc [======[
+		@name OptionSlider
+		@type class
+		@desc OptionSlider is using to make settings in numbers
+	]======]
 
 	GameTooltip = IGAS.GameTooltip
 
@@ -59,40 +56,34 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the slider's or status bar's minimum and maximum values change
-	-- @name Slider:OnMinMaxChanged
-	-- @class function
-	-- @param min New minimum value of the slider or the status bar
-	-- @param max New maximum value of the slider or the status bar
-	-- @usage function Slider:OnMinMaxChanged(min, max)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnMinMaxChanged
+		@type script
+		@desc Run when the option slider's minimum and maximum values change
+		@param min number, minimum value of the option slider
+		@param max number, maximum value of the option slider
+	]======]
 	script "OnMinMaxChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the slider's or status bar's value changes
-	-- @name Slider:OnValueChanged
-	-- @class function
-	-- @param value New value of the slider or the status bar
-	-- @usage function Slider:OnValueChanged(value)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnValueChanged
+		@type script
+		@desc Run when the option slider's value changes
+		@param value number, value of the option slider
+	]======]
 	script "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the minimum and maximum values for the slider
-	-- @name OptionSlider:SetMinMaxValues
-	-- @class function
-	-- @param minValue - Lower boundary for values represented by the slider position (number)
-	-- @param maxValue - Upper boundary for values represented by the slider position (number)
-	-- @usage OptionSlider:SetMinMaxValues(1, 100)
-	------------------------------------
+	doc [======[
+		@name SetMinMaxValues
+		@type method
+		@desc Sets the minimum and maximum values for the slider
+		@param minValue number, lower boundary for values represented by the slider position (number)
+		@param maxValue number, upper boundary for values represented by the slider position (number)
+		@return nil
+	]======]
 	function SetMinMaxValues(self, minV, maxV)
 		self = self:GetChild("Slider")
 
@@ -117,7 +108,11 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ThumbTexture
+	doc [======[
+		@name ThumbTexture
+		@type property
+		@desc the texture object for the slider thumb
+	]======]
 	property "ThumbTexture" {
 		Get = function(self)
 			return self:GetChild("Slider").ThumbTexture
@@ -127,7 +122,12 @@ class "OptionSlider"
 		end,
 		Type = Texture + nil,
 	}
-	-- ThumbTexturePath
+
+	doc [======[
+		@name ThumbTexturePath
+		@type property
+		@desc the texture file path for the slider thumb
+	]======]
 	property "ThumbTexturePath" {
 		Get = function(self)
 			return self:GetChild("Slider").ThumbTexturePath
@@ -137,7 +137,12 @@ class "OptionSlider"
 		end,
 		Type = String + nil,
 	}
-	-- Layer
+
+	doc [======[
+		@name Layer
+		@type property
+		@desc the layer used for drawing the filled-in portion of the slider
+	]======]
 	property "Layer" {
 		Get = function(self)
 			return self:GetChild("Slider").Layer
@@ -147,7 +152,12 @@ class "OptionSlider"
 		end,
 		Type = DrawLayer,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc the value representing the current position of the slider thumb
+	]======]
 	property "Value" {
 		Get = function(self)
 			return self:GetChild("Slider").Value
@@ -157,7 +167,12 @@ class "OptionSlider"
 		end,
 		Type = Number,
 	}
-	-- Enabled
+
+	doc [======[
+		@name Enabled
+		@type property
+		@desc whether user interaction with the slider is allowed
+	]======]
 	property "Enabled" {
 		Get = function(self)
 			return self:GetChild("Slider").Enabled
@@ -167,7 +182,12 @@ class "OptionSlider"
 		end,
 		Type = Boolean,
 	}
-	-- MinMaxValue
+
+	doc [======[
+		@name MinMaxValue
+		@type property
+		@desc the minimum and maximum values of the slider bar
+	]======]
 	property "MinMaxValue" {
 		Get = function(self)
 			return self:GetChild("Slider").MinMaxValue
@@ -177,7 +197,12 @@ class "OptionSlider"
 		end,
 		Type = MinMax,
 	}
-	-- ValueStep
+
+	doc [======[
+		@name ValueStep
+		@type property
+		@desc the minimum increment between allowed slider values
+	]======]
 	property "ValueStep" {
 		Get = function(self)
 			return self:GetChild("Slider"):GetValueStep()
@@ -207,7 +232,12 @@ class "OptionSlider"
 		end,
 		Type = Number,
 	}
-	-- Title
+
+	doc [======[
+		@name Title
+		@type property
+		@desc the text to be diplayed at the topleft of the slide bar
+	]======]
 	property "Title" {
 		Set = function(self, title)
 			self:GetChild("Title").Text = title
@@ -225,7 +255,12 @@ class "OptionSlider"
 
 		Type = LocaleString,
 	}
-	-- TooltipText
+
+	doc [======[
+		@name TooltipText
+		@type property
+		@desc the tooltip to be shown when mouse is over the silder bar
+	]======]
 	property "TooltipText" {
 		Set = function(self, text)
 			if type(text) == "string" and text ~= "" then
@@ -241,7 +276,12 @@ class "OptionSlider"
 
 		Type = LocaleString,
 	}
-	-- TooltipAnchor
+
+	doc [======[
+		@name TooltipAnchor
+		@type property
+		@desc the tooltip's position
+	]======]
 	property "TooltipAnchor" {
 		Set = function(self, anchor)
 			self:GetChild("Slider").__TooltipAnchor = anchor

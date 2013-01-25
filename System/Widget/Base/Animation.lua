@@ -278,7 +278,11 @@ class "Animation"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- StartDelay
+	doc [======[
+		@name StartDelay
+		@type property
+		@desc Amount of time the animation delays before its progress begins (in seconds)
+	]======]
 	property "StartDelay" {
 		Set = function(self, delaySec)
 			self:SetStartDelay(delaySec)
@@ -288,7 +292,12 @@ class "Animation"
 		end,
 		Type = Number,
 	}
-	-- EndDelay
+
+	doc [======[
+		@name EndDelay
+		@type property
+		@desc Time for the animation to delay after finishing (in seconds)
+	]======]
 	property "EndDelay" {
 		Set = function(self, delaySec)
 			self:SetEndDelay(delaySec)
@@ -298,7 +307,12 @@ class "Animation"
 		end,
 		Type = Number,
 	}
-	-- Duration
+
+	doc [======[
+		@name Duration
+		@type property
+		@desc Time for the animation to progress from start to finish (in seconds)
+	]======]
 	property "Duration" {
 		Set = function(self, durationSec)
 			self:SetDuration(durationSec)
@@ -308,7 +322,12 @@ class "Animation"
 		end,
 		Type = Number,
 	}
-	-- MaxFramerate
+
+	doc [======[
+		@name MaxFramerate
+		@type property
+		@desc Maximum number of times per second that the animation will update its progress
+	]======]
 	property "MaxFramerate" {
 		Set = function(self, framerate)
 			self:SetMaxFramerate(framerate)
@@ -318,7 +337,12 @@ class "Animation"
 		end,
 		Type = Number,
 	}
-	-- Order
+
+	doc [======[
+		@name Order
+		@type property
+		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
+	]======]
 	property "Order" {
 		Set = function(self, order)
 			self:SetOrder(order)
@@ -328,7 +352,12 @@ class "Animation"
 		end,
 		Type = Number,
 	}
-	-- Smoothing
+
+	doc [======[
+		@name Smoothing
+		@type property
+		@desc Type of smoothing for the animation, IN, IN_OUT, NONE, OUT
+	]======]
 	property "Smoothing" {
 		Set = function(self, smoothType)
 			self:SetSmoothing(smoothType)
@@ -338,7 +367,12 @@ class "Animation"
 		end,
 		Type = AnimSmoothType,
 	}
-	-- Playing
+
+	doc [======[
+		@name Playing
+		@type property
+		@desc whether the animation is playing
+	]======]
 	property "Playing" {
 		Get = function(self)
 			return self:IsPlaying()
@@ -355,7 +389,12 @@ class "Animation"
 			end
 		end,
 	}
-	-- Paused
+
+	doc [======[
+		@name Paused
+		@type property
+		@desc whether the animation is paused
+	]======]
 	property "Paused" {
 		Get = function(self)
 			return self:IsPaused()
@@ -372,7 +411,12 @@ class "Animation"
 			end
 		end,
 	}
-	-- Stoped
+
+	doc [======[
+		@name Stoped
+		@type property
+		@desc whether the animation is stoped
+	]======]
 	property "Stoped" {
 		Get = function(self)
 			return self:IsStopped()

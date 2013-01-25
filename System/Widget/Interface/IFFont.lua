@@ -166,7 +166,11 @@ interface "IFFont"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Font
+	doc [======[
+		@name Font
+		@type property
+		@desc the font's defined table, contains font path, height and flags' settings
+	]======]
 	property "Font" {
 		Get = function(self)
 			local font = {}
@@ -207,7 +211,12 @@ interface "IFFont"
 		end,
 		Type = FontType,
 	}
-	-- FontObject
+
+	doc [======[
+		@name FontObject
+		@type property
+		@desc the Font object
+	]======]
 	property "FontObject" {
 		Get = function(self)
 			return self:GetFontObject()
@@ -217,7 +226,12 @@ interface "IFFont"
 		end,
 		Type = Font + String + nil,
 	}
-	-- JustifyH
+
+	doc [======[
+		@name JustifyH
+		@type property
+		@desc the fontstring's horizontal text alignment style
+	]======]
 	property "JustifyH" {
 		Get = function(self)
 			return self:GetJustifyH()
@@ -227,7 +241,12 @@ interface "IFFont"
 		end,
 		Type = JustifyHType,
 	}
-	-- JustifyV
+
+	doc [======[
+		@name JustifyV
+		@type property
+		@desc the fontstring's vertical text alignment style
+	]======]
 	property "JustifyV" {
 		Get = function(self)
 			return self:GetJustifyV()
@@ -237,7 +256,12 @@ interface "IFFont"
 		end,
 		Type = JustifyVType,
 	}
-	-- ShadowColor
+
+	doc [======[
+		@name ShadowColor
+		@type property
+		@desc the color of the font's text shadow
+	]======]
 	property "ShadowColor" {
 		Get = function(self)
 			return ColorType(self:GetShadowColor())
@@ -247,7 +271,12 @@ interface "IFFont"
 		end,
 		Type = ColorType,
 	}
-	-- ShadowOffset
+
+	doc [======[
+		@name ShadowOffset
+		@type property
+		@desc the offset of the fontstring's text shadow from its text
+	]======]
 	property "ShadowOffset" {
 		Get = function(self)
 			return Dimension(self:GetShadowOffset())
@@ -257,7 +286,12 @@ interface "IFFont"
 		end,
 		Type = Dimension,
 	}
-	-- Spacing
+
+	doc [======[
+		@name Spacing
+		@type property
+		@desc the fontstring's amount of spacing between lines
+	]======]
 	property "Spacing" {
 		Get = function(self)
 			return self:GetSpacing()
@@ -267,7 +301,12 @@ interface "IFFont"
 		end,
 		Type = Number,
 	}
-	-- TextColor
+
+	doc [======[
+		@name TextColor
+		@type property
+		@desc the fontstring's default text color
+	]======]
 	property "TextColor" {
 		Get = function(self)
 			return ColorType(self:GetTextColor())

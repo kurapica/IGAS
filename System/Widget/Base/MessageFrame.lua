@@ -123,7 +123,11 @@ class "MessageFrame"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Fading
+	doc [======[
+		@name Fading
+		@type property
+		@desc whether messages added to the frame automatically fade out after a period of time
+	]======]
 	property "Fading" {
 		Get = function(self)
 			return (self:GetFading() and true) or false
@@ -133,7 +137,12 @@ class "MessageFrame"
 		end,
 		Type = Boolean,
 	}
-	-- IndentedWordWrap
+
+	doc [======[
+		@name IndentedWordWrap
+		@type property
+		@desc whether long lines of text are indented when wrapping
+	]======]
 	property "IndentedWordWrap" {
 		Get = function(self)
 			return (self:GetIndentedWordWrap() and true) or false
@@ -143,7 +152,12 @@ class "MessageFrame"
 		end,
 		Type = Boolean,
 	}
-	-- TimeVisible
+
+	doc [======[
+		@name TimeVisible
+		@type property
+		@desc the amount of time for which a message remains visible before beginning to fade out
+	]======]
 	property "TimeVisible" {
 		Get = function(self)
 			return self:GetTimeVisible()
@@ -153,7 +167,12 @@ class "MessageFrame"
 		end,
 		Type = Number,
 	}
-	-- FadeDuration
+
+	doc [======[
+		@name FadeDuration
+		@type property
+		@desc the duration of the fade-out animation for disappearing messages
+	]======]
 	property "FadeDuration" {
 		Get = function(self)
 			return self:GetFadeDuration()
@@ -163,7 +182,12 @@ class "MessageFrame"
 		end,
 		Type = Number,
 	}
-	-- InsertMode
+
+	doc [======[
+		@name InsertMode
+		@type property
+		@desc the position at which new messages are added to the frame
+	]======]
 	property "InsertMode" {
 		Get = function(self)
 			return self:GetInsertMode()

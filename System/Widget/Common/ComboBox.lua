@@ -842,7 +842,11 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- AutoFocus
+	doc [======[
+		@name AutoFocus
+		@type property
+		@desc whether the comboBox is auto focus
+	]======]
 	property "AutoFocus" {
 		Set = function(self, state)
 			self:SetAutoFocus(state)
@@ -854,7 +858,12 @@ class "ComboBox"
 
 		Type = Boolean,
 	}
-	-- Focus
+
+	doc [======[
+		@name Focused
+		@type property
+		@desc whether the comboBox is focused
+	]======]
 	property "Focused" {
 		Set = function(self, focus)
 			if focus then
@@ -870,7 +879,12 @@ class "ComboBox"
 
 		Type = Boolean,
 	}
-	-- DisplayItemCount
+
+	doc [======[
+		@name DisplayItemCount
+		@type property
+		@desc the comboBox's displayed item count
+	]======]
 	property "DisplayItemCount" {
 		Set = function(self, cnt)
 			self:SetDisplayItemCount(cnt)
@@ -882,7 +896,12 @@ class "ComboBox"
 
 		Type = Number,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc the choosed item's value
+	]======]
 	property "Value" {
 		Set = function(self, value)
 			self:SetValue(value)
@@ -894,7 +913,12 @@ class "ComboBox"
 
 		Type = Any,
 	}
-	-- Value
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the displayed text
+	]======]
 	property "Text" {
 		Set = function(self, text)
 			self:SetText(text)
@@ -906,7 +930,12 @@ class "ComboBox"
 
 		Type = LocaleString,
 	}
-	-- Editable
+
+	doc [======[
+		@name Editable
+		@type property
+		@desc whether the comboBox is ediatable
+	]======]
 	property "Editable" {
 		Set = function(self, flag)
 			self:SetEditable(flag)
@@ -918,7 +947,12 @@ class "ComboBox"
 
 		Type = Boolean,
 	}
-	-- HideDropDownButton
+
+	doc [======[
+		@name HideDropDownButton
+		@type property
+		@desc whether DropdownBtn should be hidden
+	]======]
 	property "HideDropDownButton" {
 		Set = function(self, flag)
 			self:GetChild("DropdownBtn").Visible = not flag
@@ -931,7 +965,12 @@ class "ComboBox"
 
 		Type = Boolean,
 	}
-	-- Keys
+
+	doc [======[
+		@name Keys
+		@type property
+		@desc the comboBox item's key list
+	]======]
 	property "Keys" {
 		Set = function(self, keys)
 			if keys then
@@ -946,7 +985,12 @@ class "ComboBox"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Items
+
+	doc [======[
+		@name Items
+		@type property
+		@desc the comboBox item's text list
+	]======]
 	property "Items" {
 		Set = function(self, items)
 			if items then
@@ -961,7 +1005,12 @@ class "ComboBox"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Icons
+
+	doc [======[
+		@name Icons
+		@type property
+		@desc the comboBox item's icon list
+	]======]
 	property "Icons" {
 		Set = function(self, icons)
 			if icons then
@@ -976,7 +1025,12 @@ class "ComboBox"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Frames
+
+	doc [======[
+		@name Frames
+		@type property
+		@desc the comboBox item's frame list
+	]======]
 	property "Frames" {
 		Set = function(self, frames)
 			if frames then
@@ -991,7 +1045,12 @@ class "ComboBox"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- ItemCount
+
+	doc [======[
+		@name ItemCount
+		@type property
+		@desc the item's count
+	]======]
 	property "ItemCount" {
 		Get = function(self)
 			return #self.Keys
@@ -999,7 +1058,12 @@ class "ComboBox"
 
 		Type = Number,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the comboBox's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -1011,7 +1075,12 @@ class "ComboBox"
 
 		Type = ComboBoxStyle,
 	}
-	-- JustifyH
+
+	doc [======[
+		@name JustifyH
+		@type property
+		@desc the comboBox's horizontal text alignment style
+	]======]
 	property "JustifyH" {
 		Set = function(self, justifyH)
 			self:GetChild("Text").JustifyH = justifyH

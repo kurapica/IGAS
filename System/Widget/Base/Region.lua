@@ -363,7 +363,11 @@ class "Region"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	--- Alpha
+	doc [======[
+		@name Alpha
+		@type property
+		@desc the frame's transparency value(0-1)
+	]======]
 	property "Alpha" {
 		Get = function(self)
 			return self:GetAlpha()
@@ -373,7 +377,12 @@ class "Region"
 		end,
 		Type = ColorFloat,
 	}
-	--- Height
+
+	doc [======[
+		@name Height
+		@type property
+		@desc the height of the region
+	]======]
 	property "Height" {
 		Get = function(self)
 			return self:GetHeight()
@@ -383,7 +392,12 @@ class "Region"
 		end,
 		Type = Number,
 	}
-	--- Width
+
+	doc [======[
+		@name Width
+		@type property
+		@desc the width of the region
+	]======]
 	property "Width" {
 		Get = function(self)
 			return self:GetWidth()
@@ -393,7 +407,12 @@ class "Region"
 		end,
 		Type = Number,
 	}
-	--- Visible
+
+	doc [======[
+		@name Visible
+		@type property
+		@desc wheter the region is shown or not.
+	]======]
 	property "Visible" {
 		Get = function(self)
 			if not self.InDesignMode then
@@ -418,7 +437,12 @@ class "Region"
 		end,
 		Type = Boolean,
 	}
-	-- Size
+
+	doc [======[
+		@name Size
+		@type property
+		@desc the size of the region
+	]======]
 	property "Size" {
 		Get = function(self)
 			return System.Widget.Size(self:GetWidth(), self:GetHeight())
@@ -429,7 +453,12 @@ class "Region"
 		end,
 		Type = System.Widget.Size,
 	}
-	-- Location
+
+	doc [======[
+		@name Location
+		@type property
+		@desc the location of the region
+	]======]
 	property "Location" {
 		Get = function(self)
 			local ret = {}

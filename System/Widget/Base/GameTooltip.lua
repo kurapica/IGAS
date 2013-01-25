@@ -855,7 +855,11 @@ class "GameTooltip"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Owner
+	doc [======[
+		@name Owner
+		@type property
+		@desc The owner of this gametooltip
+	]======]
 	property "Owner" {
 		Get = function(self)
 			return self:GetOwner()

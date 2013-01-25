@@ -152,7 +152,11 @@ class "FontString"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- NonSpaceWrap
+	doc [======[
+		@name NonSpaceWrap
+		@type property
+		@desc whether long lines of text will wrap within or between words
+	]======]
 	property "NonSpaceWrap" {
 		Get = function(self)
 			return (self:CanNonSpaceWrap() and true) or false
@@ -162,21 +166,36 @@ class "FontString"
 		end,
 		Type = Boolean,
 	}
-	-- StringHeight
+
+	doc [======[
+		@name StringHeight
+		@type property
+		@desc the height of the text displayed in the font string
+	]======]
 	property "StringHeight" {
 		Get = function(self)
 			return self:GetStringHeight()
 		end,
 		Type = Number,
 	}
-	-- StringWidth
+
+	doc [======[
+		@name StringWidth
+		@type property
+		@desc the width of the text displayed in the font string
+	]======]
 	property "StringWidth" {
 		Get = function(self)
 			return self:GetStringWidth()
 		end,
 		Type = Number,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the text to be displayed in the font string
+	]======]
 	property "Text" {
 		Get = function(self)
 			return self:GetText()

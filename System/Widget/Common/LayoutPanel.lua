@@ -4,12 +4,6 @@
 --               2012/07/18 Support nonRegion object
 --               2012/12/07 Fix for not setpoint panel
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- LayoutPanel
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name LayoutPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.LayoutPanel", version) then
 	return
@@ -19,6 +13,12 @@ class "LayoutPanel"
 	inherit "Frame"
 
 	import "System.Reflector"
+
+	doc [======[
+		@name LayoutPanel
+		@type class
+		@desc LayoutPanel is used to manage its children's layout
+	]======]
 
 	_Use_ShortCut = true
 
@@ -210,7 +210,7 @@ class "LayoutPanel"
 		for i = #(self.__LayoutItems), 1, -1 do
 			widget = self.__LayoutItems[i]
 
-			if not Reflector.GetObjectClass(widget) then
+			if widget.Disposed then
 				tremove(self.__LayoutItems, i)
 			end
 		end
@@ -233,18 +233,16 @@ class "LayoutPanel"
 	-- Script
 	------------------------------------------------------
 
-
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Add Widget to the panel
-	-- @name LayoutPanel:AddWidget
-	-- @class function
-	-- @param widget
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name AddWidget
+		@type method
+		@desc Add a ui element to the panel
+		@param widget System.Widget.VirtualUIObject|System.Widget.Region, the ui element need to be added
+		@return number the element's index
+	]======]
 	function AddWidget(self, widget)
 		ValidateWidgets(self)
 
@@ -272,13 +270,14 @@ class "LayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Insert Widget to the panel
-	-- @name LayoutPanel:InsertWidget
-	-- @class function
-	-- @param before the index to be insert
-	-- @param widget
-	------------------------------------
+	doc [======[
+		@name InsertWidget
+		@type method
+		@desc Insert widget to the panel
+		@param before the element to be inserted before
+		@param widget System.Widget.VirtualUIObject|System.Widget.Region, the ui element need to be added
+		@return nil
+	]======]
 	function InsertWidget(self, before, widget)
 		ValidateWidgets(self)
 
@@ -326,14 +325,15 @@ class "LayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Get Widget from the panel
-	-- @name LayoutPanel:GetWidget
-	-- @class function
-	-- @param index|name index or the name that need to be removed
-	-- @return widget
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name GetWidget
+		@type method
+		@desc Get Widget from the panel
+		@format index|name
+		@param index number, the index of the element
+		@param name string, the name of the element
+		@return widget the widget
+	]======]
 	function GetWidget(self, index)
 		if type(index) == "number" then
 			index = floor(index)
@@ -358,27 +358,32 @@ class "LayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- get widget's index
-	-- @name LayoutPanel:GetWidgetIndex
-	-- @class function
-	-- @param index|name|widget
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name GetWidgetIndex
+		@type method
+		@desc Get the element's index
+		@format name|widget
+		@param name string, the name of the element
+		@param widget System.Widget.Region|System.Widget.VirtualUIObject, the element
+		@return number the element's index
+	]======]
 	function GetWidgetIndex(self, widget)
 		local _, index = GetWidget(self, widget)
 
 		return index
 	end
 
-	------------------------------------
-	--- Remove Widget to the panel
-	-- @name LayoutPanel:RemoveWidget
-	-- @class function
-	-- @param index|name index or the name that need to be removed
-	-- @param withoutDispose optional, true if need get the removed widget
-	-- @return widget if withoutDispose is set to true
-	------------------------------------
+	doc [======[
+		@name RemoveWidget
+		@type method
+		@desc Remove element to the panel
+		@format index|name|widget[, withoutDispose]
+		@param index number, the index of the element
+		@param name string, the name of the element
+		@param widget System.Widget.Region|System.Widget.VirtualUIObject, the element
+		@param withoutDispose boolean, true if need get the removed widget
+		@return widget if withoutDispose is set to true
+	]======]
 	function RemoveWidget(self, index, withoutDispose)
 		local obj
 
@@ -402,17 +407,17 @@ class "LayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Set Widget's left margin and right margin
-	-- @name LayoutPanel:SetWidgetLeftRight
-	-- @class function
-	-- @param index|name index or the name
-	-- @param left left margin value
-	-- @param leftunit left margin's unit
-	-- @param right right margin value
-	-- @param rightunit right margin's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetLeftRight
+		@type method
+		@desc Set Widget's left margin and right margin
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit string, left margin's unit
+		@param right number, right margin value
+		@param rightunit string, right margin's unit
+		@return object the panel self
+	]======]
 	function SetWidgetLeftRight(self, index, left, leftunit, right, rightunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetLeftRight(index||name||widget, left, leftunit, right, rightunit) : "
 
@@ -425,19 +430,30 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWLR
+		@type method
+		@desc Short for SetWidgetLeftRight, Set Widget's left margin and right margin
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWLR = SetWidgetLeftRight end
 
-	------------------------------------
-	--- Set Widget's left margin and width
-	-- @name LayoutPanel:SetWidgetLeftWidth
-	-- @class function
-	-- @param index|name index or the name
-	-- @param left left margin value
-	-- @param leftunit left margin's unit
-	-- @param width width value
-	-- @param widthunit width unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetLeftWidth
+		@type method
+		@desc Set Widget's left margin and width
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unit
+		@return object the panel self
+	]======]
 	function SetWidgetLeftWidth(self, index, left, leftunit, width, widthunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetLeftWidth(index||name||widget, left, leftunit, width, widthunit) :"
 
@@ -450,19 +466,30 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWLW
+		@type method
+		@desc Short for SetWidgetLeftWidth.Set Widget's left margin and width
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unit
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWLW = SetWidgetLeftWidth end
 
-	------------------------------------
-	--- Set Widget's right margin and width
-	-- @name LayoutPanel:SetWidgetRightWidth
-	-- @class function
-	-- @param index|name index or the name
-	-- @param right right margin value
-	-- @param rightunit right margin's unit
-	-- @param width width value
-	-- @param widthunit width unitv
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetRightWidth
+		@type method
+		@desc Set Widget's right margin and width
+		@param index|name|widget the ui element
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
+		@return object the panel self
+	]======]
 	function SetWidgetRightWidth(self, index, right, rightunit, width, widthunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetRightWidth(index||name||widget, right, rightunit, width, widthunit) : "
 
@@ -475,28 +502,30 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWRW
+		@type method
+		@desc Short for SetWidgetRightWidth. Set Widget's right margin and width
+		@param index|name|widget the ui element
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWRW = SetWidgetRightWidth end
 
-	------------------------------------
-	--- Set Widget's horizontal position
-	-- @name LayoutPanel:SetWidgetRightWidth
-	-- @class function
-	-- @param index|name index or the name
-	-- @param align begin|stretch|end
-	------------------------------------
-	-- function SetWidgetHorizontalPosition(self, index, align)end
-
-	------------------------------------
-	--- Set Widget's top margin and bottom margin
-	-- @name LayoutPanel:SetWidgetTopBottom
-	-- @class function
-	-- @param index|name index or the name
-	-- @param top top margin value
-	-- @param topunit top margin's unit
-	-- @param bottom bottom margin value
-	-- @param bottomunit bottom margin's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetTopBottom
+		@type method
+		@desc Set Widget's top margin and bottom margin
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@return object the panel self
+	]======]
 	function SetWidgetTopBottom(self, index, top, topunit, bottom, bottomunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetTopBottom(index||name||widget, top, topunit, bottom, bottomunit) : "
 
@@ -509,19 +538,31 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWTB
+		@type method
+		@desc description
+		@desc Short for SetWidgetTopBottom. Set Widget's top margin and bottom margin
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWTB = SetWidgetTopBottom end
 
-	------------------------------------
-	--- Set Widget's top margin and height
-	-- @name LayoutPanel:SetWidgetTopHeight
-	-- @class function
-	-- @param index|name index or the name
-	-- @param top top margin value
-	-- @param topunit top margin's unit
-	-- @param height height value
-	-- @param heightunit height's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetTopHeight
+		@type method
+		@desc Set Widget's top margin and height
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	function SetWidgetTopHeight(self, index, top, topunit, height, heightunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetTopHeight(index||name||widget, top, topunit, height, heightunit) : "
 
@@ -534,19 +575,30 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWTH
+		@type method
+		@desc Short for SetWidgetTopHeight. Set Widget's top margin and height
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWTH = SetWidgetTopHeight end
 
-	------------------------------------
-	--- Set Widget's top margin and height
-	-- @name LayoutPanel:SetWidgetBottomHeight
-	-- @class function
-	-- @param index|name index or the name
-	-- @param bottom top margin value
-	-- @param bottomunit bottom margin's unit
-	-- @param height height value
-	-- @param heightunit height's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetBottomHeight
+		@type method
+		@desc Set Widget's bottom margin and height
+		@param index|name|widget the ui element
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	function SetWidgetBottomHeight(self, index, bottom, bottomunit, height, heightunit)
 		local prefix = "Usage : LayoutPanel:SetWidgetBottomHeight(index||name||widget, bottom, bottomunit, height, heightunit) : "
 
@@ -559,22 +611,25 @@ class "LayoutPanel"
 		return self
 	end
 
+	doc [======[
+		@name SWBH
+		@type method
+		@desc Short for SetWidgetBottomHeight. Set Widget's bottom margin and height
+		@param index|name|widget the ui element
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	if _Use_ShortCut then SWBH = SetWidgetBottomHeight end
 
-	------------------------------------
-	--- Set Widget's horizontal position
-	-- @name LayoutPanel:SetWidgetRightWidth
-	-- @class function
-	-- @param index|name index or the name
-	-- @param align begin|stretch|end
-	------------------------------------
-	-- function SetWidgetVerticalPosition(self, index, align)end
-
-	------------------------------------
-	--- Update layout
-	-- @name LayoutPanel:Layout
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name Layout
+		@type method
+		@desc Refresh layout
+		@return nil
+	]======]
 	function Layout(self)
 		if self.__SuspendLayout or not self.__LayoutItems then
 			return
@@ -632,22 +687,22 @@ class "LayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- stop the refresh of the LayoutPanel
-	-- @name LayoutPanel:SuspendLayout
-	-- @class function
-	-- @usage LayoutPanel:SuspendLayout()
-	------------------------------------
+	doc [======[
+		@name SuspendLayout
+		@type method
+		@desc Stop the refresh of the LayoutPanel
+		@return nil
+	]======]
 	function SuspendLayout(self)
 		self.__SuspendLayout = true
 	end
 
-	------------------------------------
-	--- resume the refresh of the LayoutPanel
-	-- @name LayoutPanel:ResumeLayout
-	-- @class function
-	-- @usage LayoutPanel:ResumeLayout()
-	------------------------------------
+	doc [======[
+		@name ResumeLayout
+		@type method
+		@desc Resume the refresh of the LayoutPanel
+		@return nil
+	]======]
 	function ResumeLayout(self)
 		self.__SuspendLayout = nil
 		Layout(self)
@@ -656,6 +711,11 @@ class "LayoutPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Count
+		@type property
+		@desc the element's count
+	]======]
 	property "Count" {
 		Get = function(self)
 			return #(self.__LayoutItems)

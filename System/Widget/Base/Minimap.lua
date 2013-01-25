@@ -146,7 +146,11 @@ class "Minimap"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	--- Zoom
+	doc [======[
+		@name Zoom
+		@type property
+		@desc the minimap's current zoom level
+	]======]
 	property "Zoom" {
 		Get = function(self)
 			return self:GetZoom()

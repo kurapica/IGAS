@@ -228,7 +228,11 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Color
+	doc [======[
+		@name Color
+		@type property
+		@desc the color displayed now on the ColorPicker
+	]======]
 	property "Color" {
 		Set = function(self, color)
 			self:SetColor(color.r, color.g, color.b, color.a)
@@ -238,7 +242,12 @@ class "ColorPicker"
 		end,
 		Type = ColorType,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the style of the ColorPicker
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -248,7 +257,12 @@ class "ColorPicker"
 		end,
 		Type = ColorPickerStyle,
 	}
-	-- CaptionAlign
+
+	doc [======[
+		@name CaptionAlign
+		@type property
+		@desc the caption alignment of the ColorPicker
+	]======]
 	property "CaptionAlign" {
 		Get = function(self)
 			return self:GetChild("ColorPicker_Caption"):GetChild("Text").JustifyH
@@ -260,7 +274,12 @@ class "ColorPicker"
 		end,
 		Type = JustifyHType,
 	}
-	-- TitleBarColor
+
+	doc [======[
+		@name TitleBarColor
+		@type property
+		@desc the title bar color of the ColorPicker
+	]======]
 	property "TitleBarColor" {
 		Get = function(self)
 			return self:GetChild("ColorPicker_Caption").BackdropColor
@@ -270,7 +289,12 @@ class "ColorPicker"
 		end,
 		Type = ColorType,
 	}
-	-- Caption
+
+	doc [======[
+		@name Caption
+		@type property
+		@desc the caption text of the ColorPicker
+	]======]
 	property "Caption" {
 		Set = function(self, title)
 			self:GetChild("ColorPicker_Caption"):GetChild("Text").Text = title
@@ -288,7 +312,12 @@ class "ColorPicker"
 		end,
 		Type = LocaleString,
 	}
-	-- OkayText
+
+	doc [======[
+		@name OkayButtonText
+		@type property
+		@desc the okay button's text
+	]======]
 	property "OkayButtonText" {
 		Set = function(self, text)
 			self:GetChild("OkayBtn").Text = text or "Okay"
@@ -298,7 +327,12 @@ class "ColorPicker"
 		end,
 		Type = LocaleString,
 	}
-	-- CancelText
+
+	doc [======[
+		@name CancelButtonText
+		@type property
+		@desc the cancel button's text
+	]======]
 	property "CancelButtonText" {
 		Set = function(self, text)
 			self:GetChild("CancelBtn").Text = text or "Cancel"
@@ -308,7 +342,12 @@ class "ColorPicker"
 		end,
 		Type = LocaleString,
 	}
-	-- HasOpacity
+
+	doc [======[
+		@name HasOpacity
+		@type property
+		@desc whether the ColorPicker can pick opacity
+	]======]
 	property "HasOpacity" {
 		Set = function(self, flag)
 			self:GetChild("OpacitySlider").Enabled = flag

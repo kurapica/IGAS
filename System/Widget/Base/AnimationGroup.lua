@@ -226,7 +226,11 @@ class "AnimationGroup"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Looping
+	doc [======[
+		@name Looping
+		@type property
+		@desc looping type for the animation group: BOUNCE , NONE  , REPEAT
+	]======]
 	property "Looping" {
 		Set = function(self, loopType)
 			self:SetLooping(loopType)
@@ -236,14 +240,24 @@ class "AnimationGroup"
 		end,
 		Type = AnimLoopType,
 	}
-	-- LoopState
+
+	doc [======[
+		@name LoopState
+		@type property
+		@desc the current loop state of the group: FORWARD , NONE , REVERSE
+	]======]
 	property "LoopState" {
 		Get = function(self)
 			return self:GetLoopState()
 		end,
 		Type = AnimLoopStateType,
 	}
-	-- InitialOffset
+
+	doc [======[
+		@name InitialOffset
+		@type property
+		@desc the starting static translation for the animated region
+	]======]
 	property "InitialOffset" {
 		Get = function(self)
 			return Dimension(self:GetInitialOffset())
@@ -253,7 +267,12 @@ class "AnimationGroup"
 		end,
 		Type = Dimension,
 	}
-	-- Playing
+
+	doc [======[
+		@name Playing
+		@type property
+		@desc whether the animationgroup is playing
+	]======]
 	property "Playing" {
 		Get = function(self)
 			return self:IsPlaying()
@@ -270,7 +289,12 @@ class "AnimationGroup"
 			end
 		end,
 	}
-	-- Paused
+
+	doc [======[
+		@name Paused
+		@type property
+		@desc whether the animationgroup is paused
+	]======]
 	property "Paused" {
 		Get = function(self)
 			return self:IsPaused()
@@ -287,7 +311,12 @@ class "AnimationGroup"
 			end
 		end,
 	}
-	-- Stoped
+
+	doc [======[
+		@name Stoped
+		@type property
+		@desc whether the animationgroup is stoped
+	]======]
 	property "Stoped" {
 		Get = function(self)
 			return not (self:IsPlaying() or self:IsPaused())
@@ -304,7 +333,12 @@ class "AnimationGroup"
 			end
 		end,
 	}
-	-- Duration
+
+	doc [======[
+		@name Duration
+		@type property
+		@desc duration of all child animations (in seconds)
+	]======]
 	property "Duration" {
 		Get = function(self)
 			return self:GetDuration()

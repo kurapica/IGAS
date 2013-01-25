@@ -118,7 +118,11 @@ class "ScrollFrame"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- HorizontalScroll
+	doc [======[
+		@name HorizontalScroll
+		@type property
+		@desc the scroll frame's current horizontal scroll position
+	]======]
 	property "HorizontalScroll" {
 		Get = function(self)
 			return self:GetHorizontalScroll()
@@ -128,7 +132,12 @@ class "ScrollFrame"
 		end,
 		Type = Number,
 	}
-	-- VerticalScroll
+
+	doc [======[
+		@name VerticalScroll
+		@type property
+		@desc the scroll frame's vertical scroll position
+	]======]
 	property "VerticalScroll" {
 		Get = function(self)
 			return self:GetVerticalScroll()

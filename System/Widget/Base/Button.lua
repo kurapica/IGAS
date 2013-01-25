@@ -361,7 +361,11 @@ class "Button"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Enabled
+	doc [======[
+		@name Enabled
+		@type property
+		@desc true if the button is enabled
+	]======]
 	property "Enabled" {
 		Get = function(self)
 			return (self:IsEnabled() and true) or false
@@ -375,7 +379,12 @@ class "Button"
 		end,
 		Type = Boolean,
 	}
-	-- ButtonState
+
+	doc [======[
+		@name ButtonState
+		@type property
+		@desc the button's current state: DISABLED, NORMAL, PUSHED
+	]======]
 	property "ButtonState" {
 		Get = function(self)
 			return self:GetButtonState()
@@ -385,7 +394,12 @@ class "Button"
 		end,
 		Type = ButtonStateType,
 	}
-	-- Locked
+
+	doc [======[
+		@name Locked
+		@type property
+		@desc true if the button is locked
+	]======]
 	property "Locked" {
 		Get = function(self)
 			return (self.__Locked and true) or false
@@ -396,7 +410,12 @@ class "Button"
 		end,
 		Type = Boolean,
 	}
-	-- DisabledFontObject
+
+	doc [======[
+		@name DisabledFontObject
+		@type property
+		@desc the font object used for the button's disabled state
+	]======]
 	property "DisabledFontObject" {
 		Get = function(self)
 			return self:GetDisabledFontObject()
@@ -406,7 +425,12 @@ class "Button"
 		end,
 		Type = Font + String + nil,
 	}
-	-- DisabledTexture
+
+	doc [======[
+		@name DisabledTexture
+		@type property
+		@desc the texture object used when the button is disabled
+	]======]
 	property "DisabledTexture" {
 		Get = function(self)
 			return self:GetDisabledTexture()
@@ -416,7 +440,12 @@ class "Button"
 		end,
 		Type = Texture + nil,
 	}
-	-- DisabledTexturePath
+
+	doc [======[
+		@name DisabledTexturePath
+		@type property
+		@desc the texture file path used when the button is disabled
+	]======]
 	property "DisabledTexturePath" {
 		Get = function(self)
 			return self:GetDisabledTexture() and self:GetDisabledTexture().TexturePath
@@ -426,7 +455,12 @@ class "Button"
 		end,
 		Type = String + nil,
 	}
-	-- HighlightTexture
+
+	doc [======[
+		@name HighlightTexture
+		@type property
+		@desc the texture object used when the button is highlighted
+	]======]
 	property "HighlightTexture" {
 		Get = function(self)
 			return self:GetHighlightTexture()
@@ -436,7 +470,12 @@ class "Button"
 		end,
 		Type = Texture + nil,
 	}
-	-- HighlightTexturePath
+
+	doc [======[
+		@name HighlightTexturePath
+		@type property
+		@desc the texture file path used when the button is highlighted
+	]======]
 	property "HighlightTexturePath" {
 		Get = function(self)
 			return self:GetHighlightTexture() and self:GetHighlightTexture().TexturePath
@@ -446,7 +485,12 @@ class "Button"
 		end,
 		Type = String + nil,
 	}
-	-- NormalTexture
+
+	doc [======[
+		@name NormalTexture
+		@type property
+		@desc the texture object used for the button's normal state
+	]======]
 	property "NormalTexture" {
 		Get = function(self)
 			return self:GetNormalTexture()
@@ -456,7 +500,12 @@ class "Button"
 		end,
 		Type = Texture + nil,
 	}
-	-- NormalTexturePath
+
+	doc [======[
+		@name NormalTexturePath
+		@type property
+		@desc the texture file used for the button's normal state
+	]======]
 	property "NormalTexturePath" {
 		Get = function(self)
 			return self:GetNormalTexture() and self:GetNormalTexture().TexturePath
@@ -466,7 +515,12 @@ class "Button"
 		end,
 		Type = String + nil,
 	}
-	-- PushedTexture
+
+	doc [======[
+		@name PushedTexture
+		@type property
+		@desc the texture object used when the button is pushed
+	]======]
 	property "PushedTexture" {
 		Get = function(self)
 			return self:GetPushedTexture()
@@ -476,7 +530,12 @@ class "Button"
 		end,
 		Type = Texture + nil,
 	}
-	-- PushedTexturePath
+
+	doc [======[
+		@name PushedTexturePath
+		@type property
+		@desc the texture file path used when the button is pushed
+	]======]
 	property "PushedTexturePath" {
 		Get = function(self)
 			return self:GetPushedTexture() and self:GetPushedTexture().TexturePath
@@ -486,7 +545,12 @@ class "Button"
 		end,
 		Type = String + nil,
 	}
-	--- FontString
+
+	doc [======[
+		@name FontString
+		@type property
+		@desc the FontString object used for the button's label text
+	]======]
 	property "FontString" {
 		Get = function(self)
 			return self:GetFontString()
@@ -496,7 +560,12 @@ class "Button"
 		end,
 		Type = FontString,
 	}
-	--- HighlightFontObject
+
+	doc [======[
+		@name HighlightFontObject
+		@type property
+		@desc the font object used when the button is highlighted
+	]======]
 	property "HighlightFontObject" {
 		Get = function(self)
 			return self:GetHighlightFontObject()
@@ -506,7 +575,12 @@ class "Button"
 		end,
 		Type = Font + String + nil,
 	}
-	--- NormalFontObject
+
+	doc [======[
+		@name NormalFontObject
+		@type property
+		@desc the font object used for the button's normal state
+	]======]
 	property "NormalFontObject" {
 		Get = function(self)
 			return self:GetNormalFontObject()
@@ -516,7 +590,12 @@ class "Button"
 		end,
 		Type = Font + String + nil,
 	}
-	--- PushedTextOffset
+
+	doc [======[
+		@name PushedTextOffset
+		@type property
+		@desc the offset for moving the button's label text when pushed
+	]======]
 	property "PushedTextOffset" {
 		Get = function(self)
 			return Dimension(self:GetPushedTextOffset())
@@ -526,7 +605,12 @@ class "Button"
 		end,
 		Type = Dimension,
 	}
-	--- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the text displayed as the button's label
+	]======]
 	property "Text" {
 		Get = function(self)
 			return self:GetText()
@@ -536,7 +620,12 @@ class "Button"
 		end,
 		Type = LocaleString,
 	}
-	-- HighlightLocked
+
+	doc [======[
+		@name HighlightLocked
+		@type property
+		@desc true if the button's highlight state is locked
+	]======]
 	property "HighlightLocked" {
 		Get = function(self)
 			return (self.__HighlightLocked and true) or false

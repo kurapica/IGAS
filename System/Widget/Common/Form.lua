@@ -5,19 +5,6 @@
 --              2012.05.13  Property Panel is added
 --              2012.06.11  Super class changed
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
---- Form is using as a base frame to contain other frames. It can move, resize, has a caption, a close button, and a message bar.
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name Form
--- @class table
--- @field CaptionAlign the caption's align:LEFT, RIGHT, CENTER
--- @field TitleBarColor the title bar's color, default alpha is 0, so make it can't be see
--- @field ShowCloseButton whether the close button is shown
--- @field Caption The text to be displayed at the top of the form.
--- @field Message The text to be displayed at the bottom of the form.
--- @field Position the position of the form' center.
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 11
 if not IGAS:NewAddon("IGAS.Widget.Form", version) then
@@ -28,13 +15,20 @@ class "Form"
 	inherit "Frame"
 	extend "IFContainer"
 
-	-----------------------------------------------
-	--- DockHeader
-	-- @type class
-	-- @name DockHeader
-	-----------------------------------------------
+	doc [======[
+		@name Form
+		@type class
+		@desc Form is used to create base frames to contain other ui elements. It can move, resize, has a caption, a close button, and a message bar.
+	]======]
+
 	class "DockHeader"
 		inherit "VirtualUIObject"
+
+		doc [======[
+			@name DockHeader
+			@type class
+			@desc DockHeader is used to attach the form to the screen border
+		]======]
 
 		_Form_DockHeader = _Form_DockHeader or Frame("IGAS_FORM_DOCKHEADER")
 		_Form_DockHeader.Visible = true
@@ -142,11 +136,16 @@ class "Form"
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Script Handler
 		------------------------------------------------------
+		local function OnEnter(self)
+			if not InCombatLockdown() then
+				self.Form.Visible = true
+			end
+		end
 
 		------------------------------------------------------
-		-- Method
+		-- Dispose
 		------------------------------------------------------
 		function Dispose(self)
 			local dockHeader = self.DockHeader
@@ -157,19 +156,6 @@ class "Form"
 			form.OnPositionChanged = form.OnPositionChanged - Form_OnPositionChanged
 
 			dockHeader:Dispose()
-		end
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Script Handler
-		------------------------------------------------------
-		local function OnEnter(self)
-			if not InCombatLockdown() then
-				self.Form.Visible = true
-			end
 		end
 
 		------------------------------------------------------
@@ -265,32 +251,23 @@ class "Form"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the form is moved by cursor
-	-- @name Form:OnPositionChanged
-	-- @class function
-	-- @usage function Form:OnPositionChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnPositionChanged
+		@type script
+		@desc Run when the form is moved by cursor
+	]======]
 	script "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		if self.__DockHeader then
-			self.__DockHeader:Dispose()
-		end
-	end
-
-	------------------------------------
-	--- Sets the Form's style
-	-- @name Form:SetStyle
-	-- @class function
-	-- @param style the style of the Form : CLASSIC, LIGHT
-	-- @usage Form:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the Form's style
+		@param style System.Widget.Form.FormStyle the style of the Form
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -367,13 +344,12 @@ class "Form"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the Form's style
-	-- @name Form:GetStyle
-	-- @class function
-	-- @return the style of the Form : CLASSIC, LIGHT
-	-- @usage Form:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the Form's style
+		@return System.Widget.Form.FormStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
@@ -386,12 +362,12 @@ class "Form"
 		return Super.SetResizable(self, enabled)
 	end
 
-	------------------------------------
-	--- Update the container's panel's postion
-	-- @name Form:UpdatePanelPosition
-	-- @class function
-	-- @usage Form:UpdatePanelPosition()
-	------------------------------------
+	doc [======[
+		@name UpdatePanelPosition
+		@type method
+		@desc Update the container's postion, needed by IFContainer
+		@return nil
+	]======]
 	function UpdatePanelPosition(self)
 		local panel = self.Panel
 
@@ -405,7 +381,11 @@ class "Form"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Style
+	doc [======[
+		@name Style
+		@type property
+		@desc the style of the form
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -417,7 +397,12 @@ class "Form"
 
 		Type = FormStyle,
 	}
-	-- CaptionAlign
+
+	doc [======[
+		@name CaptionAlign
+		@type property
+		@desc the caption's align:LEFT, RIGHT, CENTER
+	]======]
 	property "CaptionAlign" {
 		Get = function(self)
 			return self:GetChild("Form_Caption"):GetChild("Text").JustifyH
@@ -429,7 +414,12 @@ class "Form"
 		end,
 		Type = JustifyHType,
 	}
-	-- TitleBarColor
+
+	doc [======[
+		@name TitleBarColor
+		@type property
+		@desc the title bar's color, default alpha is 0, so make it can't be see
+	]======]
 	property "TitleBarColor" {
 		Get = function(self)
 			return self:GetChild("Form_Caption").BackdropColor
@@ -439,7 +429,12 @@ class "Form"
 		end,
 		Type = ColorType,
 	}
-	-- HasCloseButton
+
+	doc [======[
+		@name ShowCloseButton
+		@type property
+		@desc whether the close button is shown
+	]======]
 	property "ShowCloseButton" {
 		Get = function(self)
 			return self:GetChild("Form_Btn_Close").Visible
@@ -449,7 +444,12 @@ class "Form"
 		end,
 		Type = Boolean,
 	}
-	-- Caption
+
+	doc [======[
+		@name Caption
+		@type property
+		@desc The text to be displayed at the top of the form.
+	]======]
 	property "Caption" {
 		Set = function(self, title)
 			self:GetChild("Form_Caption"):GetChild("Text").Text = title
@@ -467,7 +467,12 @@ class "Form"
 		end,
 		Type = LocaleString,
 	}
-	-- Message
+
+	doc [======[
+		@name Message
+		@type property
+		@desc The text to be displayed at the bottom of the form.
+	]======]
 	property "Message" {
 		Set = function(self, mes)
 			self:GetChild("Form_StatusBar_Text").Text = mes
@@ -477,7 +482,12 @@ class "Form"
 		end,
 		Type = LocaleString,
 	}
-	-- Position
+
+	doc [======[
+		@name Position
+		@type property
+		@desc the position of the form, simple from property Location
+	]======]
 	property "Position" {
 		Set = function(self, pos)
 			self:ClearAllPoints()
@@ -489,7 +499,12 @@ class "Form"
 		end,
 		Type = Point,
 	}
-	-- DockMode
+
+	doc [======[
+		@name DockMode
+		@type property
+		@desc true if the form should be attached to the screen border
+	]======]
 	property "DockMode" {
 		Get = function(self)
 			return self.__DockHeader and true or false
@@ -506,6 +521,18 @@ class "Form"
 		Type = System.Boolean,
 	}
 
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		if self.__DockHeader then
+			self.__DockHeader:Dispose()
+		end
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
 	function Form(self, name, parent)
 		self.Width = 400
 		self.Height = 300

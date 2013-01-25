@@ -76,7 +76,11 @@ class "Rotation"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Degrees
+	doc [======[
+		@name Degrees
+		@type property
+		@desc the animation's rotation amount (in degrees)
+	]======]
 	property "Degrees" {
 		Get = function(self)
 			return self:GetDegrees()
@@ -86,7 +90,12 @@ class "Rotation"
 		end,
 		Type = Number,
 	}
-	-- Radians
+
+	doc [======[
+		@name Radians
+		@type property
+		@desc the animation's rotation amount (in radians)
+	]======]
 	property "Radians" {
 		Get = function(self)
 			return self:GetRadians()
@@ -96,7 +105,12 @@ class "Rotation"
 		end,
 		Type = Number,
 	}
-	-- Origin
+
+	doc [======[
+		@name Origin
+		@type property
+		@desc the rotation animation's origin point
+	]======]
 	property "Origin" {
 		Get = function(self)
 			return AnimOriginType(self:GetOrigin())

@@ -6,28 +6,6 @@
 --				2011.01.04	Now menubutton's dropdownlist can be a Frame or DropDownList
 --				2011/03/13	Recode as class
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
---- DropDownList is using to create menus
--- <br><br>inherit <a href="..\Base\VirtualUIObject.html">VirtualUIObject</a> For all methods, properties and scriptTypes
--- @name DropDownList
--- @class table
--- @field ItemCount the menu button' count.
--- @field ShowOnCursor whether show the dropdownlist at the cursor's position
--- @field MultiSelect whether the dropdownlist can select mult-checkbuttons
--- @field Alpha Set or get the frame's transparency value(0-1)
--- @field Height the height of the dropdownlist
--- @field Width the width of the dropdownlist
--- @field Visible the visible of the dropdownlist
--- @field Backdrop the backdrop graphic for the dropdownlist
--- @field BackdropBorderColor the shading color for the dropdownlist's border graphic
--- @field BackdropColor the shading color for the dropdownlist's background graphic
--- @field ClampRectInsets offsets from the dropdownlist's edges used when limiting user movement or resizing of the dropdownlist
--- @field HitRectInsets the insets from the dropdownlist's edges which determine its mouse-interactable area
--- @field ID a numeric identifier for the dropdownlist
--- @field Depth the 3D depth of the dropdownlist (for stereoscopic 3D setups)
--- @field DepthIgnored whether the dropdownlist's depth property is ignored (for stereoscopic 3D setups)
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 17
 
@@ -37,6 +15,19 @@ end
 
 class "DropDownList"
 	inherit "VirtualUIObject"
+
+	doc [======[
+		@name DropDownList
+		@type class
+		@desc DropDownList is used to create pop-up menus.
+		@usage
+			menu = DropDownList("Menu", myForm)      -- Create a pop-up menu
+		<br>mnuEdit = menu:AddMenuButton("Edit")     -- Create a menu button to the menu and displayed 'Edit' on it
+		<br>mnuHide = mnuEdit:AddMenuButton("Hide")  -- Create a sub pop-up menu for mnuEdit, and add a 'Hide' menu button to the sub pop-up menu
+		<br>function mnuHide:OnClick()
+		<br>    myForm.Visible = false               -- Hide myForm when click the 'Hide' menu button
+		<br>end
+	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -62,22 +53,14 @@ class "DropDownList"
 		end
 	end
 
-	------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	--- DropDownMenuButton is using to create buttons on the DropDownList, can only be created by DropDownList.
-	-- <br><br>inherit <a href="..\Base\Button.html">Button</a> For all methods, properties and scriptTypes
-	-- @name DropDownMenuButton
-	-- @class table
-	-- @field DropDownList the sub menu binds to the button, can be any frame
-	-- @field Text the text to be displayed on the button
-	-- @field IsCheckButton whether the button is using as a checkbutton
-	-- @field Checked if the button is a checkbutton, whether the button is checked
-	-- @field IsColorPicker whether the button's color picker icon is shown
-	-- @field Icon the icon that to be displayed on the button
-	-- @field TextColor the text color of the button
-	-- @field Index the index of this dropDownMenuButton
-	----------------------------------------------------------------------------------------------------------------------------------------
-    class "DropDownMenuButton"
+	class "DropDownMenuButton"
 		inherit "Button"
+
+		doc [======[
+			@name DropDownMenuButton
+			@type class
+			@desc DropDownMenuButton is used to create menu buttons to the DropDownList
+		]======]
 
 		itemHeight = 16
 
@@ -261,53 +244,36 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Script
 		------------------------------------------------------
-		------------------------------------
-		--- ScriptType, Run when the button's checking state is changed
-		-- @name DropDownMenuButton:OnCheckChanged
-		-- @class function
-		-- @usage function DropDownMenuButton:OnCheckChanged()<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnCheckChanged
+			@type script
+			@desc Run when the button's checking state is changed
+		]======]
 		script "OnCheckChanged"
 
-		------------------------------------
-		--- ScriptType, Run when the color is selected
-		-- @name DropDownMenuButton:OnColorPicked
-		-- @class function
-		-- @usage function DropDownMenuButton:OnColorPicked(red, green, blue, alpha)<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnColorPicked
+			@type script
+			@desc Run when the color is selected
+			@param r number, [0-1], the red part of the color
+			@param g number, [0-1], the green part of the color
+			@param b number, [0-1], the blue part of the color
+			@param a number, [0-1], the alpha part of the color
+		]======]
 		script "OnColorPicked"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		-- Dispose, release resource
-		function Dispose(self)
-			for i,v in pairs(self.Parent:GetChilds()) do
-				if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-					if v.__Index > self.__Index then
-						v.__Index = v.__Index - 1
-						v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
-					end
-				end
-			end
-
-			self.Parent.__ItemCount = self.Parent.__ItemCount - 1
-			self.Parent.Height = self.Parent.Height - itemHeight
-		end
-
-		------------------------------------
-		--- Add or get a dropDownMenuButton with the given name list
-		-- @name DropDownMenuButton:AddMenuButton
-		-- @class function
-		-- @param name the name of the menu button
-		-- @param ... the sub menu item's name list
-		-- @return Reference to the new dropdownmenubutton
-		-- @usage DropDownMenuButton:AddMenuButton("Action", "Click", "Item")
-		------------------------------------
+		doc [======[
+			@name AddMenuButton
+			@type method
+			@desc Add or get a dropDownMenuButton with the given name list
+			@param name string, the name of the menu button
+			@param ... the sub menu item's name list
+			@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
+			@usage btn = object:AddMenuButton("File", "New", "Lua")
+		]======]
 		function AddMenuButton(self, ...)
 			local name, mnuBtn, menu
 
@@ -339,15 +305,15 @@ class "DropDownList"
 			return mnuBtn
 		end
 
-		------------------------------------
-		--- get a dropDownMenuButton with the given name list
-		-- @name DropDownMenuButton:GetMenuButton
-		-- @class function
-		-- @param name the name of the menu button
-		-- @param ... the sub menu item's name list
-		-- @return Reference to the dropdownmenubutton
-		-- @usage DropDownMenuButton:GetMenuButton("Action", "Click", "Item")
-		------------------------------------
+		doc [======[
+			@name GetMenuButton
+			@type method
+			@desc Get a dropDownMenuButton with the given name list
+			@param name string, the name of the menu button
+			@param ... the sub menu item's name list
+			@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
+			@usage btn = object:GetMenuButton("File", "New", "Lua")
+		]======]
 		function GetMenuButton(self, ...)
 			local name, mnuBtn, menu
 
@@ -395,27 +361,28 @@ class "DropDownList"
 			return mnuBtn
 		end
 
-		------------------------------------
-		--- remove dropDownMenuButton with the given name list
-		-- @name DropDownMenuButton:RemoveMenuButton
-		-- @class function
-		-- @param name the name of the menu button
-		-- @param ... the sub menu item's name list
-		-- @usage DropDownMenuButton:RemoveMenuButton("Action", "Click", "Item")
-		------------------------------------
+		doc [======[
+			@name RemoveMenuButton
+			@type method
+			@desc Remove dropDownMenuButton with the given name list
+			@param name string, the name of the menu button
+			@param ... the sub menu item's name list
+			@return nil
+			@usage object:RemoveMenuButton("File", "New", "Lua")
+		]======]
 		function RemoveMenuButton(self, ...)
 			local mnuBtn = self:GetMenuButton(...)
 
 			return mnuBtn and mnuBtn:Dispose()
 		end
 
-		------------------------------------
-		--- Sets the button's display text
-		-- @name DropDownMenuButton:SetText
-		-- @class function
-		-- @param text tht text to be displayed
-		-- @usage DropDownMenuButton:SetText("File")
-		------------------------------------
+		doc [======[
+			@name SetText
+			@type method
+			@desc Sets the button's display text
+			@param text string, tht text to be displayed
+			@return nil
+		]======]
 		function SetText(self, text)
 			if self.__TextColor and next(self.__TextColor) then
 				self:GetChild("Text").Text = string.format("|cFF%02x%02x%02x", floor(self.__TextColor.red * 255), floor(self.__TextColor.green * 255), floor(self.__TextColor.blue * 255))..text.."|r"
@@ -426,24 +393,25 @@ class "DropDownList"
 			updateWidth(self.Parent)
 		end
 
-		------------------------------------
-		--- Gets the button's display text
-		-- @name DropDownMenuButton:GetText
-		-- @class function
-		-- @return the displayed text
-		-- @usage DropDownMenuButton:GetText()
-		------------------------------------
+		doc [======[
+			@name GetText
+			@type method
+			@desc Gets the button's display text
+			@return string
+		]======]
 		function GetText(self)
 			return self.__Text or ""
 		end
 
-		------------------------------------
-		--- Set the sub menu for the button
-		-- @name DropDownMenuButton:SetDropDownList
-		-- @class function
-		-- @param dropDownList the sub menu
-		-- @usage DropDownMenuButton:SetDropDownList(dropdownlist1)
-		------------------------------------
+		doc [======[
+			@name SetDropDownList
+			@type method
+			@desc Set the sub menu for the button
+			@format dropdownList|list
+			@param dropDownList System.Widget.DropDownList
+			@param list System.Widget.List
+			@return nil
+		]======]
 		function SetDropDownList(self, list)
 			if list == nil or (type(list) == "table" and list.IsObjectType and list.Show and list.Hide) then
 				if self.__DropDownList == list then
@@ -475,49 +443,47 @@ class "DropDownList"
 			end
 		end
 
-		------------------------------------
-		--- Get the sub menu for the button
-		-- @name DropDownMenuButton:GetDropDownList
-		-- @class function
-		-- @return dropDownList the sub menu
-		-- @usage DropDownMenuButton:GetDropDownList()
-		------------------------------------
+		doc [======[
+			@name GetDropDownList
+			@type method
+			@desc Get the sub menu for the button
+			@return dropDownList|list
+		]======]
 		function GetDropDownList(self)
 			return self.__DropDownList
 		end
 
-		------------------------------------
-		--- Set the icon to be displayed on the button
-		-- @name DropDownMenuButton:SetIcon
-		-- @class function
-		-- @param icon the icon's path
-		-- @usage DropDownMenuButton:SetIcon([[Interface\Icon\Amubush]])
-		------------------------------------
+		doc [======[
+			@name SetIcon
+			@type method
+			@desc Set the icon to be displayed on the button
+			@param icon string, the texture path to be displayed
+			@return nil
+		]======]
 		function SetIcon(self, texture)
 			self:GetChild("Icon").Visible = (texture and true) or false
 			self:GetChild("Icon").TexturePath = texture
 		end
 
-		------------------------------------
-		--- Get the icon to be displayed on the button
-		-- @name DropDownMenuButton:GetIcon
-		-- @class function
-		-- @return icon the icon's path
-		-- @usage DropDownMenuButton:GetIcon()
-		------------------------------------
+		doc [======[
+			@name GetIcon
+			@type method
+			@desc Get the icon to be displayed on the button
+			@return string the texture's path
+		]======]
 		function GetIcon(self)
 			return self:GetChild("Icon").TexturePath
 		end
 
-		------------------------------------
-		--- Set the text color for the button
-		-- @name DropDownMenuButton:SetTextColor
-		-- @class function
-		-- @param red Red component of the color (0.0 - 1.0)
-		-- @param green Green component of the color (0.0 - 1.0)
-		-- @param blue Blue component of the color (0.0 - 1.0)
-		-- @usage DropDownMenuButton:SetTextColor(1, 1, 1)
-		------------------------------------
+		doc [======[
+			@name SetTextColor
+			@type method
+			@desc Set the text color for the button
+			@param red number, red component of the color (0.0 - 1.0)
+			@param green number, green component of the color (0.0 - 1.0)
+			@param blue number, blue component of the color (0.0 - 1.0)
+			@return nil
+		]======]
 		function SetTextColor(self, r, g, b)
 			if r and type(r) == "number" and r >= 0 and r <= 1
 				and g and type(g) == "number" and g >=0 and g <= 1
@@ -539,71 +505,100 @@ class "DropDownList"
 			end
 		end
 
-		------------------------------------
-		--- Get the text color for the button
-		-- @name DropDownMenuButton:GetTextColor
-		-- @class function
-		-- @return red Red component of the color (0.0 - 1.0)
-		-- @return green Green component of the color (0.0 - 1.0)
-		-- @return blue Blue component of the color (0.0 - 1.0)
-		-- @usage DropDownMenuButton:GetTextColor()
-		------------------------------------
+		doc [======[
+			@name GetTextColor
+			@type method
+			@desc Get the text color for the button
+			@return red number, red component of the color (0.0 - 1.0)
+			@return green number, green component of the color (0.0 - 1.0)
+			@return blue number, blue component of the color (0.0 - 1.0)
+		]======]
 		function GetTextColor(self)
 			if self.__TextColor then
 				return self.__TextColor.red, self.__TextColor.green, self.__TextColor.blue
 			end
 		end
 
+		doc [======[
+			@name SetIndex
+			@type method
+			@desc Set the menu button's index
+			@param index number
+			@return nil
+		]======]
+		function SetIndex(self, index)
+			if type(index) ~= "number" or index <= 0 then
+				error("The Index must be more than 0.", 2)
+			end
+
+			if index > self.Parent.__ItemCount then
+				index = self.Parent.__ItemCount
+			end
+
+			if self.__Index == index then
+				return
+			end
+
+			if index > self.__Index then
+				for i,v in pairs(self.Parent:GetChilds()) do
+					if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+						if v.__Index > self.__Index and v.__Index <= index then
+							v.__Index = v.__Index - 1
+							v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
+						end
+					end
+				end
+			else
+				for i,v in pairs(self.Parent:GetChilds()) do
+					if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+						if v.__Index < self.__Index and v.__Index >= index then
+							v.__Index = v.__Index + 1
+							v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
+						end
+					end
+				end
+			end
+
+			self.__Index = index
+
+			self:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (index - 1)))
+		end
+
+		doc [======[
+			@name GetIndex
+			@type method
+			@desc Return the menu button's index
+			@return number
+		]======]
+		function GetIndex(self)
+			return self.__Index
+		end
+
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Index
+		doc [======[
+			@name Index
+			@type property
+			@desc the index of the dropDownMenuButton
+		]======]
 		property "Index" {
 			Set = function(self, index)
-				if index <= 0 then
-					error("The Index must be more than 0.", 2)
-				end
-
-				if index > self.Parent.__ItemCount then
-					index = self.Parent.__ItemCount
-				end
-
-				if self.__Index == index then
-					return
-				end
-
-				if index > self.__Index then
-					for i,v in pairs(self.Parent:GetChilds()) do
-						if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-							if v.__Index > self.__Index and v.__Index <= index then
-								v.__Index = v.__Index - 1
-								v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
-							end
-						end
-					end
-				else
-					for i,v in pairs(self.Parent:GetChilds()) do
-						if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-							if v.__Index < self.__Index and v.__Index >= index then
-								v.__Index = v.__Index + 1
-								v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
-							end
-						end
-					end
-				end
-
-				self.__Index = index
-
-				self:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (index - 1)))
+				self:SetIndex(index)
 			end,
 
 			Get = function(self)
-				return self.__Index
+				return self:GetIndex()
 			end,
 
 			Type = Number,
 		}
-		-- TextColor
+
+		doc [======[
+			@name TextColor
+			@type property
+			@desc the text color of the dropDownMenuButton
+		]======]
 		property "TextColor" {
 			Set = function(self, color)
 				self:SetTextColor(color.red, color.green, color.blue)
@@ -615,7 +610,12 @@ class "DropDownList"
 
 			Type = ColorType,
 		}
-		-- Icon
+
+		doc [======[
+			@name Icon
+			@type property
+			@desc the icon to be displayed on the dropDownMenuButton
+		]======]
 		property "Icon" {
 			Set = function(self, path)
 				self:SetIcon(path)
@@ -627,7 +627,12 @@ class "DropDownList"
 
 			Type = String + nil,
 		}
-		-- DropDownList
+
+		doc [======[
+			@name DropDownList
+			@type property
+			@desc the sub pop-up menu for the dropDownMenuButton
+		]======]
 		property "DropDownList" {
 			Set = function(self, list)
 				self:SetDropDownList(list)
@@ -639,7 +644,12 @@ class "DropDownList"
 
 			Type = DropDownList + Region + nil,
 		}
-		-- Text
+
+		doc [======[
+			@name Text
+			@type property
+			@desc the displayed text
+		]======]
 		property "Text" {
 			Set = function(self, text)
 				self:SetText(text)
@@ -651,7 +661,12 @@ class "DropDownList"
 
 			Type = LocaleString,
 		}
-		-- IsCheckButton
+
+		doc [======[
+			@name IsCheckButton
+			@type property
+			@desc whether the dropDownMenuButton is a checkButton
+		]======]
 		property "IsCheckButton" {
 			Set = function(self, flag)
 				self.__IsCheckButton = (flag and true) or false
@@ -666,7 +681,12 @@ class "DropDownList"
 
 			Type = Boolean,
 		}
-		-- Checked
+
+		doc [======[
+			@name Checked
+			@type property
+			@desc whether the dropDownMenuButton is checked
+		]======]
 		property "Checked" {
 			Set = function(self, flag)
 				self:GetChild("Check").Visible = (flag and true) or false
@@ -679,7 +699,12 @@ class "DropDownList"
 
 			Type = Boolean,
 		}
-		-- IsColorPicker
+
+		doc [======[
+			@name IsColorPicker
+			@type property
+			@desc whether the dropDownMenuButton is used as a colorpicker
+		]======]
 		property "IsColorPicker" {
 			Set = function(self, flag)
 				self.ColorSwatch.Visible = flag
@@ -691,7 +716,12 @@ class "DropDownList"
 
 			Type = Boolean,
 		}
-		-- Color
+
+		doc [======[
+			@name Color
+			@type property
+			@desc the color used to for the ColorPicker
+		]======]
 		property "Color" {
 			Get = function(self)
 				return self.ColorSwatch.NormalTexture.VertexColor
@@ -701,6 +731,23 @@ class "DropDownList"
 			end,
 			Type = ColorType,
 		}
+
+		------------------------------------------------------
+		-- Dispose
+		------------------------------------------------------
+		function Dispose(self)
+			for i,v in pairs(self.Parent:GetChilds()) do
+				if v ~= self and type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+					if v.__Index > self.__Index then
+						v.__Index = v.__Index - 1
+						v:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (v.__Index - 1)))
+					end
+				end
+			end
+
+			self.Parent.__ItemCount = self.Parent.__ItemCount - 1
+			self.Parent.Height = self.Parent.Height - itemHeight
+		end
 
 		------------------------------------------------------
 		-- Constructor
@@ -941,65 +988,48 @@ class "DropDownList"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the DropDownList becomes visible
-	-- @name DropDownList:OnShow
-	-- @class function
-	-- @usage function DropDownList:OnShow()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnShow
+		@type script
+		@desc Run when the Region becomes visible
+	]======]
 	script "OnShow"
 
-	------------------------------------
-	--- ScriptType, Run when the DropDownList's visbility changes to hidden
-	-- @name DropDownList:OnHide
-	-- @class function
-	-- @usage function DropDownList:OnHide()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHide
+		@type script
+		@desc Run when the Region's visbility changes to hidden
+	]======]
 	script "OnHide"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse cursor enters the DropDownList's interactive area
-	-- @name DropDownList:OnEnter
-	-- @class function
-	-- @param motion True if the handler is being run due to actual mouse movement; false if the cursor entered the DropDownList due to other circumstances (such as the frame being created underneath the cursor)
-	-- @usage function DropDownList:OnEnter(motion)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEnter
+		@type script
+		@desc Run when the mouse cursor enters the frame's interactive area
+		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)
+	]======]
 	script "OnEnter"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse cursor leaves the DropDownList's interactive area
-	-- @name DropDownList:OnLeave
-	-- @class function
-	-- @param motion True if the handler is being run due to actual mouse movement; false if the cursor left the DropDownList due to other circumstances (such as the frame being created underneath the cursor)
-	-- @usage function DropDownList:OnLeave(motion)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnLeave
+		@type script
+		@desc Run when the mouse cursor leaves the frame's interactive area
+		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)
+	]======]
 	script "OnLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	-- Dispose, release resource
-	function Dispose(self)
-		self.__DdList:Dispose()
-	end
-
-	------------------------------------
-	--- Add or get a dropDownMenuButton with the given name list
-	-- @name DropDownList:AddMenuButton
-	-- @class function
-	-- @param name the name of the menu button
-	-- @param ... the sub menu item's name list
-	-- @return Reference to the new dropdownmenubutton
-	-- @usage DropDownList:AddMenuButton("Action", "Click", "Item")
-	------------------------------------
+	doc [======[
+		@name AddMenuButton
+		@type method
+		@desc Add or get a dropDownMenuButton with the given name list
+		@param name string, the name of the menu button
+		@param ... the sub menu item's name list
+		@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
+		@usage btn = object:AddMenuButton("File", "New", "Lua")
+	]======]
 	function AddMenuButton(self, ...)
 		local name, mnuBtn, menu
 
@@ -1031,15 +1061,15 @@ class "DropDownList"
 		return mnuBtn
 	end
 
-	------------------------------------
-	--- get a dropDownMenuButton with the given name list
-	-- @name DropDownList:GetMenuButton
-	-- @class function
-	-- @param name the name of the menu button
-	-- @param ... the sub menu item's name list
-	-- @return Reference to the dropdownmenubutton
-	-- @usage DropDownList:GetMenuButton("Action", "Click", "Item")
-	------------------------------------
+	doc [======[
+		@name GetMenuButton
+		@type method
+		@desc Get a dropDownMenuButton with the given name list
+		@param name string, the name of the menu button
+		@param ... the sub menu item's name list
+		@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
+		@usage btn = object:GetMenuButton("File", "New", "Lua")
+	]======]
 	function GetMenuButton(self, ...)
 		local name, mnuBtn, menu
 
@@ -1087,206 +1117,197 @@ class "DropDownList"
 		return mnuBtn
 	end
 
-	------------------------------------
-	--- remove dropDownMenuButton with the given name list
-	-- @name DropDownList:RemoveMenuButton
-	-- @class function
-	-- @param name the name of the menu button
-	-- @param ... the sub menu item's name list
-	-- @usage DropDownList:RemoveMenuButton("Action", "Click", "Item")
-	------------------------------------
+	doc [======[
+		@name RemoveMenuButton
+		@type method
+		@desc Remove dropDownMenuButton with the given name list
+		@param name string, the name of the menu button
+		@param ... the sub menu item's name list
+		@return nil
+		@usage object:RemoveMenuButton("File", "New", "Lua")
+	]======]
 	function RemoveMenuButton(self, ...)
 		local mnuBtn = self:GetMenuButton(...)
 
 		return mnuBtn and mnuBtn:Dispose()
 	end
 
-	------------------------------------
-	--- Return this object's alpha (transparency) value.
-	-- @name DropDownList:GetAlpha
-	-- @class function
-	-- @return this object's alpha (transparency) value
-	-- @usage DropDownList:GetAlpha()
-	------------------------------------
+	doc [======[
+		@name GetAlpha
+		@type method
+		@desc Returns the opacity of the region relative to its parent
+		@return number Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetAlpha(self)
 		return self.__DdList:GetAlpha() or 1
 	end
 
-	------------------------------------
-	--- Set the object's alpha (transparency) value.
-	-- @name DropDownList:SetAlpha
-	-- @class function
-	-- @param alpha this object's alpha (transparency) value
-	-- @usage DropDownList:SetAlpha(1)
-	------------------------------------
+	doc [======[
+		@name SetAlpha
+		@type method
+		@desc Sets the opacity of the region relative to its parent
+		@param alpha number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetAlpha(self, alpha)
 		self.__DdList:SetAlpha(alpha)
 	end
 
-	------------------------------------
-	--- Clear all attachment points for this object.
-	-- @name DropDownList:ClearAllPoints
-	-- @class function
-	-- @usage DropDownList:ClearAllPoints()
-	------------------------------------
+	doc [======[
+		@name ClearAllPoints
+		@type method
+		@desc Removes all anchor points from the region
+		@return nil
+	]======]
 	function ClearAllPoints(self)
 		self.__DdList:ClearAllPoints()
 	end
 
-	------------------------------------
-	--- Get the y location of the bottom edge of this object
-	-- @name DropDownList:GetBottom
-	-- @class function
-	-- @return the y location of the bottom edge of this object
-	-- @usage DropDownList:GetBottom()
-	------------------------------------
+	doc [======[
+		@name GetBottom
+		@type method
+		@desc Returns the distance from the bottom of the screen to the bottom of the region
+		@return number Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)
+	]======]
 	function GetBottom(self)
 		return self.__DdList:GetBottom()
 	end
 
-	------------------------------------
-	--- Get the coordinates of the center of this object
-	-- @name DropDownList:GetCenter
-	-- @class function
-	-- @return x - Distance from the left edge of the screen to the center of the object (in pixels)
-	-- @return y - Distance from the bottom edge of the screen to the center of the object (in pixels)
-	-- @usage DropDownList:GetCenter()
-	------------------------------------
+	doc [======[
+		@name GetCenter
+		@type method
+		@desc Returns the screen coordinates of the region's center
+		@return x number, distance from the left edge of the screen to the center of the region (in pixels)
+		@return y number, distance from the bottom edge of the screen to the center of the region (in pixels)
+	]======]
 	function GetCenter(self)
 		return self.__DdList:GetCenter()
 	end
 
-	------------------------------------
-	--- Get the height of this object.
-	-- @name DropDownList:GetHeight
-	-- @class function
-	-- @return the height of this object
-	-- @usage DropDownList:GetHeight()
-	------------------------------------
+	doc [======[
+		@name GetHeight
+		@type method
+		@desc Returns the height of the region
+		@return number Height of the region (in pixels)
+	]======]
 	function GetHeight(self)
 		return self.__DdList:GetHeight()
 	end
 
-	------------------------------------
-	--- Get the x location of the left edge of this object
-	-- @name DropDownList:GetLeft
-	-- @class function
-	-- @return the x location of the left edge of this object
-	-- @usage DropDownList:GetLeft()
-	------------------------------------
+	doc [======[
+		@name GetLeft
+		@type method
+		@desc Returns the distance from the left edge of the screen to the left edge of the region
+		@return number Distance from the left edge of the screen to the left edge of the region (in pixels)
+	]======]
 	function GetLeft(self)
 		return self.__DdList:GetLeft()
 	end
 
-	------------------------------------
-	--- Get the number of anchor points for this object
-	-- @name DropDownList:GetNumPoints
-	-- @class function
-	-- @return the number of anchor points for this object
-	-- @usage DropDownList:GetNumPoints()
-	------------------------------------
+	doc [======[
+		@name GetNumPoints
+		@type method
+		@desc Returns the number of anchor points defined for the region
+		@return number Number of defined anchor points for the region
+	]======]
 	function GetNumPoints(self)
 		return self.__DdList:GetNumPoints()
 	end
 
-	------------------------------------
-	--- Returns information about one of the object's anchor points
-	-- @name DropDownList:GetPoint
-	-- @class function
-	-- @param index Index of an anchor point defined for the object (between 1 and DropDownList:GetNumPoints())
-	-- @return point - Point on this object at which it is anchored to another (string, anchorPoint)
-	-- @return relativeTo - Reference to the other object to which this object is anchored (region)
-	-- @return relativePoint - Point on the other object to which this object is anchored (string, anchorPoint)
-	-- @return xOffset - Horizontal distance between point and relativePoint (in pixels; positive values put point  to the right of relativePoint) (number)
-	-- @return yOffset - Vertical distance between point and relativePoint (in pixels; positive values put point  below relativePoint) (number)
-	-- @usage DropDownList:GetPoint(1)
-	------------------------------------
+	doc [======[
+		@name GetPoint
+		@type method
+		@desc Returns information about one of the region's anchor points
+		@param index number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())
+		@return point System.Widget.FramePoint, point on this region at which it is anchored to another
+		@return relativeTo System.Widget.Region, reference to the other region to which this region is anchored
+		@return relativePoint System.Widget.FramePoint, point on the other region to which this region is anchored
+		@return xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)
+		@return yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)
+	]======]
 	function GetPoint(self, pointNum)
 		return self.__DdList:GetPoint(pointNum)
 	end
 
-	------------------------------------
-	--- Get the x location of the right edge of this object
-	-- @name DropDownList:GetRight
-	-- @class function
-	-- @return the x location of the right edge of this object
-	-- @usage DropDownList:GetRight()
-	------------------------------------
+	doc [======[
+		@name GetRight
+		@type method
+		@desc Returns the distance from the left edge of the screen to the right edge of the region
+		@return number Distance from the left edge of the screen to the right edge of the region (in pixels)
+	]======]
 	function GetRight(self)
 		return self.__DdList:GetRight()
 	end
 
-	------------------------------------
-	--- Get the y location of the top edge of this object
-	-- @name DropDownList:GetTop
-	-- @class function
-	-- @return the y location of the top edge of this object
-	-- @usage DropDownList:GetTop()
-	------------------------------------
+	doc [======[
+		@name GetTop
+		@type method
+		@desc Returns the distance from the bottom of the screen to the top of the region
+		@return number Distance from the bottom edge of the screen to the top edge of the region (in pixels)
+	]======]
 	function GetTop(self)
 		return self.__DdList:GetTop()
 	end
 
-	------------------------------------
-	--- Get the width of this object
-	-- @name DropDownList:GetWidth
-	-- @class function
-	-- @return the width of this object
-	-- @usage DropDownList:GetWidth()
-	------------------------------------
+	doc [======[
+		@name GetWidth
+		@type method
+		@desc Returns the width of the region
+		@return number Width of the region (in pixels)
+	]======]
 	function GetWidth(self)
 		return self.__DdList:GetWidth()
 	end
 
-	------------------------------------
-	--- Set this object to hidden (it and all of its children will disappear).
-	-- @name DropDownList:Hide
-	-- @class function
-	-- @usage DropDownList:Hide()
-	------------------------------------
+	doc [======[
+		@name Hide
+		@type method
+		@desc Hide the region
+		@return nil
+	]======]
 	function Hide(self)
 		return self.__DdList:Hide()
 	end
 
-	------------------------------------
-	--- Set this object to shown (it will appear if its parent is visible).
-	-- @name DropDownList:Show
-	-- @class function
-	-- @usage DropDownList:Show()
-	------------------------------------
+	doc [======[
+		@name Show
+		@type method
+		@desc Show the region
+		@return nil
+	]======]
 	function Show(self)
 		self.__DdList:Show()
 	end
 
-	------------------------------------
-	--- Determine if this object is shown (would be visible if its parent was visible).
-	-- @name DropDownList:IsShown
-	-- @class function
-	-- @return true if the object is shown
-	-- @usage DropDownList:IsShown()
-	------------------------------------
+	doc [======[
+		@name IsShown
+		@type method
+		@desc Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.
+		@return boolean 1 if the region is shown; otherwise nil
+	]======]
 	function IsShown(self)
 		return self.__DdList:IsShown()
 	end
 
-	------------------------------------
-	--- Get whether the object is visible on screen (logically (IsShown() and GetParent():IsVisible()));
-	-- @name DropDownList:IsVisible
-	-- @class function
-	-- @return true if the object is visible
-	-- @usage DropDownList:IsVisible()
-	------------------------------------
+	doc [======[
+		@name IsVisible
+		@type method
+		@desc Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)
+		@return boolean 1 if the region is visible; otherwise nil
+	]======]
 	function IsVisible(self)
 		return self.__DdList:IsVisible()
 	end
 
-	------------------------------------
-	--- Sets all anchor points of the object to match those of another object. If no object is specified, the object's anchor points are set to those of its parent.
-	-- @name DropDownList:SetAllPoints
-	-- @class function
-	-- @param object Reference to a object or a global name of a object
-	-- @usage DropDownList:SetAllPoints(UIParent)
-	------------------------------------
+	doc [======[
+		@name SetAllPoints
+		@type method
+		@desc Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.
+		@format [name|region]
+		@param name global name of a System.Widget.Region
+		@param region System.Widget.Region
+		@return nil
+	]======]
 	function SetAllPoints(self, frame)
 		if frame and type(frame) == "string" then
 			frame = _G[frame]
@@ -1299,338 +1320,316 @@ class "DropDownList"
 		self.__DdList:SetAllPoints(frame)
 	end
 
-	------------------------------------
-	--- Sets an anchor point for the object
-	-- @name DropDownList:SetPoint
-	-- @class function
-	-- @param point Point on this object at which it is to be anchored to another (string, anchorPoint)
-	-- @param relativeTo Reference to the other object to which this object is to be anchored; if nil or omitted, anchors the object relative to its parent (or to the screen dimensions if the region has no parent) (region)
-	-- @param relativePoint Point on the other object to which this object is to be anchored; if nil or omitted, defaults to the same value as point (string, anchorPoint)
-	-- @param xOffset Horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0 (number)
-	-- @param yOffset Vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0 (number)
-	-- @usage DropDownList:SetPoint("CENTER", UIParent, "CENTER", 50, 40)
-	------------------------------------
+	doc [======[
+		@name SetPoint
+		@type method
+		@desc Sets an anchor point for the region
+		@param point System.Widget.FramePoint, point on this region at which it is to be anchored to another
+		@param relativeTo System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)
+		@param relativePoint System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point
+		@param xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0
+		@param yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0
+	]======]
 	function SetPoint(self, point, relativeObject, relativePoint, xOfs, yOfs)
 		self.__DdList:SetPoint(point, relativeObject, relativePoint, xOfs, yOfs)
 	end
 
-	------------------------------------
-	--- Returns the position and dimensions of the object
-	-- @name DropDownList:GetRect
-	-- @class function
-	-- @return left - Distance from the left edge of the screen to the left edge of the object (in pixels) (number)
-	-- @return bottom - Distance from the bottom edge of the screen to the bottom of the object (in pixels) (number)
-	-- @return width - Width of the object (in pixels) (number)
-	-- @return height - Height of the object (in pixels)
-	-- @usage DropDownList:GetRect()
-	------------------------------------
+	doc [======[
+		@name GetRect
+		@type method
+		@desc Returns the position and dimensions of the region
+		@return left number, Distance from the left edge of the screen to the left edge of the region (in pixels)
+		@return bottom number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)
+		@return width number, Width of the region (in pixels)
+		@return height number, Height of the region (in pixels)
+	]======]
 	function GetRect(self)
 		return self.__DdList:GetRect()
 	end
 
-	------------------------------------
-	--- Returns whether the object is currently being dragged
-	-- @name DropDownList:IsDragging
-	-- @class function
-	-- @return isDragging - 1 if the object (or its parent or ancestor) is currently being dragged; otherwise nil
-	-- @usage DropDownList:IsDragging()
-	------------------------------------
+	doc [======[
+		@name IsDragging
+		@type method
+		@desc Returns whether the region is currently being dragged
+		@return boolean 1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil
+	]======]
 	function IsDragging(self)
 		return self.__DdList:IsDragging()
 	end
 
-	------------------------------------
-	--- Disable rendering of "regions" (fontstrings, textures) in the specified draw layer.
-	-- @name DropDownList:DisableDrawLayer
-	-- @class function
-	-- @param layer Name of a graphics layer
-	-- @usage DropDownList:DisableDrawLayer("ARTWORK")
-	------------------------------------
+	doc [======[
+		@name DisableDrawLayer
+		@type method
+		@desc Prevents display of all child objects of the frame on a specified graphics layer
+		@param layer System.Widget.DrawLayer, name of a graphics layer
+		@return nil
+	]======]
 	function DisableDrawLayer(self, ...)
 		return self.__DdList:DisableDrawLayer(...)
 	end
 
-	------------------------------------
-	--- Enable rendering of "regions" (fontstrings, textures) in the specified draw layer.
-	-- @name DropDownList:EnableDrawLayer
-	-- @class function
-	-- @param layer Name of a graphics layer
-	-- @usage DropDownList:EnableDrawLayer("ARTWORK")
-	------------------------------------
+	doc [======[
+		@name EnableDrawLayer
+		@type method
+		@desc Allows display of all child objects of the frame on a specified graphics layer
+		@param layer System.Widget.DrawLayer, name of a graphics layer
+		@return nil
+	]======]
 	function EnableDrawLayer(self, ...)
 		return self.__DdList:EnableDrawLayer(...)
 	end
 
-	------------------------------------
-	--- Creates and returns a backdrop table suitable for use in SetBackdrop
-	-- @name DropDownList:GetBackdrop
-	-- @class function
-	-- @return A table containing the backdrop settings, or nil if the object has no backdrop
-	-- @usage DropDownList:GetBackdrop()
-	------------------------------------
+	doc [======[
+		@name GetBackdrop
+		@type method
+		@desc Returns information about the frame's backdrop graphic.
+		@return System.Widget.BackdropType A table containing the backdrop settings, or nil if the frame has no backdrop
+	]======]
 	function GetBackdrop(self, ...)
 		return self.__DdList:GetBackdrop(...)
 	end
 
-	------------------------------------
-	--- Set the backdrop of the object according to the specification provided.
-	-- @name DropDownList:SetBackdrop
-	-- @class function
-	-- @param backdropTable Optional,A table containing the backdrop settings, or nil to remove the object's backdrop
-	-- @usage DropDownList:SetBackdrop{<br>
-	--    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Background",<br>
-	--    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",<br>
-	--    tile = true,<br>
-	--    tileSize = 32,<br>
-	--    edgeSize = 32,<br>
-	--    insets = {<br>
-	--         left = 11,<br>
-	--         right = 12,<br>
-	--         top = 12,<br>
-	--         bottom = 11,<br>
-	--    },<br>
-	-- }<br>
-	------------------------------------
+	doc [======[
+		@name SetBackdrop
+		@type method
+		@desc Sets a backdrop graphic for the frame. See example for details of the backdrop table format.
+		@param backdrop System.Widget.BackdropType A table containing the backdrop settings, or nil to remove the frame's backdrop
+		@return nil
+	]======]
 	function SetBackdrop(self, backdropTable)
 		return self.__DdList:SetBackdrop(backdropTable or nil)
 	end
 
-	------------------------------------
-	--- Gets the object's backdrop border color (r, g, b, a)
-	-- @name DropDownList:GetBackdropBorderColor
-	-- @class function
-	-- @return red Red component of the color (0.0 - 1.0)
-	-- @return green Green component of the color (0.0 - 1.0)
-	-- @return blue Blue component of the color (0.0 - 1.0)
-	-- @return alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage DropDownList:GetBackdropBorderColor()
-	------------------------------------
+	doc [======[
+		@name GetBackdropBorderColor
+		@type method
+		@desc Returns the shading color for the frame's border graphic
+		@return red number, red component of the color (0.0 - 1.0)
+		@return green number, green component of the color (0.0 - 1.0)
+		@return blue number, blue component of the color (0.0 - 1.0)
+		@return alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetBackdropBorderColor(self, ...)
 		return self.__DdList:GetBackdropBorderColor(...)
 	end
 
-	------------------------------------
-	--- Set the object's backdrop's border's color.
-	-- @name DropDownList:SetBackdropBorderColor
-	-- @class function
-	-- @param red Red component of the color (0.0 - 1.0)
-	-- @param green Green component of the color (0.0 - 1.0)
-	-- @param blue Blue component of the color (0.0 - 1.0)
-	-- @param alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage DropDownList:SetBackdropBorderColor(1, 1, 0.8, 0.4)
-	------------------------------------
+	doc [======[
+		@name SetBackdropBorderColor
+		@type method
+		@desc Sets a shading color for the frame's border graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.
+		@param red number, red component of the color (0.0 - 1.0)
+		@param green number, green component of the color (0.0 - 1.0)
+		@param blue number, blue component of the color (0.0 - 1.0)
+		@param alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetBackdropBorderColor(self, ...)
 		return self.__DdList:SetBackdropBorderColor(...)
 	end
 
-	------------------------------------
-	--- Gets the object's backdrop color (r, g, b, a)
-	-- @name DropDownList:GetBackdropColor
-	-- @class function
-	-- @return red Red component of the color (0.0 - 1.0)
-	-- @return green Green component of the color (0.0 - 1.0)
-	-- @return blue Blue component of the color (0.0 - 1.0)
-	-- @return alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage DropDownList:GetBackdropColor()
-	------------------------------------
+	doc [======[
+		@name GetBackdropColor
+		@type method
+		@desc Returns the shading color for the frame's background graphic
+		@return red number, red component of the color (0.0 - 1.0)
+		@return green number, green component of the color (0.0 - 1.0)
+		@return blue number, blue component of the color (0.0 - 1.0)
+		@return alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetBackdropColor(self, ...)
 		return self.__DdList:GetBackdropColor(...)
 	end
 
-	------------------------------------
-	--- Set the object's backdrop color.
-	-- @name DropDownList:SetBackdropColor
-	-- @class function
-	-- @param red Red component of the color (0.0 - 1.0)
-	-- @param green Green component of the color (0.0 - 1.0)
-	-- @param blue Blue component of the color (0.0 - 1.0)
-	-- @param alpha Alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage DropDownList:SetBackdropColor(1, 1, 0.8, 0.4)
-	------------------------------------
+	doc [======[
+		@name SetBackdropColor
+		@type method
+		@desc Sets a shading color for the frame's background graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.
+		@param red number, red component of the color (0.0 - 1.0)
+		@param green number, green component of the color (0.0 - 1.0)
+		@param blue number, blue component of the color (0.0 - 1.0)
+		@param alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetBackdropColor(self, ...)
 		return self.__DdList:SetBackdropColor(...)
 	end
 
-	------------------------------------
-	--- Gets the modifiers to the object's rectangle used for clamping the object to screen.
-	-- @name DropDownList:GetClampRectInsets
-	-- @class function
-	-- @return left Offset from the left edge of the object to the left edge of its clamping area (in pixels)
-	-- @return right Offset from the right edge of the object's clamping area to the right edge of the object (in pixels)
-	-- @return top Offset from the top edge of the object's clamping area to the top edge of the object (in pixels)
-	-- @return bottom Offset from the bottom edge of the object to the bottom edge of its clamping area (in pixels)
-	-- @usage DropDownList:GetClampRectInsets()
-	------------------------------------
+	doc [======[
+		@name GetClampRectInsets
+		@type method
+		@desc Returns offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the values are all offsets along the normal axes, so to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.
+		@return left number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)
+		@return right number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)
+		@return top number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)
+		@return bottom number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)
+	]======]
 	function GetClampRectInsets(self, ...)
 		return self.__DdList:GetClampRectInsets(...)
 	end
 
-	------------------------------------
-	--- Modify the object's rectangle used to prevent dragging offscreen.
-	-- @name DropDownList:SetClampRectInsets
-	-- @class function
-	-- @param left Offset from the left edge of the object to the left edge of its clamping area (in pixels)
-	-- @param right Offset from the right edge of the object's clamping area to the right edge of the object (in pixels)
-	-- @param top Offset from the top edge of the object's clamping area to the top edge of the object (in pixels)
-	-- @param bottom Offset from the bottom edge of the object to the bottom edge of its clamping area (in pixels)
-	-- @usage DropDownList:SetClampRectInsets(50, -50, -50, 50)
-	------------------------------------
+	doc [======[
+		@name SetClampRectInsets
+		@type method
+		@desc Sets offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the parameters are offsets along the normal axes -- to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.
+		@param left number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)
+		@param right number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)
+		@param top number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)
+		@param bottom number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)
+		@return nil
+	]======]
 	function SetClampRectInsets(self, ...)
 		return self.__DdList:SetClampRectInsets(...)
 	end
 
-	------------------------------------
-	--- Returns the 3D depth of the object (for stereoscopic 3D setups)
-	-- @name DropDownList:GetDepth
-	-- @class function
-	-- @return Apparent 3D depth of this object relative to that of its parent object
-	-- @usage DropDownList:GetDepth()
-	------------------------------------
+	doc [======[
+		@name GetDepth
+		@type method
+		@desc Returns the 3D depth of the frame (for stereoscopic 3D setups)
+		@return number apparent 3D depth of this frame relative to that of its parent frame
+	]======]
 	function GetDepth(self, ...)
 		return self.__DdList:GetDepth(...)
 	end
 
-	------------------------------------
-	--- Sets the 3D depth of the object (for stereoscopic 3D configurations)
-	-- @name DropDownList:SetDepth
-	-- @class function
-	-- @param depth Apparent 3D depth of this object relative to that of its parent object
-	-- @usage DropDownList:SetDepth(10)
-	------------------------------------
+	doc [======[
+		@name SetDepth
+		@type method
+		@desc Sets the 3D depth of the frame (for stereoscopic 3D configurations)
+		@param depth number, apparent 3D depth of this frame relative to that of its parent frame
+		@return nil
+	]======]
 	function SetDepth(self, ...)
 		return self.__DdList:SetDepth(...)
 	end
 
-	------------------------------------
-	--- Returns the effective alpha of a object.
-	-- @name DropDownList:GetEffectiveAlpha
-	-- @class function
-	-- @return Effective alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-	-- @usage DropDownList:GetEffectiveAlpha()
-	------------------------------------
+	doc [======[
+		@name GetEffectiveAlpha
+		@type method
+		@desc Returns the overall opacity of the frame. Unlike :GetAlpha() which returns the opacity of the frame relative to its parent, this function returns the absolute opacity of the frame, taking into account the relative opacity of parent frames.
+		@return number, effective alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetEffectiveAlpha(self, ...)
 		return self.__DdList:GetEffectiveAlpha(...)
 	end
 
-	------------------------------------
-	--- Returns the overall 3D depth of the object (for stereoscopic 3D configurations).
-	-- @name DropDownList:GetEffectiveDepth
-	-- @class function
-	-- @return Apparent 3D depth of this object relative to the screen
-	-- @usage DropDownList:GetEffectiveDepth()
-	------------------------------------
+	doc [======[
+		@name GetEffectiveDepth
+		@type method
+		@desc Returns the overall 3D depth of the frame (for stereoscopic 3D configurations). Unlike :GetDepth() which returns the apparent depth of the frame relative to its parent, this function returns the absolute depth of the frame, taking into account the relative depths of parent frames.
+		@return number, apparent 3D depth of this frame relative to the screen
+	]======]
 	function GetEffectiveDepth(self, ...)
 		return self.__DdList:GetEffectiveDepth(...)
 	end
 
-	------------------------------------
-	--- Get the scale factor of this object relative to the root window.
-	-- @name DropDownList:GetEffectiveScale
-	-- @class function
-	-- @return Scale factor for the object relative to its parent
-	-- @usage DropDownList:GetEffectiveScale()
-	------------------------------------
+	doc [======[
+		@name GetEffectiveScale
+		@type method
+		@desc Returns the overall scale factor of the frame. Unlike :GetScale() which returns the scale factor of the frame relative to its parent, this function returns the absolute scale factor of the frame, taking into account the relative scales of parent frames.
+		@return number, scale factor for the frame relative to its parent
+	]======]
 	function GetEffectiveScale(self, ...)
 		return self.__DdList:GetEffectiveScale(...)
 	end
 
-	------------------------------------
-	--- Gets the object's hit rectangle inset distances (l, r, t, b)
-	-- @name DropDownList:GetHitRectInsets
-	-- @class function
-	-- @return left Distance from the left edge of the object to the left edge of its mouse-interactive area (in pixels)
-	-- @return right Distance from the right edge of the object to the right edge of its mouse-interactive area (in pixels)
-	-- @return top Distance from the top edge of the object to the top edge of its mouse-interactive area (in pixels)
-	-- @return bottom Distance from the bottom edge of the object to the bottom edge of its mouse-interactive area (in pixels)
-	-- @usage DropDownList:GetHitRectInsets()
-	------------------------------------
+	doc [======[
+		@name GetHitRectInsets
+		@type method
+		@desc Returns the insets from the frame's edges which determine its mouse-interactable area
+		@return left number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)
+		@return right number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)
+		@return top number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)
+		@return bottom number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)
+	]======]
 	function GetHitRectInsets(self, ...)
 		return self.__DdList:GetHitRectInsets(...)
 	end
 
-	------------------------------------
-	--- Set the inset distances for the object's hit rectangle
-	-- @name DropDownList:SetHitRectInsets
-	-- @class function
-	-- @param left Distance from the left edge of the object to the left edge of its mouse-interactive area (in pixels)
-	-- @param right Distance from the right edge of the object to the right edge of its mouse-interactive area (in pixels)
-	-- @param top Distance from the top edge of the object to the top edge of its mouse-interactive area (in pixels)
-	-- @param bottom Distance from the bottom edge of the object to the bottom edge of its mouse-interactive area (in pixels)
-	-- @usage DropDownList:SetHitRectInsets(10, -10, -10, 10)
-	------------------------------------
+	doc [======[
+		@name SetHitRectInsets
+		@type method
+		@desc Sets the insets from the frame's edges which determine its mouse-interactable area
+		@param left number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)
+		@param right number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)
+		@param top number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)
+		@param bottom number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)
+		@return nil
+	]======]
 	function SetHitRectInsets(self, ...)
 		return self.__DdList:SetHitRectInsets(...)
 	end
 
-	------------------------------------
-	--- Get the ID of this object.
-	-- @name DropDownList:GetID
-	-- @class function
-	-- @return the ID of this object
-	-- @usage DropDownList:GetID()
-	------------------------------------
+	doc [======[
+		@name GetID
+		@type method
+		@desc Returns the frame's numeric identifier. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).
+		@return number, a numeric identifier for the frame
+	]======]
 	function GetID(self, ...)
 		return self.__DdList:GetID(...)
 	end
 
-	------------------------------------
-	--- Set the ID of this object.
-	-- @name DropDownList:SetID
-	-- @class function
-	-- @param id A numeric identifier for the object
-	-- @usage DropDownList:SetID(1)
-	------------------------------------
+	doc [======[
+		@name SetID
+		@type method
+		@desc Sets a numeric identifier for the frame. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).
+		@param id number, a numeric identifier for the frame
+		@return nil
+	]======]
 	function SetID(self, ...)
 		return self.__DdList:SetID(...)
 	end
 
-	------------------------------------
-	--- Sets whether the object's depth property is ignored (for stereoscopic 3D setups).
-	-- @name DropDownList:IgnoreDepth
-	-- @class function
-	-- @param enable True to ignore the object's depth property; false to disable
-	-- @usage DropDownList:IgnoreDepth(false)
-	------------------------------------
+	doc [======[
+		@name IgnoreDepth
+		@type method
+		@desc Sets whether the frame's depth property is ignored (for stereoscopic 3D setups). If a frame's depth property is ignored, the frame itself is not rendered with stereoscopic 3D separation, but 3D graphics within the frame may be; this property is used on the default UI's WorldFrame.
+		@param enable boolean, true to ignore the frame's depth property; false to disable
+		@return nil
+	]======]
 	function IgnoreDepth(self, ...)
 		return self.__DdList:IgnoreDepth(...)
 	end
 
-	------------------------------------
-	--- Returns whether the object's depth property is ignored (for stereoscopic 3D setups)
-	-- @name DropDownList:IsIgnoringDepth
-	-- @class function
-	-- @return 1 if the object's depth property is ignored; otherwise nil
-	-- @usage DropDownList:IsIgnoringDepth()
-	------------------------------------
+	doc [======[
+		@name IsIgnoringDepth
+		@type method
+		@desc Returns whether the frame's depth property is ignored (for stereoscopic 3D setups)
+		@return boolean 1 if the frame's depth property is ignored; otherwise nil
+	]======]
 	function IsIgnoringDepth(self, ...)
 		return self.__DdList:IsIgnoringDepth(...)
 	end
 
-	------------------------------------
-	--- Get the list of "children" (frames and things derived from frames) of this object.
-	-- @name DropDownList:GetChilds
-	-- @class function
-	-- @return a list of child-frames
-	-- @usage DropDownList:GetChilds()
-	------------------------------------
+	doc [======[
+		@name GetChilds
+		@type method
+		@desc Get the child list of the widget object, !!!IMPORTANT!!!, don't do any change to the return table, this table is the real table that contains the child objects.
+		@return table the child objects list
+	]======]
 	function GetChilds(self, ...)
 		return self.__DdList:GetChilds()
 	end
 
-	------------------------------------
-	--- Get the child of the given name
-	-- @name DropDownList:GetChild
-	-- @class function
-	-- @param name the child's name or itself
-	-- @return the child
-	-- @usage DropDownList:GetChild("BtnOkay")
-	------------------------------------
+	doc [======[
+		@name GetChild
+		@type method
+		@desc Get the child object for the given name
+		@param name string, the child's name
+		@return widgetObject the child widget object if existed
+	]======]
 	function GetChild(self, ob)
 		return self.__DdList:GetChild(ob)
 	end
 
-	--	Property
-	--- Alpha
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Alpha
+		@type property
+		@desc the frame's transparency value(0-1)
+	]======]
 	property "Alpha" {
 		Set = function(self, alpha)
 			self:SetAlpha(alpha)
@@ -1642,6 +1641,12 @@ class "DropDownList"
 
 		Type = ColorFloat,
 	}
+
+	doc [======[
+		@name ShowOnCursor
+		@type property
+		@desc whether show on the cursor position
+	]======]
 	property "ShowOnCursor" {
 		Set = function(self, flag)
 			self = self.__DdList
@@ -1655,6 +1660,12 @@ class "DropDownList"
 
 		Type = Boolean,
 	}
+
+	doc [======[
+		@name MultiSelect
+		@type property
+		@desc whether the checkButton on the dropDownList can be multi-selected
+	]======]
 	property "MultiSelect" {
 		Set = function(self, flag)
 			self = self.__DdList
@@ -1668,7 +1679,12 @@ class "DropDownList"
 
 		Type = Boolean,
 	}
-	--- Height
+
+	doc [======[
+		@name Height
+		@type property
+		@desc the height of the region
+	]======]
 	property "Height" {
 		Get = function(self)
 			self = self.__DdList
@@ -1677,7 +1693,12 @@ class "DropDownList"
 
 		Type = Number,
 	}
-	--- Width
+
+	doc [======[
+		@name Width
+		@type property
+		@desc the width of the region
+	]======]
 	property "Width" {
 		Get = function(self)
 			self = self.__DdList
@@ -1686,7 +1707,12 @@ class "DropDownList"
 
 		Type = Number,
 	}
-	--- Visible
+
+	doc [======[
+		@name Visible
+		@type property
+		@desc wheter the region is shown or not.
+	]======]
 	property "Visible" {
 		Set = function(self, visible)
 			self.__DdList.Visible = visible
@@ -1698,6 +1724,12 @@ class "DropDownList"
 
 		Type = Boolean,
 	}
+
+	doc [======[
+		@name Backdrop
+		@type property
+		@desc the backdrop graphic for the frame
+	]======]
 	property "Backdrop" {
 		Set = function(self, backdropTable)
 			self:SetBackdrop(backdropTable)
@@ -1709,6 +1741,12 @@ class "DropDownList"
 
 		Type = BackdropType,
 	}
+
+	doc [======[
+		@name BackdropBorderColor
+		@type property
+		@desc the shading color for the frame's border graphic
+	]======]
 	property "BackdropBorderColor" {
 		Set = function(self, colorTable)
 			self:SetBackdropBorderColor(colorTable.red, colorTable.green, colorTable.blue, colorTable.alpha)
@@ -1722,6 +1760,12 @@ class "DropDownList"
 
 		Type = ColorType,
 	}
+
+	doc [======[
+		@name BackdropColor
+		@type property
+		@desc the shading color for the frame's background graphic
+	]======]
 	property "BackdropColor" {
 		Set = function(self, colorTable)
 			self:SetBackdropColor(colorTable.red, colorTable.green, colorTable.blue, colorTable.alpha)
@@ -1735,6 +1779,12 @@ class "DropDownList"
 
 		Type = ColorType,
 	}
+
+	doc [======[
+		@name ClampRectInsets
+		@type property
+		@desc offsets from the frame's edges used when limiting user movement or resizing of the frame
+	]======]
 	property "ClampRectInsets" {
 		Set = function(self, RectInset)
 			self:SetClampRectInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -1748,6 +1798,12 @@ class "DropDownList"
 
 		Type = Inset,
 	}
+
+	doc [======[
+		@name HitRectInsets
+		@type property
+		@desc the insets from the frame's edges which determine its mouse-interactable area
+	]======]
 	property "HitRectInsets" {
 		Set = function(self, RectInset)
 			self:SetHitRectInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -1761,6 +1817,12 @@ class "DropDownList"
 
 		Type = Inset,
 	}
+
+	doc [======[
+		@name ID
+		@type property
+		@desc a numeric identifier for the frame
+	]======]
 	property "ID" {
 		Set = function(self, id)
 			self:SetID(id)
@@ -1772,6 +1834,12 @@ class "DropDownList"
 
 		Type = Number,
 	}
+
+	doc [======[
+		@name Depth
+		@type property
+		@desc the 3D depth of the frame (for stereoscopic 3D setups)
+	]======]
 	property "Depth" {
 		Set = function(self, depth)
 			self:SetDepth(depth)
@@ -1783,6 +1851,12 @@ class "DropDownList"
 
 		Type = Number,
 	}
+
+	doc [======[
+		@name DepthIgnored
+		@type property
+		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
+	]======]
 	property "DepthIgnored" {
 		Set = function(self, enabled)
 			self:IgnoreDepth(enabled)
@@ -1794,7 +1868,12 @@ class "DropDownList"
 
 		Type = Boolean,
 	}
-	-- ItemCount
+
+	doc [======[
+		@name ItemCount
+		@type property
+		@desc dropDownMenuButton's count
+	]======]
 	property "ItemCount" {
 		Get = function(self)
 			return self.__DdList.__ItemCount
@@ -1802,6 +1881,13 @@ class "DropDownList"
 
 		Type = Number,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		self.__DdList:Dispose()
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -208,14 +208,6 @@ class "SimpleHTML"
 		@return nil
 	]======]
 
-	------------------------------------
-	--- Sets the vertical alignment style for text in the frame
-	-- @name SimpleHTML:SetJustifyV
-	-- @class function
-	-- @param element Name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style (string)
-	-- @param justify Vertical text alignment style (string, justifyV) <ul><li>BOTTOM
-	------------------------------------
-	-- SetJustifyV
 	doc [======[
 		@name SetJustifyV
 		@type method
@@ -301,7 +293,11 @@ class "SimpleHTML"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- HyperlinksEnabled
+	doc [======[
+		@name HyperlinksEnabled
+		@type property
+		@desc Whether hyperlinks in the frame's text are interactive
+	]======]
 	property "HyperlinksEnabled" {
 		Get = function(self)
 			return (self:GetHyperlinksEnabled() and true) or false

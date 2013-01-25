@@ -45,7 +45,11 @@ class "Translation"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Offset
+	doc [======[
+		@name Offset
+		@type property
+		@desc the animation's translation offsets
+	]======]
 	property "Offset" {
 		Get = function(self)
 			return Dimension(elf:GetOffset())

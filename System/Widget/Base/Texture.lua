@@ -490,7 +490,11 @@ class "Texture"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	--- BlendMode
+	doc [======[
+		@name BlendMode
+		@type property
+		@desc the blend mode of the texture
+	]======]
 	property "BlendMode" {
 		Get = function(self)
 			return self:GetBlendMode()
@@ -500,7 +504,12 @@ class "Texture"
 		end,
 		Type = AlphaMode,
 	}
-	--- Desaturated
+
+	doc [======[
+		@name Desaturated
+		@type property
+		@desc whether the texture image should be displayed with zero saturation
+	]======]
 	property "Desaturated" {
 		Get = function(self)
 			return (self:IsDesaturated() and true) or false
@@ -517,7 +526,12 @@ class "Texture"
 		end,
 		Type = Boolean,
 	}
-	-- TexturePath
+
+	doc [======[
+		@name TexturePath
+		@type property
+		@desc the texture object's image file path
+	]======]
 	property "TexturePath" {
 		Get = function(self)
 			local path = self:GetTexture()
@@ -531,7 +545,12 @@ class "Texture"
 		end,
 		Type = String + nil,
 	}
-	-- PortraitUnit
+
+	doc [======[
+		@name PortraitUnit
+		@type property
+		@desc the unit be de displayed as a portrait, such as "player", "target"
+	]======]
 	property "PortraitUnit" {
 		Get = function(self)
 			local texture = self:GetTexture()
@@ -545,7 +564,12 @@ class "Texture"
 		end,
 		Type = String + nil,
 	}
-	-- PortraitTexture
+
+	doc [======[
+		@name PortraitTexture
+		@type property
+		@desc the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
+	]======]
 	property "PortraitTexture" {
 		Get = function(self)
 			return self.__Portrait
@@ -555,7 +579,12 @@ class "Texture"
 		end,
 		Type = String + nil,
 	}
-	-- Color
+
+	doc [======[
+		@name Color
+		@type property
+		@desc the texture's color
+	]======]
 	property "Color" {
 		Get = function(self)
 			local texture = self:GetTexture()
@@ -569,7 +598,12 @@ class "Texture"
 		end,
 		Type = ColorType,
 	}
-	--- VertexColor
+
+	doc [======[
+		@name VertexColor
+		@type property
+		@desc the color shading for the region's graphics
+	]======]
 	property "VertexColor" {
 		Get = function(self)
 			return ColorType(self:GetVertexColor())
@@ -579,7 +613,12 @@ class "Texture"
 		end,
 		Type = ColorType,
 	}
-	-- HorizTile
+
+	doc [======[
+		@name HorizTile
+		@type property
+		@desc
+	]======]
 	property "HorizTile" {
 		Get = function(self)
 			return self:GetHorizTile()
@@ -589,7 +628,12 @@ class "Texture"
 		end,
 		Type = Boolean,
 	}
-	-- VertTile
+
+	doc [======[
+		@name VertTile
+		@type property
+		@desc
+	]======]
 	property "VertTile" {
 		Get = function(self)
 			return self:GetVertTile()
@@ -599,7 +643,12 @@ class "Texture"
 		end,
 		Type = Boolean,
 	}
-	-- NonBlocking
+
+	doc [======[
+		@name NonBlocking
+		@type property
+		@desc whether the texture object loads its image file in the background
+	]======]
 	property "NonBlocking" {
 		Get = function(self)
 			return self:GetNonBlocking() and true or false

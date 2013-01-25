@@ -74,6 +74,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/12/23 Class Constructor system modified.
 --               2012/12/24 Dispose system modified.
 --               2012/12/25 Doc system added.Interface system improved.
+--               2013/01/25 object.Disposed is set to true after calling object:Dispose() as a mark
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -119,7 +120,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 64
+local version = 65
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -1630,6 +1631,8 @@ do
 			-- setmetatable(self, nil)
 
 			wipe(self)
+
+			rawset(self, "Disposed", true)
 		end
 	end
 

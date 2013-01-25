@@ -417,7 +417,11 @@ class "EditBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- MultiLine
+	doc [======[
+		@name MultiLine
+		@type property
+		@desc true if the edit box shows more than one line of text
+	]======]
 	property "MultiLine" {
 		Get = function(self)
 			return (self:IsMultiLine() and true) or false
@@ -427,7 +431,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- NumericOnly
+
+	doc [======[
+		@name NumericOnly
+		@type property
+		@desc true if the edit box only accepts numeric input
+	]======]
 	property "NumericOnly" {
 		Get = function(self)
 			return (self:IsNumeric() and true) or false
@@ -437,7 +446,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- Password
+
+	doc [======[
+		@name Password
+		@type property
+		@desc true if the text entered in the edit box is masked
+	]======]
 	property "Password" {
 		Get = function(self)
 			return (self:IsPassword() and true) or false
@@ -447,7 +461,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- AutoFocus
+
+	doc [======[
+		@name AutoFocus
+		@type property
+		@desc true if the edit box automatically acquires keyboard input focus
+	]======]
 	property "AutoFocus" {
 		Get = function(self)
 			return (self:IsAutoFocus() and true) or false
@@ -457,7 +476,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- HistoryLines
+
+	doc [======[
+		@name HistoryLines
+		@type property
+		@desc the maximum number of history lines stored by the edit box
+	]======]
 	property "HistoryLines" {
 		Get = function(self)
 			return self:GetHistoryLines()
@@ -467,7 +491,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- Focus
+
+	doc [======[
+		@name Focused
+		@type property
+		@desc true if the edit box is currently focused
+	]======]
 	property "Focused" {
 		Get = function(self)
 			return (self:HasFocus() and true) or false
@@ -481,7 +510,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- AltArrowKeyMode
+
+	doc [======[
+		@name AltArrowKeyMode
+		@type property
+		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
+	]======]
 	property "AltArrowKeyMode" {
 		Get = function(self)
 			return (self:GetAltArrowKeyMode() and true) or false
@@ -491,7 +525,12 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-	-- BlinkSpeed
+
+	doc [======[
+		@name BlinkSpeed
+		@type property
+		@desc the rate at which the text insertion blinks when the edit box is focused
+	]======]
 	property "BlinkSpeed" {
 		Get = function(self)
 			return self:GetBlinkSpeed()
@@ -501,7 +540,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- CursorPosition
+
+	doc [======[
+		@name CursorPosition
+		@type property
+		@desc the current cursor position inside edit box
+	]======]
 	property "CursorPosition" {
 		Get = function(self)
 			return self:GetCursorPosition()
@@ -511,7 +555,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- MaxBytes
+
+	doc [======[
+		@name MaxBytes
+		@type property
+		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
+	]======]
 	property "MaxBytes" {
 		Get = function(self)
 			return self:GetMaxBytes()
@@ -521,7 +570,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- MaxLetters
+
+	doc [======[
+		@name MaxLetters
+		@type property
+		@desc the maximum number of text characters allowed in the edit box
+	]======]
 	property "MaxLetters" {
 		Get = function(self)
 			return self:GetMaxLetters()
@@ -531,7 +585,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- Number
+
+	doc [======[
+		@name Number
+		@type property
+		@desc the contents of the edit box as a number
+	]======]
 	property "Number" {
 		Get = function(self)
 			return self:GetNumber()
@@ -541,7 +600,12 @@ class "EditBox"
 		end,
 		Type = Number,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the edit box's text contents
+	]======]
 	property "Text" {
 		Get = function(self)
 			return self:GetText()
@@ -551,7 +615,12 @@ class "EditBox"
 		end,
 		Type = String + Number,
 	}
-	-- TextInsets
+
+	doc [======[
+		@name TextInsets
+		@type property
+		@desc the insets from the edit box's edges which determine its interactive text area
+	]======]
 	property "TextInsets" {
 		Get = function(self)
 			return Inset(self:GetTextInsets())
@@ -561,7 +630,12 @@ class "EditBox"
 		end,
 		Type = Inset,
 	}
-	-- Editable
+
+	doc [======[
+		@name Editable
+		@type property
+		@desc true if the edit box is editable
+	]======]
 	property "Editable" {
 		Get = function(self)
 			return self.MouseEnabled

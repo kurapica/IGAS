@@ -77,7 +77,11 @@ class "LayeredRegion"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- DrawLayer
+	doc [======[
+		@name DrawLayer
+		@type property
+		@desc the layer at which the region's graphics are drawn relative to others in its frame
+	]======]
 	property "DrawLayer" {
 		Get = function(self)
 			return self:GetDrawLayer()
@@ -87,7 +91,12 @@ class "LayeredRegion"
 		end,
 		Type = DrawLayer,
 	}
-	-- VertexColor
+
+	doc [======[
+		@name VertexColor
+		@type property
+		@desc the color shading for the region's graphics
+	]======]
 	property "VertexColor" {
 		Get = function(self)
 			return self:GetVertexColor()

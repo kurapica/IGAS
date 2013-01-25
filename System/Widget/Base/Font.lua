@@ -248,13 +248,22 @@ class "Font"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Name
+	doc [======[
+		@name Name
+		@type property
+		@desc the name of the font object
+	]======]
 	property "Name" {
 		Get = function(self)
 			return self:GetName()
 		end,
 	}
-	-- Font
+
+	doc [======[
+		@name Font
+		@type property
+		@desc the font's defined table, contains font path, height and flags' settings
+	]======]
 	property "Font" {
 		Get = function(self)
 			local font = {}
@@ -294,7 +303,12 @@ class "Font"
 		end,
 		Type = FontType,
 	}
-	-- FontObject
+
+	doc [======[
+		@name FontObject
+		@type property
+		@desc the Font object
+	]======]
 	property "FontObject" {
 		Get = function(self)
 			return self:GetFontObject()
@@ -304,7 +318,12 @@ class "Font"
 		end,
 		Type = Font + String + nil,
 	}
-	-- JustifyH
+
+	doc [======[
+		@name JustifyH
+		@type property
+		@desc the fontstring's horizontal text alignment style
+	]======]
 	property "JustifyH" {
 		Get = function(self)
 			return self:GetJustifyH()
@@ -314,7 +333,12 @@ class "Font"
 		end,
 		Type = JustifyHType,
 	}
-	-- JustifyV
+
+	doc [======[
+		@name JustifyV
+		@type property
+		@desc the fontstring's vertical text alignment style
+	]======]
 	property "JustifyV" {
 		Get = function(self)
 			return self:GetJustifyV()
@@ -324,7 +348,12 @@ class "Font"
 		end,
 		Type = JustifyVType,
 	}
-	-- ShadowColor
+
+	doc [======[
+		@name ShadowColor
+		@type property
+		@desc the color of the font's text shadow
+	]======]
 	property "ShadowColor" {
 		Get = function(self)
 			return ColorType(self:GetShadowColor())
@@ -334,7 +363,12 @@ class "Font"
 		end,
 		Type = ColorType,
 	}
-	-- ShadowOffset
+
+	doc [======[
+		@name ShadowOffset
+		@type property
+		@desc the offset of the fontstring's text shadow from its text
+	]======]
 	property "ShadowOffset" {
 		Get = function(self)
 			return Dimension(self:GetShadowOffset())
@@ -344,7 +378,12 @@ class "Font"
 		end,
 		Type = Dimension,
 	}
-	-- Spacing
+
+	doc [======[
+		@name Spacing
+		@type property
+		@desc the fontstring's amount of spacing between lines
+	]======]
 	property "Spacing" {
 		Get = function(self)
 			return self:GetSpacing()
@@ -354,7 +393,12 @@ class "Font"
 		end,
 		Type = Number,
 	}
-	-- TextColor
+
+	doc [======[
+		@name TextColor
+		@type property
+		@desc the fontstring's default text color
+	]======]
 	property "TextColor" {
 		Get = function(self)
 			return ColorType(self:GetTextColor())
@@ -364,7 +408,12 @@ class "Font"
 		end,
 		Type = ColorType,
 	}
-	-- Alpha
+
+	doc [======[
+		@name Alpha
+		@type property
+		@desc the opacity for text displayed by the font
+	]======]
 	property "Alpha" {
 		Get = function(self)
 			return self:GetAlpha()
@@ -374,7 +423,12 @@ class "Font"
 		end,
 		Type = ColorFloat,
 	}
-	-- IndentedWordWrap
+
+	doc [======[
+		@name IndentedWordWrap
+		@type property
+		@desc whether long lines of text are indented when wrapping
+	]======]
 	property "IndentedWordWrap" {
 		Get = function(self)
 			return self:GetIndentedWordWrap()

@@ -43,7 +43,11 @@ class "Alpha"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Change
+	doc [======[
+		@name Change
+		@type property
+		@desc the animation's amount of alpha (opacity) change
+	]======]
 	property "Change" {
 		Get = function(self)
 			return self:GetChange()

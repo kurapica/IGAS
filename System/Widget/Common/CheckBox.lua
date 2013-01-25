@@ -175,7 +175,11 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Checked
+	doc [======[
+		@name Checked
+		@type property
+		@desc whether the CheckBox is checked
+	]======]
 	property "Checked" {
 		Set = function(self, value)
 			self:SetChecked(value)
@@ -187,7 +191,12 @@ class "CheckBox"
 
 		Type = Boolean,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the default text to be displyed
+	]======]
 	property "Text" {
 		Set = function(self, text)
 			self:SetText(text)
@@ -200,7 +209,12 @@ class "CheckBox"
 
 		Type = LocaleString,
 	}
-	-- TrueText
+
+	doc [======[
+		@name TrueText
+		@type property
+		@desc the text to be displyed when checked if set
+	]======]
 	property "TrueText" {
 		Set = function(self, text)
 			self.__TrueText = text
@@ -213,7 +227,12 @@ class "CheckBox"
 
 		Type = LocaleString + nil,
 	}
-	-- FalseText
+
+	doc [======[
+		@name FalseText
+		@type property
+		@desc the text to be displyed when un-checked if set
+	]======]
 	property "FalseText" {
 		Set = function(self, text)
 			self.__FalseText = text
@@ -226,7 +245,12 @@ class "CheckBox"
 
 		Type = LocaleString + nil,
 	}
-	-- Tooltip
+
+	doc [======[
+		@name Tooltip
+		@type property
+		@desc the tooltip to be displyed when mouse over
+	]======]
 	property "Tooltip" {
 		Set = function(self, tip)
 			self.__Tooltip = tip

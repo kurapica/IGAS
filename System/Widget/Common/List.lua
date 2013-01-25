@@ -10,23 +10,6 @@
 --		2011/03/13	Recode as class
 --      2011/11/02  Remvoe visible check
 
----------------------------------------------------------------------------------------------------------------------------------------
---- List is a widget type using for show list of infomations
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name List
--- @class table
--- @field ScrollStep the minimum increment between allowed slider values
--- @field DisplayItemCount the display count in the list
--- @field Keys a table that contains keys of the items
--- @field Items a table that contains Text of the items
--- @field Icons a table that contains icons of the items
--- @field Frames a table that contains frames of the items
--- @field ItemCount the item's count
--- @field Style the list's style: CLASSIC, LIGHT
--- @field SelectedIndex the selected item's index
--- @field ShowTootip whether show tooltip or not
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 14
 if not IGAS:NewAddon("IGAS.Widget.List", version) then
@@ -35,6 +18,12 @@ end
 
 class "List"
 	inherit "Frame"
+
+	doc [======[
+		@name List
+		@type class
+		@desc List is a widget type using for show list of infomations
+	]======]
 
     GameTooltip = IGAS.GameTooltip
 
@@ -393,60 +382,47 @@ class "List"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the mouse is over an item, and the tooltip is setted.
-	-- @name List:OnGameTooltipShow
-	-- @class function
-	-- @param GameTooltip the GameTooltip object
-	-- @param key the choosed item's value
-	-- @param text the choosed item's text setting
-	-- @param icon the choosed item's icon setting
-	-- @param frame the choosed item's frame setting
-	-- @usage function List:OnGameTooltipShow(GameTooltip, key, text, icon, farme)<br>
-	--    -- do someting like<br>
-	--    GameTooltip:AddLine("Version 1")
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnGameTooltipShow
+		@type script
+		@desc Run when the mouse is over an item, and the Tooltip property is set
+		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
+		@param key any, the choosed item's value
+		@param text string, the choosed item's text
+		@param icon string, the choosed item's icon texture path
+	]======]
 	script "OnGameTooltipShow"
 
-	------------------------------------
-	--- ScriptType, Run when the choosed item is changed
-	-- @name List:OnItemChoosed
-	-- @class function
-	-- @param key the choosed item's value
-	-- @param text the choosed item's text setting
-	-- @param icon the choosed item's icon setting
-	-- @param frame the choosed item's frame setting
-	-- @usage function List:OnItemChoosed(key, text, icon, frame)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnItemChoosed
+		@type script
+		@desc Run when the choosed item is changed
+		@param key any, the choosed item's value
+		@param text string, the choosed item's text
+		@param icon string, the choosed item's icon texture path
+	]======]
 	script "OnItemChoosed"
 
-	------------------------------------
-	--- ScriptType, Run when an item is double-clicked
-	-- @name List:OnItemDoubleClick
-	-- @class function
-	-- @param key the dbl-clicked item's value
-	-- @param text the dbl-clicked item's text setting
-	-- @param icon the dbl-clicked item's icon setting
-	-- @param frame the dbl-clicked item's frame setting
-	-- @usage function List:OnItemDoubleClick(key, text, icon, frame)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnItemDoubleClick
+		@type method
+		@desc Run when an item is double-clicked
+		@param key any, the choosed item's value
+		@param text string, the choosed item's text
+		@param icon string, the choosed item's icon texture path
+	]======]
 	script "OnItemDoubleClick"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the list's style
-	-- @name List:SetStyle
-	-- @class function
-	-- @param style the style of the List : CLASSIC, LIGHT
-	-- @usage List:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the list's style
+		@param style System.Widget.List.ListStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -473,24 +449,23 @@ class "List"
 		self.ScrollBar.Style = style
 	end
 
-	------------------------------------
-	--- Gets the List's style
-	-- @name List:GetStyle
-	-- @class function
-	-- @return the style of the List : CLASSIC, LIGHT
-	-- @usage List:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the List's style
+		@return System.Widget.List.ListStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	------------------------------------
-	--- Select a item by index
-	-- @name List:SelectItemByIndex
-	-- @class function
-	-- @param index the index of the item
-	-- @usage List:SelectItemByIndex(3)
-	------------------------------------
+	doc [======[
+		@name SelectItemByIndex
+		@type method
+		@desc Select a item by index
+		@param index number
+		@return nil
+	]======]
 	function SelectItemByIndex(self, index)
 		-- Check later, maybe nil
 		if not index or type(index) ~= "number" or index <= 0 then
@@ -520,13 +495,13 @@ class "List"
 		end
 	end
 
-	------------------------------------
-	--- Select a item by text
-	-- @name List:SelectItemByText
-	-- @class function
-	-- @param text the text of the item
-	-- @usage List:SelectItemByText("True")
-	------------------------------------
+	doc [======[
+		@name SelectItemByText
+		@type method
+		@desc Select a item by text
+		@param text string
+		@return nil
+	]======]
 	function SelectItemByText(self, text)
 		if text and type(text) == "string" then
 			for i =1, #self.Items do
@@ -538,13 +513,13 @@ class "List"
 		return self:SelectItemByIndex(0)
 	end
 
-	------------------------------------
-	--- Select a item by value
-	-- @name List:SelectItemByValue
-	-- @class function
-	-- @param value the value of the item
-	-- @usage List:SelectItemByValue(true)
-	------------------------------------
+	doc [======[
+		@name SelectItemByValue
+		@type method
+		@desc Select a item by value
+		@param value any
+		@return nil
+	]======]
 	function SelectItemByValue(self, val)
 		if val ~= nil then	-- val could be false, so check with nil
 			for i = 1, #self.Keys do
@@ -556,69 +531,65 @@ class "List"
 		return self:SelectItemByIndex(0)
 	end
 
-	------------------------------------
-	--- Gets the selected item's index
-	-- @name List:GetSelectedItemIndex
-	-- @class function
-	-- @return the index of the selected item
-	-- @usage List:GetSelectedItemIndex()
-	------------------------------------
+	doc [======[
+		@name GetSelectedItemIndex
+		@type method
+		@desc Gets the selected item's index
+		@return number
+	]======]
 	function GetSelectedItemIndex(self)
 		return self.__ChooseItem or 0
 	end
 
-	------------------------------------
-	--- Gets the selected item's value
-	-- @name List:GetSelectedItemValue
-	-- @class function
-	-- @return the value of the selected item
-	-- @usage List:GetSelectedItemValue()
-	------------------------------------
+	doc [======[
+		@name GetSelectedItemValue
+		@type method
+		@desc Gets the selected item's value
+		@return any
+	]======]
 	function GetSelectedItemValue(self)
 		return self.__ChooseItem and self.Keys[self.__ChooseItem]
 	end
 
-	------------------------------------
-	--- Gets the selected item's text
-	-- @name List:GetSelectedItemText
-	-- @class function
-	-- @return the text of the selected item
-	-- @usage List:GetSelectedItemText()
-	------------------------------------
+	doc [======[
+		@name GetSelectedItemText
+		@type method
+		@desc Gets the selected item's text
+		@return string
+	]======]
 	function GetSelectedItemText(self)
 		return self.__ChooseItem and self.Items[self.__ChooseItem]
 	end
 
-	------------------------------------
-	--- Returns the minimum increment between allowed slider values
-	-- @name List:GetValueStep
-	-- @class function
-	-- @return step - Minimum increment between allowed slider values
-	-- @usage List:GetValueStep()
-	------------------------------------
+	doc [======[
+		@name GetScrollStep
+		@type method
+		@desc Returns the minimum increment between allowed slider values
+		@return number
+	]======]
 	function GetScrollStep(self)
 		return self:GetChild("ScrollBar").ValueStep
 	end
 
-	------------------------------------
-	--- Sets the minimum increment between allowed slider values.
-	-- @name List:SetScrollStep
-	-- @class function
-	-- @param step Minimum increment between allowed slider values
-	-- @usage List:SetScrollStep(10)
-	------------------------------------
+	doc [======[
+		@name SetScrollStep
+		@type method
+		@desc Sets the minimum increment between allowed slider values
+		@param step number, minimum increment between allowed slider values
+		@return nil
+	]======]
 	function SetScrollStep(self, step)
 		if step > 0 then
 			self:GetChild("ScrollBar").ValueStep = step
 		end
 	end
 
-	------------------------------------
-	--- Refresh the item list
-	-- @name List:Refresh
-	-- @class function
-	-- @usage List:Refresh()
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc Refresh the list
+		@return nil
+	]======]
 	function Refresh(self)
 		--if not self.Visible then
 		--	return
@@ -631,33 +602,34 @@ class "List"
 		return self:SelectItemByIndex(self.__ChooseItem)
 	end
 
-	------------------------------------
-	--- stop the refresh of the list
-	-- @name List:SuspendLayout
-	-- @class function
-	-- @usage List:SuspendLayout()
-	------------------------------------
+	doc [======[
+		@name SuspendLayout
+		@type method
+		@desc Stop the refresh of the list
+		@param ...
+		@return nil
+	]======]
 	function SuspendLayout(self)
 		self.__Layout = false
 	end
 
-	------------------------------------
-	--- resume the refresh of the list
-	-- @name List:ResumeLayout
-	-- @class function
-	-- @usage List:ResumeLayout()
-	------------------------------------
+	doc [======[
+		@name ResumeLayout
+		@type method
+		@desc Resume the refresh of the list
+		@return nil
+	]======]
 	function ResumeLayout(self)
 		self.__Layout = true
 		self:Refresh()
 	end
 
-	------------------------------------
-	--- Clear the item list
-	-- @name List:Clear
-	-- @class function
-	-- @usage List:Clear()
-	------------------------------------
+	doc [======[
+		@name Clear
+		@type method
+		@desc Clear the list
+		@return nil
+	]======]
 	function Clear(self)
 		for i = #self.Keys, 1, -1 do
 			self.Keys[i] = nil
@@ -672,16 +644,16 @@ class "List"
 		--end
 	end
 
-	------------------------------------
-	--- Add an item to the list
-	-- @name List:AddItem
-	-- @class function
-	-- @param key the key of the item
-	-- @param text the text of the item, to be displayed for informations
-	-- @param icon Optional,the icon of the item, will be shown at the left of the text if setted
-	-- @param frame Optional,the frame of the item, for some special need
-	-- @usage List:AddItem(true, "True")
-	------------------------------------
+	doc [======[
+		@name AddItem
+		@type method
+		@desc Add an item to the list
+		@format key, text[, icon]
+		@param key any, the value of the item
+		@param text string, the text of the item, to be displayed for informations
+		@param icon string ,the icon path of the item, will be shown at the left of the text if set
+		@return nil
+	]======]
 	function AddItem(self, key, text, icon, frame)
 		if key ~= nil then
 			self.Keys[#self.Keys + 1] = key
@@ -699,16 +671,16 @@ class "List"
 		--end
 	end
 
-	------------------------------------
-	--- Modify or add an item in the item list
-	-- @name List:SetItem
-	-- @class function
-	-- @param key the key of the item
-	-- @param text the text of the item, to be displayed for informations
-	-- @param icon Optional,the icon of the item, will be shown at the left of the text if setted
-	-- @param frame Optional,the frame of the item, for some special need
-	-- @usage List:SetItem(true, "True")
-	------------------------------------
+	doc [======[
+		@name SetItem
+		@type method
+		@desc Modify or add an item in the item list
+		@format key, text[, icon]
+		@param key any, the value of the item
+		@param text string, the text of the item, to be displayed for informations
+		@param icon string ,the icon path of the item, will be shown at the left of the text if set
+		@return nil
+	]======]
 	function SetItem(self, key, text, icon, frame)
 		local idx = 1
 		if key == nil then
@@ -731,17 +703,15 @@ class "List"
 		--end
 	end
 
-	------------------------------------
-	--- Get an item's info from the item list by key
-	-- @name List:GetItem
-	-- @class function
-	-- @param key the key of the item
-	-- @return key - the key of the item
-	-- @return text - the text of the item, to be displayed for informations
-	-- @return icon - the icon of the item, will be shown at the left of the text if setted
-	-- @return frame - the frame of the item, for some special need
-	-- @usage List:GetItem(true)
-	------------------------------------
+	doc [======[
+		@name GetItem
+		@type method
+		@desc Get an item's info from the item list by key
+		@param key any, the value of the item
+		@return key any, the value of the item
+		@return text string, the text of the item, to be displayed for informations
+		@return icon string ,the icon path of the item, will be shown at the left of the text if set
+	]======]
 	function GetItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -755,34 +725,31 @@ class "List"
 		end
 	end
 
-	------------------------------------
-	--- Get an item's info from the item list by index
-	-- @name List:GetItemByIndex
-	-- @class function
-	-- @param index the index of the item
-	-- @return key - the key of the item
-	-- @return text - the text of the item, to be displayed for informations
-	-- @return icon - the icon of the item, will be shown at the left of the text if setted
-	-- @return frame - the frame of the item, for some special need
-	-- @usage List:GetItemByIndex(1)
-	------------------------------------
+	doc [======[
+		@name GetItemByIndex
+		@type method
+		@desc Get an item's info from the item list by index
+		@param index number, the item's index
+		@return key any, the value of the item
+		@return text string, the text of the item, to be displayed for informations
+		@return icon string ,the icon path of the item, will be shown at the left of the text if set
+	]======]
 	function GetItemByIndex(self, idx)
 		if self.Keys[idx] then
 			return self.Keys[idx], self.Items[idx], self.Icons[idx], self.Frames[idx]
 		end
 	end
 
-	------------------------------------
-	--- Insert an item to the list
-	-- @name List:InsertItem
-	-- @class function
-	-- @param index - where the item should be placed, if nil, would be the last
-	-- @param key - the key of the item
-	-- @param text - the text of the item, to be displayed for informations
-	-- @param icon - the icon of the item, will be shown at the left of the text if setted
-	-- @param frame - the frame of the item, for some special need
-	-- @usage List:InsertItem(10, 10, "Ten")
-	------------------------------------
+	doc [======[
+		@name InsertItem
+		@type method
+		@desc Insert an item to the list
+		@param index number, the index to be inserted, if nil, would be insert at last
+		@param key any, the value of the item
+		@param text string, the text of the item, to be displayed for informations
+		@param icon string ,the icon path of the item, will be shown at the left of the text if set
+		@return nil
+	]======]
 	function InsertItem(self, index, key, text, icon, frame)
 		if not index or type(index) ~= "number" or index > #self.Keys + 1 then
 			index = #self.Keys + 1
@@ -813,13 +780,13 @@ class "List"
 		--end
 	end
 
-	------------------------------------
-	--- Remove an item from the item list by key
-	-- @name List:RemoveItem
-	-- @class function
-	-- @param key the key of the item
-	-- @usage List:RemoveItem(true)
-	------------------------------------
+	doc [======[
+		@name RemoveItem
+		@type method
+		@desc Remove an item from the item list by key
+		@param key any, the value of the item
+		@return nil
+	]======]
 	function RemoveItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -846,13 +813,13 @@ class "List"
 		end
 	end
 
-	------------------------------------
-	--- Remove an item from the item list by index
-	-- @name List:RemoveItemByIndex
-	-- @class function
-	-- @param index the index of the item
-	-- @usage List:RemoveItemByIndex(1)
-	------------------------------------
+	doc [======[
+		@name RemoveItemByIndex
+		@type method
+		@desc Remove an item from the item list by index
+		@param index number, the item's index
+		@return nil
+	]======]
 	function RemoveItemByIndex(self, idx)
 		if self.Keys[idx] then
 			if idx == self.__ChooseItem then
@@ -872,13 +839,13 @@ class "List"
 		end
 	end
 
-	------------------------------------
-	--- Build item list from a table
-	-- @name List:SetList
-	-- @class function
-	-- @param list a table contains key-value pairs
-	-- @usage List:SetList{[true] = "True", [false] = "False"}
-	------------------------------------
+	doc [======[
+		@name SetList
+		@type method
+		@desc Build item list from a table
+		@param list table, a table contains key-value pairs like {[true] = "True", [false] = "False"}
+		@return nil
+	]======]
 	function SetList(self, list)
 		if type(list) == "table" then
 			self:SuspendLayout()
@@ -895,7 +862,11 @@ class "List"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ScrollStep
+	doc [======[
+		@name ScrollStep
+		@type property
+		@desc the minimum increment between allowed slider values
+	]======]
 	property "ScrollStep" {
 		Set = function(self, step)
 			self:SetScrollStep(step)
@@ -907,7 +878,12 @@ class "List"
 
 		Type = Number,
 	}
-	-- DisplayItemCount
+
+	doc [======[
+		@name DisplayItemCount
+		@type property
+		@desc the display count in the list
+	]======]
 	property "DisplayItemCount" {
 		Set = function(self, cnt)
 			if cnt and type(cnt) == "number" and cnt > 3 and cnt ~= self.__DisplayItemCount then
@@ -925,7 +901,12 @@ class "List"
 
 		Type = Number,
 	}
-	-- Keys
+
+	doc [======[
+		@name Keys
+		@type property
+		@desc a table that contains keys of the items
+	]======]
 	property "Keys" {
 		Set = function(self, keys)
 			self.__Keys = keys or {}
@@ -938,7 +919,12 @@ class "List"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Items
+
+	doc [======[
+		@name Items
+		@type property
+		@desc a table that contains Text of the items
+	]======]
 	property "Items" {
 		Set = function(self, items)
 			items = items or {}
@@ -957,7 +943,12 @@ class "List"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Icons
+
+	doc [======[
+		@name Icons
+		@type property
+		@desc a table that contains icons of the items
+	]======]
 	property "Icons" {
 		Set = function(self, icons)
 			self.__Icons = icons or {}
@@ -969,7 +960,12 @@ class "List"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- Frames
+
+	doc [======[
+		@name Frames
+		@type property
+		@desc a table that contains frames of the items
+	]======]
 	property "Frames" {
 		Set = function(self, frames)
 			self.__Frames = frames or {}
@@ -981,7 +977,12 @@ class "List"
 		end,
 		Type = Table + Userdata + nil,
 	}
-	-- ItemCount
+
+	doc [======[
+		@name ItemCount
+		@type property
+		@desc the item's count
+	]======]
 	property "ItemCount" {
 		Get = function(self)
 			return #self.Keys
@@ -989,7 +990,12 @@ class "List"
 
 		Type = Number,
 	}
-	-- JustifyH
+
+	doc [======[
+		@name JustifyH
+		@type property
+		@desc the list's horizontal text alignment style
+	]======]
 	property "JustifyH" {
 		Set = function(self, justifyH)
 			self.__JustifyH = justifyH
@@ -1010,7 +1016,12 @@ class "List"
 
 		Type = JustifyHType,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the list's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -1022,7 +1033,12 @@ class "List"
 
 		Type = ListStyle,
 	}
-	-- SelectedIndex
+
+	doc [======[
+		@name SelectedIndex
+		@type property
+		@desc the selected item's index
+	]======]
 	property "SelectedIndex" {
 		Set = function(self, index)
 			self:SelectItemByIndex(index)
@@ -1032,7 +1048,12 @@ class "List"
 		end,
 		Type = Number + nil,
 	}
-	-- ShowTootip
+
+	doc [======[
+		@name ShowTootip
+		@type property
+		@desc whether show tooltip or not
+	]======]
 	property "ShowTootip" {
 		Set = function(self, flag)
 			self.__ShowTootip = (flag and true) or false

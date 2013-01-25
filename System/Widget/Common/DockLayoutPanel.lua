@@ -416,7 +416,11 @@ class "DockLayoutPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- HSpacing
+	doc [======[
+		@name HSpacing
+		@type property
+		@desc the horizontal spacing for each elements
+	]======]
 	property "HSpacing" {
 		Get = function(self)
 			return self.__DockLayoutPanel_HSpacing or 0
@@ -429,7 +433,12 @@ class "DockLayoutPanel"
 		end,
 		Type = Number,
 	}
-	-- HSpacing
+
+	doc [======[
+		@name VSpacing
+		@type property
+		@desc the vertical spacing for each elements
+	]======]
 	property "VSpacing" {
 		Get = function(self)
 			return self.__DockLayoutPanel_VSpacing or 0
@@ -442,7 +451,12 @@ class "DockLayoutPanel"
 		end,
 		Type = Number,
 	}
-	-- AutoLayout
+
+	doc [======[
+		@name AutoLayout
+		@type property
+		@desc whether update layout when some elements is shown or hidden
+	]======]
 	property "AutoLayout" {
 		Get = function(self)
 			return self.__DockLayoutPanel__AutoLayout and true or false

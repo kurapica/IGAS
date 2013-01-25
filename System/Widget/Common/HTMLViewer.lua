@@ -2,11 +2,6 @@
 -- Create Date : 2012/12/2
 -- Change Log  :
 
----------------------------------------------------------------------------------------------------------------------------------------
---- HTMLViewer
--- @name HTMLViewer
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 
@@ -16,6 +11,12 @@ end
 
 class "HTMLViewer"
 	inherit "ScrollForm"
+
+	doc [======[
+		@name HTMLViewer
+		@type class
+		@desc HTMLViewer is used to view simple html
+	]======]
 
 	------------------------------------------------------
 	-- Translate
@@ -83,330 +84,322 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the mouse clicks a hyperlink in the scrolling message frame or SimpleHTML frame
-	-- @name SimpleHTML:OnHyperlinkClick
-	-- @class function
-	-- @param linkData Essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-	-- @param link Complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	-- @param button Name of the mouse button responsible for the click action
-	-- @usage function SimpleHTML:OnHyperlinkClick(linkData, link, button)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHyperlinkClick
+		@type script
+		@desc Run when the mouse clicks a hyperlink in the SimpleHTML frame
+		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
+		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
+		@param button string, name of the mouse button responsible for the click action
+	]======]
 	script "OnHyperlinkClick"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse moves over a hyperlink in the scrolling message frame or SimpleHTML frame
-	-- @name SimpleHTML:OnHyperlinkEnter
-	-- @class function
-	-- @param linkData Essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-	-- @param link Complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	-- @usage function SimpleHTML:OnHyperlinkEnter(linkData, link)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHyperlinkEnter
+		@type script
+		@desc Run when the mouse moves over a hyperlink in the SimpleHTML frame
+		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
+		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
+	]======]
 	script "OnHyperlinkEnter"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse moves away from a hyperlink in the scrolling message frame or SimpleHTML frame
-	-- @name SimpleHTML:OnHyperlinkLeave
-	-- @class function
-	-- @param linkData Essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-	-- @param link Complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	-- @usage function SimpleHTML:OnHyperlinkLeave(linkData, link)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnHyperlinkLeave
+		@type script
+		@desc Run when the mouse moves away from a hyperlink in the SimpleHTML frame
+		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
+		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
+	]======]
 	script "OnHyperlinkLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Returns basic properties of a font used in the frame
-	-- @name SimpleHTML:GetFont
-	-- @class function
-	-- @param element Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-	-- @return filename - Path to a font file (string)
-	-- @return fontHeight - Height (point size) of the font to be displayed (in pixels) (number)
-	-- @return flags - Additional properties for the font specified by one or more (separated by commas) of the following tokens:MONOCHROME, OUTLINE, THICKOUTLINE
-	-- @usage SimpleHTML:GetFont()
-	------------------------------------
+	doc [======[
+		@name GetFont
+		@type method
+		@desc Returns basic properties of a font used in the frame
+		@param element Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
+		@return filename string, Path to a font file (string)
+		@return fontHeight number, Height (point size) of the font to be displayed (in pixels) (number)
+		@return flags string, Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string)
+	]======]
 	function GetFont(self, ...)
 		return self.__HTMLViewer:GetFont(...)
 	end
 
-	------------------------------------
-	--- Returns the Font object from which the properties of a font used in the frame are inherited
-	-- @name SimpleHTML:GetFontObject
-	-- @class function
-	-- @param element Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-	-- @return font - Reference to the Font object from which font properties are inherited, or nil if no properties are inherited
-	-- @usage SimpleHTML:GetFontObject()
-	------------------------------------
+	doc [======[
+		@name GetFontObject
+		@type method
+		@desc Returns the Font object from which the properties of a font used in the frame are inherited
+		@param element string, name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
+		@return System.Widget.Font the Font object from which font properties are inherited, or nil if no properties are inherited
+	]======]
 	function GetFontObject(self, ...)
 		return self.__HTMLViewer:GetFontObject(...)
 	end
 
-	------------------------------------
-	--- Returns the format string used for displaying hyperlinks in the frame. See :SetHyperlinkFormat() for details.
-	-- @name SimpleHTML:GetHyperlinkFormat
-	-- @class function
-	-- @return format - Format string used for displaying hyperlinks in the frame (string)
-	------------------------------------
+	doc [======[
+		@name GetHyperlinkFormat
+		@type method
+		@desc Returns the format string used for displaying hyperlinks in the frame
+		@param format string, Format string used for displaying hyperlinks in the frame
+		@return nil
+	]======]
 	function GetHyperlinkFormat(self, ...)
 		return self.__HTMLViewer:GetHyperlinkFormat(...)
 	end
 
-	------------------------------------
-	--- Returns whether hyperlinks in the frame's text are interactive
-	-- @name SimpleHTML:GetHyperlinksEnabled
-	-- @class function
-	-- @return enabled - 1 if hyperlinks in the frame's text are interactive; otherwise nil (1nil)
-	------------------------------------
+	doc [======[
+		@name GetHyperlinksEnabled
+		@type method
+		@desc Returns whether hyperlinks in the frame's text are interactive
+		@return boolean 1 if hyperlinks in the frame's text are interactive; otherwise nil
+	]======]
 	function GetHyperlinksEnabled(self, ...)
 		return self.__HTMLViewer:GetHyperlinksEnabled(...)
 	end
 
-	------------------------------------
-	--- Returns whether long lines of text are indented when wrapping
-	-- @name SimpleHTML:GetIndentedWordWrap
-	-- @class function
-	-- @param element Name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style (string)
-	-- @return indent - 1 if long lines of text are indented when wrapping; otherwise nil (1nil)
-	------------------------------------
+	doc [======[
+		@name GetIndentedWordWrap
+		@type method
+		@desc Returns whether long lines of text are indented when wrapping
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return boolean 1 if long lines of text are indented when wrapping; otherwise nil
+	]======]
 	function GetIndentedWordWrap(self, ...)
 		return self.__HTMLViewer:GetIndentedWordWrap(...)
 	end
 
-	------------------------------------
-	--- Returns the horizontal alignment style for text in the frame
-	-- @name SimpleHTML:GetJustifyH
-	-- @class function
-	-- @param element Name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style (string)
-	-- @return justify - Horizontal text alignment style (string, justifyH) <ul><li>CENTER
-	------------------------------------
+	doc [======[
+		@name GetJustifyH
+		@type method
+		@desc Returns the horizontal alignment style for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return System.Widget.JustifyHType horizontal text alignment style
+	]======]
 	function GetJustifyH(self, ...)
 		return self.__HTMLViewer:GetJustifyH(...)
 	end
 
-	------------------------------------
-	--- Returns the vertical alignment style for text in the frame
-	-- @name SimpleHTML:GetJustifyV
-	-- @class function
-	-- @param element Name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style (string)
-	-- @return justify - Vertical text alignment style (string, justifyV) <ul><li>BOTTOM
-	------------------------------------
+	doc [======[
+		@name GetJustifyV
+		@type method
+		@desc Returns the vertical alignment style for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return System.Widget.JustifyVType vertical text alignment style
+	]======]
 	function GetJustifyV(self, ...)
 		return self.__HTMLViewer:GetJustifyV(...)
 	end
 
-	------------------------------------
-	--- Returns the shadow color for text in the frame
-	-- @name SimpleHTML:GetShadowColor
-	-- @class function
-	-- @param element Name of an HTML element for which to return font information (e.g. p, h1); if omitted, returns information about the frame's default font (string)
-	-- @return shadowR - Red component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowG - Green component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowB - Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowAlpha - Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
+	doc [======[
+		@name GetShadowColor
+		@type method
+		@desc Returns the shadow color for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetShadowColor(self, ...)
 		return self.__HTMLViewer:GetShadowColor(...)
 	end
 
-	------------------------------------
-	--- Returns the offset of text shadow from text in the frame
-	-- @name SimpleHTML:GetShadowOffset
-	-- @class function
-	-- @param element Name of an HTML element for which to return font information (e.g. p, h1); if omitted, returns information about the frame's default font (string)
-	-- @return xOffset - Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @return yOffset - Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
+	doc [======[
+		@name GetShadowOffset
+		@type method
+		@desc Returns the offset of text shadow from text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
+	]======]
 	function GetShadowOffset(self, ...)
 		return self.__HTMLViewer:GetShadowOffset(...)
 	end
 
-	------------------------------------
-	--- Returns the amount of spacing between lines of text in the frame
-	-- @name SimpleHTML:GetSpacing
-	-- @class function
-	-- @param element Name of an HTML element for which to return font information (e.g. p, h1); if omitted, returns information about the frame's default font (string)
-	-- @return spacing - Amount of space between lines of text (in pixels) (number)
-	------------------------------------
+	doc [======[
+		@name GetSpacing
+		@type method
+		@desc Returns the amount of spacing between lines of text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return number amount of space between lines of text (in pixels)
+	]======]
 	function GetSpacing(self, ...)
 		return self.__HTMLViewer:GetSpacing(...)
 	end
 
-	------------------------------------
-	--- Returns the color of text in the frame
-	-- @name SimpleHTML:GetTextColor
-	-- @class function
-	-- @param element Name of an HTML element for which to return font information (e.g. p, h1); if omitted, returns information about the frame's default font (string)
-	-- @return textR - Red component of the text color (0.0 - 1.0) (number)
-	-- @return textG - Green component of the text color (0.0 - 1.0) (number)
-	-- @return textB - Blue component of the text color (0.0 - 1.0) (number)
-	-- @return textAlpha - Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
+	doc [======[
+		@name GetTextColor
+		@type method
+		@desc Returns the color of text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@return textR number, Red component of the text color (0.0 - 1.0)
+		@return textG number, Green component of the text color (0.0 - 1.0)
+		@return textB number, Blue component of the text color (0.0 - 1.0)
+		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetTextColor(self, ...)
 		return self.__HTMLViewer:GetTextColor(...)
 	end
 
-	------------------------------------
-	--- Sets basic properties of a font used in the frame
-	-- @name SimpleHTML:SetFont
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param filename Path to a font file (string)
-	-- @param fontHeight Height (point size) of the font to be displayed (in pixels) (number)
-	-- @param flags Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string) <ul><li>MONOCHROME - Font is rendered without antialiasing
-	-- @param OUTLINE Font is displayed with a black outline
-	-- @param THICKOUTLINE Font is displayed with a thick black outline
-	-- @return isValid - 1 if filename refers to a valid font file; otherwise nil (1nil)
-	------------------------------------
+	doc [======[
+		@name SetFont
+		@type method
+		@desc Sets the font instance's basic font properties
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param filename string, path to a font file
+		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
+		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
+		@return boolean 1 if filename refers to a valid font file; otherwise nil
+	]======]
 	function SetFont(self, ...)
 		return self.__HTMLViewer:SetFont(...)
 	end
 
-	------------------------------------
-	--- Sets the Font object from which the properties of a font used in the frame are inherited. This method allows for easy standardization and reuse of font styles. For example, a SimpleHTML frame's normal font can be set to appear in the same style as many default UI elements by setting its font to "GameFontNormal" -- if Blizzard changes the main UI font in a future path, or if the user installs another addon which changes the main UI font, the button's font will automatically change to match.
-	-- @name SimpleHTML:SetFontObject
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param font Reference to a Font object (table)
-	-- @param name Global name of a Font object (string)
-	------------------------------------
+	doc [======[
+		@name SetFontObject
+		@type method
+		@desc Sets the Font object from which the font instance's properties are inherited
+		@format [element, ]fontObject|fontName
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param fontObject System.Widget.Font, a font object
+		@param fontName string, global font object's name
+		@return nil
+	]======]
 	function SetFontObject(self, ...)
 		return self.__HTMLViewer:SetFontObject(...)
 	end
 
-	------------------------------------
-	--- Sets the format string used for displaying hyperlinks in the frame. Hyperlinks are specified via HTML in the text input to a SimpleHTML frame, but in order to be handled as hyperlinks by the game's text engine they need to be formatted like the hyperlinks used elsewhere. </p>
-	--- <p>This property specifies the translation between formats: its default value of |H%s|h%s|h provides minimal formatting, turning (for example) &lt;a href="achievement:892"&gt;The Right Stuff&lt;/a&gt; into |Hachievement:892|hThe Right Stuff|h. Using a colorString or other formatting may be useful for making hyperlinks distinguishable from other text.
-	-- @name SimpleHTML:SetHyperlinkFormat
-	-- @class function
-	-- @param format Format string used for displaying hyperlinks in the frame (string)
-	------------------------------------
+	doc [======[
+		@name SetHyperlinkFormat
+		@type method
+		@desc Sets the format string used for displaying hyperlinks in the frame
+		@param format string, format string used for displaying hyperlinks in the frame
+		@return nil
+	]======]
 	function SetHyperlinkFormat(self, ...)
 		return self.__HTMLViewer:SetHyperlinkFormat(...)
 	end
 
-	------------------------------------
-	--- Enables or disables hyperlink interactivity in the frame. The frame's hyperlink-related script handlers will only be run if hyperlinks are enabled.
-	-- @name SimpleHTML:SetHyperlinksEnabled
-	-- @class function
-	-- @param enable True to enable hyperlink interactivity in the frame; false to disable (boolean)
-	------------------------------------
+	doc [======[
+		@name SetHyperlinksEnabled
+		@type method
+		@desc Enables or disables hyperlink interactivity in the frame
+		@param enable boolean, true to enable hyperlink interactivity in the frame; false to disable
+		@return nil
+	]======]
 	function SetHyperlinksEnabled(self, ...)
 		return self.__HTMLViewer:SetHyperlinksEnabled(...)
 	end
 
-	------------------------------------
-	--- Sets whether long lines of text are indented when wrapping
-	-- @name SimpleHTML:SetIndentedWordWrap
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param indent True to indent wrapped lines of text; false otherwise (boolean)
-	------------------------------------
+	doc [======[
+		@name SetIndentedWordWrap
+		@type method
+		@desc Sets whether long lines of text are indented when wrapping
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param indent boolean, true to indent wrapped lines of text; false otherwise
+		@return nil
+	]======]
 	function SetIndentedWordWrap(self, ...)
 		return self.__HTMLViewer:SetIndentedWordWrap(...)
 	end
 
-	------------------------------------
-	--- Sets the horizontal alignment style for text in the frame
-	-- @name SimpleHTML:SetJustifyH
-	-- @class function
-	-- @param element Name of an HTML element for which to set properties (e.g. p, h1); if omitted, sets properties of the frame's default text style (string)
-	-- @param justify Horizontal text alignment style (string, justifyH) <ul><li>CENTER
-	------------------------------------
+	doc [======[
+		@name SetJustifyH
+		@type method
+		@desc Sets the horizontal alignment style for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param justifyH System.Widget.JustifyHType
+		@return nil
+	]======]
 	function SetJustifyH(self, ...)
 		return self.__HTMLViewer:SetJustifyH(...)
 	end
 
-	------------------------------------
-	--- Sets the vertical alignment style for text in the frame
-	-- @name SimpleHTML:SetJustifyV
-	-- @class function
-	-- @param element Name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style (string)
-	-- @param justify Vertical text alignment style (string, justifyV) <ul><li>BOTTOM
-	------------------------------------
+
+	doc [======[
+		@name SetJustifyV
+		@type method
+		@desc Sets the vertical alignment style for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param justifyV System.Widget.JustifyVType
+		@return nil
+	]======]
 	function SetJustifyV(self, ...)
 		return self.__HTMLViewer:SetJustifyV(...)
 	end
 
-	------------------------------------
-	--- Sets the shadow color for text in the frame
-	-- @name SimpleHTML:SetShadowColor
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param shadowR Red component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowG Green component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowB Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowAlpha Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
+	doc [======[
+		@name SetShadowColor
+		@type method
+		@desc Sets the shadow color for text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetShadowColor(self, ...)
 		return self.__HTMLViewer:SetShadowColor(...)
 	end
 
-	------------------------------------
-	--- Returns the offset of text shadow from text in the frame
-	-- @name SimpleHTML:SetShadowOffset
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param xOffset Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @param yOffset Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
+	doc [======[
+		@name SetShadowOffset
+		@type method
+		@desc Sets the offset of text shadow from text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
+		@return nil
+	]======]
 	function SetShadowOffset(self, ...)
 		return self.__HTMLViewer:SetShadowOffset(...)
 	end
 
-	------------------------------------
-	--- Sets the amount of spacing between lines of text in the frame
-	-- @name SimpleHTML:SetSpacing
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param spacing Amount of space between lines of text (in pixels) (number)
-	------------------------------------
+	doc [======[
+		@name SetSpacing
+		@type method
+		@desc Sets the amount of spacing between lines of text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param spacing number, amount of space between lines of text (in pixels)
+		@return nil
+	]======]
 	function SetSpacing(self, ...)
 		return self.__HTMLViewer:SetSpacing(...)
 	end
 
-	------------------------------------
-	--- Sets the text to be displayed in the SimpleHTML frame. Text for display in the frame can be formatted using a simplified version of HTML markup:</p>
-	--- <ul>
-	--- <li>For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.</li>
-	--- <li>All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br&gt;).</li>
-	--- <li>Tags are case insensitive, but closing tags must match the case of opening tags.</li>
-	--- <li>Attribute values must be enclosed in single or double quotation marks (" or ').</li>
-	--- <li>Characters occurring in HTML markup must be entity-escaped (&amp;quot; &amp;lt; &amp;gt; &amp;amp;); no other entity-escapes are supported.</li>
-	--- <li>Unrecognized tags and their contents are ignored (e.g. given &lt;h1&gt;&lt;foo&gt;bar&lt;/foo&gt;baz&lt;/h1&gt;, only "baz" will appear).</li>
-	--- <li>Any HTML parsing error will result in the raw HTML markup being displayed.</li>
-	--- </ul>
-	--- <p>Only the following tags and attributes are supported:</p>
-	--- <ul>
-	--- <li><p>p, h1, h2, h3 - Block elements; e.g. &lt;p align="left"&gt;</p>
-	--- <ul>
-	--- 	<li>align - Text alignment style (optional); allowed values are left, center, and right.</li>
-	--- </ul></li>
-	--- <li><p>img - Image; may only be used as a block element (not inline with text); e.g. &lt;img src="Interface\Icons\INV_Misc_Rune_01" /&gt;.</p>
-	--- <ul>
-	--- 	<li>src - Path to the image file (filename extension omitted).</li>
-	--- 	<li>align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.</li>
-	--- 	<li>width - Width at which to display the image (in pixels; optional).</li>
-	--- 	<li>height - Height at which to display the image (in pixels; optional).</li>
-	--- </ul></li>
-	--- <li><p>a - Inline hyperlink; e.g. &lt;a href="aLink"&gt;text&lt;/a&gt;</p>
-	--- <ul>
-	--- 	<li>href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.</li>
-	--- </ul></li>
-	--- <li><p>br - Explicit line break in text; e.g. &lt;br /&gt;.</p></li>
-	--- </ul>
-	--- <p>Inline escape sequences used in FontStrings (e.g. colorStrings) may also be used.
-	-- @name SimpleHTML:SetText
-	-- @class function
-	-- @param text Text (with HTML markup) to be displayed (string)
-	------------------------------------
+	doc [======[
+		@name SetText
+		@type method
+		@desc For HTML formatting, the entire text must be enclosed in <html><body> and </body></html> tags.
+		<br>All tags must be closed (img and br must use self-closing syntax; e.g. <br/>, not <br >).
+		<br>Tags are case insensitive, but closing tags must match the case of opening tags.
+		<br>Attribute values must be enclosed in single or double quotation marks (" or ').
+		<br>Characters occurring in HTML markup must be entity-escaped (&quot; &lt; &gt; &amp;); no other entity-escapes are supported.
+		<br>Unrecognized tags and their contents are ignored (e.g. given <h1><foo>bar</foo>baz</h1>, only "baz" will appear).
+		<br>Any HTML parsing error will result in the raw HTML markup being displayed.
+		<br>Only the following tags and attributes are supported:
+		<br>
+		<br>p, h1, h2, h3 - Block elements; e.g. <p align="left">
+		<br>
+		<br>align - Text alignment style (optional); allowed values are left, center, and right.
+		<br>img - Image; may only be used as a block element (not inline with text); e.g. <img src="Interface\Icons\INV_Misc_Rune_01" />.
+		<br>
+		<br>src - Path to the image file (filename extension omitted).
+		<br>align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.
+		<br>width - Width at which to display the image (in pixels; optional).
+		<br>height - Height at which to display the image (in pixels; optional).
+		<br>a - Inline hyperlink; e.g. <a href="aLink">text</a>
+		<br>
+		<br>href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.
+		<br>br - Explicit line break in text; e.g. <br />.
+		<br>
+		@param text string, text(with HTML markup) to be displayed
+		@return nil
+	]======]
 	function SetText(self, text, height)
 		if height and height > 0 then
 			self.__HTMLViewer.Height = height
@@ -415,16 +408,17 @@ class "HTMLViewer"
 		return self.__HTMLViewer:SetText(ParseHTML(text))
 	end
 
-	------------------------------------
-	--- Sets the color of text in the frame
-	-- @name SimpleHTML:SetTextColor
-	-- @class function
-	-- @param element Name of an HTML element for which to set font properties (e.g. p, h1); if omitted, sets properties for the frame's default font (string)
-	-- @param textR Red component of the text color (0.0 - 1.0) (number)
-	-- @param textG Green component of the text color (0.0 - 1.0) (number)
-	-- @param textB Blue component of the text color (0.0 - 1.0) (number)
-	-- @param textAlpha Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
+	doc [======[
+		@name SetTextColor
+		@type method
+		@desc ets the color of text in the frame
+		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
+		@param textR number, Red component of the text color (0.0 - 1.0)
+		@param textG number, Green component of the text color (0.0 - 1.0)
+		@param textB number, Blue component of the text color (0.0 - 1.0)
+		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetTextColor(self, ...)
 		return self.__HTMLViewer:SetTextColor(...)
 	end
@@ -432,7 +426,11 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- HyperlinksEnabled
+	doc [======[
+		@name HyperlinksEnabled
+		@type property
+		@desc Whether hyperlinks in the frame's text are interactive
+	]======]
 	property "HyperlinksEnabled" {
 		Get = function(self)
 			return self:GetHyperlinksEnabled() and true or false

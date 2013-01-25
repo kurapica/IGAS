@@ -62,7 +62,11 @@ class "Scale"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Scale
+	doc [======[
+		@name Scale
+		@type property
+		@desc the animation's scaling factors
+	]======]
 	property "Scale" {
 		Get = function(self)
 			return Dimension(self:GetScale())
@@ -72,7 +76,12 @@ class "Scale"
 		end,
 		Type = Dimension,
 	}
-	-- Origin
+
+	doc [======[
+		@name Origin
+		@type property
+		@desc the scale animation's origin point
+	]======]
 	property "Origin" {
 		Get = function(self)
 			return AnimOriginType(self:GetOrigin())

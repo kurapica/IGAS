@@ -2,13 +2,6 @@
 -- Create Date : 7/27/2011
 --               2012.05.14 Fix cursor position after format color
 
----------------------------------------------------------------------------------------------------------------------------------------
---- CodeEditor is using to coding
--- <br><br>inherit <a href=".\MultiLineTextBox.html">MultiLineTextBox</a> For all methods, properties and scriptTypes
--- @name CodeEditor
--- @class table
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 
@@ -1928,6 +1921,11 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name DefaultColor
+		@type property
+		@desc color for normal code
+	]======]
 	property "DefaultColor" {
 		Get = function(self)
 			return self.__DefaultColor or _DefaultColor
@@ -1941,6 +1939,11 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
+	doc [======[
+		@name CommentColor
+		@type property
+		@desc color for comment
+	]======]
 	property "CommentColor" {
 		Get = function(self)
 			return self.__CommentColor or _CommentColor
@@ -1954,6 +1957,11 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
+	doc [======[
+		@name StringColor
+		@type property
+		@desc color for string
+	]======]
 	property "StringColor" {
 		Get = function(self)
 			return self.__StringColor or _StringColor
@@ -1967,6 +1975,11 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
+	doc [======[
+		@name NumberColor
+		@type property
+		@desc color for number
+	]======]
 	property "NumberColor" {
 		Get = function(self)
 			return self.__NumberColor or _NumberColor
@@ -1980,6 +1993,11 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
+	doc [======[
+		@name InstructionColor
+		@type property
+		@desc color for instruction
+	]======]
 	property "InstructionColor" {
 		Get = function(self)
 			return self.__InstructionColor or _InstructionColor
@@ -1993,6 +2011,11 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
+	doc [======[
+		@name FullText
+		@type property
+		@desc the full text contains color token
+	]======]
 	property "FullText" {
 		Set = function(self, text)
 			MultiLineTextBox.AdjustText(self, text)
@@ -2005,6 +2028,11 @@ class "CodeEditor"
 		Type = String,
 	}
 
+	doc [======[
+		@name Enviroment
+		@type property
+		@desc the code's enviroment
+	]======]
 	property "Enviroment" {
 		Get = function(self)
 			self.__Env = self.__Env or _G

@@ -137,7 +137,11 @@ class "Slider"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Orientation
+	doc [======[
+		@name Orientation
+		@type property
+		@desc the orientation of the slider
+	]======]
 	property "Orientation" {
 		Get = function(self)
 			return self:GetOrientation()
@@ -147,7 +151,12 @@ class "Slider"
 		end,
 		Type = Orientation,
 	}
-	-- ThumbTexture
+
+	doc [======[
+		@name ThumbTexture
+		@type property
+		@desc the texture object for the slider thumb
+	]======]
 	property "ThumbTexture" {
 		Get = function(self)
 			return self:GetThumbTexture()
@@ -157,7 +166,12 @@ class "Slider"
 		end,
 		Type = Texture + nil,
 	}
-	-- ThumbTexturePath
+
+	doc [======[
+		@name ThumbTexturePath
+		@type property
+		@desc the texture file path for the slider thumb
+	]======]
 	property "ThumbTexturePath" {
 		Get = function(self)
 			return self:GetThumbTexture() and self:GetThumbTexture().TexturePath
@@ -167,7 +181,12 @@ class "Slider"
 		end,
 		Type = String + nil,
 	}
-	-- Layer
+
+	doc [======[
+		@name Layer
+		@type property
+		@desc the layer used for drawing the filled-in portion of the slider
+	]======]
 	property "Layer" {
 		Get = function(self)
 			return self.__Layer or "ARTWORK"
@@ -177,7 +196,12 @@ class "Slider"
 		end,
 		Type = DrawLayer,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc the value representing the current position of the slider thumb
+	]======]
 	property "Value" {
 		Get = function(self)
 			return self:GetValue()
@@ -187,7 +211,12 @@ class "Slider"
 		end,
 		Type = Number,
 	}
-	-- ValueStep
+
+	doc [======[
+		@name ValueStep
+		@type property
+		@desc the minimum increment between allowed slider values
+	]======]
 	property "ValueStep" {
 		Get = function(self)
 			return self:GetValueStep()
@@ -197,7 +226,12 @@ class "Slider"
 		end,
 		Type = Number,
 	}
-	-- Enabled
+
+	doc [======[
+		@name Enabled
+		@type property
+		@desc whether user interaction with the slider is allowed
+	]======]
 	property "Enabled" {
 		Get = function(self)
 			return (self:IsEnabled() and true) or false
@@ -211,7 +245,12 @@ class "Slider"
 		end,
 		Type = Boolean,
 	}
-	-- MinMaxValue
+
+	doc [======[
+		@name MinMaxValue
+		@type property
+		@desc the minimum and maximum values of the slider bar
+	]======]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())

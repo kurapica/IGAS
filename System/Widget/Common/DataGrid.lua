@@ -204,7 +204,12 @@ class "DataGrid"
 
 			Type = Boolean,
 		}--]]
-		-- Field
+
+		doc [======[
+			@name Field
+			@type property
+			@desc the column data field
+		]======]
 		property "Field" {
 			Set = function(self, field)
 				self.__Field = field
@@ -216,7 +221,12 @@ class "DataGrid"
 
 			Type = String,
 		}
-		-- CellType
+
+		doc [======[
+			@name CellType
+			@type property
+			@desc the default cell type of the column
+		]======]
 		property "CellType" {
 			Set = function(self, cellType)
 				-- Check Style
@@ -239,7 +249,12 @@ class "DataGrid"
 
 			Type = DataGridCellType + nil,
 		}
-		-- Keys
+
+		doc [======[
+			@name Keys
+			@type property
+			@desc the default key list for the column's cells
+		]======]
 		property "Keys" {
 			Set = function(self, keys)
 				if keys and type(keys) == "table" then
@@ -257,7 +272,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- Items
+
+		doc [======[
+			@name Items
+			@type property
+			@desc the default text list for the column's cells
+		]======]
 		property "Items" {
 			Set = function(self, items)
 				if items and type(items) == "table" then
@@ -275,14 +295,24 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- Index
+
+		doc [======[
+			@name Index
+			@type property
+			@desc the column index
+		]======]
 		property "Index" {
 			Get = function(self)
 				return tonumber(strmatch(self.Name, "(%d+)$"))
 			end,
 			Type = Number,
 		}
-		-- BackColor
+
+		doc [======[
+			@name BackColor
+			@type property
+			@desc the default back color for the column's cells
+		]======]
 		property "BackColor" {
 			Set = function(self, colorTable)
 				self.__BackColor = colorTable
@@ -296,7 +326,12 @@ class "DataGrid"
 
 			Type = ColorType,
 		}
-		-- ColumnWidth
+
+		doc [======[
+			@name ColumnWidth
+			@type property
+			@desc the column width
+		]======]
 		property "ColumnWidth" {
 			Set = function(self, percent)
 				self.Parent:SetColumnWidth(self.Index, percent)
@@ -385,7 +420,11 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- ColumnWidth
+		doc [======[
+			@name ColumnWidth
+			@type property
+			@desc the columns width
+		]======]
 		property "ColumnWidth" {
 			Set = function(self, percent)
 				if self.__StartCol then
@@ -405,7 +444,12 @@ class "DataGrid"
 			end,
 			Type = Number,
 		}
-		-- Text
+
+		doc [======[
+			@name Text
+			@type property
+			@desc the columns text
+		]======]
 		property "Text" {
 			Set = function(self, text)
 				if self.__StartCol then
@@ -425,7 +469,12 @@ class "DataGrid"
 			end,
 			Type = LocaleString,
 		}
-		-- Field
+
+		doc [======[
+			@name Field
+			@type property
+			@desc the columns data field
+		]======]
 		property "Field" {
 			Set = function(self, field)
 				if self.__StartCol then
@@ -445,7 +494,12 @@ class "DataGrid"
 			end,
 			Type = String,
 		}
-		-- CellType
+
+		doc [======[
+			@name CellType
+			@type property
+			@desc the columns default cell type for cells
+		]======]
 		property "CellType" {
 			Set = function(self, cellType)
 				if self.__StartCol then
@@ -465,7 +519,12 @@ class "DataGrid"
 			end,
 			Type = DataGridCellType + nil,
 		}
-		-- Keys
+
+		doc [======[
+			@name Keys
+			@type property
+			@desc the columns default key list for cells
+		]======]
 		property "Keys" {
 			Set = function(self, keys)
 				if self.__StartCol then
@@ -485,7 +544,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- Items
+
+		doc [======[
+			@name Items
+			@type property
+			@desc the columns defalut item list for cells
+		]======]
 		property "Items" {
 			Set = function(self, items)
 				if self.__StartCol then
@@ -505,7 +569,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- BackColor
+
+		doc [======[
+			@name BackColor
+			@type property
+			@desc the columns default backColor for cells
+		]======]
 		property "BackColor" {
 			Set = function(self, color)
 				if self.__StartCol then
@@ -576,7 +645,11 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- CellType
+		doc [======[
+			@name CellType
+			@type property
+			@desc the cell type
+		]======]
 		property "CellType" {
 			Set = function(self, cellType)
 				self.__CellType = cellType
@@ -594,7 +667,12 @@ class "DataGrid"
 
 			Type = DataGridCellType + nil,
 		}
-		-- Value
+
+		doc [======[
+			@name Value
+			@type property
+			@desc the cell value
+		]======]
 		property "Value" {
 			Set = function(self, value)
 				if self.__Value == value then
@@ -652,7 +730,12 @@ class "DataGrid"
 
 			Type = Any,
 		}
-		-- Text
+
+		doc [======[
+			@name Text
+			@type property
+			@desc the cell text
+		]======]
 		property "Text" {
 			Set = function(self, text)
 				if not text or type(text) ~= "string" or self.__Text == strtrim(text) then
@@ -706,7 +789,12 @@ class "DataGrid"
 
 			Type = LocaleString,
 		}
-		-- Keys
+
+		doc [======[
+			@name Keys
+			@type property
+			@desc the cell's key list
+		]======]
 		property "Keys" {
 			Set = function(self, keys)
 				if keys and type(keys) == "table" then
@@ -724,7 +812,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- Items
+
+		doc [======[
+			@name Items
+			@type property
+			@desc the cell's item list
+		]======]
 		property "Items" {
 			Set = function(self, items)
 				if items and type(items) == "table" then
@@ -742,21 +835,36 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- RowIndex
+
+		doc [======[
+			@name RowIndex
+			@type property
+			@desc the cell's row index
+		]======]
 		property "RowIndex" {
 			Get = function(self)
 				return tonumber(strmatch(self.Name, "(%d+)"))
 			end,
 			Type = Number,
 		}
-		-- ColumnIndex
+
+		doc [======[
+			@name ColumnIndex
+			@type property
+			@desc the cell's column index
+		]======]
 		property "ColumnIndex" {
 			Get = function(self)
 				return tonumber(strmatch(self.Name, "(%d+)$"))
 			end,
 			Type = Number,
 		}
-		-- BackColor
+
+		doc [======[
+			@name BackColor
+			@type property
+			@desc the cell's backColor
+		]======]
 		property "BackColor" {
 			Set = function(self, colorTable)
 				self.__BackColor = colorTable
@@ -800,7 +908,11 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- CellType
+		doc [======[
+			@name CellType
+			@type property
+			@desc the cells type
+		]======]
 		property "CellType" {
 			Set = function(self, cellType)
 				if self.__StartRow and self.__StartCol then
@@ -826,7 +938,12 @@ class "DataGrid"
 
 			Type = DataGridCellType + nil,
 		}
-		-- Value
+
+		doc [======[
+			@name Value
+			@type property
+			@desc the cells value
+		]======]
 		property "Value" {
 			Set = function(self, value)
 				if self.__StartRow and self.__StartCol then
@@ -852,7 +969,12 @@ class "DataGrid"
 
 			Type = Any,
 		}
-		-- Text
+
+		doc [======[
+			@name Text
+			@type property
+			@desc the cells text
+		]======]
 		property "Text" {
 			Set = function(self, text)
 				if self.__StartRow and self.__StartCol then
@@ -878,7 +1000,12 @@ class "DataGrid"
 
 			Type = LocaleString,
 		}
-		-- Keys
+
+		doc [======[
+			@name Keys
+			@type property
+			@desc the key list for the cells
+		]======]
 		property "Keys" {
 			Set = function(self, keys)
 				if self.__StartRow and self.__StartCol then
@@ -902,7 +1029,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- Items
+
+		doc [======[
+			@name Items
+			@type property
+			@desc the text list for the cells
+		]======]
 		property "Items" {
 			Set = function(self, items)
 				if self.__StartRow and self.__StartCol then
@@ -926,7 +1058,12 @@ class "DataGrid"
 			end,
 			Type = Table + nil,
 		}
-		-- BackColor
+
+		doc [======[
+			@name BackColor
+			@type property
+			@desc the backColor for the cells
+		]======]
 		property "BackColor" {
 			Set = function(self, colorTable)
 				if self.__StartRow and self.__StartCol then
@@ -1743,7 +1880,11 @@ class "DataGrid"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- RowCount
+	doc [======[
+		@name RowCount
+		@type property
+		@desc the row count
+	]======]
 	property "RowCount" {
 		Set = function(self, cnt)
 			self:SetRowCount(cnt)
@@ -1755,7 +1896,12 @@ class "DataGrid"
 
 		Type = Number,
 	}
-	-- ColumnCount
+
+	doc [======[
+		@name ColumnCount
+		@type property
+		@desc the column count
+	]======]
 	property "ColumnCount" {
 		Set = function(self, cnt)
 			self:SetColumnCount(cnt)
@@ -1767,7 +1913,12 @@ class "DataGrid"
 
 		Type = Number,
 	}
-	-- TopRow
+
+	doc [======[
+		@name TopRow
+		@type property
+		@desc the top row index show now
+	]======]
 	property "TopRow" {
 		Set = function(self, row)
 			local minV, maxV = self.ScrollBar:GetMinMaxValues()
@@ -1791,7 +1942,12 @@ class "DataGrid"
 
 		Type = Number,
 	}
-	-- Cells
+
+	doc [======[
+		@name Cells
+		@type property
+		@desc the cells accessor
+	]======]
 	property "Cells" {
 		Get = function(self)
 			return Cells("Cells", self)
@@ -1799,7 +1955,12 @@ class "DataGrid"
 
 		Type = Cells,
 	}
-	-- Columns
+
+	doc [======[
+		@name Columns
+		@type property
+		@desc the columns accessor
+	]======]
 	property "Columns" {
 		Get = function(self)
 			return Columns("Columns", self)

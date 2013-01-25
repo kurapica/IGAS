@@ -45,12 +45,13 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Update the container's panel's postion, Overridable
-	-- @name ContainerFrame:UpdatePanelPosition
-	-- @class function
-	-- @usage ContainerFrame:UpdatePanelPosition()
-	------------------------------------
+	doc [======[
+		@name UpdatePanelPosition
+		@type method
+		@desc Update the container's postion, needed by the IFContainer
+		@param ...
+		@return nil
+	]======]
 	function UpdatePanelPosition(self)
 		self.Panel:ClearAllPoints()
 		self.Panel:SetPoint("BOTTOMLEFT")
@@ -61,7 +62,11 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Caption
+	doc [======[
+		@name Caption
+		@type property
+		@desc the caption text for the groupbox
+	]======]
 	property "Caption" {
 		Set = function(self, text)
 			self:GetChild("Text").Text = text
@@ -73,7 +78,12 @@ class "GroupBox"
 
 		Type = LocaleString,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the groupbox's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			if self.__Style ~= style then
@@ -104,7 +114,12 @@ class "GroupBox"
 
 		Type = GroupBoxStyle,
 	}
-	-- ShowBorder
+
+	doc [======[
+		@name ShowBorder
+		@type property
+		@desc whether show the groupbox's border
+	]======]
 	property "ShowBorder" {
 		Set = function(self, flag)
 			if flag then
