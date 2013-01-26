@@ -2,18 +2,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- MinimapIcon is a widget type using for to add a icon to minimap.
--- <br><br>inherit <a href="..\Base\VirtualUIObject.html">VirtualUIObject</a> For all methods, properties and scriptTypes
--- @name MinimapIcon
--- @class table
--- @field Tooltip the tooltip head to be shown when the cursor is over the icon
--- @field Menu if setted, the menu will be shown when right-click the icon
--- @field Position the position of the icon
--- @field Visible the visible of the icon
--- @field Text the text to be diplayed on the icon
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 
@@ -23,6 +11,12 @@ end
 
 class "MinimapIcon"
 	inherit "VirtualUIObject"
+
+	doc [======[
+		@name MinimapIcon
+		@type class
+		@desc MinimapIcon is used to add icon to minimap
+	]======]
 
 	-- Script
     GameTooltip = IGAS.GameTooltip
@@ -161,139 +155,106 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the MinimapIcon's position is changed
-	-- @name MinimapIcon:OnPositionChanged
-	-- @class function
-	-- @usage function MinimapIcon:OnPositionChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnPositionChanged
+		@type script
+		@desc Run when the MinimapIcon's position is changed
+	]======]
 	script "OnPositionChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse is over the icon, and the tooltip is setted.
-	-- @name MinimapIcon:OnGameTooltipShow
-	-- @class function
-	-- @param GameTooltip the GameTooltip object
-	-- @usage function MinimapIcon:OnGameTooltipShow(GameTooltip)<br>
-	--    -- do someting like<br>
-	--    GameTooltip:AddLine("Version 1")
-	-- end
-	------------------------------------
+	doc [======[
+		@name Run when the mouse is over the icon, and the tooltip is set
+		@type script
+		@desc description
+		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
+	]======]
 	script "OnGameTooltipShow"
 
-	------------------------------------
-	--- ScriptType, Run when icon is clicked
-	-- @name MinimapIcon:OnClick
-	-- @class function
-	-- @usage function MinimapIcon:OnClick()<br>
-	--    -- do someting like<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnClick
+		@type script
+		@desc Run when icon is clicked
+	]======]
 	script "OnClick"
 
-	------------------------------------
-	--- ScriptType, Run when mouse is over the icon
-	-- @name MinimapIcon:OnEnter
-	-- @class function
-	-- @usage function MinimapIcon:OnEnter()<br>
-	--    -- do someting like<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEnter
+		@type script
+		@desc Run when mouse is over the icon
+	]======]
 	script "OnEnter"
 
-	------------------------------------
-	--- ScriptType, Run when mouse is leaving the icon
-	-- @name MinimapIcon:OnLeave
-	-- @class function
-	-- @usage function MinimapIcon:OnLeave()<br>
-	--    -- do someting like<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnLeave
+		@type script
+		@desc Run when mouse is leaving the icon
+	]======]
 	script "OnLeave"
 
-	------------------------------------
-	--- ScriptType, Run when start dragging the icon
-	-- @name MinimapIcon:OnDragStart
-	-- @class function
-	-- @usage function MinimapIcon:OnDragStart()<br>
-	--    -- do someting like<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnDragStart
+		@type script
+		@desc Run when start dragging the icon
+	]======]
 	script "OnDragStart"
 
-	------------------------------------
-	--- ScriptType, Run when stop dragging the icon
-	-- @name MinimapIcon:OnDragStop
-	-- @class function
-	-- @usage function MinimapIcon:OnDragStop()<br>
-	--    -- do someting like<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnDragStop
+		@type script
+		@desc Run when stop dragging the icon
+	]======]
 	script "OnDragStop"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	-- Dispose()
-	function Dispose(self)
-		if self.__MiniMapBtn.__DropDownList and self.__MiniMapBtn.__DropDownList.Parent == self.__MiniMapBtn then
-			self.__MiniMapBtn.__DropDownList.Visible = false
-			self.__MiniMapBtn.__DropDownList.Parent = nil
-		end
-		self.__MiniMapBtn:Dispose()
-	end
-
-	------------------------------------
-	--- Sets the MinimapIcon's icon texutre
-	-- @name MinimapIcon:SetIcon
-	-- @class function
-	-- @param texture the texture to be shown on the icon
-	-- @usage MinimapIcon:SetIcon("Interface\\Icons\\Ability_Creature_Cursed_04")
-	------------------------------------
+	doc [======[
+		@name SetIcon
+		@type method
+		@desc Sets the MinimapIcon's icon texutre
+		@param path string, the image file path
+		@return nil
+	]======]
 	function SetIcon(self, icon)
 		self.__MiniMapBtn:GetChild("Icon"):SetTexture(icon)
 	end
 
-	------------------------------------
-	--- Hide the MinimapIcon
-	-- @name MinimapIcon:Hide
-	-- @class function
-	-- @usage MinimapIcon:Hide()
-	------------------------------------
+	doc [======[
+		@name Hide
+		@type method
+		@desc Hide the MinimapIcon
+		@return nil
+	]======]
 	function Hide(self)
 		return self.__MiniMapBtn:Hide()
 	end
 
-	------------------------------------
-	--- Show the MinimapIcon
-	-- @name MinimapIcon:Show
-	-- @class function
-	-- @usage MinimapIcon:Show()
-	------------------------------------
+	doc [======[
+		@name Show
+		@type method
+		@desc Show the MinimapIcon
+		@return nil
+	]======]
 	function Show(self)
 		self.__MiniMapBtn:Show()
 	end
 
-	------------------------------------
-	--- Check if the MinimapIcon is shown
-	-- @name MinimapIcon:IsShown
-	-- @class function
-	-- @return true if the MinimapIcon is shown
-	-- @usage MinimapIcon:IsShown()
-	------------------------------------
+	doc [======[
+		@name IsShown
+		@type method
+		@desc Whether if the MinimapIcon is shown
+		@return boolean
+	]======]
 	function IsShown(self)
 		return self.__MiniMapBtn:IsShown()
 	end
 
-	------------------------------------
-	--- Check if the MinimapIcon is visible
-	-- @name MinimapIcon:IsVisible
-	-- @class function
-	-- @return true if the MinimapIcon is visible
-	-- @usage MinimapIcon:IsVisible()
-	------------------------------------
+	doc [======[
+		@name IsVisible
+		@type method
+		@desc Whether if the MinimapIcon is visible
+		@return boolean
+	]======]
 	function IsVisible(self)
 		return self.__MiniMapBtn:IsVisible()
 	end
@@ -301,7 +262,11 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Tooltip
+	doc [======[
+		@name Tooltip
+		@type property
+		@desc the tooltip head to be shown when the cursor is over the icon
+	]======]
 	property "Tooltip" {
 		Set = function(self, tooltip)
 			self.__MiniMapBtn.__Tooltip = tostring(tooltip or "")
@@ -311,7 +276,12 @@ class "MinimapIcon"
 		end,
 		Type = LocaleString,
 	}
-	-- Menu
+
+	doc [======[
+		@name Menu
+		@type property
+		@desc the menu will be shown when right-click the icon
+	]======]
 	property "Menu" {
 		Set = function(self, list)
 			self.__MiniMapBtn.__DropDownList = list
@@ -323,7 +293,12 @@ class "MinimapIcon"
 
 		Type = DropDownList,
 	}
-	-- Position
+
+	doc [======[
+		@name Position
+		@type property
+		@desc the icon's position
+	]======]
 	property "Position" {
 		Set = function(self, position)
 			if position then
@@ -341,7 +316,12 @@ class "MinimapIcon"
 		end,
 		Type = MiniMapPosition + nil,
 	}
-	-- Visible
+
+	doc [======[
+		@name Visible
+		@type property
+		@desc the visible of the icon
+	]======]
 	property "Visible" {
 		Set = function(self, visible)
 			self.__MiniMapBtn.Visible = visible
@@ -353,7 +333,12 @@ class "MinimapIcon"
 
 		Type = Boolean,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the text to be diplayed on the icon
+	]======]
 	property "Text" {
 		Set = function(self, text)
 			self.__MiniMapBtn.txtInfo.Text = text
@@ -365,6 +350,17 @@ class "MinimapIcon"
 
 		Type = LocaleString,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		if self.__MiniMapBtn.__DropDownList and self.__MiniMapBtn.__DropDownList.Parent == self.__MiniMapBtn then
+			self.__MiniMapBtn.__DropDownList.Visible = false
+			self.__MiniMapBtn.__DropDownList.Parent = nil
+		end
+		self.__MiniMapBtn:Dispose()
+	end
 
 	------------------------------------------------------
 	-- Constructor

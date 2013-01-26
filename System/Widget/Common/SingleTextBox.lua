@@ -3,14 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- SingleTextBox is a widget type using to contain one line text
--- <br><br>inherit <a href="..\Base\EditBox.html">EditBox</a> For all methods, properties and scriptTypes
--- @name SingleTextBox
--- @class table
--- @field Style the style of the singletextbox: CLASSIC, LIGHT
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 6
 
@@ -20,6 +12,12 @@ end
 
 class "SingleTextBox"
 	inherit "EditBox"
+
+	doc [======[
+		@name SingleTextBox
+		@type class
+		@desc SingleTextBox is a widget type using to contain one line text
+	]======]
 
     -- Style
     TEMPLATE_CLASSIC = "CLASSIC"
@@ -58,13 +56,13 @@ class "SingleTextBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the singletextbox's style
-	-- @name SingleTextBox:SetStyle
-	-- @class function
-	-- @param style the style of the singletextbox : CLASSIC, LIGHT
-	-- @usage SingleTextBox:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the singletextbox's style
+		@param style System.Widget.SingleTextBox.TextBoxStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -124,13 +122,12 @@ class "SingleTextBox"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the singletextbox's style
-	-- @name SingleTextBox:GetStyle
-	-- @class function
-	-- @return the style of the singletextbox : CLASSIC, LIGHT
-	-- @usage SingleTextBox:GetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the singletextbox's style
+		@return System.Widget.SingleTextBox
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
@@ -138,7 +135,11 @@ class "SingleTextBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Style
+	doc [======[
+		@name Style
+		@type property
+		@desc the singletextbox's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)

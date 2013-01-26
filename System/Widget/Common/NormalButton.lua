@@ -3,14 +3,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- NormalButton is inherited from Button with custom style to help author creating useful buttons.
--- <br><br>inherit <a href="..\Base\Button.html">Button</a> For all methods, properties and scriptTypes
--- @name NormalButton
--- @class table
--- @field Style the style of the button:NONE, CLASSIC, GRAY, CLOSE, PLUS, MINUS
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.NormalButton", version) then
@@ -19,6 +11,12 @@ end
 
 class "NormalButton"
 	inherit "Button"
+
+	doc [======[
+		@name NormalButton
+		@type class
+		@desc NormalButton is inherited from Button with custom style to help author creating useful buttons
+	]======]
 
     -- Button Template
     TEMPLATE_NONE = "NONE"
@@ -149,24 +147,23 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Set the Button's Style
-	-- @name Button:SetStyle
-	-- @class function
-	-- @param style the button's style, NONE, CLASSIC, GRAY, CLOSE, PLUS, MINUS
-	-- @usage Button:SetStyle("CLASSIC")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Set the Button's style
+		@param style System.Widget.NormalButton.NormalButtonStyle, the button's style
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		return SetButtonStyle(self, style)
 	end
 
-	------------------------------------
-	--- Get the Button's Style
-	-- @name Button:GetStyle
-	-- @class function
-	-- @return the button's style, NONE, NORMAL, GRAY, CLOSE, PLUS, MINUS
-	-- @usage Button:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Get the button's style
+		@return System.Widget.NormalButton.NormalButtonStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
@@ -174,7 +171,11 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Style
+	doc [======[
+		@name Style
+		@type property
+		@desc The button's style
+	]======]
 	property "Style" {
 		Get = function(self)
 			return self:GetStyle()

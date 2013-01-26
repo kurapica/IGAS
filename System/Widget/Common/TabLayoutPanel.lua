@@ -2,12 +2,6 @@
 -- Create Date : 5/29/2012
 -- ChangeLog
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- TabLayoutPanel
--- <br><br>inherit <a href=".\LayoutPanel.html">TabLayoutPanel</a> For all methods, properties and scriptTypes
--- @name TabLayoutPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.TabLayoutPanel", version) then
 	return
@@ -15,6 +9,12 @@ end
 
 class "TabLayoutPanel"
 	inherit "LayoutPanel"
+
+	doc [======[
+		@name TabLayoutPanel
+		@type class
+		@desc TabLayoutPanel is used to contain tabpages
+	]======]
 
 	_HeaderSize = 24
 	_Header_MinWidth = 100
@@ -270,40 +270,34 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the an Tab is selected
-	-- @name TabLayoutPanel:OnTabChange
-	-- @class function
-	-- @param oldTab
-	-- @param newTab
-	-- @usage function TabLayoutPanel:OnTabChange(oldTab, newTab)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTabChange
+		@type script
+		@desc Run when the an Tab is selected
+		@param oldTab System.Widget.Region, the old tabpage
+		@param newTab System.Widget.Region, the new tabpage
+	]======]
 	script "OnTabChange"
 
-	------------------------------------
-	--- ScriptType, Run when an tab is closed
-	-- @name TabLayoutPanel:OnTabClose
-	-- @class function
-	-- @usage function TabLayoutPanel:OnTabClose()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTabClose
+		@type script
+		@desc Run when an tab is closed
+		@param closeTab System.Widget.Region, the closed tabpage
+	]======]
 	script "OnTabClose"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Add Widget to the panel
-	-- @name TabLayoutPanel:AddWidget
-	-- @class function
-	-- @param widget
-	-- @param header
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name AddWidget
+		@type method
+		@desc Add element to the panel
+		@param element System.Widget.Region, the ui element to be added
+		@param header string, the tabpage's header title
+		@return number the tabpage's index
+	]======]
 	function AddWidget(self, widget, header)
 		if not Reflector.ObjectIsClass(widget, Region) then
 			error("Usage: TabLayoutPanel:AddWidget(widget, header) : widget - must be an object of System.Widget.Region.", 2)
@@ -332,15 +326,15 @@ class "TabLayoutPanel"
 		return index
 	end
 
-	------------------------------------
-	--- Insert Widget to the panel
-	-- @name TabLayoutPanel:InsertWidget
-	-- @class function
-	-- @param before the index to be insert
-	-- @param widget
-	-- @param header
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name InsertWidget
+		@type method
+		@desc Insert element to the panel
+		@param before number, the index to be insert
+		@param element System.Widget.Region, the ui element to be added
+		@param header string, the tabpage's header title
+		@return number the tabpage's index
+	]======]
 	function InsertWidget(self, before, widget, header)
 		before = Super.GetWidgetIndex(self, before)
 
@@ -375,14 +369,16 @@ class "TabLayoutPanel"
 		return index
 	end
 
-	------------------------------------
-	--- Remove Widget to the panel
-	-- @name TabLayoutPanel:RemoveWidget
-	-- @class function
-	-- @param index|name index or the name that need to be removed
-	-- @param withoutDispose optional, true if need get the removed widget
-	-- @return widget if withoutDispose is set to true
-	------------------------------------
+	doc [======[
+		@name RemoveWidget
+		@type method
+		@desc Remove element from the panel
+		@format index|name[, withoutDispose]
+		@param index number, index of the tabpage that need to be removed
+		@param name string, the name that need to be removed
+		@param withoutDispose boolean, true if no need dispose the removed widget
+		@return System.Widget.Region return the ui element if withoutDispose is set to true
+	]======]
 	function RemoveWidget(self, index, withoutDispose)
 		local obj = self:GetWidget(index)
 
@@ -403,12 +399,13 @@ class "TabLayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Select widget
-	-- @name TabLayoutPanel:SelectWidget
-	-- @class function
-	-- @param widget
-	------------------------------------
+	doc [======[
+		@name SelectWidget
+		@type method
+		@desc Select widget
+		@param element System.Widget.Region, the ui element need to be selected
+		@return nil
+	]======]
 	function SelectWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -419,12 +416,13 @@ class "TabLayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Disable widget
-	-- @name TabLayoutPanel:DisableWidget
-	-- @class function
-	-- @param widget
-	------------------------------------
+	doc [======[
+		@name DisableWidget
+		@type method
+		@desc Disable widget
+		@param element System.Widget.Region, the ui element need to be disabled
+		@return nil
+	]======]
 	function DisableWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -438,12 +436,13 @@ class "TabLayoutPanel"
 		end
 	end
 
-	------------------------------------
-	--- Enable widget
-	-- @name TabLayoutPanel:EnableWidget
-	-- @class function
-	-- @param widget
-	------------------------------------
+	doc [======[
+		@name EnableWidget
+		@type method
+		@desc Enable widget
+		@param element System.Widget.Region, the ui element need to be enabled
+		@return nil
+	]======]
 	function EnableWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -457,6 +456,11 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name ShowCloseButton
+		@type property
+		@desc Whether the tabpages can be closed
+	]======]
 	property "ShowCloseButton" {
 		Get = function(self)
 			return self.TabLayoutPanel_Close._Visible
@@ -469,6 +473,11 @@ class "TabLayoutPanel"
 		Type = Boolean,
 	}
 
+	doc [======[
+		@name CloseMessage
+		@type property
+		@desc The confirm message if need to close the tabpage
+	]======]
 	property "CloseMessage" {
 		Get = function(self)
 			return self.TabLayoutPanel_Header.Container._Message
@@ -484,6 +493,11 @@ class "TabLayoutPanel"
 		Type = String + nil,
 	}
 
+	doc [======[
+		@name SelectedWidget
+		@type property
+		@desc The selected ui element
+	]======]
 	property "SelectedWidget" {
 		Get = function(self)
 			local widget

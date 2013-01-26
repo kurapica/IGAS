@@ -2,12 +2,6 @@
 -- Create Date : 5/29/2012
 -- ChangeLog
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- SplitLayoutPanel
--- <br><br>inherit <a href=".\DockLayoutPanel.html">SplitLayoutPanel</a> For all methods, properties and scriptTypes
--- @name SplitLayoutPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.SplitLayoutPanel", version) then
 	return
@@ -15,6 +9,12 @@ end
 
 class "SplitLayoutPanel"
 	inherit "DockLayoutPanel"
+
+	doc [======[
+		@name SplitLayoutPanel
+		@type class
+		@desc Add split line between dock elements
+	]======]
 
 	local function OnEnter(self)
 		self:GetChild("HighLight").Visible = true
@@ -106,16 +106,7 @@ class "SplitLayoutPanel"
 	-- Method
 	------------------------------------------------------
 
-	------------------------------------
-	--- Add Widget to the panel
-	-- @name SplitLayoutPanel:AddWidget
-	-- @class function
-	-- @param direction
-	-- @param widget
-	-- @param size
-	-- @param unit
-	-- @return index
-	------------------------------------
+	-- Override
 	function AddWidget(self, widget, direction, size, unit)
 		local index = Super.AddWidget(self, widget, direction, size, unit)
 
@@ -124,14 +115,6 @@ class "SplitLayoutPanel"
 		return index
 	end
 
-	------------------------------------
-	--- Insert Widget to the panel
-	-- @name SplitLayoutPanel:InsertWidget
-	-- @class function
-	-- @param index the index to be insert
-	-- @param widget
-	-- @return index
-	------------------------------------
 	function InsertWidget(self, before, widget, direction, size, unit)
 		local index = Super.InsertWidget(self, before, widget, direction, size, unit)
 
@@ -140,14 +123,6 @@ class "SplitLayoutPanel"
 		return index
 	end
 
-	------------------------------------
-	--- Remove Widget to the panel
-	-- @name SplitLayoutPanel:RemoveWidget
-	-- @class function
-	-- @param index|name index or the name that need to be removed
-	-- @param withoutDispose optional, true if need get the removed widget
-	-- @return widget if withoutDispose is set to true
-	------------------------------------
 	function RemoveWidget(self, index, withoutDispose)
 		local obj = Super.RemoveWidget(self, index, withoutDispose)
 

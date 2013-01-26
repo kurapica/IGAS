@@ -9,55 +9,6 @@
 --				2011/06/20	OnDoubleClick script added.
 --				2012/03/25  Recode to increase the performance
 
----------------------------------------------------------------------------------------------------------------------------------------
---- TreeView is used to display hierarchical data.
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name TreeView
--- @class table
--- @field ChildNodeNum the child-node's count, readonly
--- @field TogglePosition the toggle button's position, LEFT or RIGHT
----------------------------------------------------------------------------------------------------------------------------------------
-
---[[
-		example tree
-
-		Alpha
-		Bravo
-		  -Charlie
-		  -Delta
-			-Echo
-		Foxtrot
-
-		tree = {
-			ChildOrderChangable = false,
-			ShowTootip = false,
-			{
-				Text = "Alpha",
-				FunctionName = "ADD",
-			},
-			{
-				Text = "Bravo",
-				ChildOrderChangable = true,
-				Childs = {
-					{
-						Text = "Charlie",
-					},
-					{
-						Text = "Delta",
-						Childs = {
-							{
-								Text = "Echo",
-							}
-						}
-					}
-				}
-			},
-			{
-				Text = "Foxtrot",
-			},
-		}
---]]
-
 -- Check Version
 local version = 16
 if not IGAS:NewAddon("IGAS.Widget.TreeView", version) then
@@ -66,6 +17,53 @@ end
 
 class "TreeView"
 	inherit "Frame"
+
+	doc [======[
+		@name TreeView
+		@type class
+		@desc TreeView is used to display hierarchical data
+		@usage
+			Like :
+		<br>	Alpha
+		<br>	Bravo
+		<br>	  -Charlie
+		<br>	  -Delta
+		<br>		-Echo
+		<br>	Foxtrot
+		<br>
+		<br>Code :
+		<br>
+		<br>treeView = TreeView("TestTree")
+		<br>
+		<br>treeView:SetTree{
+		<br>	ChildOrderChangable = false,
+		<br>	ShowTootip = false,
+		<br>	{
+		<br>		Text = "Alpha",
+		<br>		FunctionName = "ADD",
+		<br>	},
+		<br>	{
+		<br>		Text = "Bravo",
+		<br>		ChildOrderChangable = true,
+		<br>		Childs = {
+		<br>			{
+		<br>				Text = "Charlie",
+		<br>			},
+		<br>			{
+		<br>				Text = "Delta",
+		<br>				Childs = {
+		<br>					{
+		<br>						Text = "Echo",
+		<br>					}
+		<br>				}
+		<br>			}
+		<br>		}
+		<br>	},
+		<br>	{
+		<br>		Text = "Foxtrot",
+		<br>	},
+		<br>}
+	]======]
 
     GameTooltip = IGAS.GameTooltip
 
@@ -100,6 +98,12 @@ class "TreeView"
 
 	class "TreeNode"
 		inherit "VirtualUIObject"
+
+		doc [======[
+			@name TreeNode
+			@type class
+			@desc TreeNode is used to store data for tree nodes
+		]======]
 
 		local _RefreshTree = _RefreshTree
 		local _Index2Name = _Index2Name
@@ -227,81 +231,62 @@ class "TreeView"
 		------------------------------------------------------
 		-- Script
 		------------------------------------------------------
-		------------------------------------
-		--- ScriptType, Run when the treenode is toggled
-		-- @name TreeNode:OnToggle
-		-- @class function
-		-- @usage function TreeNode:OnToggle()<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnToggle
+			@type script
+			@desc Run when the treenode is toggled
+		]======]
 		script "OnToggle"
 
-		------------------------------------
-		--- ScriptType, Run when the button is double-clicked
-		-- @name TreeNode:OnDoubleClick
-		-- @class function
-		-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-		-- @usage function TreeNode:OnDoubleClick(button)<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnDoubleClick
+			@type script
+			@desc Run when the treenode is double-clicked
+			@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+		]======]
 		script "OnDoubleClick"
 
-		------------------------------------
-		--- ScriptType, Run when the function button of the treenode is clicked
-		-- @name TreeNode:OnFunctionClick
-		-- @class function
-		-- @param funcName function's name
-		-- @usage function TreeNode:OnFunctionClick(funcName)<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnFunctionClick
+			@type script
+			@desc Run when the function button of the treenode is clicked
+			@param funcName string, the function button's name
+		]======]
 		script "OnFunctionClick"
 
-		------------------------------------
-		--- ScriptType, Run when the treenode is selected
-		-- @name TreeNode:OnSelect
-		-- @class function
-		-- @usage function TreeNode:OnSelect()<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnSelected
+			@type script
+			@desc Run when the treenode is selected
+		]======]
 		script "OnSelected"
 
-		------------------------------------
-		--- ScriptType, Run when the mouse is over an item, and the tooltip is setted.
-		-- @name TreeNode:OnGameTooltipShow
-		-- @class function
-		-- @param GameTooltip the GameTooltip object
-		-- @usage function TreeNode:OnGameTooltipShow(GameTooltip)<br>
-		--    -- do someting like<br>
-		--    GameTooltip:AddLine("Version 1")
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnGameTooltipShow
+			@type script
+			@desc Run when the mouse is over an item, and the tooltip is set
+			@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
+		]======]
 		script "OnGameTooltipShow"
 
-		------------------------------------
-		--- ScriptType, Run when the node's index is changed
-		-- @name TreeView:OnIndexChanged
-		-- @class function
-		-- @param node
-		-- @usage function TreeView:OnIndexChanged()<br>
-		--    -- do someting<br>
-		-- end
-		------------------------------------
+		doc [======[
+			@name OnIndexChanged
+			@type script
+			@desc Run when the node's index is changed
+		]======]
 		script "OnIndexChanged"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		------------------------------------
-		--- Add child-node to the treenode
-		-- @name TreeNode:AddNode
-		-- @class function
-		-- @param node a table contains node informations
-		-- @usage TreeNode:AddNode{Text = "Show Text", Value = "Second",}
-		------------------------------------
+		doc [======[
+			@name AddNode
+			@type method
+			@desc Add child-node to the treenode
+			@param node table, a table contains node informations
+			@return nil
+			@usage object:AddNode{Text = "Show Text"}
+		]======]
 		function AddNode(self, node)
 			local subNode = _AddNode(self, node)
 
@@ -312,48 +297,46 @@ class "TreeView"
 			return subNode
 		end
 
-		------------------------------------
-		--- Gets a child-node by index
-		-- @name TreeNode:GetNode
-		-- @class function
-		-- @param index the index of the child-node
-		-- @return the child-node
-		-- @usage TreeNode:GetNode(1)
-		------------------------------------
+		doc [======[
+			@name GetNode
+			@type method
+			@desc Gets a child-node by index
+			@param index number, the child-node's index
+			@return System.Widget.TreeView.TreeNode
+		]======]
 		function GetNode(self, index)
 			return (type(index) == "number" and self:GetChild(_Index2Name(index))) or nil
 		end
 
-		------------------------------------
-		--- Removes a child-node by index
-		-- @name TreeNode:RemoveNode
-		-- @class function
-		-- @param index the index of the child-node
-		-- @usage TreeNode:RemoveNode(1)
-		------------------------------------
+		doc [======[
+			@name RemoveNode
+			@type method
+			@desc  Removes a child-node by index
+			@param index number, the index of the child-node
+			@return nil
+		]======]
 		function RemoveNode(self, index)
 			_RemoveNode(self, index)
 
 			return Refresh(self)
 		end
 
-		------------------------------------
-		--- Whether the TreeNode is selected
-		-- @name TreeNode:IsSelected
-		-- @class function
-		-- @return true if the treenode is selected
-		-- @usage TreeNode:IsSelected()
-		------------------------------------
+		doc [======[
+			@name IsSelected
+			@type method
+			@desc Whether the TreeNode is selected
+			@return boolean true if the treenode is selected
+		]======]
 		function IsSelected(self)
 			return (self.__Root.__SelectedItem == self)
 		end
 
-		------------------------------------
-		--- Select the TreeNode
-		-- @name TreeNode:Select
-		-- @class function
-		-- @usage TreeNode:Select()
-		------------------------------------
+		doc [======[
+			@name Select
+			@type method
+			@desc Select the TreeNode
+			@return nil
+		]======]
 		function Select(self)
 			local root = self.__Root
 			local parent = self.Parent
@@ -377,36 +360,37 @@ class "TreeView"
 			end
 		end
 
-		------------------------------------
-		--- Reset the TreeNode's information
-		-- @name TreeNode:SetNode
-		-- @class function
-		-- @usage TreeNode:SetNode{["Text"] = "Show Text", ["Value"] = "Main",}
-		------------------------------------
+		doc [======[
+			@name SetNode
+			@type method
+			@desc Reset the TreeNode's information
+			@param node table, a table contains node informations
+			@return nil
+			@usage object:SetNode{["Text"] = "Show Text"}
+		]======]
 		function SetNode(self, node)
 			_SetNode(self, node)
 
 			return Refresh(self)
 		end
 
-		------------------------------------
-		--- Gets the TreeNode's toggle state
-		-- @name TreeNode:GetToggleState
-		-- @class function
-		-- @return true if the TreeNode is toggled
-		-- @usage TreeNode:GetToggleState()
-		------------------------------------
+		doc [======[
+			@name GetToggleState
+			@type script
+			@desc Gets the TreeNode's toggle state
+			@return boolean true if the TreeNode is toggled
+		]======]
 		function GetToggleState(self)
 			return self.__ToggleState or false
 		end
 
-		------------------------------------
-		--- Sets the TreeNode's toggle state
-		-- @name TreeNode:SetToggleState
-		-- @class function
-		-- @param enable True if toggle the TreeNode
-		-- @usage TreeNode:SetToggleState(true)
-		------------------------------------
+		doc [======[
+			@name SetToggleState
+			@type method
+			@desc Sets the TreeNode's toggle state
+			@param toggled boolean, true if toggle the TreeNode
+			@return nil
+		]======]
 		function SetToggleState(self, flag)
 			flag = (flag and true) or false
 
@@ -425,19 +409,14 @@ class "TreeView"
 			end
 		end
 
-		-- Dispose, release resource
-		function Dispose(self)
-			local tree = self.__Root
-
-			_Dispose(self)
-
-			return _RefreshTree(tree)
-		end
-
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Text
+		doc [======[
+			@name Text
+			@type property
+			@desc the treeNode's displayed text
+		]======]
 		property "Text" {
 			Get = function(self)
 				if type(self.MetaData.Text) ~= "string" then
@@ -452,7 +431,12 @@ class "TreeView"
 			end,
 			Type = LocaleString,
 		}
-		-- ToggleState
+
+		doc [======[
+			@name ToggleState
+			@type property
+			@desc the treeNode's toggle state
+		]======]
 		property "ToggleState" {
 			Set = function(self, flag)
 				return SetToggleState(self, flag)
@@ -462,7 +446,12 @@ class "TreeView"
 			end,
 			Type = Boolean,
 		}
-		-- Menu
+
+		doc [======[
+			@name Menu
+			@type property
+			@desc the treeNode's menu
+		]======]
 		property "Menu" {
 			Set = function(self, list)
 				self.MetaData.Menu = list
@@ -475,19 +464,34 @@ class "TreeView"
 			end,
 			Type = DropDownList + nil,
 		}
-		-- CanToggle
+
+		doc [======[
+			@name CanToggle
+			@type property
+			@desc whether the treeNode has child-nodes
+		]======]
 		property "CanToggle" {
 			Get = function(self)
 				return self.__ChildNodeCount and self.__ChildNodeCount > 0 or false
 			end,
 		}
-		-- ChildNodeNum
+
+		doc [======[
+			@name ChildNodeCount
+			@type property
+			@desc the treeNode's child-nodes count
+		]======]
 		property "ChildNodeCount" {
 			Get = function(self)
 				return self.__ChildNodeCount or 0
 			end,
 		}
-		-- Index
+
+		doc [======[
+			@name Index
+			@type property
+			@desc the treeNode's index
+		]======]
 		property "Index" {
 			Get = function(self)
 				return self.__NodeIndex
@@ -560,13 +564,23 @@ class "TreeView"
 			end,
 			Type = Number,
 		}
-		-- Level
+
+		doc [======[
+			@name Level
+			@type property
+			@desc the treeNode's level in the treeView
+		]======]
 		property "Level" {
 			Get = function(self)
 				return self.__TreeLevel
 			end,
 		}
-		-- FunctionName
+
+		doc [======[
+			@name FunctionName
+			@type property
+			@desc the function button's text, seperated by ","
+		]======]
 		property "FunctionName" {
 			Get = function(self)
 				if self.MetaData.FunctionName and type(self.MetaData.FunctionName) ~= "string" then
@@ -583,7 +597,12 @@ class "TreeView"
 			end,
 			Type = LocaleString + nil,
 		}
-		-- ChildOrderChangable
+
+		doc [======[
+			@name ChildOrderChangable
+			@type property
+			@desc whether the child-nodes's order can be changed
+		]======]
 		property "ChildOrderChangable" {
 			Get = function(self)
 				return self.MetaData.ChildOrderChangable and true or false
@@ -594,7 +613,12 @@ class "TreeView"
 			end,
 			Type = Boolean,
 		}
-		-- MetaData
+
+		doc [======[
+			@name MetaData
+			@type property
+			@desc the meta-data table for the treeNode, set by SetNode or AddNode
+		]======]
 		property "MetaData" {
 			Get = function(self)
 				if type(self.__MetaData) ~= "table" then
@@ -612,7 +636,12 @@ class "TreeView"
 				return self.__MetaData
 			end,
 		}
-		-- Root
+
+		doc [======[
+			@name Root
+			@type property
+			@desc the treeView
+		]======]
 		property "Root" {
 			Get = function(self)
 				return self.__Root
@@ -620,9 +649,20 @@ class "TreeView"
 		}
 
 		------------------------------------------------------
+		-- Dispose
+		------------------------------------------------------
+		function Dispose(self)
+			local tree = self.__Root
+
+			_Dispose(self)
+
+			return _RefreshTree(tree)
+		end
+
+		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		 function TreeNode(self, name, parent)
+		function TreeNode(self, name, parent)
 			parent.__ChildNodeCount = (parent.__ChildNodeCount or 0) + 1
 
 			if Object.IsClass(parent, TreeNode) then
@@ -633,7 +673,7 @@ class "TreeView"
 
 			self.__NodeIndex = parent.__ChildNodeCount
 			self.__TreeLevel = (parent.__TreeLevel or 0) + 1
-		 end
+		end
 	endclass "TreeNode"
 
 	------------------------------------------------------
@@ -1387,85 +1427,66 @@ class "TreeView"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when a treenode is toggled
-	-- @name TreeView:OnNodeToggle
-	-- @class function
-	-- @param node the treenode
-	-- @usage function TreeView:OnNodeToggle(node)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNodeToggle
+		@type script
+		@desc Run when a treenode is toggled
+		@param node System.Widget.TreeView.TreeNode
+	]======]
 	script "OnNodeToggle"
 
-	------------------------------------
-	--- ScriptType, Run when the button is double-clicked
-	-- @name TreeView:OnDoubleClick
-	-- @class function
-	-- @param node the treenode
-	-- @param button Name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
-	-- @usage function TreeView:OnDoubleClick(node, button)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnDoubleClick
+		@type script
+		@desc Run when the button is double-clicked
+		@param node System.Widget.TreeView.TreeNode
+		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
+	]======]
 	script "OnDoubleClick"
 
-	------------------------------------
-	--- ScriptType, Run when a treenode's function button is clicked
-	-- @name TreeView:OnNodeFunctionClick
-	-- @class function
-	-- @param funcName function's name
-	-- @param node the treenode
-	-- @usage function TreeView:OnNodeFunctionClick(funcName, node)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNodeFunctionClick
+		@type script
+		@desc Run when a treenode's function button is clicked
+		@param funcName the function button's name
+		@param node System.Widget.TreeView.TreeNode
+	]======]
 	script "OnNodeFunctionClick"
 
-	------------------------------------
-	--- ScriptType, Run when an treenode in the treeview is selected
-	-- @name TreeView:OnNodeSelected
-	-- @class function
-	-- @param node the treenode
-	-- @usage function TreeView:OnNodeSelected(node)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNodeSelected
+		@type script
+		@desc Run when an treenode in the treeview is selected
+		@param node System.Widget.TreeView.TreeNode
+	]======]
 	script "OnNodeSelected"
 
-	------------------------------------
-	--- ScriptType, Run when the mouse is over an item, and the tooltip is setted.
-	-- @name TreeView:OnNodeGameTooltipShow
-	-- @class function
-	-- @param GameTooltip the GameTooltip object
-	-- @param node the treenode
-	-- @usage function TreeView:OnNodeGameTooltipShow(GameTooltip, node)<br>
-	--    -- do someting like<br>
-	--    GameTooltip:AddLine("Version 1")
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNodeGameTooltipShow
+		@type script
+		@desc Run when the mouse is over an item, and the tooltip is set
+		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
+		@param node System.Widget.TreeView.TreeNode
+	]======]
 	script "OnNodeGameTooltipShow"
 
-	------------------------------------
-	--- ScriptType, Run when a node's index is changed
-	-- @name TreeView:OnNodeIndexChanged
-	-- @class function
-	-- @param node
-	-- @usage function TreeView:OnNodeIndexChanged(node)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNodeIndexChanged
+		@type script
+		@desc Run when a node's index is changed
+		@param node System.Widget.TreeView.TreeNode
+	]======]
 	script "OnNodeIndexChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Select none
-	-- @name TreeView:SelectNone
-	-- @class function
-	-- @usage TreeView:SelectNone()
-	------------------------------------
+	doc [======[
+		@name SelectNone
+		@type method
+		@desc Select none node
+		@return nil
+	]======]
 	function SelectNone(self)
 		self.__SelectedItem = nil
 
@@ -1474,25 +1495,24 @@ class "TreeView"
 		end
 	end
 
-	------------------------------------
-	--- Gets the selected TreeNode of the TreeView
-	-- @name TreeView:GetSelectNode
-	-- @class function
-	-- @return the selected TreeView
-	-- @usage TreeView:GetSelectNode()
-	------------------------------------
+	doc [======[
+		@name GetSelectNode
+		@type method
+		@desc Gets the selected TreeNode of the TreeView
+		@return System.Widget.TreeView.TreeNode the selected node
+	]======]
 	function GetSelectNode(self)
 		return self.__SelectedItem
 	end
 
-	------------------------------------
-	--- Adds child-nodes by the given information
-	-- @name TreeView:AddNode
-	-- @class function
-	-- @param node a table contains the node's information
-	-- @return the child-node
-	-- @usage TreeView:AddNode{["Text"] = "Show Text", ["Value"] = "Main",}
-	------------------------------------
+	doc [======[
+		@name AddNode
+		@type method
+		@desc Adds child-nodes by the given information
+		@param node table, a table contains the node's information
+		@return nil
+		@usage object:AddNode{["Text"] = "Show Text"}
+	]======]
 	function AddNode(self, node)
 		if type(node) == "table" then
 			local treeNode = TreeNode(_Index2Name((self.__ChildNodeCount or 0) + 1), self)
@@ -1501,70 +1521,37 @@ class "TreeView"
 		end
 	end
 
-	------------------------------------
-	--- Gets a child-node by index
-	-- @name TreeView:GetNode
-	-- @class function
-	-- @param index the index of a child-node
-	-- @return the child-node with that index
-	-- @usage TreeView:GetNode(1)
-	------------------------------------
+	doc [======[
+		@name GetNode
+		@type method
+		@desc Gets a child-node by index
+		@param index number, the index of a child-node
+		@return System.Widget.TreeView.TreeNode the child-node with that index
+	]======]
 	function GetNode(self, index)
 		return type(index) == "number" and self:GetChild(_Index2Name(index)) or nil
 	end
 
-	------------------------------------
-	--- Removes a child-node by index
-	-- @name TreeView:RemoveNode
-	-- @class function
-	-- @param index the index of a child-node
-	-- @usage TreeView:RemoveNode(1)
-	------------------------------------
+	doc [======[
+		@name RemoveNode
+		@type method
+		@desc Removes a child-node by index
+		@param index number, the index of the child-node
+		@return nil
+	]======]
 	function RemoveNode(self, index)
 		if type(index) == "number" and self:GetChild(_Index2Name(index)) then
 			return self:GetChild(_Index2Name(index)):Dispose()
 		end
 	end
 
-	------------------------------------
-	--- ReBudild the treeView with a data table
-	-- @name TreeView:SetTree
-	-- @class function
-	-- @param tree a table contains a data table
-	-- @usage TreeView:SetTree{<br>
-	--	{<br>
-	--		Value = "A",<br>
-	--		Text = "Alpha",<br>
-	--     Menu = DropDownList1,<br>
-	--	},<br>
-	--	{<br>
-	--		Value = "B",<br>
-	--		Text = "Bravo",<br>
-	--      Menu = DropDownList2,<br>
-	--		Childs = {<br>
-	--			{<br>
-	--				Value = "C",<br>
-	--				Text = "Charlie",<br>
-	--			},<br>
-	--			{<br>
-	--				Value = "D",<br>
-	--				Text = "Delta",<br>
-	--				Childs = {<br>
-	--					{<br>
-	--						Value = "E",<br>
-	--						Text = "Echo",<br>
-	--                      Menu = DropDownList3,<br>
-	--					}<br>
-	--				}<br>
-	--			}<br>
-	--		}<br>
-	--	},<br>
-	--	{<br>
-	--		Value = "F",<br>
-	--		Text = "Foxtrot"<br>
-	--	},<br>
-	--}<br>
-	------------------------------------
+	doc [======[
+		@name SetTree
+		@type method
+		@desc ReBudild the treeView with a data table
+		@param tree table, a table contains a data table
+		@return nil
+	]======]
 	function SetTree(self, tree)
 		local index = 0
 		local node
@@ -1606,29 +1593,22 @@ class "TreeView"
 		return _RefreshTree(self)
 	end
 
-	-- Dispose, release resource
-	function Dispose(self)
-		self.Visible = false
-
-		SetTree(self, nil)
-	end
-
-	------------------------------------
-	--- stop the refresh of the list
-	-- @name List:SuspendLayout
-	-- @class function
-	-- @usage List:SuspendLayout()
-	------------------------------------
+	doc [======[
+		@name SuspendLayout
+		@type method
+		@desc Stop the refresh of the list
+		@return nil
+	]======]
 	function SuspendLayout(self)
 		self.__Layout = false
 	end
 
-	------------------------------------
-	--- resume the refresh of the list
-	-- @name List:ResumeLayout
-	-- @class function
-	-- @usage List:ResumeLayout()
-	------------------------------------
+	doc [======[
+		@name ResumeLayout
+		@type method
+		@desc Resume the refresh of the list
+		@return nil
+	]======]
 	function ResumeLayout(self)
 		self.__Layout = true
 		_RefreshTree(self)
@@ -1637,7 +1617,11 @@ class "TreeView"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- SelectedNode
+	doc [======[
+		@name SelectedNode
+		@type property
+		@desc the selected treeNode
+	]======]
 	property "SelectedNode" {
 		Get = function(self)
 			return self.__SelectedItem
@@ -1655,13 +1639,23 @@ class "TreeView"
 		end,
 		Type = TreeNode + nil,
 	}
-	-- ChildNodeNum
+
+	doc [======[
+		@name ChildNodeCount
+		@type property
+		@desc the child-node's count
+	]======]
 	property "ChildNodeCount" {
 		Get = function(self)
 			return self.__ChildNodeCount or 0
 		end,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the treeView's style
+	]======]
 	property "Style" {
 		Get = function(self)
 			return self.__Style or TEMPLATE_LEFT
@@ -1683,7 +1677,12 @@ class "TreeView"
 		end,
 		Type = TreeViewStyle,
 	}
-	-- ShowTootip
+
+	doc [======[
+		@name ShowTootip
+		@type property
+		@desc whether show the tooltip or not
+	]======]
 	property "ShowTootip" {
 		Get = function(self)
 			return self.__ShowTootip and true or false
@@ -1693,7 +1692,12 @@ class "TreeView"
 		end,
 		Type = Boolean,
 	}
-	-- ChildOrderChangable
+
+	doc [======[
+		@name ChildOrderChangable
+		@type property
+		@desc whether the child-node's order can be changed
+	]======]
 	property "ChildOrderChangable" {
 		Get = function(self)
 			return self.MetaData.ChildOrderChangable and true or false
@@ -1703,7 +1707,12 @@ class "TreeView"
 		end,
 		Type = Boolean,
 	}
-	-- MetaData
+
+	doc [======[
+		@name MetaData
+		@type property
+		@desc the meta-data for the treeView, set by SetTree
+	]======]
 	property "MetaData" {
 		Get = function(self)
 			if type(self.__MetaData) ~= "table" then
@@ -1712,6 +1721,15 @@ class "TreeView"
 			return self.__MetaData
 		end,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		self.Visible = false
+
+		SetTree(self, nil)
+	end
 
 	------------------------------------------------------
 	-- Constructor

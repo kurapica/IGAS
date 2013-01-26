@@ -110,9 +110,24 @@ class "EditBox"
 	-- Method
 	------------------------------------------------------
 	doc [======[
+		@name AddHistoryLine
+		@type method
+		@desc Add text to the edit history
+		@param text string, text to be added to the edit box's list of history lines
+		@return nil
+	]======]
+
+	doc [======[
 		@name ClearHistory
 		@type method
 		@desc Clear history
+		@return nil
+	]======]
+
+	doc [======[
+		@name ClearFocus
+		@type method
+		@desc Releases keyboard input focus from the edit box
 		@return nil
 	]======]
 
@@ -175,7 +190,7 @@ class "EditBox"
 	doc [======[
 		@name GetNumber
 		@type method
-		@desc  Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.
+		@desc Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.
 		@return number Contents of the edit box as a number
 	]======]
 
@@ -275,7 +290,6 @@ class "EditBox"
 		@desc Returns whether the text entered in the edit box is masked
 		@return boolean 1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil
 	]======]
-
 
 	doc [======[
 		@name SetAltArrowKeyMode

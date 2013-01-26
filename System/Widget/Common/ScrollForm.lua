@@ -6,16 +6,6 @@
 --              2010/02/22 Add FixHeight to Container
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- ScrollForm is a widget type using as a scrollable container.
--- <br><br>inherit <a href="..\Base\ScrollFrame.html">ScrollFrame</a> For all methods, properties and scriptTypes
--- @name ScrollForm
--- @class table
--- @field Container the scrollform's container, using to contain other frames.
--- @field ValueStep the minimum increment between allowed slider values
--- @field Value the value representing the current position of the slider thumb
--- @field AutoHeight true if the height of the container would be auto-adjust
----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Check Version
 local version = 8
@@ -25,6 +15,12 @@ end
 
 class "ScrollForm"
 	inherit "ScrollFrame"
+
+	doc [======[
+		@name ScrollForm
+		@type class
+		@desc ScrollForm is used as a scrollable container
+	]======]
 
     -- Scripts
     _FrameBackdrop = {
@@ -192,12 +188,12 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Adjust the container's height, using when you add, remove or modify some frames
-	-- @name ScrollForm:FixHeight
-	-- @class function
-	-- @usage ScrollForm:FixHeight()
-	------------------------------------
+	doc [======[
+		@name FixHeight
+		@type method
+		@desc Adjust the container's height, using when you add, remove or modify some frames
+		@return nil
+	]======]
 	function FixHeight(self)
 		local flg = self.__AutoHeight
 		self.__AutoHeight = true
@@ -217,13 +213,22 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Container
+	doc [======[
+		@name Container
+		@type property
+		@desc the scrollform's container, using to contain other frames.
+	]======]
 	property "Container" {
 		Get = function(self)
 			return self:GetChild("Container")
 		end,
 	}
-	-- ValueStep
+
+	doc [======[
+		@name ValueStep
+		@type property
+		@desc the minimum increment between allowed slider values
+	]======]
 	property "ValueStep" {
 		Set = function(self, value)
 			if value > 1 then
@@ -239,7 +244,12 @@ class "ScrollForm"
 
 		Type = Number,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc the value representing the current position of the slider thumb
+	]======]
 	property "Value" {
 		Set = function(self, value)
 			self:GetChild("Bar").Value = value
@@ -251,7 +261,12 @@ class "ScrollForm"
 
 		Type = Number,
 	}
-	-- AutoHeight
+
+	doc [======[
+		@name AutoHeight
+		@type property
+		@desc true if the height of the container would be auto-adjust
+	]======]
 	property "AutoHeight" {
 		Set = function(self, auto)
 			self.__AutoHeight = (auto and true) or false

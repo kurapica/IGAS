@@ -2,27 +2,6 @@
 -- Change Log  :
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- PopupDialog is using to show message and apply some operations like, confirm, cancel.
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name PopupDialog
--- @class table
--- @field Message the message to be shown
--- @field Text the text in the input edit box
--- @field OkayButtonText the text that displayed on the okay button
--- @field NoButtonText the text that displayed on the no button
--- @field CancelButtonText the text that displayed on the cancel button
--- @field ShowAlertIcon whether show the alert icon
--- @field ShowOkayButton whether show the okay button
--- @field ShowNoButton whether show the no button
--- @field ShowCancelButton whether show the cancel button
--- @field ShowInputBox whether show the input edit box
--- @field ShowWhileDead whether show while player is dead
--- @field ShowWhileCinematic whether show while player is in cinematic
--- @field Style the popupdialog's style: CLASSIC, LIGHT
--- @field Input the instance of the popupdialog's input object(It's a ComboBox, can be used in special way)
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 8
 
@@ -32,6 +11,12 @@ end
 
 class "PopupDialog"
 	inherit "Frame"
+
+	doc [======[
+		@name PopupDialog
+		@type class
+		@desc PopupDialog is using to show message and apply some operations like, confirm, cancel.
+	]======]
 
 	-- Only need one table to help set button's pos.
 	_CheckBtn = {}
@@ -188,56 +173,44 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the popupdialog's cancel button is clicked
-	-- @name PopupDialog:OnCancel
-	-- @class function
-	-- @usage function PopupDialog:OnCancel()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnCancel
+		@type script
+		@desc Run when the popupdialog's cancel button is clicked
+	]======]
 	script "OnCancel"
 
-	------------------------------------
-	--- ScriptType, Run when the popupdialog's no button is clicked
-	-- @name PopupDialog:OnNo
-	-- @class function
-	-- @usage function PopupDialog:OnNo()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnNo
+		@type script
+		@desc Run when the popupdialog's no button is clicked
+	]======]
 	script "OnNo"
 
-	------------------------------------
-	--- ScriptType, Run when the popupdialog's okay button is clicked
-	-- @name PopupDialog:OnOkay
-	-- @class function
-	-- @usage function PopupDialog:OnOkay()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnOkay
+		@type script
+		@desc Run when the popupdialog's okay button is clicked
+	]======]
 	script "OnOkay"
 
-	------------------------------------
-	--- ScriptType, Run when the popupdialog's inputbox's text is changed
-	-- @name PopupDialog:OnTextChanged
-	-- @class function
-	-- @usage function PopupDialog:OnTextChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTextChanged
+		@type script
+		@desc Run when the popupdialog's inputbox's text is changed
+	]======]
 	script "OnTextChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the popupdialog's style
-	-- @name PopupDialog:SetStyle
-	-- @class function
-	-- @param style the style of the popupdialog: CLASSIC, LIGHT
-	-- @usage PopupDialog:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the popupdialog's style
+		@param style System.Widget.PopupDialog.PopupDialogStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -264,13 +237,12 @@ class "PopupDialog"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the popupdialog's style
-	-- @name PopupDialog:GetStyle
-	-- @class function
-	-- @return the style of the popupdialog: CLASSIC, LIGHT
-	-- @usage PopupDialog:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the popupdialog's style
+		@return System.Widget.PopupDialog.PopupDialogStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
@@ -278,7 +250,11 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Message
+	doc [======[
+		@name Message
+		@type property
+		@desc the message to be shown
+	]======]
 	property "Message" {
 		Set = function(self, text)
 			self:GetChild("AlertText").Text = text or ""
@@ -288,7 +264,12 @@ class "PopupDialog"
 		end,
 		Type = LocaleString,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the text in the input edit box
+	]======]
 	property "Text" {
 		Set = function(self, text)
 			self:GetChild("InputTxt").Text = text or ""
@@ -300,7 +281,12 @@ class "PopupDialog"
 
 		Type = LocaleString,
 	}
-	-- OkayText
+
+	doc [======[
+		@name OkayButtonText
+		@type property
+		@desc the text that displayed on the okay button
+	]======]
 	property "OkayButtonText" {
 		Set = function(self, text)
 			self:GetChild("OkayBtn").Text = text or "Okay"
@@ -316,7 +302,12 @@ class "PopupDialog"
 		end,
 		Type = LocaleString,
 	}
-	-- NoText
+
+	doc [======[
+		@name NoButtonText
+		@type property
+		@desc the text that displayed on the no button
+	]======]
 	property "NoButtonText" {
 		Set = function(self, text)
 			self:GetChild("NoBtn").Text = text or "No"
@@ -332,7 +323,12 @@ class "PopupDialog"
 		end,
 		Type = LocaleString,
 	}
-	-- CancelText
+
+	doc [======[
+		@name CancelButtonText
+		@type property
+		@desc the text that displayed on the cancel button
+	]======]
 	property "CancelButtonText" {
 		Set = function(self, text)
 			self:GetChild("CancelBtn").Text = text or "Cancel"
@@ -348,7 +344,12 @@ class "PopupDialog"
 		end,
 		Type = LocaleString,
 	}
-	-- ShowAlertIcon
+
+	doc [======[
+		@name ShowAlertIcon
+		@type property
+		@desc whether show the alert icon
+	]======]
 	property "ShowAlertIcon" {
 		Set = function(self, flag)
 			self:GetChild("AlertIcon").Visible = (flag and true) or false
@@ -360,7 +361,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowOkayButton
+
+	doc [======[
+		@name ShowOkayButton
+		@type property
+		@desc whether show the okay button
+	]======]
 	property "ShowOkayButton" {
 		Set = function(self, flag)
 			self:GetChild("OkayBtn").Visible = (flag and true) or false
@@ -372,7 +378,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowNoButton
+
+	doc [======[
+		@name ShowNoButton
+		@type property
+		@desc whether show the no button
+	]======]
 	property "ShowNoButton" {
 		Set = function(self, flag)
 			self:GetChild("NoBtn").Visible = (flag and true) or false
@@ -384,7 +395,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowCancelButton
+
+	doc [======[
+		@name ShowCancelButton
+		@type property
+		@desc whether show the cancel button
+	]======]
 	property "ShowCancelButton" {
 		Set = function(self, flag)
 			self:GetChild("CancelBtn").Visible = (flag and true) or false
@@ -396,7 +412,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowInputBox
+
+	doc [======[
+		@name ShowInputBox
+		@type property
+		@desc whether show the input edit box
+	]======]
 	property "ShowInputBox" {
 		Set = function(self, flag)
 			self:GetChild("InputTxt").Visible = (flag and true) or false
@@ -408,7 +429,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowWhileDead
+
+	doc [======[
+		@name ShowWhileDead
+		@type property
+		@desc whether show while player is dead
+	]======]
 	property "ShowWhileDead" {
 		Set = function(self, flag)
 			self.__ShowWhileDead = (flag and true) or false
@@ -420,7 +446,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- ShowWhileCinematic
+
+	doc [======[
+		@name ShowWhileCinematic
+		@type property
+		@desc whether show while player is in cinematic
+	]======]
 	property "ShowWhileCinematic" {
 		Set = function(self, flag)
 			self.__ShowWhileCinematic = (flag and true) or false
@@ -432,7 +463,12 @@ class "PopupDialog"
 
 		Type = Boolean,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the popupdialog's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -444,7 +480,12 @@ class "PopupDialog"
 
 		Type = PopupDialogStyle,
 	}
-	-- Input
+
+	doc [======[
+		@name Input
+		@type property
+		@desc the instance of the popupdialog's input object(It's a ComboBox, can be used in special way)
+	]======]
 	property "Input" {
 		Get = function(self)
 			return self:GetChild("InputTxt")

@@ -2,24 +2,19 @@
 -- Create Date : 2012/09/07
 -- ChangeLog
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- StackLayoutPanel
--- <br><br>inherit <a href=".\LayoutPanel.html">StackLayoutPanel</a> For all methods, properties and scriptTypes
--- @name StackLayoutPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.StackLayoutPanel", version) then
 	return
 end
 
------------------------------------------------
---- StackLayoutPanel
--- @type class
--- @name StackLayoutPanel
------------------------------------------------
 class "StackLayoutPanel"
 	inherit "LayoutPanel"
+
+	doc [======[
+		@name StackLayoutPanel
+		@type class
+		@desc Auto stack elements into the layout panel
+	]======]
 
 	------------------------------------------------------
 	-- Script

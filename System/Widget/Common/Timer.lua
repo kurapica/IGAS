@@ -4,15 +4,6 @@
 --				2011/03/13	Recode as class
 --				2011/05/29	Recode
 
----------------------------------------------------------------------------------------------------------------------------------------
---- Timer is a specialized type of clock. A timer can be used to control the sequence of an event or process
--- <br><br>inherit <a href="..\Base\VirtualUIObject.html">VirtualUIObject</a> For all methods, properties and scriptTypes
--- @name Timer
--- @class table
--- @field Interval Gets or sets the interval at which to raise the Elapsed event
--- @filed Enabled Whether the timer is enabled or disabled, default true
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 11
 
@@ -22,6 +13,12 @@ end
 
 class "Timer"
 	inherit "VirtualUIObject"
+
+	doc [======[
+		@name Timer
+		@type class
+		@desc Timer is used to raise an event on a specified interval
+	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -82,28 +79,21 @@ class "Timer"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the timer is at the right time
-	-- @name Timer:OnTimer
-	-- @class function
-	-- @usage function Timer:OnTimer()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTimer
+		@type script
+		@desc Run when the timer is at the right time
+	]======]
 	script "OnTimer"
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	-- Dispose, release resource
-	function Dispose(self)
-		_Container[self] = nil
-	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Interval
+	doc [======[
+		@name Interval
+		@type property
+		@desc Gets or sets the interval at which to raise the Elapsed event
+	]======]
 	property "Interval" {
 		Get = function(self)
 			return self.__Interval or 0
@@ -144,7 +134,11 @@ class "Timer"
 		Type = Number,
 	}
 
-	-- Enabled
+	doc [======[
+		@name Enabled
+		@type property
+		@desc Whether the timer is enabled or disabled, default true
+	]======]
 	property "Enabled" {
 		Get = function(self)
 			return self.__Enabled and true or false
@@ -174,6 +168,13 @@ class "Timer"
 		end,
 		Type = Boolean,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_Container[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

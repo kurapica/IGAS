@@ -4,17 +4,6 @@
 --				2010/05/31 Fix OnEnter and OnLeave Script
 --				2011/03/13	Recode as class
 
----------------------------------------------------------------------------------------------------------------------------------------
---- ScrollBar is a widget type using for <a href=".\ScrollForm">ScrollForm</a>
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name ScrollBar
--- @class table
--- @field Value the value representing the current position of the slider thumb
--- @field ValueStep the minimum increment between allowed slider values
--- @field Enabled whether user interaction with the slider is allowed
--- @field Style the popupdialog's style: CLASSIC, LIGHT
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 7
 if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
@@ -23,6 +12,12 @@ end
 
 class "ScrollBar"
 	inherit "Frame"
+
+	doc [======[
+		@name ScrollBar
+		@type class
+		@desc ScrollBar is used as scroll controller for scrollForm and others
+	]======]
 
     -- ScrollBar Template
     TEMPLATE_CLASSIC = "CLASSIC"
@@ -120,27 +115,24 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the ScrollBar's or status bar's value changes
-	-- @name ScrollBar:OnValueChanged
-	-- @class function
-	-- @param value New value of the ScrollBar or the status bar
-	-- @usage function ScrollBar:OnValueChanged(value)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnValueChanged
+		@type script
+		@desc Run when the ScrollBar's or status bar's value changes
+		@param value number, new value of the ScrollBar
+	]======]
 	script "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Sets the scrollbar's style
-	-- @name ScrollBar:SetStyle
-	-- @class function
-	-- @param style the style of the scrollbar : CLASSIC, LIGHT
-	-- @usage ScrollBar:SetStyle("LIGHT")
-	------------------------------------
+	doc [======[
+		@name SetStyle
+		@type method
+		@desc Sets the scrollbar's style
+		@param style System.Widget.ScrollBar.ScrollBarStyle
+		@return nil
+	]======]
 	function SetStyle(self, style)
 		local t
 
@@ -193,129 +185,113 @@ class "ScrollBar"
 		self.__Style = style
 	end
 
-	------------------------------------
-	--- Gets the scrollbar's style
-	-- @name ScrollBar:GetStyle
-	-- @class function
-	-- @return the style of the scrollbar : CLASSIC, LIGHT
-	-- @usage ScrollBar:GetStyle()
-	------------------------------------
+	doc [======[
+		@name GetStyle
+		@type method
+		@desc Gets the scrollbar's style
+		@return System.Widget.ScrollBar.ScrollBarStyle
+	]======]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	------------------------------------
-	--- Get the current bounds of the slider.
-	-- @name ScrollBar:GetMinMaxValues
-	-- @class function
-	-- @return the current bounds of the slider
-	-- @usage ScrollBar:GetMinMaxValues()
-	------------------------------------
+	doc [======[
+		@name GetMinMaxValues
+		@type method
+		@desc Get the current bounds of the slider
+		@return min number, the lower boundary of the slider
+		@return max number, the upper boundary of the silder
+	]======]
 	function GetMinMaxValues(self)
 		return self:GetChild("Slider"):GetMinMaxValues()
 	end
 
-	------------------------------------
-	--- Get the current value of the slider.
-	-- @name ScrollBar:GetMinMaxValues
-	-- @class function
-	-- @return the current value of the slider
-	-- @usage ScrollBar:GetMinMaxValues()
-	------------------------------------
+	doc [======[
+		@name GetValue
+		@type method
+		@desc  Get the current value of the slider
+		@return number the value of the scrollbar
+	]======]
 	function GetValue(self)
 		return self:GetChild("Slider"):GetValue()
 	end
 
-	------------------------------------
-	--- Get the current step size of the slider.
-	-- @name ScrollBar:GetValueStep
-	-- @class function
-	-- @return the current step size of the slider
-	-- @usage ScrollBar:GetValueStep()
-	------------------------------------
+	doc [======[
+		@name GetValueStep
+		@type method
+		@desc Get the current step size of the slider
+		@return number the current step size of the slider
+	]======]
 	function GetValueStep(self)
 		return self:GetChild("Slider"):GetValueStep()
 	end
 
-	------------------------------------
-	--- Sets the minimum and maximum values for the slider
-	-- @name ScrollBar:SetMinMaxValues
-	-- @class function
-	-- @param minValue - Lower boundary for values represented by the slider position (number)
-	-- @param maxValue - Upper boundary for values represented by the slider position (number)
-	-- @usage ScrollBar:SetMinMaxValues(1, 100)
-	------------------------------------
+	doc [======[
+		@name SetMinMaxValues
+		@type method
+		@desc Sets the minimum and maximum values for the slider
+		@param minValue number, lower boundary for values represented by the slider position
+		@param maxValue number, upper boundary for values represented by the slider position
+		@return nil
+	]======]
 	function SetMinMaxValues(self, iMin, iMax)
 		self:GetChild("Slider"):SetMinMaxValues(iMin, iMax)
 		return UpdateButton(self)
 	end
 
-	------------------------------------
-	--- Gets the minimum and maximum values for the slider
-	-- @name ScrollBar:GetMinMaxValues
-	-- @class function
-	-- @return minValue - Lower boundary for values represented by the slider position (number)
-	-- @return maxValue - Upper boundary for values represented by the slider position (number)
-	-- @usage ScrollBar:GetMinMaxValues()
-	------------------------------------
-	function GetMinMaxValues(self)
-		return self:GetChild("Slider"):GetMinMaxValues()
-	end
-
-	------------------------------------
-	--- Sets the value representing the position of the slider thumb
-	-- @name ScrollBar:SetValue
-	-- @class function
-	-- @param value Value representing the new position of the slider thumb (between minValue and maxValue, where minValue, maxValue = slider:GetMinMaxValues())
-	-- @usage ScrollBar:SetValue(10)
-	------------------------------------
+	doc [======[
+		@name SetValue
+		@type method
+		@desc Sets the value representing the position of the slider thumb
+		@param value number, the value representing the new position of the slider thumb
+		@return nil
+	]======]
 	function SetValue(self, value)
 		self:GetChild("Slider"):SetValue(value)
 		return UpdateButton(self)
 	end
 
-	------------------------------------
-	--- Sets the minimum increment between allowed slider values.
-	-- @name ScrollBar:SetValueStep
-	-- @class function
-	-- @param step Minimum increment between allowed slider values
-	-- @usage ScrollBar:SetValueStep(10)
-	------------------------------------
+	doc [======[
+		@name SetValueStep
+		@type method
+		@desc Sets the minimum increment between allowed slider values
+		@param value number, Minimum increment between allowed slider values
+		@return nil
+	]======]
 	function SetValueStep(self, value)
 		self:GetChild("Slider"):SetValueStep(value)
 	end
 
-	------------------------------------
-	--- Disable the scrollbar
-	-- @name ScrollBar:Disable
-	-- @class function
-	-- @usage ScrollBar:Disable()
-	------------------------------------
+	doc [======[
+		@name Disable
+		@type method
+		@desc Disable the scrollbar
+		@return nil
+	]======]
 	function Disable(self)
 		self:GetChild("DownBtn"):Disable()
 		self:GetChild("UpBtn"):Disable()
 		self:GetChild("Slider"):GetThumbTexture():Hide()
 	end
 
-	------------------------------------
-	--- Enable the scrollbar
-	-- @name ScrollBar:Enable
-	-- @class function
-	-- @usage ScrollBar:Enable()
-	------------------------------------
+	doc [======[
+		@name Enable
+		@type method
+		@desc Enable the scrollbar
+		@return nil
+	]======]
 	function Enable(self)
 		self:GetChild("Slider"):GetThumbTexture():Show()
 
 		return UpdateButton(self)
 	end
 
-	------------------------------------
-	--- Check if the scrollbar is enabled
-	-- @name ScrollBar:IsEnabled
-	-- @class function
-	-- @return true if the scrollbar is enabled
-	-- @usage ScrollBar:IsEnabled()
-	------------------------------------
+	doc [======[
+		@name IsEnabled
+		@type method
+		@desc Whether if the scrollbar is enabled
+		@return boolean true if the scrollbar is enabled
+	]======]
 	function IsEnabled(self)
 		return self:GetChild("Slider"):GetThumbTexture():IsShown()
 	end
@@ -323,7 +299,11 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Value
+	doc [======[
+		@name Value
+		@type property
+		@desc the value representing the current position of the slider thumb
+	]======]
 	property "Value" {
 		Set = function(self, value)
 			self:SetValue(value)
@@ -335,7 +315,12 @@ class "ScrollBar"
 
 		Type = Number,
 	}
-	-- ValueStep
+
+	doc [======[
+		@name ValueStep
+		@type property
+		@desc the minimum increment between allowed slider values
+	]======]
 	property "ValueStep" {
 		Set = function(self, value)
 			self:SetValueStep(value)
@@ -347,7 +332,12 @@ class "ScrollBar"
 
 		Type = Number,
 	}
-	-- Enabled
+
+	doc [======[
+		@name Enabled
+		@type property
+		@desc whether user interaction with the slider is allowed
+	]======]
 	property "Enabled" {
 		Set = function(self, flag)
 			if flag then
@@ -363,7 +353,12 @@ class "ScrollBar"
 
 		Type = Boolean,
 	}
-	-- Style
+
+	doc [======[
+		@name Style
+		@type property
+		@desc the scrollbar's style
+	]======]
 	property "Style" {
 		Set = function(self, style)
 			self:SetStyle(style)
@@ -375,7 +370,12 @@ class "ScrollBar"
 
 		Type = ScrollBarStyle,
 	}
-	-- MinMaxValue
+
+	doc [======[
+		@name MinMaxValue
+		@type property
+		@desc the min & max boundary of the scrollbar's values
+	]======]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())

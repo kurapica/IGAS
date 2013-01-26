@@ -6,29 +6,6 @@
 --              2012/04/10 Fix the margin click
 --              2012/05/13 Fix delete on double click selected multi-text
 
----------------------------------------------------------------------------------------------------------------------------------------
---- MultiLineTextBox is using to contains multi-text
--- <br><br>inherit <a href="..\Common\ScrollForm.html">ScrollForm</a> For all methods, properties and scriptTypes
--- @name MultiLineTextBox
--- @class table
--- @field NumericOnly true if the edit box only accepts numeric input
--- @field Password true if the text entered in the edit box is masked
--- @field AutoFocus true if the edit box automatically acquires keyboard input focus
--- @field HistoryLines the maximum number of history lines stored by the edit box
--- @field Focused true if the edit box is currently focused
--- @field AltArrowKeyMode true if the arrow keys are ignored by the edit box unless the Alt key is held
--- @field BlinkSpeed the rate at which the text insertion blinks when the edit box is focused
--- @field CursorPosition the current cursor position inside edit box
--- @field MaxBytes the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
--- @field MaxLetters the maximum number of text characters allowed in the edit box
--- @field Number the contents of the edit box as a number
--- @field Text the edit box's text contents
--- @field TextInsets the insets from the edit box's edges which determine its interactive text area
--- @field Editable true if the edit box is editable
--- @field ShowLineNumber true if show the row number margin
--- @field TabWidth the tab's width
----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 14
 
@@ -42,6 +19,12 @@ class "MultiLineTextBox"
 	inherit "ScrollForm"
 
 	import "System.Threading"
+
+	doc [======[
+		@name MultiLineTextBox
+		@type class
+		@desc MultiLineTextBox is used as a multi-line text editor.
+	]======]
 
 	------------------------------------------------------
 	-- Local Settings
@@ -247,13 +230,13 @@ class "MultiLineTextBox"
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
 
-	------------------------------------
-	--- Set the cursor position without change the operation list
-	-- @name  MultiLineTextBox:AdjustCursorPosition
-	-- @class function
-	-- @return the position of the cursor inside the EditBox
-	-- @usage  MultiLineTextBox:AdjustCursorPosition(1)
-	------------------------------------
+	doc [======[
+		@name AdjustCursorPosition
+		@type method
+		@desc Set the cursor position without change the operation list
+		@param pos number, the position of the cursor inside the MultiLineTextBox
+		@return nil
+	]======]
 	function AdjustCursorPosition(self, pos)
 		self.__OldCursorPosition = pos
 		self.__Text:SetCursorPosition(pos)
@@ -1383,617 +1366,537 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the edit box's text is changed
-	-- @name MultiLineTextBox:OnTextChanged
-	-- @class function
-	-- @param isUserInput
-	-- @usage function MultiLineTextBox:OnTextChanged(isUserInput)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTextChanged
+		@type script
+		@desc Run when the edit box's text is changed
+		@param isUserInput boolean
+	]======]
 	script "OnTextChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the position of the text insertion cursor in the edit box changes
-	-- @name MultiLineTextBox:OnCursorChanged
-	-- @class function
-	-- @param x Horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
-	-- @param y Vertical position of the cursor relative to the top left corner of the edit box (in pixels)
-	-- @param width Width of the cursor graphic (in pixels)
-	-- @param height Height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
-	-- @usage function MultiLineTextBox:OnCursorChanged(x, y, width, height)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnCursorChanged
+		@type script
+		@desc Run when the position of the text insertion cursor in the edit box changes
+		@param x number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
+		@param y number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)
+		@param width number, width of the cursor graphic (in pixels)
+		@param height number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
+	]======]
 	script "OnCursorChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box becomes focused for keyboard input
-	-- @name MultiLineTextBox:OnEditFocusGained
-	-- @class function
-	-- @usage function MultiLineTextBox:OnEditFocusGained()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEditFocusGained
+		@type script
+		@desc Run when the edit box becomes focused for keyboard input
+	]======]
 	script "OnEditFocusGained"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box loses keyboard input focus
-	-- @name MultiLineTextBox:OnEditFocusLost
-	-- @class function
-	-- @usage function MultiLineTextBox:OnEditFocusLost()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEditFocusLost
+		@type script
+		@desc Run when the edit box loses keyboard input focus
+	]======]
 	script "OnEditFocusLost"
 
-	------------------------------------
-	--- ScriptType, Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
-	-- @name MultiLineTextBox:OnEnterPressed
-	-- @class function
-	-- @usage function MultiLineTextBox:OnEnterPressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEnterPressed
+		@type script
+		@desc Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
+	]======]
 	script "OnEnterPressed"
 
-	------------------------------------
-	--- ScriptType, Run when the Escape key is pressed while the edit box has keyboard focus
-	-- @name MultiLineTextBox:OnEscapePressed
-	-- @class function
-	-- @usage function MultiLineTextBox:OnEscapePressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnEscapePressed
+		@type script
+		@desc Run when the Escape key is pressed while the edit box has keyboard focus
+	]======]
 	script "OnEscapePressed"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's language input mode changes
-	-- @name MultiLineTextBox:OnInputLanguageChanged
-	-- @class function
-	-- @param language Name of the new input language
-	-- @usage function MultiLineTextBox:OnInputLanguageChanged("language")<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnInputLanguageChanged
+		@type script
+		@desc Run when the edit box's language input mode changes
+		@param language string, name of the new input language
+	]======]
 	script "OnInputLanguageChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the space bar is pressed while the edit box has keyboard focus
-	-- @name MultiLineTextBox:OnSpacePressed
-	-- @class function
-	-- @usage function MultiLineTextBox:OnSpacePressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnSpacePressed
+		@type script
+		@desc Run when the space bar is pressed while the edit box has keyboard focus
+	]======]
 	script "OnSpacePressed"
 
-	------------------------------------
-	--- ScriptType, Run when the Tab key is pressed while the edit box has keyboard focus
-	-- @name MultiLineTextBox:OnTabPressed
-	-- @class function
-	-- @usage function MultiLineTextBox:OnTabPressed()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTabPressed
+		@type script
+		@desc Run when the Tab key is pressed while the edit box has keyboard focus
+	]======]
 	script "OnTabPressed"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's text is set programmatically
-	-- @name MultiLineTextBox:OnTextSet
-	-- @class function
-	-- @usage function MultiLineTextBox:OnTextSet()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnTextSet
+		@type script
+		@desc Run when the edit box's text is set programmatically
+	]======]
 	script "OnTextSet"
 
-	------------------------------------
-	--- ScriptType, Run for each text character typed in the MultiLineTextBox
-	-- @name MultiLineTextBox:OnChar
-	-- @class function
-	-- @param text The text entered
-	-- @usage function MultiLineTextBox:OnChar(text)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnChar
+		@type script
+		@desc Run for each text character typed in the frame
+		@param char string, the text character typed
+	]======]
 	script "OnChar"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's input composition mode changes
-	-- @name MultiLineTextBox:OnCharComposition
-	-- @class function
-	-- @param text The text entered
-	-- @usage function MultiLineTextBox:OnCharComposition(text)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnCharComposition
+		@type script
+		@desc Run when the edit box's input composition mode changes
+		@param text string, The text entered
+	]======]
 	script "OnCharComposition"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's FunctionKey is pressed
-	-- @name MultiLineTextBox:OnFunctionKey
-	-- @class function
-	-- @param key The key (like 'F5')
-	-- @usage function MultiLineTextBox:OnFunctionKey(key)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnFunctionKey
+		@type script
+		@desc Run when the edit box's FunctionKey is pressed
+		@param key string, the function key (like 'F5')
+	]======]
 	script "OnFunctionKey"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's control key is pressed
-	-- @name MultiLineTextBox:OnControlKey
-	-- @class function
-	-- @param text The text entered
-	-- @usage function MultiLineTextBox:OnControlKey(key)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnControlKey
+		@type script
+		@desc Run when the edit box's control key is pressed
+		@param text string, The text entered
+	]======]
 	script "OnControlKey"
 
-	------------------------------------
-	--- ScriptType, Run when the edit box's operation list is changed
-	-- @name MultiLineTextBox:OnOperationListChanged
-	-- @class function
-	-- @param startp optional
-	-- @param endp optional
-	-- @usage function MultiLineTextBox:OnOperationListChanged(startp, endp)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnOperationListChanged
+		@type script
+		@desc Run when the edit box's operation list is changed
+		@param startp number, the start position
+		@param endp number, the end position
+	]======]
 	script "OnOperationListChanged"
 
-	------------------------------------
-	--- ScriptType, Run when the delete key is up
-	-- @name MultiLineTextBox:OnDeleteFinished
-	-- @class function
-	-- @usage function MultiLineTextBox:OnDeleteFinished()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnDeleteFinished
+		@type script
+		@desc Run when the delete key is up
+	]======]
 	script "OnDeleteFinished"
 
-	------------------------------------
-	--- ScriptType, Run when the backspace key is up
-	-- @name MultiLineTextBox:OnBackspaceFinished
-	-- @class function
-	-- @usage function MultiLineTextBox:OnBackspaceFinished()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnBackspaceFinished
+		@type script
+		@desc Run when the backspace key is up
+	]======]
 	script "OnBackspaceFinished"
 
-	------------------------------------
-	--- ScriptType, Run when pasting finished
-	-- @name MultiLineTextBox:OnPasting
-	-- @class function
-	-- @param startp
-	-- @param endp
-	-- @usage function MultiLineTextBox:OnPasting(starp, endp)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnPasting
+		@type script
+		@desc Run when pasting finished
+		@param startp number, the start position
+		@param endp number, the end position
+	]======]
 	script "OnPasting"
 
-	------------------------------------
-	--- ScriptType, Run when cut finished
-	-- @name MultiLineTextBox:OnCut
-	-- @class function
-	-- @param startp
-	-- @param endp
-	-- @param cutText
-	-- @usage function MultiLineTextBox:OnCut(startp, endp, cutText)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnCut
+		@type script
+		@desc Run when cut finished
+		@param startp number, the start position
+		@param endp number, the end position
+		@param cutText string, the cut text
+	]======]
 	script "OnCut"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Returns the font instance's basic font properties
-	-- @name Font:GetFont
-	-- @class function
-	-- @return filename - Path to a font file (string)
-	-- @return fontHeight - Height (point size) of the font to be displayed (in pixels) (number)
-	-- @return flags - Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string) <ul><li>MONOCHROME - Font is rendered without antialiasing
-	-- @return OUTLINE - Font is displayed with a black outline
-	-- @return THICKOUTLINE - Font is displayed with a thick black outline
-	------------------------------------
-	-- GetFont
+	doc [======[
+		@name GetFont
+		@type method
+		@desc Returns the font instance's basic font properties
+		@return filename string, path to a font file (string)
+		@return fontHeight number, height (point size) of the font to be displayed (in pixels) (number)
+		@return flags string, additional properties for the font specified by one or more (separated by commas)
+	]======]
 	function GetFont(self, ...)
 		return self.__Text:GetFont(...)
 	end
 
-	------------------------------------
-	--- Returns the Font object from which the font instance's properties are inherited. See Font:SetFontObject() for details.
-	-- @name Font:GetFontObject
-	-- @class function
-	-- @return font - Reference to the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties (font)
-	------------------------------------
+	doc [======[
+		@name GetFontObject
+		@type method
+		@desc Returns the Font object from which the font instance's properties are inherited
+		@return System.Widget.Font the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties
+	]======]
 	function GetFontObject(self, ...)
 		return self.__Text:GetFontObject(...)
 	end
 
-	------------------------------------
-	--- Returns the color of the font's text shadow
-	-- @name Font:GetShadowColor
-	-- @class function
-	-- @return shadowR - Red component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowG - Green component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowB - Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @return shadowAlpha - Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetShadowColor
+	doc [======[
+		@name GetShadowColor
+		@type method
+		@desc Returns the color of the font's text shadow
+		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetShadowColor(self, ...)
 		return self.__Text:GetShadowColor(...)
 	end
 
-	------------------------------------
-	--- Returns the offset of the font instance's text shadow from its text
-	-- @name Font:GetShadowOffset
-	-- @class function
-	-- @return xOffset - Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @return yOffset - Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
-	-- GetShadowOffset
+	doc [======[
+		@name GetShadowOffset
+		@type method
+		@desc Returns the offset of the font instance's text shadow from its text
+		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
+	]======]
 	function GetShadowOffset(self, ...)
 		return self.__Text:GetShadowOffset(...)
 	end
 
-	------------------------------------
-	--- Returns the font instance's amount of spacing between lines
-	-- @name Font:GetSpacing
-	-- @class function
-	-- @return spacing - Amount of space between lines of text (in pixels) (number)
-	------------------------------------
-	-- GetSpacing
+	doc [======[
+		@name GetSpacing
+		@type method
+		@desc Returns the font instance's amount of spacing between lines
+		@return number amount of space between lines of text (in pixels)
+	]======]
 	function GetSpacing(self, ...)
 		return self.__Text:GetSpacing(...)
 	end
 
-	------------------------------------
-	--- Returns the font instance's default text color
-	-- @name Font:GetTextColor
-	-- @class function
-	-- @return textR - Red component of the text color (0.0 - 1.0) (number)
-	-- @return textG - Green component of the text color (0.0 - 1.0) (number)
-	-- @return textB - Blue component of the text color (0.0 - 1.0) (number)
-	-- @return textAlpha - Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- GetTextColor
+	doc [======[
+		@name GetTextColor
+		@type method
+		@desc Returns the font instance's default text color
+		@return textR number, Red component of the text color (0.0 - 1.0)
+		@return textG number, Green component of the text color (0.0 - 1.0)
+		@return textB number, Blue component of the text color (0.0 - 1.0)
+		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+	]======]
 	function GetTextColor(self, ...)
 		return self.__Text:GetTextColor(...)
 	end
 
-	------------------------------------
-	--- Sets the font instance's basic font properties. Font files included with the default WoW client:</p>
-	--- <ul>
-	--- <li>Fonts\\FRIZQT__.TTF - Friz Quadrata, used by default for player names and most UI text</li>
-	--- <li>Fonts\\ARIALN.TTF - Arial Narrow, used by default for chat windows, action button numbers, etc.</li>
-	--- <li>Fonts\\skurri.ttf - Skurri, used by default for incoming damage/parry/miss/etc indicators on the Player and Pet frames</li>
-	--- <li>Fonts\\MORPHEUS.ttf - Morpheus, used by default for quest title headers, mail, and readable in-game objects.</li>
-	--- </ul>
-	--- <p>Font files can also be included in addons.
-	-- @name Font:SetFont
-	-- @class function
-	-- @param filename Path to a font file (string)
-	-- @param fontHeight Height (point size) of the font to be displayed (in pixels) (number)
-	-- @param flags Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string) <ul><li>MONOCHROME - Font is rendered without antialiasing
-	-- @param OUTLINE Font is displayed with a black outline
-	-- @param THICKOUTLINE Font is displayed with a thick black outline
-	-- @return isValid - 1 if filename refers to a valid font file; otherwise nil (1nil)
-	------------------------------------
-	-- SetFont
+	doc [======[
+		@name SetFont
+		@type method
+		@desc Sets the font instance's basic font properties
+		@param filename string, path to a font file
+		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
+		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
+		@return boolean 1 if filename refers to a valid font file; otherwise nil
+	]======]
 	function SetFont(self, ...)
 		self.__Text:SetFont(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	--- Sets the Font object from which the font instance's properties are inherited. This method allows for easy standardization and reuse of font styles. For example, a button's normal font can be set to appear in the same style as many default UI elements by setting its font to "GameFontNormal" -- if Blizzard changes the main UI font in a future patch, or if the user installs another addon which changes the main UI font, the button's font will automatically change to match.
-	-- @name Font:SetFontObject
-	-- @class function
-	-- @param object Reference to a Font object (font)
-	-- @param name Global name of a Font object (string)
-	------------------------------------
-	-- SetFontObject
+	doc [======[
+		@name SetFontObject
+		@type method
+		@desc Sets the Font object from which the font instance's properties are inherited
+		@format fontObject|fontName
+		@param fontObject System.Widget.Font, a font object
+		@param fontName string, global font object's name
+		@return nil
+	]======]
 	function SetFontObject(self, ...)
 		self.__Text:SetFontObject(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	--- Sets the color of the font's text shadow
-	-- @name Font:SetShadowColor
-	-- @class function
-	-- @param shadowR Red component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowG Green component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowB Blue component of the shadow color (0.0 - 1.0) (number)
-	-- @param shadowAlpha Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetShadowColor
+	doc [======[
+		@name SetShadowColor
+		@type method
+		@desc Sets the color of the font's text shadow
+		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
+		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
+		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
+		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetShadowColor(self, ...)
 		return self.__Text:SetShadowColor(...)
 	end
 
-	------------------------------------
-	--- Sets the offset of the font instance's text shadow from its text
-	-- @name Font:SetShadowOffset
-	-- @class function
-	-- @param xOffset Horizontal distance between the text and its shadow (in pixels) (number)
-	-- @param yOffset Vertical distance between the text and its shadow (in pixels) (number)
-	------------------------------------
-	-- SetShadowOffset
+	doc [======[
+		@name SetShadowOffset
+		@type method
+		@desc Sets the offset of the font instance's text shadow from its text
+		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
+		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
+		@return nil
+	]======]
 	function SetShadowOffset(self, ...)
 		return self.__Text:SetShadowOffset(...)
 	end
 
-	------------------------------------
-	--- Sets the font instance's amount of spacing between lines
-	-- @name Font:SetSpacing
-	-- @class function
-	-- @param spacing Amount of space between lines of text (in pixels) (number)
-	------------------------------------
-	-- SetSpacing
+	doc [======[
+		@name SetSpacing
+		@type method
+		@desc Sets the font instance's amount of spacing between lines
+		@param spacing number, amount of space between lines of text (in pixels)
+		@return nil
+	]======]
 	function SetSpacing(self, ...)
 		self.__Text:SetSpacing(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	--- Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance; however, portions of the text may be colored differently using the colorString format (commonly seen in hyperlinks).
-	-- @name Font:SetTextColor
-	-- @class function
-	-- @param textR Red component of the text color (0.0 - 1.0) (number)
-	-- @param textG Green component of the text color (0.0 - 1.0) (number)
-	-- @param textB Blue component of the text color (0.0 - 1.0) (number)
-	-- @param textAlpha Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque) (number)
-	------------------------------------
-	-- SetTextColor
+	doc [======[
+		@name SetTextColor
+		@type method
+		@desc Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance
+		@param textR number, Red component of the text color (0.0 - 1.0)
+		@param textG number, Green component of the text color (0.0 - 1.0)
+		@param textB number, Blue component of the text color (0.0 - 1.0)
+		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
+		@return nil
+	]======]
 	function SetTextColor(self, ...)
 		return self.__Text:SetTextColor(...)
 	end
 
-	------------------------------------
-	--- Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
-	-- @name Font:CopyFontObject
-	-- @class function
-	-- @param object Reference to a Font object (font)
-	-- @param name Global name of a Font object (string)
-	------------------------------------
-	-- CopyFontObject
+	doc [======[
+		@name CopyFontObject
+		@type method
+		@desc Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
+		@format object|name
+		@param object System.Widget.Font, reference to a Font object
+		@param name string, global name of a Font object
+		@return nil
+	]======]
 	function CopyFontObject(self, ...)
 		self.__Text:CopyFontObject(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	--- Gets whether long lines of text are indented when wrapping
-	-- @name Font:GetIndentedWordWrap
-	-- @class function
-	------------------------------------
-	-- GetIndentedWordWrap
+	doc [======[
+		@name GetIndentedWordWrap
+		@type method
+		@desc Gets whether long lines of text are indented when wrapping
+		@return boolean
+	]======]
 	function GetIndentedWordWrap(self, ...)
 		return self.__Text:GetIndentedWordWrap(...)
 	end
 
-	------------------------------------
-	--- Sets whether long lines of text are indented when wrapping
-	-- @name Font:SetIndentedWordWrap
-	-- @class function
-	------------------------------------
-	-- SetIndentedWordWrap
+	doc [======[
+		@name SetIndentedWordWrap
+		@type method
+		@desc Sets whether long lines of text are indented when wrapping
+		@param boolean
+		@return nil
+	]======]
 	function SetIndentedWordWrap(self, ...)
 		self.__Text:SetIndentedWordWrap(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	---
-	-- @name EditBox:ClearHistory
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name ClearHistory
+		@type method
+		@desc Clear history
+		@return nil
+	]======]
 	function ClearHistory(self, ...)
 		return self.__Text:ClearHistory(...)
 	end
 
-	------------------------------------
-	--- Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.
-	-- @name EditBox:GetUTF8CursorPosition
-	-- @class function
-	-- @return position - The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account. (number)
-	------------------------------------
+	doc [======[
+		@name GetUTF8CursorPosition
+		@type method
+		@desc Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.
+		@return number The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account.
+	]======]
 	function GetUTF8CursorPosition(self, ...)
 		return self.__Text:GetUTF8CursorPosition(...)
 	end
 
-	------------------------------------
-	---
-	-- @name EditBox:IsCountInvisibleLetters
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name IsCountInvisibleLetters
+		@type method
+		@desc
+		@return boolean
+	]======]
 	function IsCountInvisibleLetters(self, ...)
 		return self.__Text:IsCountInvisibleLetters(...)
 	end
 
-	------------------------------------
-	--- Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress -- if the OnChar script should act only when a complete character is entered in the edit box, :IsInIMECompositionMode() can be used to test for such cases.</p>
-	--- <p>This mode is common in clients for languages using non-Roman characters (such as Chinese or Korean), but can still occur in client languages using Roman scripts (e.g. English) -- such as when typing accented characters on the Mac client (e.g. typing "option-u" then "e" to insert the character "?").
-	-- @name EditBox:IsInIMECompositionMode
-	-- @class function
-	-- @return enabled - 1 if the edit box is in IME character composition mode; otherwise nil (1nil)
-	------------------------------------
+	doc [======[
+		@name IsInIMECompositionMode
+		@type method
+		@desc Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress
+		@return boolean 1 if the edit box is in IME character composition mode; otherwise nil
+	]======]
 	function IsInIMECompositionMode(self, ...)
 		return self.__Text:IsInIMECompositionMode(...)
 	end
 
-	------------------------------------
-	---
-	-- @name EditBox:SetCountInvisibleLetters
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name SetCountInvisibleLetters
+		@type method
+		@desc
+		@param ...
+		@return nil
+	]======]
 	function SetCountInvisibleLetters(self, ...)
 		return self.__Text:SetCountInvisibleLetters(...)
 	end
 
-	------------------------------------
-	--- Add text to the edit history.
-	-- @name  MultiLineTextBox:AddHistoryLine
-	-- @class function
-	-- @param text Text to be added to the edit box's list of history lines
-	-- @usage  MultiLineTextBox:AddHistoryLine("This is a line")
-	------------------------------------
+	doc [======[
+		@name AddHistoryLine
+		@type method
+		@desc Add text to the edit history
+		@param text string, text to be added to the edit box's list of history lines
+		@return nil
+	]======]
 	function AddHistoryLine(self, ...)
 		return self.__Text:AddHistoryLine(...)
 	end
 
-	------------------------------------
-	--- Releases keyboard input focus from the edit box
-	-- @name  MultiLineTextBox:ClearFocus
-	-- @class function
-	-- @usage  MultiLineTextBox:ClearFocus()
-	------------------------------------
+	doc [======[
+		@name ClearFocus
+		@type method
+		@desc Releases keyboard input focus from the edit box
+		@return nil
+	]======]
 	function ClearFocus(self, ...)
 		return self.__Text:ClearFocus(...)
 	end
 
-	------------------------------------
-	--- Return whether only alt+arrow keys work for navigating the edit box, not arrow keys alone.
-	-- @name  MultiLineTextBox:GetAltArrowKeyMode
-	-- @class function
-	-- @return true if only alt+arrow keys work for navigating the edit box, not arrow keys alone
-	-- @usage  MultiLineTextBox:GetAltArrowKeyMode()
-	------------------------------------
+	doc [======[
+		@name GetAltArrowKeyMode
+		@type method
+		@desc Returns whether arrow keys are ignored by the edit box unless the Alt key is held
+		@return boolean 1 if arrow keys are ignored by the edit box unless the Alt key is held; otherwise nil
+	]======]
 	function GetAltArrowKeyMode(self, ...)
 		return self.__Text:GetAltArrowKeyMode(...)
 	end
 
-	------------------------------------
-	--- Gets the blink speed of the EditBox in seconds
-	-- @name  MultiLineTextBox:GetBlinkSpeed
-	-- @class function
-	-- @return the blink speed of the EditBox in seconds
-	-- @usage  MultiLineTextBox:GetBlinkSpeed()
-	------------------------------------
+	doc [======[
+		@name GetBlinkSpeed
+		@type method
+		@desc Returns the rate at which the text insertion blinks when the edit box is focused
+		@return number Amount of time for which the cursor is visible during each "blink" (in seconds)
+	]======]
 	function GetBlinkSpeed(self, ...)
 		return self.__Text:GetBlinkSpeed(...)
 	end
 
-	------------------------------------
-	--- Gets the position of the cursor inside the EditBox
-	-- @name  MultiLineTextBox:GetCursorPosition
-	-- @class function
-	-- @return the position of the cursor inside the EditBox
-	-- @usage  MultiLineTextBox:GetCursorPosition()
-	------------------------------------
+	doc [======[
+		@name GetCursorPosition
+		@type method
+		@desc Returns the current cursor position inside edit box
+		@return number Current position of the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
+	]======]
 	function GetCursorPosition(self, ...)
 		return self.__Text:GetCursorPosition(...)
 	end
 
-	------------------------------------
-	--- Get the number of history lines for this edit box
-	-- @name  MultiLineTextBox:GetHistoryLines
-	-- @class function
-	-- @return the number of history lines for this edit box
-	-- @usage  MultiLineTextBox:GetHistoryLines()
-	------------------------------------
+	doc [======[
+		@name GetHistoryLines
+		@type method
+		@desc Returns the maximum number of history lines stored by the edit box
+		@return number Maximum number of history lines stored by the edit box
+	]======]
 	function GetHistoryLines(self, ...)
 		return self.__Text:GetHistoryLines(...)
 	end
 
-	------------------------------------
-	--- Get the input language (locale based not in-game)
-	-- @name  MultiLineTextBox:GetInputLanguage
-	-- @class function
-	-- @return the input language (locale based not in-game)
-	-- @usage  MultiLineTextBox:GetInputLanguage()
-	------------------------------------
+	doc [======[
+		@name GetInputLanguage
+		@type method
+		@desc Returns the currently selected keyboard input language (character set / input method). Applies to keyboard input methods, not in-game languages or client locales.
+		@return string the input language
+	]======]
 	function GetInputLanguage(self, ...)
 		return self.__Text:GetInputLanguage(...)
 	end
 
-	------------------------------------
-	--- Gets the maximum number bytes allowed in the EditBox
-	-- @name  MultiLineTextBox:GetMaxBytes
-	-- @class function
-	-- @return the maximum number bytes allowed in the EditBox
-	-- @usage  MultiLineTextBox:GetMaxBytes()
-	------------------------------------
+	doc [======[
+		@name GetMaxBytes
+		@type method
+		@desc Returns the maximum number of bytes of text allowed in the edit box. Note: Unicode characters may consist of more than one byte each, so the behavior of a byte limit may differ from that of a character limit in practical use.
+		@return number Maximum number of text bytes allowed in the edit box
+	]======]
 	function GetMaxBytes(self, ...)
 		return self.__Text:GetMaxBytes(...)
 	end
 
-	------------------------------------
-	--- Gets the maximum number of letters allowed in the EditBox
-	-- @name  MultiLineTextBox:GetMaxLetters
-	-- @class function
-	-- @return the maximum number of letters allowed in the EditBox
-	-- @usage  MultiLineTextBox:GetMaxLetters()
-	------------------------------------
+	doc [======[
+		@name GetMaxLetters
+		@type method
+		@desc Returns the maximum number of text characters allowed in the edit box
+		@return number Maximum number of text characters allowed in the edit box
+	]======]
 	function GetMaxLetters(self, ...)
 		return self.__Text:GetMaxLetters(...)
 	end
 
-	------------------------------------
-	--- Gets the number of letters in the box.
-	-- @name  MultiLineTextBox:GetNumLetters
-	-- @class function
-	-- @return he number of letters in the box
-	-- @usage  MultiLineTextBox:GetNumLetters()
-	------------------------------------
+	doc [======[
+		@name GetNumLetters
+		@type method
+		@desc Returns the number of text characters in the edit box
+		@return number Number of text characters in the edit box
+	]======]
 	function GetNumLetters(self, ...)
 		return self.__Text:GetNumLetters(...)
 	end
 
-	------------------------------------
-	--- Get the contents of the edit box as a number
-	-- @name  MultiLineTextBox:GetNumber
-	-- @class function
-	-- @return the contents of the edit box as a number
-	-- @usage  MultiLineTextBox:GetNumber()
-	------------------------------------
+	doc [======[
+		@name GetNumber
+		@type method
+		@desc Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.
+		@return number Contents of the edit box as a number
+	]======]
 	function GetNumber(self, ...)
 		return self.__Text:GetNumber(...)
 	end
 
-	------------------------------------
-	--- Get the current text contained in the edit box.
-	-- @name  MultiLineTextBox:GetText
-	-- @class function
-	-- @return the current text contained in the edit box
-	-- @usage  MultiLineTextBox:GetText()
-	------------------------------------
+	doc [======[
+		@name GetText
+		@type method
+		@desc Returns the edit box's text contents
+		@return string Text contained in the edit box
+	]======]
 	function GetText(self, ...)
 		return self.__Text:GetText(...)
 	end
 
-	------------------------------------
-	--- Gets the insets from the edit box's edges which determine its interactive text area
-	-- @name  MultiLineTextBox:GetTextInsets
-	-- @class function
-	-- @return left - Distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-	-- @return right - Distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-	-- @return top - Distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-	-- @return bottom - Distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-	-- @usage  MultiLineTextBox:GetTextInsets()
-	------------------------------------
+	doc [======[
+		@name GetTextInsets
+		@type method
+		@desc Returns the insets from the edit box's edges which determine its interactive text area
+		@return left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
+		@return right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
+		@return top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
+		@return bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
+	]======]
 	function GetTextInsets(self, ...)
 		return self.__Text:GetTextInsets(...)
 	end
 
-	------------------------------------
-	--- Selects all or a portion of the text in the edit box
-	-- @name  MultiLineTextBox:HighlightText
-	-- @class function
-	-- @param start Optional,Character position at which to begin the selection (between 0, for the position before the first character, and  MultiLineTextBox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified
-	-- @param end Optional,Character position at which to end the selection; if not specified or if less than start, selects all characters after the start  position; if equal to start, selects nothing and positions the cursor at the start position
-	-- @usage  MultiLineTextBox:HighlightText(1, 10)
-	------------------------------------
+	doc [======[
+		@name HighlightText
+		@type method
+		@desc Selects all or a portion of the text in the edit box
+		@param start number, character position at which to begin the selection (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified
+		@param end number, character position at which to end the selection; if not specified or if less than start, selects all characters after the start position; if equal to start, selects nothing and positions the cursor at the start position
+		@return nil
+	]======]
 	function HighlightText(self, ...)
 		local startp, endp = ...
 
@@ -2018,101 +1921,97 @@ class "MultiLineTextBox"
 		return self.__Text:HighlightText(startp, endp)
 	end
 
-	------------------------------------
-	--- Insert text into the edit box.
-	-- @name  MultiLineTextBox:Insert
-	-- @class function
-	-- @param text Text to be inserted
-	-- @usage  MultiLineTextBox:Insert("    ")
-	------------------------------------
+	doc [======[
+		@name Insert
+		@type method
+		@desc Inserts text into the edit box at the current cursor position
+		@param text string, text to be inserted
+		@return nil
+	]======]
 	function Insert(self, ...)
 		return self.__Text:Insert(...)
 	end
 
-	------------------------------------
-	--- Determine if the EditBox has autofocus enabled
-	-- @name  MultiLineTextBox:IsAutoFocus
-	-- @class function
-	-- @return true if the EditBox has autofocus enabled
-	-- @usage  MultiLineTextBox:IsAutoFocus()
-	------------------------------------
+	doc [======[
+		@name IsAutoFocus
+		@type method
+		@desc Returns whether the edit box automatically acquires keyboard input focus
+		@return boolean 1 if the edit box automatically acquires keyboard input focus; otherwise nil
+	]======]
 	function IsAutoFocus(self, ...)
 		return self.__Text:IsAutoFocus(...)
 	end
 
-	------------------------------------
-	--- Determine if the EditBox accepts multiple lines
-	-- @name  MultiLineTextBox:IsMultiLine
-	-- @class function
-	-- @return true if the EditBox accepts multiple lines
-	-- @usage  MultiLineTextBox:IsMultiLine()
-	------------------------------------
+	doc [======[
+		@name IsMultiLine
+		@type method
+		@desc Returns whether the edit box shows more than one line of text
+		@return boolean 1 if the edit box shows more than one line of text; otherwise nil
+	]======]
 	function IsMultiLine(self, ...)
 		return self.__Text:IsMultiLine(...)
 	end
 
-	------------------------------------
-	--- Determine if the EditBox only accepts numeric input
-	-- @name  MultiLineTextBox:IsNumeric
-	-- @class function
-	-- @return true if the EditBox only accepts numeric input
-	-- @usage  MultiLineTextBox:IsNumeric()
-	------------------------------------
+	doc [======[
+		@name IsNumeric
+		@type method
+		@desc Returns whether the edit box only accepts numeric input
+		@return boolean 1 if only numeric input is allowed; otherwise nil
+	]======]
 	function IsNumeric(self, ...)
 		return self.__Text:IsNumeric(...)
 	end
 
-	------------------------------------
-	--- Determine if the EditBox performs password masking
-	-- @name  MultiLineTextBox:IsPassword
-	-- @class function
-	-- @return true if the EditBox performs password masking
-	-- @usage  MultiLineTextBox:IsPassword()
-	------------------------------------
+	doc [======[
+		@name IsPassword
+		@type method
+		@desc Returns whether the text entered in the edit box is masked
+		@return boolean 1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil
+	]======]
 	function IsPassword(self, ...)
 		return self.__Text:IsPassword(...)
 	end
 
-	------------------------------------
-	--- Make only alt+arrow keys work for navigating the edit box, not arrow keys alone.
-	-- @name  MultiLineTextBox:SetAltArrowKeyMode
-	-- @class function
-	-- @param enable True to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement
-	-- @usage  MultiLineTextBox:SetAltArrowKeyMode(true)
-	------------------------------------
+	doc [======[
+		@name SetAltArrowKeyMode
+		@type method
+		@desc Sets whether arrow keys are ignored by the edit box unless the Alt key is held
+		@param enable boolean, true to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement
+		@return nil
+	]======]
 	function SetAltArrowKeyMode(self, ...)
 		return self.__Text:SetAltArrowKeyMode(...)
 	end
 
-	------------------------------------
-	--- Set whether or not the editbox will attempt to get input focus when it gets shown (default: true)
-	-- @name  MultiLineTextBox:SetAutoFocus
-	-- @class function
-	-- @param enable True to enable the edit box to automatically acquire keyboard input focus; false to disable
-	-- @usage  MultiLineTextBox:SetAutoFocus()
-	------------------------------------
+	doc [======[
+		@name SetAutoFocus
+		@type method
+		@desc Sets whether the edit box automatically acquires keyboard input focus. If auto-focus behavior is enabled, the edit box automatically acquires keyboard focus when it is shown and when no other edit box is focused.
+		@param enable boolean, true to enable the edit box to automatically acquire keyboard input focus; false to disable
+		@return nil
+	]======]
 	function SetAutoFocus(self, ...)
 		return self.__Text:SetAutoFocus(...)
 	end
 
-	------------------------------------
-	--- Sets the rate at which the text insertion blinks when the edit box is focused
-	-- @name  MultiLineTextBox:SetBlinkSpeed
-	-- @class function
-	-- @param duration Amount of time for which the cursor is visible during each "blink" (in seconds)
-	-- @usage  MultiLineTextBox:SetBlinkSpeed(2)
-	------------------------------------
+	doc [======[
+		@name SetBlinkSpeed
+		@type method
+		@desc Sets the rate at which the text insertion blinks when the edit box is focused. The speed indicates how long the cursor stays in each state (shown and hidden); e.g. if the blink speed is 0.5 (the default, the cursor is shown for one half second and then hidden for one half second (thus, a one-second cycle); if the speed is 1.0, the cursor is shown for one second and then hidden for one second (a two-second cycle).
+		@param duration number, Amount of time for which the cursor is visible during each "blink" (in seconds)
+		@return nil
+	]======]
 	function SetBlinkSpeed(self, ...)
 		return self.__Text:SetBlinkSpeed(...)
 	end
 
-	------------------------------------
-	--- Set the position of the cursor within the EditBox
-	-- @name  MultiLineTextBox:SetCursorPosition
-	-- @class function
-	-- @param position New position for the keyboard input cursor (between 0, for the position before the first character, and  MultiLineTextBox:GetNumLetters(), for the position after the last character)
-	-- @usage  MultiLineTextBox:SetCursorPosition(123)
-	------------------------------------
+	doc [======[
+		@name SetCursorPosition
+		@type method
+		@desc Sets the cursor position in the edit box
+		@param position number, new position for the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
+		@return nil
+	]======]
 	function SetCursorPosition(self, position)
 		if self.__OperationOnLine then
 			SaveOperation(self)
@@ -2121,100 +2020,100 @@ class "MultiLineTextBox"
 		return self.__Text:SetCursorPosition(position)
 	end
 
-	------------------------------------
-	--- Move input focus (the cursor) to this editbox
-	-- @name  MultiLineTextBox:SetFocus
-	-- @class function
-	-- @usage  MultiLineTextBox:SetFocus()
-	------------------------------------
+	doc [======[
+		@name SetFocus
+		@type method
+		@desc Focuses the edit box for keyboard input. Only one edit box may be focused at a time; setting focus to one edit box will remove it from the currently focused edit box.
+		@return nil
+	]======]
 	function SetFocus(self, ...)
 		return self.__Text:SetFocus(...)
 	end
 
-	------------------------------------
-	--- Sets the maximum number of history lines stored by the edit box
-	-- @name  MultiLineTextBox:SetHistoryLines
-	-- @class function
-	-- @param count Maximum number of history lines to be stored by the edit box
-	-- @usage  MultiLineTextBox:SetHistoryLines(12)
-	------------------------------------
+	doc [======[
+		@name SetHistoryLines
+		@type method
+		@desc Sets the maximum number of history lines stored by the edit box. Lines of text can be added to the edit box's history by calling :AddHistoryLine(); once added, the user can quickly set the edit box's contents to one of these lines by pressing the up or down arrow keys. (History lines are only accessible via the arrow keys if the edit box is not in multi-line mode.)
+		@param count number, Maximum number of history lines to be stored by the edit box
+		@return nil
+	]======]
 	function SetHistoryLines(self, ...)
 		return self.__Text:SetHistoryLines(...)
 	end
 
-	------------------------------------
-	--- Sets the maximum number of bytes of text allowed in the edit box
-	-- @name  MultiLineTextBox:SetMaxBytes
-	-- @class function
-	-- @param maxBytes Maximum number of text bytes allowed in the edit box, or 0 for no limit
-	-- @usage  MultiLineTextBox:SetMaxBytes(1024)
-	------------------------------------
+	doc [======[
+		@name SetMaxBytes
+		@type method
+		@desc Sets the maximum number of bytes of text allowed in the edit box
+		@param maxBytes number, Maximum number of text bytes allowed in the edit box, or 0 for no limit
+		@return nil
+	]======]
 	function SetMaxBytes(self, ...)
 		return self.__Text:SetMaxBytes(...)
 	end
 
-	------------------------------------
-	--- Sets the maximum number of text characters allowed in the edit box
-	-- @name  MultiLineTextBox:SetMaxLetters
-	-- @class function
-	-- @param maxLetters Maximum number of text characters allowed in the edit box, or 0 for no limit
-	-- @usage  MultiLineTextBox:SetMaxLetters(1024)
-	------------------------------------
+	doc [======[
+		@name SetMaxLetters
+		@type method
+		@desc Sets the maximum number of text characters allowed in the edit box.
+		@param maxLetters number, Maximum number of text characters allowed in the edit box, or 0 for no limit
+		@return nil
+	]======]
 	function SetMaxLetters(self, ...)
 		return self.__Text:SetMaxLetters(...)
 	end
 
-	------------------------------------
-	--- Sets whether the edit box shows more than one line of text, no use
-	-- @name  MultiLineTextBox:SetMultiLine
-	-- @class function
-	-- @param multiLine True to allow the edit box to display more than one line of text; false for single-line display
-	-- @usage  MultiLineTextBox:SetMultiLine(true)
-	------------------------------------
+	doc [======[
+		@name SetMultiLine
+		@type method
+		@desc Sets whether the edit box shows more than one line of text. When in multi-line mode, the edit box's height is determined by the number of lines shown and cannot be set directly -- enclosing the edit box in a ScrollFrame may prove useful in such cases.
+		@param multiLine boolean, true to allow the edit box to display more than one line of text; false for single-line display
+		@return nil
+	]======]
 	function SetMultiLine(self, ...)
 		error("This editbox must be multi-line", 2)
 	end
 
-	------------------------------------
-	--- Sets the contents of the edit box to a number
-	-- @name  MultiLineTextBox:SetNumber
-	-- @class function
-	-- @param num New numeric content for the edit box
-	-- @usage  MultiLineTextBox:SetNumber(1234)
-	------------------------------------
+	doc [======[
+		@name SetNumber
+		@type method
+		@desc Sets the contents of the edit box to a number
+		@param num number, new numeric content for the edit box
+		@return nil
+	]======]
 	function SetNumber(self, ...)
 		return self.__Text:SetNumber(...)
 	end
 
-	------------------------------------
-	--- Sets whether the edit box only accepts numeric input
-	-- @name  MultiLineTextBox:SetNumeric
-	-- @class function
-	-- @param enable True to allow only numeric input; false to allow any text
-	-- @usage  MultiLineTextBox:SetNumeric(false)
-	------------------------------------
+	doc [======[
+		@name SetNumeric
+		@type method
+		@desc Sets whether the edit box only accepts numeric input. Note: an edit box in numeric mode <em>only</em> accepts numeral input -- all other characters, including those commonly used in numeric representations (such as ., E, and -) are not allowed.
+		@param enable boolean, true to allow only numeric input; false to allow any text
+		@return nil
+	]======]
 	function SetNumeric(self, ...)
 		return self.__Text:SetNumeric(...)
 	end
 
-	------------------------------------
-	--- Sets whether the text entered in the edit box is masked
-	-- @name  MultiLineTextBox:SetPassword
-	-- @class function
-	-- @param enable True to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered
-	-- @usage  MultiLineTextBox:SetPassword(false)
-	------------------------------------
+	doc [======[
+		@name SetPassword
+		@type method
+		@desc Sets whether the text entered in the edit box is masked
+		@param enable boolean, true to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered
+		@return nil
+	]======]
 	function SetPassword(self, ...)
 		return self.__Text:SetPassword(...)
 	end
 
-	------------------------------------
-	--- Sets the edit box's text contents
-	-- @name  MultiLineTextBox:SetText
-	-- @class function
-	-- @param text Text to be placed in the edit box
-	-- @usage  MultiLineTextBox:SetText("Hello World")
-	------------------------------------
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the edit box's text contents
+		@param text string, text to be placed in the edit box
+		@return nil
+	]======]
 	function SetText(self, text)
 		text = tostring(text) or ""
 
@@ -2242,70 +2141,68 @@ class "MultiLineTextBox"
 		AdjustCursorPosition(self, 0)
 	end
 
-	------------------------------------
-	--- Sets the edit box's text contents without clear the operation list
-	-- @name  MultiLineTextBox:SetText
-	-- @class function
-	-- @param text Text to be placed in the edit box
-	-- @usage  MultiLineTextBox:SetText("Hello World")
-	------------------------------------
+	doc [======[
+		@name AdjustText
+		@type method
+		@desc Sets the edit box's text contents without clear the operation list
+		@param text string, text to be placed in the edit box
+		@return nil
+	]======]
 	function AdjustText(self, text)
 		self.__Text.Text = text
 	end
 
-	------------------------------------
-	--- Sets the insets from the edit box's edges which determine its interactive text area
-	-- @name  MultiLineTextBox:SetTextInsets
-	-- @class function
-	-- @param left Distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-	-- @param right Distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-	-- @param top Distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-	-- @param bottom Distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-	-- @usage  MultiLineTextBox:SetTextInsets(4, 4, 6, 6)
-	------------------------------------
+	doc [======[
+		@name SetTextInsets
+		@type method
+		@desc Sets the insets from the edit box's edges which determine its interactive text area
+		@param left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
+		@param right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
+		@param top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
+		@param bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
+		@return nil
+	]======]
 	function SetTextInsets(self, ...)
 		self.__Text:SetTextInsets(...)
 		Ajust4Font(self)
 	end
 
-	------------------------------------
-	--- Switches the edit box's language input mode
-	-- @name  MultiLineTextBox:ToggleInputLanguage
-	-- @class function
-	-- @usage  MultiLineTextBox:ToggleInputLanguage()
-	------------------------------------
+	doc [======[
+		@name ToggleInputLanguage
+		@type method
+		@desc Switches the edit box's language input mode. If the edit box is in ROMAN mode and an alternate Input Method Editor composition mode is available (as determined by the client locale and system settings), switches to the alternate input mode. If the edit box is in IME composition mode, switches back to ROMAN.
+		@return nil
+	]======]
 	function ToggleInputLanguage(self, ...)
 		return self.__Text:ToggleInputLanguage(...)
 	end
 
-	------------------------------------
-	--- Returns whether the edit box is currently focused for keyboard input
-	-- @name  MultiLineTextBox:HasFocus
-	-- @class function
-	-- @return True if the edit box is currently focused for keyboard input
-	-- @usage  MultiLineTextBox:HasFocus()
-	------------------------------------
+	doc [======[
+		@name HasFocus
+		@type method
+		@desc Returns whether the edit box is currently focused for keyboard input
+		@return boolean 1 if the edit box is currently focused for keyboard input; otherwise nil
+	]======]
 	function HasFocus(self, ...)
 		return self.__Text:HasFocus(...)
 	end
 
-	------------------------------------
-	--- Whether the MultiLineTextBox has operation can be undo.
-	-- @name  MultiLineTextBox:CanUndo
-	-- @class function
-	-- @return true if the MultiLineTextBox can undo operations
-	-- @usage  MultiLineTextBox:CanUndo()
-	------------------------------------
+	doc [======[
+		@name CanUndo
+		@type method
+		@desc Whether the MultiLineTextBox has operation can be undo
+		@return boolean true if the MultiLineTextBox can undo operations
+	]======]
 	function CanUndo(self)
 		return self.__OperationIndex > 0
 	end
 
-	------------------------------------
-	--- Undo the operation.
-	-- @name  MultiLineTextBox:Undo
-	-- @class function
-	-- @usage  MultiLineTextBox:Undo()
-	------------------------------------
+	doc [======[
+		@name Undo
+		@type method
+		@desc Undo the operation
+		@return nil
+	]======]
 	function Undo(self)
 		SaveOperation(self)
 
@@ -2338,23 +2235,22 @@ class "MultiLineTextBox"
 		end
 	end
 
-	------------------------------------
-	--- Whether the MultiLineTextBox has operation can be redo.
-	-- @name  MultiLineTextBox:CanRedo
-	-- @class function
-	-- @return true if the MultiLineTextBox can redo operations
-	-- @usage  MultiLineTextBox:CanRedo()
-	------------------------------------
+	doc [======[
+		@name CanRedo
+		@type method
+		@desc Whether the MultiLineTextBox has operation can be redo
+		@return boolean true if the MultiLineTextBox can redo operations
+	]======]
 	function CanRedo(self)
 		return self.__OperationIndex < self.__MaxOperationIndex
 	end
 
-	------------------------------------
-	--- Redo the operation.
-	-- @name  MultiLineTextBox:Redo
-	-- @class function
-	-- @usage  MultiLineTextBox:Redo()
-	------------------------------------
+	doc [======[
+		@name Redo
+		@type method
+		@desc Redo the operation
+		@return nil
+	]======]
 	function Redo(self)
 		if self.__OperationIndex < self.__MaxOperationIndex then
 			local idx = self.__OperationIndex + 1
@@ -2376,34 +2272,33 @@ class "MultiLineTextBox"
 		end
 	end
 
-	------------------------------------
-	--- Reset the MultiLineTextBox's modified state
-	-- @name  MultiLineTextBox:ResetModifiedState
-	-- @class function
-	-- @usage  MultiLineTextBox:ResetModifiedState()
-	------------------------------------
+	doc [======[
+		@name ResetModifiedState
+		@type method
+		@desc Reset the MultiLineTextBox's modified state
+		@return nil
+	]======]
 	function ResetModifiedState(self)
 		self.__DefaultText = self.__Text.Text
 	end
 
-	------------------------------------
-	--- Whether the MultiLineTextBox is modified
-	-- @name  MultiLineTextBox:IsModified
-	-- @class function
-	-- @return true if the MultiLineTextBox is modified
-	-- @usage  MultiLineTextBox:IsModified()
-	------------------------------------
+	doc [======[
+		@name IsModified
+		@type method
+		@desc Whether the MultiLineTextBox is modified
+		@return boolean true if the MultiLineTextBox is modified
+	]======]
 	function IsModified(self)
 		return self.__DefaultText ~= self.__Text.Text
 	end
 
-	------------------------------------
-	--- Register a short-key combied with ctrl
-	-- @name  MultiLineTextBox:RegisterControlKey
-	-- @class function
-	-- @param key the short key
-	-- @usage  MultiLineTextBox:RegisterControlKey('a')
-	------------------------------------
+	doc [======[
+		@name RegisterControlKey
+		@type method
+		@desc Register a short-key combied with ctrl
+		@param key string, the short key
+		@return nil
+	]======]
 	function RegisterControlKey(self, key)
 		if type(key) ~= "string" or strlen(key) ~= 1 then
 			error("Usage : MultiLineTextBox:RegisterControlKey(key) - 'key' must be [0-9] or [A-Z], got nil.", 2)
@@ -2419,13 +2314,13 @@ class "MultiLineTextBox"
 		self.__RegisterControl[key] = true
 	end
 
-	------------------------------------
-	--- UnRegister a short-key combied with ctrl
-	-- @name  MultiLineTextBox:UnRegisterControlKey
-	-- @class function
-	-- @param key the short key
-	-- @usage  MultiLineTextBox:UnRegisterControlKey('a')
-	------------------------------------
+	doc [======[
+		@name UnRegisterControlKey
+		@type method
+		@desc UnRegister a short-key combied with ctrl
+		@param key string, the short key
+		@return nil
+	]======]
 	function UnRegisterControlKey(self, key)
 		if type(key) ~= "string" or strlen(key) ~= 1 then
 			return
@@ -2441,13 +2336,13 @@ class "MultiLineTextBox"
 		self.__RegisterControl[key] = nil
 	end
 
-	------------------------------------
-	--- Set the tabwidth for the MultiLineTextBox
-	-- @name  MultiLineTextBox:SetTabWidth
-	-- @class function
-	-- @param tabWidth the tab's width
-	-- @usage  MultiLineTextBox:SetTabWidth(3)
-	------------------------------------
+	doc [======[
+		@name SetTabWidth
+		@type method
+		@desc Set the tabwidth for the MultiLineTextBox
+		@param tabWidth number, the tab's width
+		@return nil
+	]======]
 	function SetTabWidth(self, tabWidth)
 		tabWidth = tonumber(tabWidth) and floor(tonumber(tabWidth)) or _TabWidth
 
@@ -2516,13 +2411,12 @@ class "MultiLineTextBox"
 		end
 	end
 
-	------------------------------------
-	--- Get the tabwidth for the MultiLineTextBox
-	-- @name  MultiLineTextBox:GetTabWidth
-	-- @class function
-	-- @return tabWidth the tab's width
-	-- @usage  MultiLineTextBox:GetTabWidth()
-	------------------------------------
+	doc [======[
+		@name GetTabWidth
+		@type method
+		@desc Get the tabwidth for the MultiLineTextBox
+		@return number the tab's width
+	]======]
 	function GetTabWidth(self)
 		return self.__TabWidth or _TabWidth
 	end
@@ -2530,7 +2424,11 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Font
+	doc [======[
+		@name Font
+		@type property
+		@desc the font's defined table, contains font path, height and flags' settings
+	]======]
 	property "Font" {
 		Get = function(self)
 			return self.__Text.Font
@@ -2542,7 +2440,12 @@ class "MultiLineTextBox"
 		end,
 		Type = FontType,
 	}
-	-- FontObject
+
+	doc [======[
+		@name FontObject
+		@type property
+		@desc the Font object
+	]======]
 	property "FontObject" {
 		Get = function(self)
 			return self:GetFontObject()
@@ -2552,7 +2455,12 @@ class "MultiLineTextBox"
 		end,
 		Type = Font + String + nil,
 	}
-	-- ShadowColor
+
+	doc [======[
+		@name ShadowColor
+		@type property
+		@desc the color of the font's text shadow
+	]======]
 	property "ShadowColor" {
 		Get = function(self)
 			return ColorType(self:GetShadowColor())
@@ -2562,7 +2470,12 @@ class "MultiLineTextBox"
 		end,
 		Type = ColorType,
 	}
-	-- ShadowOffset
+
+	doc [======[
+		@name ShadowOffset
+		@type property
+		@desc the offset of the fontstring's text shadow from its text
+	]======]
 	property "ShadowOffset" {
 		Get = function(self)
 			return Dimension(self:GetShadowOffset())
@@ -2572,7 +2485,12 @@ class "MultiLineTextBox"
 		end,
 		Type = Dimension,
 	}
-	-- Spacing
+
+	doc [======[
+		@name Spacing
+		@type property
+		@desc the fontstring's amount of spacing between lines
+	]======]
 	property "Spacing" {
 		Get = function(self)
 			return self:GetSpacing()
@@ -2582,7 +2500,12 @@ class "MultiLineTextBox"
 		end,
 		Type = Number,
 	}
-	-- TextColor
+
+	doc [======[
+		@name TextColor
+		@type property
+		@desc the fontstring's default text color
+	]======]
 	property "TextColor" {
 		Get = function(self)
 			return ColorType(self:GetTextColor())
@@ -2592,7 +2515,12 @@ class "MultiLineTextBox"
 		end,
 		Type = ColorType,
 	}
-	-- NumericOnly
+
+	doc [======[
+		@name NumericOnly
+		@type property
+		@desc true if the edit box only accepts numeric input
+	]======]
 	property "NumericOnly" {
 		Set = function(self, state)
 			self:SetNumeric(state)
@@ -2604,7 +2532,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- Password
+
+	doc [======[
+		@name Password
+		@type property
+		@desc true if the text entered in the edit box is masked
+	]======]
 	property "Password" {
 		Set = function(self, state)
 			self:SetPassword(state)
@@ -2616,7 +2549,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- AutoFocus
+
+	doc [======[
+		@name AutoFocus
+		@type property
+		@desc true if the edit box automatically acquires keyboard input focus
+	]======]
 	property "AutoFocus" {
 		Set = function(self, state)
 			self:SetAutoFocus(state)
@@ -2628,7 +2566,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- HistoryLines
+
+	doc [======[
+		@name HistoryLines
+		@type property
+		@desc the maximum number of history lines stored by the edit box
+	]======]
 	property "HistoryLines" {
 		Set = function(self, num)
 			self:SetHistoryLines(num)
@@ -2640,7 +2583,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- Focus
+
+	doc [======[
+		@name Focused
+		@type property
+		@desc true if the edit box is currently focused
+	]======]
 	property "Focused" {
 		Set = function(self, focus)
 			if focus then
@@ -2656,7 +2604,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- AltArrowKeyMode
+
+	doc [======[
+		@name AltArrowKeyMode
+		@type property
+		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
+	]======]
 	property "AltArrowKeyMode" {
 		Set = function(self, enable)
 			self:SetAltArrowKeyMode(enable)
@@ -2668,7 +2621,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- BlinkSpeed
+
+	doc [======[
+		@name BlinkSpeed
+		@type property
+		@desc the rate at which the text insertion blinks when the edit box is focused
+	]======]
 	property "BlinkSpeed" {
 		Set = function(self, speed)
 			self:SetBlinkSpeed(speed)
@@ -2680,7 +2638,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- CursorPosition
+
+	doc [======[
+		@name CursorPosition
+		@type property
+		@desc the current cursor position inside edit box
+	]======]
 	property "CursorPosition" {
 		Set = function(self, position)
 			self:SetCursorPosition(position)
@@ -2692,7 +2655,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- MaxBytes
+
+	doc [======[
+		@name MaxBytes
+		@type property
+		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
+	]======]
 	property "MaxBytes" {
 		Set = function(self, maxBytes)
 			self:SetMaxBytes(maxBytes)
@@ -2704,7 +2672,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- MaxLetters
+
+	doc [======[
+		@name MaxLetters
+		@type property
+		@desc the maximum number of text characters allowed in the edit box
+	]======]
 	property "MaxLetters" {
 		Set = function(self, maxLetters)
 			self:SetMaxLetters(maxLetters)
@@ -2716,7 +2689,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- Number
+
+	doc [======[
+		@name Number
+		@type property
+		@desc the contents of the edit box as a number
+	]======]
 	property "Number" {
 		Set = function(self, number)
 			self:SetNumber(number)
@@ -2728,7 +2706,12 @@ class "MultiLineTextBox"
 
 		Type = Number,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the edit box's text contents
+	]======]
 	property "Text" {
 		Set = function(self, text)
 			self:SetText(text)
@@ -2740,7 +2723,12 @@ class "MultiLineTextBox"
 
 		Type = String,
 	}
-	-- TextInsets
+
+	doc [======[
+		@name TextInsets
+		@type property
+		@desc the insets from the edit box's edges which determine its interactive text area
+	]======]
 	property "TextInsets" {
 		Set = function(self, RectInset)
 			self:SetTextInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -2752,7 +2740,12 @@ class "MultiLineTextBox"
 
 		Type = Inset,
 	}
-	-- Editable
+
+	doc [======[
+		@name Editable
+		@type property
+		@desc true if the edit box is editable
+	]======]
 	property "Editable" {
 		Set = function(self, flag)
 			self.MouseEnabled = flag
@@ -2771,7 +2764,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- ShowLineNumber
+
+	doc [======[
+		@name ShowLineNumber
+		@type property
+		@desc Whether show line number or not
+	]======]
 	property "ShowLineNumber" {
 		Set = function(self, flag)
 			self.__LineNum.Visible = flag
@@ -2786,7 +2784,12 @@ class "MultiLineTextBox"
 
 		Type = Boolean,
 	}
-	-- TabWidth
+
+	doc [======[
+		@name TabWidth
+		@type property
+		@desc The tab's width
+	]======]
 	property "TabWidth" {
 		Get = function(self)
 			return self:GetTabWidth()

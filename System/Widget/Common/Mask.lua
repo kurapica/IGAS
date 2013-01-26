@@ -449,6 +449,12 @@ end
 class "Mask"
 	inherit "Button"
 
+	doc [======[
+		@name Mask
+		@type class
+		@desc Mask is used to moving, resizing or key binding for other frames.
+	]======]
+
 	_FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -459,23 +465,54 @@ class "Mask"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnMoveStarted
+		@type script
+		@desc Fired when start moving
+	]======]
 	script "OnMoveStarted"
+
+	doc [======[
+		@name OnMoveFinished
+		@type script
+		@desc Fired when finish moving
+	]======]
 	script "OnMoveFinished"
+
+	doc [======[
+		@name OnResizeStarted
+		@type script
+		@desc Fired when start resizing
+	]======]
 	script "OnResizeStarted"
+
+	doc [======[
+		@name OnResizeFinished
+		@type script
+		@desc Fired when finish resizing
+	]======]
 	script "OnResizeFinished"
+
+	doc [======[
+		@name OnKeySet
+		@type script
+		@desc Fired when binding key is Set
+		@param newkey string, the new binding key
+		@param oldkey string, the old binding key
+	]======]
 	script "OnKeySet"
+
+	doc [======[
+		@name OnKeyClear
+		@type script
+		@desc Fired when binding key is clear
+		@param oldkey string, the old binding key
+	]======]
 	script "OnKeyClear"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Set the parent for this frame
-	-- @name UIObject:SetParent
-	-- @class function
-	-- @param parent the parent of the frame, if is not a igas frame, automaticaly convert
-	-- @usage UIObject:SetParent(UIParent)
-	------------------------------------
 	function SetParent(self, parent)
 		Super.SetParent(self, parent)
 		if parent then
@@ -491,7 +528,11 @@ class "Mask"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- AsMove
+	doc [======[
+		@name AsMove
+		@type property
+		@desc The mask is used to move parent
+	]======]
 	property "AsMove" {
 		Get = function(self)
 			return self.__AsMove or false
@@ -501,7 +542,12 @@ class "Mask"
 		end,
 		Type = System.Boolean,
 	}
-	-- AsResize
+
+	doc [======[
+		@name AsResize
+		@type property
+		@desc The mask is used to resize parent
+	]======]
 	property "AsResize" {
 		Get = function(self)
 			return self.TextureSe.Visible
@@ -511,7 +557,12 @@ class "Mask"
 		end,
 		Type = System.Boolean,
 	}
-	-- AsKeyBind
+
+	doc [======[
+		@name AsKeyBind
+		@type script
+		@desc The mask is used to bind key
+	]======]
 	property "AsKeyBind" {
 		Get = function(self)
 			return self.__AsKeyBind or false
@@ -521,7 +572,12 @@ class "Mask"
 		end,
 		Type = System.Boolean,
 	}
-	-- BindKey
+
+	doc [======[
+		@name BindKey
+		@type script
+		@desc The binding key
+	]======]
 	property "BindKey" {
 		Get = function(self)
 			return self.__BindKey
