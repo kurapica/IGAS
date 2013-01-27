@@ -320,12 +320,13 @@ do
 	end
 end
 
------------------------------------------------
---- IFKeyBinding
--- @type interface
--- @name IFKeyBinding
------------------------------------------------
 interface "IFKeyBinding"
+
+	doc [======[
+		@name IFKeyBinding
+		@type interface
+		@desc IFKeyBinding is used to manage key bindings
+	]======]
 
 	local function Clear4key(key)
 		if not key then return end
@@ -345,12 +346,12 @@ interface "IFKeyBinding"
 	------------------------------------------------------
 	-- Interface Method
 	------------------------------------------------------
-	------------------------------------
-	--- Export key binding settings
-	-- @name _Export
-	-- @type function
-	-- @return setting
-	------------------------------------
+	doc [======[
+		@name _Export
+		@type method
+		@desc Export key binding settings
+		@return table the key binding settings
+	]======]
 	function _Export()
 		local exp = {}
 
@@ -361,12 +362,13 @@ interface "IFKeyBinding"
 		return exp
 	end
 
-	------------------------------------
-	--- Import key binding settings
-	-- @name _Import
-	-- @type function
-	-- @param setting
-	------------------------------------
+	doc [======[
+		@name _Import
+		@type method
+		@desc Import key binding settings
+		@param settings table, contains the key bindings
+		@return nil
+	]======]
 	function _Import(setting)
 		_Clear()
 
@@ -381,22 +383,24 @@ interface "IFKeyBinding"
 		end
 	end
 
-	------------------------------------
-	--- Clear all key bindings
-	-- @name _Clear
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name _Clear
+		@type method
+		@desc Clear all key bindings
+		@return nil
+	]======]
 	function _Clear()
 		wipe(_DBChar)
 		wipe(_IFKeyBinding_KeyMap)
 		_IFKeyBinding_ButtonList:Each(ClearBindingKey)
 	end
 
-	------------------------------------
-	--- Turn binding mode on
-	-- @name _ModeOn
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name _ModeOn
+		@type method
+		@desc Turn binding mode on
+		@return nil
+	]======]
 	function _ModeOn()
 		if not _IFKeyBinding_MsgBox.Visible and not InCombatLockdown() then
 			_M._IFKeyBinding_InBindingMode = true
@@ -404,31 +408,32 @@ interface "IFKeyBinding"
 		end
 	end
 
-	------------------------------------
-	--- Turn binding mode off
-	-- @name _ModeOff
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name _ModeOff
+		@type method
+		@desc Turn binding mode off
+		@return nil
+	]======]
 	function _ModeOff()
 		_IFKeyBinding_MsgBox.Visible = false
 	end
 
-	------------------------------------
-	--- Check if keybinding is mode on
-	-- @name _IsModeOn
-	-- @type function
-	-- @param group group name
-	-- @return true if the mode is on
-	------------------------------------
+	doc [======[
+		@name _IsModeOn
+		@type method
+		@desc Whether if key binding mode is on
+		@return boolean true if the key binding mode is on
+	]======]
 	function _IsModeOn()
 		return _M._IFKeyBinding_InBindingMode
 	end
 
-	------------------------------------
-	--- Toggle the mode
-	-- @name _Toggle
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name _Toggle
+		@type method
+		@desc Toggle the key binding mode
+		@return nil
+	]======]
 	function _Toggle()
 		if _M._IFKeyBinding_InBindingMode then
 			_ModeOff()
@@ -440,12 +445,13 @@ interface "IFKeyBinding"
 	------------------------------------------------------
 	-- Object Method
 	------------------------------------------------------
-	------------------------------------
-	--- Set the binding key
-	-- @name SetBindingKey
-	-- @type function
-	-- @param key
-	------------------------------------
+	doc [======[
+		@name SetBindingKey
+		@type method
+		@desc Set the binding key
+		@param key string, the binding key
+		@return nil
+	]======]
 	function SetBindingKey(self, key)
 		local name = self:GetName()
 		key = ParseBindKey(key)
@@ -464,21 +470,22 @@ interface "IFKeyBinding"
 		UpdateBindingKey(self)
 	end
 
-	------------------------------------
-	--- Get the binding key
-	-- @name GetBindingKey
-	-- @type function
-	-- @return key
-	------------------------------------
+	doc [======[
+		@name GetBindingKey
+		@type method
+		@desc Get the binding key
+		@return string the binding key
+	]======]
 	function GetBindingKey(self)
 		return _DBChar[self:GetName()]
 	end
 
-	------------------------------------
-	--- Update the binding key
-	-- @name UpdateBindingKey
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name UpdateBindingKey
+		@type method
+		@desc Update the binding key
+		@return nil
+	]======]
 	function UpdateBindingKey(self)
 		local name = self:GetName()
 		local key = _DBChar[name]
@@ -500,12 +507,12 @@ interface "IFKeyBinding"
 		end
 	end
 
-	------------------------------------
-	--- Clear the binding key
-	-- @name ClearBindingKey
-	-- @type function
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name ClearBindingKey
+		@type method
+		@desc Clear the binding key
+		@return nil
+	]======]
 	function ClearBindingKey(self)
 		local name = self:GetName()
 		ClearOverrideBindings(IGAS:GetUI(self))
@@ -515,17 +522,13 @@ interface "IFKeyBinding"
 	end
 
 	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	function Dispose(self)
-		ClearBindingKey(self)
-		_IFKeyBinding_ButtonList:Remove(self)
-	end
-
-	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- HotKey
+	doc [======[
+		@name HotKey
+		@type property
+		@desc the hotkey property, need override
+	]======]
 	property "HotKey" {
 		Get = function(self)
 			return self.__HotKey
@@ -546,6 +549,14 @@ interface "IFKeyBinding"
 			_IFKeyBinding_MaskFrame.BindingButton = self
 			_IFKeyBinding_MaskFrame:Show()
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		ClearBindingKey(self)
+		_IFKeyBinding_ButtonList:Remove(self)
 	end
 
 	------------------------------------------------------

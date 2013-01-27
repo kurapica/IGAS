@@ -16,11 +16,6 @@ _UpdateRangeInterval = 0.2
 
 MAX_SKILLLINE_TABS = _G.MAX_SKILLLINE_TABS
 
------------------------------------------------
---- FlyoutDirection
--- @type enum
--- @name FlyoutDirection
------------------------------------------------
 enum "FlyoutDirection" {
 	"UP",
 	"DOWN",
@@ -28,11 +23,6 @@ enum "FlyoutDirection" {
 	"RIGHT",
 }
 
------------------------------------------------
---- ActionType
--- @type enum
--- @name ActionType
------------------------------------------------
 enum "ActionType" {
 	"action",
 	--"bag",
@@ -1952,13 +1942,14 @@ do
 	end
 end
 
------------------------------------------------
---- IFActionHandler
--- @type interface
--- @name IFActionHandler
------------------------------------------------
 interface "IFActionHandler"
 	extend "IFSecureHandler" "IFCooldown"
+
+	doc [======[
+		@name IFActionHandler
+		@type interface
+		@desc IFActionHandler is used to manage action buttons
+	]======]
 
 	------------------------------------------------------
 	-- Script
@@ -1967,14 +1958,6 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Object Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFActionHandler_Buttons:Remove(self)
-		if #_IFActionHandler_Buttons == 0 then
-			_IFActionHandler_UpdateRangeTimer.Enabled = false
-			UninstallEventHandler()
-		end
-		return IFNoCombatTaskHandler._RegisterNoCombatTask(UninstallActionButton, IGAS:GetUI(self))
-	end
 
 	------------------------------------
 	--- Update the action, Overridable
@@ -2146,7 +2129,8 @@ interface "IFActionHandler"
 	function _DisableGroupDrag(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(DisableDrag, group)
 	end
-------------------------------------
+
+	------------------------------------
 	--- Make all action button draggable
 	-- @name _EnableGroupUseButtonDown
 	-- @type function
@@ -2459,6 +2443,18 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFActionHandler_Buttons:Remove(self)
+		if #_IFActionHandler_Buttons == 0 then
+			_IFActionHandler_UpdateRangeTimer.Enabled = false
+			UninstallEventHandler()
+		end
+		return IFNoCombatTaskHandler._RegisterNoCombatTask(UninstallActionButton, IGAS:GetUI(self))
+	end
 
 	------------------------------------------------------
 	-- Initialize

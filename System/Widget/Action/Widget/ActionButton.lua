@@ -8,14 +8,15 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ActionButton", version) then
 	return
 end
 
------------------------------------------------
---- ActionButton
--- @type class
--- @name ActionButton
------------------------------------------------
 class "ActionButton"
 	inherit "CheckButton"
 	extend "IFActionHandler" "IFKeyBinding" "IFCooldownIndicator"
+
+	doc [======[
+		@name ActionButton
+		@type class
+		@desc the base action button template
+	]======]
 
 	RANGE_INDICATOR = "●"
 
@@ -49,13 +50,14 @@ class "ActionButton"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Update the action, must override
-	-- @name UpdateAction
-	-- @type function
-	-- @param kind, target, texture, tooltip
-	------------------------------------
+	doc [======[
+		@name UpdateAction
+		@type method
+		@desc Update the action button when content is changed
+		@param kind string, the kind of the action, like 'macro' | 'spell' | 'action' | etc.
+		@param target string|number, the content of the action, like 'Revive' for 'spell'
+		@return nil
+	]======]
 	function UpdateAction(self, kind, target, texture, tooltip)
 		if self:HasAction() then
 			self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot2]]
@@ -64,13 +66,13 @@ class "ActionButton"
 		end
 	end
 
-	------------------------------------
-	--- Set flyoutDirection for action button
-	-- @name SetFlyoutDirection
-	-- @type function
-	-- @param dir
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name SetFlyoutDirection
+		@type method
+		@desc Set flyoutDirection for action button
+		@param dir System.Widget.Action.IFActionHandler.FlyoutDirection
+		@return nil
+	]======]
 	function SetFlyoutDirection(self, dir)
 		IFActionHandler.SetFlyoutDirection(self, dir)
 
@@ -96,7 +98,11 @@ class "ActionButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Icon
+	doc [======[
+		@name Icon
+		@type property
+		@desc the action button icon's image file path, accessed by IFActionHandler
+	]======]
 	property "Icon" {
 		Get = function(self)
 			return self:GetChild("Icon").TexturePath
@@ -106,7 +112,12 @@ class "ActionButton"
 		end,
 		Type = System.String + nil,
 	}
-	-- Count
+
+	doc [======[
+		@name Count
+		@type property
+		@desc the action's count, like item's count, accessed by IFActionHandler
+	]======]
 	property "Count" {
 		Get = function(self)
 			return self:GetChild("Count").Text
@@ -116,7 +127,12 @@ class "ActionButton"
 		end,
 		Type = System.String + System.Number + nil,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the action's text, accessed by IFActionHandler
+	]======]
 	property "Text" {
 		Get = function(self)
 			return self:GetChild("Name").Text
@@ -126,7 +142,12 @@ class "ActionButton"
 		end,
 		Type = System.String + nil,
 	}
-	-- HotKey
+
+	doc [======[
+		@name HotKey
+		@type property
+		@desc the action button's hotkey
+	]======]
 	property "HotKey" {
 		Get = function(self)
 			return self:GetChild("HotKey").Text
@@ -137,7 +158,12 @@ class "ActionButton"
 		end,
 		Type = System.String + nil,
 	}
-	-- FlashVisible
+
+	doc [======[
+		@name FlashVisible
+		@type property
+		@desc the visible of the flash, accessed by IFActionHandler
+	]======]
 	property "FlashVisible" {
 		Get = function(self)
 			return self:GetChild("Flash").Visible
@@ -146,7 +172,12 @@ class "ActionButton"
 			self:GetChild("Flash").Visible = value
 		end,
 	}
-	-- FlyoutVisible
+
+	doc [======[
+		@name FlyoutVisible
+		@type property
+		@desc the visible of the flyout arrow, accessed by IFActionHandler
+	]======]
 	property "FlyoutVisible" {
 		Get = function(self)
 			return self:GetChild("FlyoutArrow").Visible
@@ -156,7 +187,12 @@ class "ActionButton"
 		end,
 		Type = System.Boolean,
 	}
-	-- Flyouting
+
+	doc [======[
+		@name Flyouting
+		@type property
+		@desc whether the flyout action bar is shown, accessed by IFActionHandler
+	]======]
 	property "Flyouting" {
 		Get = function(self)
 			return self:GetChild("FlyoutBorder").Visible
@@ -167,7 +203,12 @@ class "ActionButton"
 		end,
 		Type = System.Boolean,
 	}
-	-- InRange
+
+	doc [======[
+		@name InRange
+		@type property
+		@desc whether the target is in range, accessed by IFActionHandler
+	]======]
 	property "InRange" {
 		Get = function(self)
 			return self.__InRange
@@ -180,7 +221,12 @@ class "ActionButton"
 		end,
 		Type = System.Boolean+nil,
 	}
-	-- Usable
+
+	doc [======[
+		@name Usable
+		@type property
+		@desc whether the action is usable, accessed by IFActionHandler
+	]======]
 	property "Usable" {
 		Get = function(self)
 			return self.__Usable or false
@@ -197,7 +243,12 @@ class "ActionButton"
 		end,
 		Type = System.Boolean,
 	}
-	-- AutoCastable
+
+	doc [======[
+		@name AutoCastable
+		@type property
+		@desc whether the action is auto castable, accessed by IFActionHandler
+	]======]
 	property "AutoCastable" {
 		Get = function(self)
 			return self.__AutoCastable or false
@@ -223,7 +274,12 @@ class "ActionButton"
 		end,
 		Type = System.Boolean,
 	}
-	-- AutoCasting
+
+	doc [======[
+		@name AutoCasting
+		@type property
+		@desc whether the action is now auto-casting, accessed by IFActionHandler
+	]======]
 	property "AutoCasting" {
 		Get = function(self)
 			return self.__AutoCasting or false

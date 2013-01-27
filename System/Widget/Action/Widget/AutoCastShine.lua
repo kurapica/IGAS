@@ -64,13 +64,14 @@ function _Action_AutoCastShine:OnUpdate(elapsed)
 	end
 end
 
------------------------------------------------
---- AutoCastShine
--- @type class
--- @name AutoCastShine
------------------------------------------------
 class "AutoCastShine"
 	inherit "Frame"
+
+	doc [======[
+		@name AutoCastShine
+		@type class
+		@desc Animation for auto cast action button
+	]======]
 
 	------------------------------------------------------
 	-- Script
@@ -79,11 +80,12 @@ class "AutoCastShine"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Start Auto cast shine
-	-- @name Start
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Start
+		@type method
+		@desc  Start Auto cast shine
+		@return nil
+	]======]
 	function Start(self)
 		if not _Action_AUTOCAST_SHINES[self] then
 			_Action_AUTOCAST_SHINES[self] = true
@@ -93,11 +95,12 @@ class "AutoCastShine"
 		end
 	end
 
-	------------------------------------
-	--- Stop Auto cast shine
-	-- @name Start
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Stop
+		@type method
+		@desc Stop Auto cast shine
+		@return nil
+	]======]
 	function Stop(self)
 		_Action_AUTOCAST_SHINES[self] = nil
 		self.Visible = false
