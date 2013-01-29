@@ -1949,6 +1949,19 @@ interface "IFActionHandler"
 		@name IFActionHandler
 		@type interface
 		@desc IFActionHandler is used to manage action buttons
+		@overridable UpdateAction method, used to customize action button when it's content is changed
+		@overridable IFActionHandlerGroup property, return a group name, the name is used to mark the action button into a group
+		@overridable Usable property, whether the action is usable, used to refresh the action button as a trigger
+		@overridable Count property, the action's count, used to refresh the action count as a trigger
+		@overridable Flashing property, whether need flash the action, used to refresh the action count as a trigger
+		@overridable FlashVisible property, the action button's flash texture's visible, used to refresh the action count as a trigger
+		@overridable FlyoutVisible property, the action button's flyout's visible, used to refresh the action count as a trigger
+		@overridable Text property, the action't text, used to refresh the action count as a trigger
+		@overridable Icon property, the action's icon path, used to refresh the action count as a trigger
+		@overridable InRange property, whether the action is in range, used to refresh the action count as a trigger
+		@overridable FlyoutDirection property, the action button's flyout direction, used to refresh the action count as a trigger
+		@overridable AutoCastable property, whether the action is auto-castable, used to refresh the action count as a trigger
+		@overridable AutoCasting property, whether the action is now auto-casting, used to refresh the action count as a trigger
 	]======]
 
 	------------------------------------------------------
@@ -1958,23 +1971,24 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Object Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Update the action, Overridable
-	-- @name UpdateAction
-	-- @type function
-	-- @param kind, target, texture, tooltip
-	------------------------------------
+	doc [======[
+		@name UpdateAction
+		@type method
+		@desc Update the action, Overridable
+		@param kind System.Widget.Action.IFActionHandler.ActionType, the action's type, such like 'action', 'pet', 'spell', etc.
+		@param content string|number, the action't content, such like 'Revive' for 'spell' type
+		@return nil
+	]======]
 	function UpdateAction(self, kind, target)
 	end
 
-	------------------------------------
-	--- Set Action Page for actionbutton
-	-- @name SetActionPage
-	-- @type function
-	-- @param page
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name SetActionPage
+		@type method
+		@desc Set Action Page for actionbutton
+		@param page number|nil, the action page for the action button
+		@return nil
+	]======]
 	function SetActionPage(self, page)
 		page = tonumber(page)
 		page = page and floor(page)
@@ -1987,25 +2001,25 @@ interface "IFActionHandler"
 		end
 	end
 
-	------------------------------------
-	--- Get Action Page of action button
-	-- @name GetActionPage
-	-- @type function
-	-- @return page
-	------------------------------------
+	doc [======[
+		@name GetActionPage
+		@type method
+		@desc Get Action Page of action button
+		@return number the action button's action page if set, or nil
+	]======]
 	function GetActionPage(self)
 		if not IsMainPage(self) then
 			return tonumber(self:GetAttribute("actionpage"))
 		end
 	end
 
-	------------------------------------
-	--- Set if this action button belongs to main page
-	-- @name SetMainPage
-	-- @type function
-	-- @param isMain
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name SetMainPage
+		@type method
+		@desc Set if this action button belongs to main page
+		@param isMain boolean, true if the action button belongs to main page, so its content will be automatically changed under several conditions.
+		@return nil
+	]======]
 	function SetMainPage(self, isMain)
 		isMain = isMain and true or nil
 		if self.__IFActionHandler_IsMain ~= isMain then
@@ -2019,23 +2033,24 @@ interface "IFActionHandler"
 		end
 	end
 
-	------------------------------------
-	--- Check if the action button is belong to main page
-	-- @name IsMainPage
-	-- @type function
-	-- @para
-	-- @return true if the action button is belong to main page
-	------------------------------------
+	doc [======[
+		@name function_name
+		@type method
+		@desc Whether if the action button is belong to main page
+		@return boolean true if the action button is belong to main page
+	]======]
 	function IsMainPage(self)
 		return self.__IFActionHandler_IsMain or false
 	end
 
-	------------------------------------
-	--- Set action for the actionbutton
-	-- @name SetAction
-	-- @type function
-	-- @param kind, target
-	------------------------------------
+	doc [======[
+		@name SetAction
+		@type method
+		@desc Set action for the actionbutton
+		@param kind System.Widget.Action.IFActionHandler.ActionType, the action type
+		@param content string|number, the action's content
+		@return nil
+	]======]
 	function SetAction(self, kind, target, texture, tooltip)
 		kind = kind and Reflector.Validate(ActionType, kind, "kind", "Usage: IFActionHandler:SetAction(kind, target) -")
 
@@ -2053,45 +2068,46 @@ interface "IFActionHandler"
 		IFNoCombatTaskHandler._RegisterNoCombatTask(SaveAction, self, kind, target)
 	end
 
-	------------------------------------
-	--- Get action for the actionbutton
-	-- @name GetAction
-	-- @type function
-	-- @return kind, target
-	------------------------------------
+	doc [======[
+		@name GetAction
+		@type method
+		@desc Get action for the actionbutton
+		@return kind System.Widget.Action.IFActionHandler.ActionType, the action type
+		@return content string|number, the action's content
+	]======]
 	function GetAction(self)
 		return self.__IFActionHandler_Kind, self.__IFActionHandler_Action
 	end
 
-	------------------------------------
-	--- Whether has action content
-	-- @name HasAction
-	-- @type function
-	-- @return true if button has action content
-	------------------------------------
+	doc [======[
+		@name HasAction
+		@type method
+		@desc Whether the action button has action content
+		@return boolean true if the button has action
+	]======]
 	function HasAction(self)
 		return _HasAction(self)
 	end
 
-	------------------------------------
-	--- Set flyoutDirection for action button
-	-- @name SetFlyoutDirection
-	-- @type function
-	-- @param dir
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name SetFlyoutDirection
+		@type method
+		@desc Set flyoutDirection for action button
+		@param dir System.Widget.Action.IFActionHandler.FlyoutDirection
+		@return nil
+	]======]
 	function SetFlyoutDirection(self, dir)
 		dir = Reflector.Validate(FlyoutDirection, dir, "dir", "Usage: IFActionHandler:SetFlyoutDirection(dir) -")
 
 		self:SetAttribute("flyoutDirection", dir)
 	end
 
-	------------------------------------
-	--- Get flyoutDirection of the action button
-	-- @name GetFlyoutDirection
-	-- @type function
-	-- @return flyoutDirection
-	------------------------------------
+	doc [======[
+		@name SetFlyoutDirection
+		@type method
+		@desc Get flyoutDirection for action button
+		@return dir System.Widget.Action.IFActionHandler.FlyoutDirection
+	]======]
 	function GetFlyoutDirection(self)
 		return self:GetAttribute("flyoutDirection") or FlyoutDirection.UP
 	end
@@ -2099,64 +2115,68 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Interface Method
 	------------------------------------------------------
-	------------------------------------
-	--- Make all action button draggable
-	-- @name _EnableGroupDrag
-	-- @type function
-	-- @param group
-	------------------------------------
+	doc [======[
+		@name _EnableGroupDrag
+		@type method
+		@desc Make the group's action buttons draggable
+		@param group string|nil, the action button's group
+		@return nil
+	]======]
 	function _EnableGroupDrag(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(EnableDrag, group)
 	end
 
-	------------------------------------
-	--- Check if the action group draggable
-	-- @name _IsGroupDragEnabled
-	-- @type function
-	-- @param group
-	-- @return true if the group action can drag
-	------------------------------------
+	doc [======[
+		@name _IsGroupDragEnabled
+		@type method
+		@desc Whether if the action button group draggable
+		@param group string|nil, the action button's group
+		@return boolean true if the group's action buttons are draggable
+	]======]
 	function _IsGroupDragEnabled(group)
 		return IsDragEnabled(group)
 	end
 
-	------------------------------------
-	--- Make all action button none-draggable
-	-- @name _DisableGroupDrag
-	-- @type function
-	-- @param group
-	------------------------------------
+	doc [======[
+		@name _DisableGroupDrag
+		@type method
+		@desc Make the group's action buttons un-draggable
+		@param group string|nil, the action button's group
+		@return nil
+	]======]
 	function _DisableGroupDrag(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(DisableDrag, group)
 	end
 
-	------------------------------------
-	--- Make all action button draggable
-	-- @name _EnableGroupUseButtonDown
-	-- @type function
-	-- @param group
-	------------------------------------
+	doc [======[
+		@name _EnableGroupUseButtonDown
+		@type method
+		@desc Make the group's action buttons using mouse down to trigger actions
+		@param group string|nil, the action button's group
+		@return nil
+	]======]
 	function _EnableGroupUseButtonDown(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(EnableButtonDown, group)
 	end
 
-	------------------------------------
-	--- Check if the action group draggable
-	-- @name _IsGroupDragEnabled
-	-- @type function
-	-- @param group
-	-- @return true if the group action can drag
-	------------------------------------
+	doc [======[
+		@name function_name
+		@type method
+		@desc Whether if the action group buttons using mouse down
+		@param boolean  string|nil, the action button's group
+		@return boolean true if the group action buttons are using mouse down
+	]======]
 	function _IsGroupUseButtonDownEnabled(group)
 		return IsButtonDownEnabled(group)
 	end
 
-	------------------------------------
-	--- Make all action button none-draggable
-	-- @name _DisableGroupDrag
-	-- @type function
-	-- @param group
-	------------------------------------
+	doc [======[
+		@name _EnableGroupUseButtonDown
+		@type method
+		@desc Make the group's action buttons using mouse up to trigger actions
+		@param group string|nil, the action button's group
+		@return nil
+	]======]
 	function _DisableGroupUseButtonDown(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(DisableButtonDown, group)
 	end
@@ -2164,7 +2184,11 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Group Property
 	------------------------------------------------------
-	-- IFActionHandlerGroup
+	doc [======[
+		@name IFActionHandlerGroup
+		@type property
+		@desc Overridable, the action button's group name
+	]======]
 	property "IFActionHandlerGroup" {
 		Get = function(self)
 			return _GlobalGroup
@@ -2174,7 +2198,11 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Action Property
 	------------------------------------------------------
-	-- Action
+	doc [======[
+		@name Action
+		@type property
+		@desc The action button's content if its type is 'action'
+	]======]
 	property "Action" {
 		Get = function(self)
 			return self:GetAttribute("type") == "action" and tonumber(self:GetAttribute("action")) or nil
@@ -2184,7 +2212,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- PetAction
+
+	doc [======[
+		@name PetAction
+		@type property
+		@desc The action button's content if its type is 'pet'
+	]======]
 	property "PetAction" {
 		Get = function(self)
 			return self:GetAttribute("type") == "pet" and tonumber(self:GetAttribute("action")) or nil
@@ -2194,7 +2227,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- Spell
+
+	doc [======[
+		@name Spell
+		@type property
+		@desc The action button's content if its type is 'spell'
+	]======]
 	property "Spell" {
 		Get = function(self)
 			return self:GetAttribute("type") == "spell" and self:GetAttribute("spell") or nil
@@ -2204,7 +2242,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String + System.Number + nil,
 	}
-	-- Item
+
+	doc [======[
+		@name Item
+		@type property
+		@desc The action button's content if its type is 'item'
+	]======]
 	property "Item" {
 		Get = function(self)
 			return self:GetAttribute("type") == "item" and type(self:GetAttribute("item")) == "string" and self:GetAttribute("item"):match("%d+") or nil
@@ -2214,7 +2257,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String + System.Number + nil,
 	}
-	-- Macro
+
+	doc [======[
+		@name Macro
+		@type property
+		@desc The action button's content if its type is 'macro'
+	]======]
 	property "Macro" {
 		Get = function(self)
 			return self:GetAttribute("type") == "macro" and self:GetAttribute("macro") or nil
@@ -2224,7 +2272,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String + System.Number + nil,
 	}
-	-- MacroText
+
+	doc [======[
+		@name MacroText
+		@type property
+		@desc The action button's content if its type is 'macro'
+	]======]
 	property "MacroText" {
 		Get = function(self)
 			return self:GetAttribute("type") == "macro" and self:GetAttribute("macrotext") or nil
@@ -2234,7 +2287,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String + nil,
 	}
-	-- Mount
+
+	doc [======[
+		@name Mount
+		@type property
+		@desc The action button's content if its type is 'mount'
+	]======]
 	property "Mount" {
 		Get = function(self)
 			return self:GetAttribute("type") == "companion" and tonumber(self:GetAttribute("companion")) or nil
@@ -2244,7 +2302,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- EquipmentSet
+
+	doc [======[
+		@name EquipmentSet
+		@type property
+		@desc The action button's content if its type is 'equipmentset'
+	]======]
 	property "EquipmentSet" {
 		Get = function(self)
 			return self:GetAttribute("type") == "equipmentset" and self:GetAttribute("equipmentset") or nil
@@ -2254,7 +2317,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String + nil,
 	}
-	-- BattlePet
+
+	doc [======[
+		@name BattlePet
+		@type property
+		@desc The action button's content if its type is 'battlepet'
+	]======]
 	property "BattlePet" {
 		Get = function(self)
 			return self:GetAttribute("type") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
@@ -2264,7 +2332,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- FlytoutID
+
+	doc [======[
+		@name FlytoutID
+		@type property
+		@desc The action button's content if its type is 'flyout'
+	]======]
 	property "FlytoutID" {
 		Get = function(self)
 			return self:GetAttribute("type") == "flyout" and tonumber(self:GetAttribute("spell")) or nil
@@ -2274,7 +2347,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- ActionPage
+
+	doc [======[
+		@name ActionPage
+		@type property
+		@desc The action page of the action button if type is 'action'
+	]======]
 	property "ActionPage" {
 		Get = function(self)
 			return self:GetActionPage()
@@ -2284,7 +2362,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Number + nil,
 	}
-	-- IsMainPage
+
+	doc [======[
+		@name MainPage
+		@type property
+		@desc Whether the action button is used in the main page
+	]======]
 	property "MainPage" {
 		Get = function(self)
 			return self:IsMainPage()
@@ -2294,13 +2377,23 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- ActionType
+
+	doc [======[
+		@name ActionType
+		@type property
+		@desc The action button's type
+	]======]
 	property "ActionType" {
 		Get = function(self)
 			return self.__IFActionHandler_Kind
 		end,
 	}
-	-- ActionTarget
+
+	doc [======[
+		@name ActionTarget
+		@type property
+		@desc The action button's content
+	]======]
 	property "ActionTarget" {
 		Get = function(self)
 			return self.__IFActionHandler_Action
@@ -2310,7 +2403,11 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Display Property
 	------------------------------------------------------
-	-- ShowGrid
+	doc [======[
+		@name ShowGrid
+		@type property
+		@desc Whether show the action button with no content, controlled by IFActionHandler
+	]======]
 	property "ShowGrid" {
 		Get = function(self)
 			return self.__ShowGrid or false
@@ -2322,7 +2419,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- ShowFlyOut
+
+	doc [======[
+		@name ShowFlyOut
+		@type property
+		@desc Whether show the action button's flyout icon, controlled by IFActionHandler
+	]======]
 	property "ShowFlyOut" {
 		Get = function(self)
 			return self.__ShowFlyOut
@@ -2333,7 +2435,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- Usable
+
+	doc [======[
+		@name Usable
+		@type property
+		@desc Whether the action button is usable, controlled by IFActionHandler
+	]======]
 	property "Usable" {
 		Get = function(self)
 			return self.__Usable or false
@@ -2343,7 +2450,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- Count
+
+	doc [======[
+		@name Count
+		@type property
+		@desc The action's count, controlled by IFActionHandler
+	]======]
 	property "Count" {
 		Get = function(self)
 			return self.__Count
@@ -2353,7 +2465,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String,
 	}
-	-- Flashing
+
+	doc [======[
+		@name Flashing
+		@type property
+		@desc Whether the action is flashing, controlled by IFActionHandler
+	]======]
 	property "Flashing" {
 		Get = function(self)
 			return self.__Flashing or false
@@ -2363,7 +2480,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- FlashVisible
+
+	doc [======[
+		@name FlashVisible
+		@type property
+		@desc Whether the action's flashing texture should be shown, controlled by IFActionHandler
+	]======]
 	property "FlashVisible" {
 		Get = function(self)
 			return self.__FlashVisible
@@ -2373,7 +2495,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- FlyoutVisible
+
+	doc [======[
+		@name FlyoutVisible
+		@type property
+		@desc Whether the action's flyout icon should be shown, controlled by IFActionHandler
+	]======]
 	property "FlyoutVisible" {
 		Get = function(self)
 			return self.__FlyoutVisible
@@ -2383,7 +2510,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- Text
+
+	doc [======[
+		@name Text
+		@type property
+		@desc The action button's text, controlled by the IFActionHandler
+	]======]
 	property "Text" {
 		Get = function(self)
 			return self.__Text
@@ -2393,7 +2525,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String,
 	}
-	-- Icon
+
+	doc [======[
+		@name Icon
+		@type property
+		@desc The action button's icon image path, controlled by IFActionHandler
+	]======]
 	property "Icon" {
 		Get = function(self)
 			return self.__Icon
@@ -2403,7 +2540,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.String,
 	}
-	-- InRange
+
+	doc [======[
+		@name InRange
+		@type property
+		@desc Whether the target is in the range of the action, controlled by IFActionHandler
+	]======]
 	property "InRange" {
 		Get = function(self)
 			return self.__InRange
@@ -2413,7 +2555,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean+nil,
 	}
-	-- FlyoutDirection
+
+	doc [======[
+		@name FlyoutDirection
+		@type property
+		@desc The flyout's direction, controlled by IFActionHandler
+	]======]
 	property "FlyoutDirection" {
 		Get = function(self)
 			return self:GetFlyoutDirection()
@@ -2423,7 +2570,12 @@ interface "IFActionHandler"
 		end,
 		Type = FlyoutDirection,
 	}
-	-- AutoCastable
+
+	doc [======[
+		@name AutoCastable
+		@type property
+		@desc Whether the action is autocastable, controlled by IFActionHandler
+	]======]
 	property "AutoCastable" {
 		Get = function(self)
 			return self.__AutoCastable or false
@@ -2433,7 +2585,12 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
-	-- AutoCasting
+
+	doc [======[
+		@name AutoCasting
+		@type property
+		@desc Whether the action is now auto-casting, controlled by IFActionHandler
+	]======]
 	property "AutoCasting" {
 		Get = function(self)
 			return self.__AutoCasting or false
