@@ -1867,7 +1867,7 @@ do
 			local ret = false
 
 			for i = 1, #self do
-				if self._ThreadActived then
+				if self._ThreadActivated then
 					local thread = create(self[i])
 					chk, ret = resume(thread, obj, ...)
 					if status(thread) ~= "dead" then
@@ -1891,7 +1891,7 @@ do
 			end
 
 			if not ret and self[0] then
-				if self._ThreadActived then
+				if self._ThreadActivated then
 					chk, ret = resume(create(self[0]), obj, ...)
 				else
 					chk, ret = pcall(self[0], obj, ...)
@@ -4019,27 +4019,27 @@ do
 					name = select(i, ...)
 
 					if HasScript(cls, name) then
-						obj[name]._ThreadActived = true
+						obj[name]._ThreadActivated = true
 					end
 				end
 			end
 		end
 
 		doc [======[
-			@name IsThreadActived
+			@name IsThreadActivated
 			@type method
-			@desc Whether the thread mode is actived for special scripts.
+			@desc Whether the thread mode is activated for special scripts.
 			@param obect
 			@param script
 			@return boolean true if the object has active thread mode for the given script.
-			@usage System.Reflector.IsThreadActived(obj, "OnClick")
+			@usage System.Reflector.IsThreadActivated(obj, "OnClick")
 		]======]
-		function IsThreadActived(obj, sc)
+		function IsThreadActivated(obj, sc)
 			local cls = GetObjectClass(obj)
 			local name
 
 			if cls and HasScript(cls, sc) then
-				return obj[sc]._ThreadActived or false
+				return obj[sc]._ThreadActivated or false
 			end
 
 			return false
@@ -4063,7 +4063,7 @@ do
 					name = select(i, ...)
 
 					if HasScript(cls, name) then
-						obj[name]._ThreadActived = nil
+						obj[name]._ThreadActivated = nil
 					end
 				end
 			end

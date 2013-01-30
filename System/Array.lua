@@ -363,13 +363,13 @@ class "Array"
 	end
 
 	doc [======[
-		@name IsThreadActived
+		@name IsThreadActivated
 		@type method
 		@desc Check if the thread mode is actived for the script
 		@param script the script's name
 		@return boolean true if the script is in thread mode
 	]======]
-	function IsThreadActived(self, sc)
+	function IsThreadActivated(self, sc)
 		return type(sc) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self]["_ArrayActive_" .. sc] or false
 	end
 
