@@ -15,7 +15,7 @@ class "ScrollFrame"
 	doc [======[
 		@name ScrollFrame
 		@type class
-		@desc ScrollFrame is how a large body of content can be displayed through a small window. The ScrollFrame is the size of the "window" through which you want to see the larger content, and it has another frame set as a "ScrollChild" containing the full content.
+		@desc ScrollFrame is used to show a large body of content through a small window. The ScrollFrame is the size of the "window" through which you want to see the larger content, and it has another frame set as a "ScrollChild" containing the full content.
 	]======]
 
 	------------------------------------------------------
