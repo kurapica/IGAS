@@ -42,7 +42,7 @@ interface "IFThreat"
 	-- Method
 	------------------------------------------------------
 	function Dispose(self)
-		_IFThreatUnitList[self] = UnitThreatSituation(self.Unit)
+		_IFThreatUnitList[self] = nil
 	end
 
 	------------------------------------------------------
