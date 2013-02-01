@@ -5,7 +5,7 @@
 --				2011/03/13	Recode as class
 
 -- Check Version
-local version = 7
+local version = 8
 if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
 	return
 end
@@ -47,18 +47,18 @@ class "ScrollBar"
     local function clickUpBtn(self)
         local slider = self:GetParent():GetChild("Slider")
 
-		slider:SetValue(slider:GetValue() - slider:GetValueStep());
+		slider:SetValue(slider:GetValue() - slider:GetValueStep())
         PlaySound("UChatScrollButton")
     end
 
     local function clickDownBtn(self)
         local slider = self:GetParent():GetChild("Slider")
 
-        slider:SetValue(slider:GetValue() + slider:GetValueStep());
+        slider:SetValue(slider:GetValue() + slider:GetValueStep())
         PlaySound("UChatScrollButton")
     end
 
-    local function OnMouseWheel(self,value)
+    local function OnMouseWheel(self, value)
         local iMin, iMax = self:GetMinMaxValues()
 
         if value > 0 then
@@ -410,6 +410,7 @@ class "ScrollBar"
         texture:SetTexCoord(7/32, 25/32, 7/32, 24/32)
         texture:SetWidth(18)
         texture:SetHeight(17)
+
         slider:SetMinMaxValues(1, 10)
         slider:SetValueStep(1)
         slider:SetValue(1)
@@ -446,8 +447,7 @@ class "ScrollBar"
         slider.OnValueChanged = scrollChg
         slider.OnMouseWheel = OnMouseWheel
 
-        -- Can be override, Special use.
-		self = ScrollBar(self)
+        -- Default handler, can be overridden
         self.OnValueChanged = OnValueChanged
 
         btnScrollUp:Disable()
