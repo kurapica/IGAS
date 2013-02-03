@@ -83,4 +83,5 @@
 	<!-- UnitFrame -->
 	<Script file="UnitFrame\UnitFrame.lua"/>
 	<Script file="UnitFrame\UnitPanel.lua"/>
+	<Script file="UnitFrame\PetUnitPanel.lua"/>
 </Ui>

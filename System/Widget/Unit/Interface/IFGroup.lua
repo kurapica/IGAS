@@ -90,17 +90,15 @@ function GetGroupType(chkMax)
 end
 
 function GetGroupRosterUnit(kind, index)
-	local unit
 	if ( kind == "RAID" ) then
-		unit = "raid"..index
+		return "raid"..index
 	else
 		if ( index > 0 ) then
-			unit = "party"..index
+			return "party"..index
 		else
-			unit = "player"
+			return "player"
 		end
 	end
-	return unit
 end
 
 interface "IFGroup"
@@ -117,10 +115,6 @@ interface "IFGroup"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFGroupUnitList[self] = nil
-	end
-
 	------------------------------------
 	--- Refresh the element
 	-- @name Refresh
@@ -223,8 +217,11 @@ interface "IFGroup"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Dispose
 	------------------------------------------------------
+	function Dispose(self)
+		_IFGroupUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

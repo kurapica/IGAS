@@ -87,13 +87,13 @@ class "ScrollBar"
 	local function UpdateButton(self)
         local iMin, iMax = self:GetChild("Slider"):GetMinMaxValues()
 
-        if self:GetChild("Slider"):GetValue() == iMin then
+        if (self:GetChild("Slider"):GetValue() - iMin) <= 0.005 then
             self:GetChild("UpBtn"):Disable()
         else
             self:GetChild("UpBtn"):Enable()
         end
 
-        if self:GetChild("Slider"):GetValue() == iMax then
+        if (iMax - self:GetChild("Slider"):GetValue()) <= 0.005  then
             self:GetChild("DownBtn"):Disable()
         else
             self:GetChild("DownBtn"):Enable()

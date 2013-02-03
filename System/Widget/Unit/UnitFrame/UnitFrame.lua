@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/24
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- UnitFrame
--- <br><br>inherit <a href="..\Secure\SecureButton.html">SecureButton</a> For all methods, properties and scriptTypes
--- @name UnitFrame
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
@@ -17,6 +11,12 @@ end
 class "UnitFrame"
 	inherit "Button"
 	extend "IFContainer" "IFSecureHandler"
+
+	doc [======[
+		@name UnitFrame
+		@type class
+		@desc UnitFrame is used to display information about an unit, and can be used to do the common actions on the unit
+	]======]
 
 	local function UpdateUnit(self, unit)
 		self:Each("Unit", unit)
@@ -47,58 +47,77 @@ class "UnitFrame"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Add Element
-	-- @name AddElement
-	-- @class function
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name AddElement
+		@type method
+		@desc Add a unit element into the unit frame
+		@format elementType[, direction[, size, sizeunit]]
+		@param elementType class, the unit element's class
+		@param direction System.Widget.DockLayoutPanel.Direction
+		@param size number, the height size if the direction is 'NORTH' or 'SOUTH', the width size if the direction is 'WEST' or 'EAST'
+		@param sizeunit System.Widget.LayoutPanel.Unit
+		@return nil
+	]======]
 	function AddElement(self, ...)
 		IFContainer.AddWidget(self, ...)
 
 		UpdateUnit(self, self.Unit)
 	end
 
-	------------------------------------
-	--- Insert Element
-	-- @name InsertElement
-	-- @class function
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name InsertElement
+		@type method
+		@desc Insert a unit element into the unit frame
+		@format before, elementType[, direction[, size, sizeunit]]
+		@param before System.Widget.Region|System.Widget.VirtualUIObject, the element to be inserted before
+		@param elementType class, the unit element's class
+		@param direction System.Widget.DockLayoutPanel.Direction
+		@param size number, the height size if the direction is 'NORTH' or 'SOUTH', the width size if the direction is 'WEST' or 'EAST'
+		@param sizeunit System.Widget.LayoutPanel.Unit
+		@return nil
+	]======]
 	function InsertElement(self, ...)
 		IFContainer.InsertWidget(self, ...)
 
 		UpdateUnit(self, self.Unit)
 	end
 
-	------------------------------------
-	--- Get Element
-	-- @name GetElement
-	-- @class function
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name GetElement
+		@type method
+		@desc Gets the unit element
+		@format name|elementType
+		@param name string, the unit element's name or its class's name
+		@param elementType class, the unit elements's class type
+		@return System.Widget.Region|System.Widget.VirtualUIObject the unit element
+	]======]
 	function GetElement(self, ...)
 		return IFContainer.GetWidget(self, ...)
 	end
 
-	------------------------------------
-	--- Remove Element
-	-- @name RemoveElement
-	-- @class function
-	-- @param ...
-	------------------------------------
+	doc [======[
+		@name RemoveElement
+		@type method
+		@desc Remove the unit element
+		@format name|elementType[, withoutDispose]
+		@param name string, the unit element's name or its class's name
+		@param elementType class, the unit elements's class type
+		@param withoutDispose boolean, true if don't dispose the unit element
+		@return System.Widget.Region|System.Widget.VirtualUIObject nil if the withoutDispose is false, or the unit element is the System.Widget.Region|System.Widget.VirtualUIObject is true
+	]======]
 	function RemoveElement(self, ...)
 		return IFContainer.RemoveWidget(self, ...)
 	end
 
-	------------------------------------
-	--- Set Unit
-	-- @name SetUnit
-	-- @class function
-	-- @param unit
-	------------------------------------
+	doc [======[
+		@name SetUnit
+		@type method
+		@desc Sets the Unit for the unit frame
+		@param unit string|nil, the unitid
+		@return nil
+	]======]
 	function SetUnit(self, unit)
-		if type(unit) == "string" then
+		if type(unit) == "string" and not self.__Deactivated then
 			unit = unit:lower()
 		else
 			unit = nil
@@ -163,30 +182,64 @@ class "UnitFrame"
 		end
 	end
 
-	------------------------------------
-	--- Get Unit
-	-- @name GetUnit
-	-- @class function
-	-- @return unit
-	------------------------------------
+	doc [======[
+		@name GetUnit
+		@type method
+		@desc Gets the unit frame's Unit
+		@return string
+	]======]
 	function GetUnit(self, unit)
 		return self:GetAttribute("unit")
 	end
 
-	------------------------------------
-	--- UpdateElements
-	-- @name GetUnit
-	-- @class function
-	-- @return unit
-	------------------------------------
+	doc [======[
+		@name UpdateElements
+		@type method
+		@desc Update all unit elements of the unit frame
+		@return nil
+	]======]
 	function UpdateElements(self)
 		self:Each("Refresh")
+	end
+
+	doc [======[
+		@name Activate
+		@type method
+		@desc Activate the unit frame
+		@return nil
+	]======]
+	function Activate(self, ...)
+		if self.__Deactivated then
+			local unitId = type(self.__Deactivated) == "string" and self.__Deactivated or nil
+
+			self.__Deactivated = nil
+
+			self:SetUnit(unitId)
+		end
+	end
+
+	doc [======[
+		@name Deactivate
+		@type method
+		@desc Deactivate the unit frame
+		@param ...
+		@return nil
+	]======]
+	function Deactivate(self, ...)
+		if not self.__Deactivated then
+			self.__Deactivated = self:GetUnit() or true
+			SetUnit(self, nil)
+		end
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Unit
+	doc [======[
+		@name Unit
+		@type property
+		@desc The unit's ID
+	]======]
 	property "Unit" {
 		Get = function(self)
 			return self:GetUnit()
@@ -196,7 +249,12 @@ class "UnitFrame"
 		end,
 		Type = String + nil,
 	}
-	-- Interval
+
+	doc [======[
+		@name Interval
+		@type property
+		@desc The refresh interval for special unit like 'targettarget'
+	]======]
 	property "Interval" {
 		Get = function(self)
 			return self.__Interval or 0.5
@@ -209,6 +267,25 @@ class "UnitFrame"
 			end
 		end,
 		Type = Number,
+	}
+
+	doc [======[
+		@name Activated
+		@type property
+		@desc Whether the unit frame is activated
+	]======]
+	property "Activated" {
+		Get = function(self)
+			return not self.__Deactivated
+		end,
+		Set = function(self, value)
+			if value then
+				self:Activate()
+			else
+				self:Deactivate()
+			end
+		end,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

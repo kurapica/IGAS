@@ -1,16 +1,16 @@
 -- Author      : Kurapica
--- Create Date : 2012/11/07
+-- Create Date : 2013/02/03
 -- Change Log  :
 
 -- Check Version
 local version = 1
-if not IGAS:NewAddon("IGAS.Widget.Unit.UnitPanel", version) then
+if not IGAS:NewAddon("IGAS.Widget.Unit.PetUnitPanel", version) then
 	return
 end
 
-class "UnitPanel"
+class "PetUnitPanel"
 	inherit "SecureFrame"
-	extend "IFElementPanel" "IFGroup"
+	extend "IFElementPanel" "IFPetGroup"
 
 	MAX_RAID_MEMBERS = _G.MAX_RAID_MEMBERS
 	NUM_RAID_GROUPS = _G.NUM_RAID_GROUPS
@@ -32,7 +32,7 @@ class "UnitPanel"
 	]======]
 	function Refresh(self)
 		if not self.__Deactivated then
-			return IFGroup.Refresh(self)
+			return IFPetGroup.Refresh(self)
 		end
 	end
 
@@ -97,7 +97,7 @@ class "UnitPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function UnitPanel(self)
+    function PetUnitPanel(self)
 		self.ElementType = UnitFrame	-- Default Element, need override
 
 		self.RowCount = MEMBERS_PER_RAID_GROUP
@@ -115,4 +115,4 @@ class "UnitPanel"
 		self.MarginLeft = 0
 		self.MarginRight = 0
     end
-endclass "UnitPanel"
+endclass "PetUnitPanel"
