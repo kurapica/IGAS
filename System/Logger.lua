@@ -12,6 +12,8 @@ end
 namespace "System"
 
 floor = math.floor
+date = date or os.date
+strmatch = strmatch or string.match
 
 class "Logger"
 	inherit "Object"
