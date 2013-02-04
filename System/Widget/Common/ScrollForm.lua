@@ -37,6 +37,43 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+	doc [======[
+		@name SetScrollChild
+		@type method
+		@desc Sets the scroll child frame
+		@param frame System.Widget.Region
+		@return nil
+	]======]
+	function SetScrollChild(self, frame)
+		if not Reflector.ObjectIsClass(frame, System.Widget.Region) then
+			frame = nil
+		end
+
+		if self.__ScrollChild == frame then
+			return
+		end
+
+		-- Clear previous scroll child
+		if self.__ScrollChild then
+			Super.SetScrollChild(self, nil)
+			self.__ScrollChild:Dispose()
+			self.__ScrollChild = nil
+		end
+
+		-- Add new scroll child
+		Super.SetScrollChild(self, frame)
+		self.__ScrollChild = frame
+	end
+
+	doc [======[
+		@name GetScrollChild
+		@type method
+		@desc Gets the scoll child frame
+		@return nil
+	]======]
+	function GetScrollChild(self)
+		return self.__ScrollChild
+	end
 
 	------------------------------------------------------
 	-- Property
@@ -79,6 +116,21 @@ class "ScrollForm"
 		Type = Number,
 	}
 
+	doc [======[
+		@name ScrollChild
+		@type property
+		@desc The scroll child frame
+	]======]
+	property "ScrollChild" {
+		Get = function(self)
+			return self:GetScrollChild()
+		end,
+		Set = function(self, value)
+			self:SetScrollChild(value)
+		end,
+		Type = System.Widget.Region + nil,
+	}
+
 	------------------------------------------------------
 	-- Script handler
 	------------------------------------------------------
@@ -97,6 +149,15 @@ class "ScrollForm"
 	end
 
 	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		if self.__ScrollChild then
+			self.__ScrollChild:Dispose()
+		end
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
     function ScrollForm(self, name, parent)
@@ -112,23 +173,7 @@ class "ScrollForm"
         slider.ValueStep = 10
         slider.Visible = false
 
-        local container = Frame("Container", self)
-        self:SetScrollChild(container)
-		container:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
-		container:SetPoint("TOPRIGHT",self,"TOPRIGHT",-18,0)
-		container.FixHeight = Container_FixHeight
-
+        self.OnScrollRangeChanged = self.OnScrollRangeChanged + OnScrollRangeChanged
         self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
-        slider.OnSizeChanged = OnSizeChanged
-        slider.OnValueChanged = OnValueChanged
-        container.OnSizeChanged = container.OnSizeChanged + OnSizeChanged
-
-		self.__AutoHeight = false
-
-		-- Don't move this code
-		slider.Value = 10
-		slider.Value = 0
-
-		self.OnUpdate = self.OnUpdate + OnUpdate_Init
     end
 endclass "ScrollForm"
