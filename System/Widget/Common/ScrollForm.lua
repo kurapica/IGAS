@@ -22,6 +22,35 @@ class "ScrollForm"
 		@desc ScrollForm is used as a scrollable container
 	]======]
 
+	class "Container"
+		inherit "Frame"
+
+		doc [======[
+			@name Container
+			@type class
+			@desc The container used for scroll form
+		]======]
+
+		------------------------------------------------------
+		-- Script
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function Container(self)
+
+	    end
+	endclass "Container"
+
     -- Scripts
     _FrameBackdrop = {
         bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
