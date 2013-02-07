@@ -403,7 +403,7 @@ class "HTMLViewer"
 	function SetText(self, text, height)
 		if height and height > 0 then
 			self.__HTMLViewer.Height = height
-			self:FixHeight()
+			self.ScrollChild:UpdateSize()
 		end
 		return self.__HTMLViewer:SetText(ParseHTML(text))
 	end
@@ -460,7 +460,7 @@ class "HTMLViewer"
 	-- Constructor
 	------------------------------------------------------
     function HTMLViewer(self, name, parent)
-		local container = self.Container
+		local container = self.ScrollChild
 
 		local html = SimpleHTML("HTMLViewer", container)
 		html:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -477,6 +477,6 @@ class "HTMLViewer"
 		html.OnHyperlinkEnter = html.OnHyperlinkEnter + OnHyperlinkEnter
 		html.OnHyperlinkLeave = html.OnHyperlinkLeave + OnHyperlinkLeave
 
-		self:FixHeight()
+		container:UpdateSize()
 	end
 endclass "HTMLViewer"

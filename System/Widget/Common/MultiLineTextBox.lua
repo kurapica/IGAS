@@ -5,9 +5,9 @@
 --              2012/04/04 Undo redo system added, plenty function added
 --              2012/04/10 Fix the margin click
 --              2012/05/13 Fix delete on double click selected multi-text
-
+--              2013/02/07 Recode for scrollForm's change, and fix the double click error
 -- Check Version
-local version = 14
+local version = 15
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -261,11 +261,7 @@ class "MultiLineTextBox"
 			lineNum.Lines = lineNum.Lines or {}
 			local Lines = lineNum.Lines
 
-			if self.__Text.Height > self.Height then
-				lineNum.Height = self.__Text.Height
-			else
-				lineNum.Height = self.Height
-			end
+			lineNum.Height = self.__Text.Height
 
 			_TestFontString:SetFontObject(self.__Text:GetFontObject())
 			_TestFontString:SetSpacing(self.__Text:GetSpacing())
@@ -2888,10 +2884,10 @@ class "MultiLineTextBox"
 		if y and h then
 			y = -y
 
-			if y - h < self.Value then
-				self.Value = (y - h > 0) and (y - h) or 0
-			elseif y + h > self.Value + self.Height then
-				self.Value = y + h - self.Height
+			if y < self.Value then
+				self.Value = (y > 0) and (y) or 0
+			elseif y + 2*h > self.Value + self.Height then
+				self.Value = y + 2*h - self.Height
 			end
 		end
 
@@ -2917,7 +2913,7 @@ class "MultiLineTextBox"
 			local startp, endp = GetWord(str, cursorPos)
 
 			if startp and endp then
-				AdjustCursorPosition(self, endp)
+				--AdjustCursorPosition(self, endp)
 
 				self:HighlightText(startp - 1, endp)
 			end
@@ -3038,7 +3034,7 @@ class "MultiLineTextBox"
 	local function OnSizeChanged(self)
 		self = self.__Container
 		UpdateLineNum(self)
-		return self:FixHeight()
+		return self.ScrollChild:UpdateSize()
 	end
 
     local function OnEditFocusGained(self, ...)
@@ -3496,7 +3492,7 @@ class "MultiLineTextBox"
 	-- Constructor
 	------------------------------------------------------
     function MultiLineTextBox(self, name, parent)
-		local container = self.Container
+		local container = self.ScrollChild
 
 		local editbox = EditBox("Text", container)
 		editbox:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
@@ -3577,6 +3573,6 @@ class "MultiLineTextBox"
 		editbox.OnMouseDown = editbox.OnMouseDown + OnMouseDown
 		editbox.OnMouseUp = editbox.OnMouseUp + OnMouseUp
 
-		self:FixHeight()
+		container:UpdateSize()
 	end
 endclass "MultiLineTextBox"

@@ -30,70 +30,21 @@ class "ScrollForm"
 			@type class
 			@desc The container used for scroll form
 		]======]
-
-		local function ConvertPos(point)
-			if strfind(strupper(point), "BOTTOM") then
-				return 1
-			elseif strfind(strupper(point), "TOP") then
-				return -1
-			else
-				return 0
-			end
-		end
-
-		local function GetPos(frame, _Frame, _Center)
-			local point, relativeTo, relativePoint, xOfs, yOfs
-			local dx, dxp
-
-			_Center[frame] = _Center[frame] or 0
-
-			for i = 1, frame:GetNumPoints() do
-				point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(i)
-
-				if _Frame[relativeTo] then
-					if not _Center[relativeTo] then
-						GetPos(relativeTo, _Frame, _Center)
-					end
-
-					dx = ConvertPos(point)
-					dxp = ConvertPos(relativePoint)
-
-					if dx == -1 or _Center[frame] == 0 then
-						_Center[frame] = _Center[relativeTo] + dxp * (relativeTo.Height / 2) - yOfs - dx * (frame.Height / 2)
-					end
-				end
-			end
-		end
-
 		local function DoFixHeight(self)
-			local _Frame = {}
-			local _Center = {}
-			local _MaxHeight = 0
-			local h
+			local top = self:GetTop()
+			local bottom = top
 
-			_Frame[self] = true
-			_Center[self] = self.Height / 2
+			if not top then return end
 
 			for i, v in pairs(self:GetChilds()) do
-				if v.GetPoint and v.Visible then
-					_Frame[v] = true
+				if v.GetBottom and v.Visible then
+					if v:GetBottom() and v:GetBottom() < bottom then
+						bottom = v:GetBottom()
+					end
 				end
 			end
 
-			for i in pairs(_Frame) do
-				if not _Center[i] then
-					GetPos(i, _Frame, _Center)
-				end
-			end
-
-			for i, v in pairs(_Center) do
-				if i ~= self then
-					h = v + i.Height / 2
-					_MaxHeight = (_MaxHeight > h and _MaxHeight) or h
-				end
-			end
-
-			self.Height = _MaxHeight
+			self.Height = top - bottom
 		end
 
 
@@ -164,6 +115,14 @@ class "ScrollForm"
 		-- Add new scroll child
 		Super.SetScrollChild(self, frame)
 		self.__ScrollChild = frame
+
+    	if self.__ScrollChild then
+    		self.__ScrollChild:SetPoint("TOPLEFT")
+
+    		if self.Width then
+    			self.__ScrollChild.Width = self.Width - self:GetChild("Bar").Width
+    		end
+    	end
 	end
 
 	doc [======[
@@ -173,6 +132,10 @@ class "ScrollForm"
 		@return nil
 	]======]
 	function GetScrollChild(self)
+		if not self.__ScrollChild then
+			local container = Container("Container", self)
+			self:SetScrollChild(container)
+		end
 		return self.__ScrollChild
 	end
 
@@ -242,7 +205,7 @@ class "ScrollForm"
 
 		local bar = self:GetChild("Bar")
 		local value = bar:GetValue()
-		if(value > yrange)
+		if value > yrange then
 			value = yrange
 		end
 		bar:SetMinMaxValues(0, yrange)
@@ -269,8 +232,11 @@ class "ScrollForm"
     end
 
     local function OnSizeChanged(self)
-    	if self.__ScrollChild then
-
+    	if self.__ScrollChild and self.Width then
+    		self.__ScrollChild.Width = self.Width - self:GetChild("Bar").Width
+    		if self.__ScrollChild.Height == 0 then
+    			self.__ScrollChild.Height = self.Height
+    		end
     	end
     end
 
@@ -297,9 +263,9 @@ class "ScrollForm"
         slider:SetMinMaxValues(0,0)
         slider.Value = 0
         slider.ValueStep = 10
-        slider.Visible = false
 
         self.OnScrollRangeChanged = self.OnScrollRangeChanged + OnScrollRangeChanged
         self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
+        self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged
     end
 endclass "ScrollForm"

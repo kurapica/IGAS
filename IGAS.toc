@@ -1,7 +1,7 @@
 ## Interface: 50100
 ## Title: Lib: IGAS
 ## Author: kurapica.igas@gmail.com
-## Version: r17
+## Version: r18
 ## Notes: In-game addon system
 ## URL: http://github.com/kurapica
 ## DefaultState: Enabled
