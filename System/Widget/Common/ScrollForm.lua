@@ -96,35 +96,7 @@ class "ScrollForm"
 			self.Height = _MaxHeight
 		end
 
-		local function FixScroll(self)
-			self:GetChild("Container").OnSizeChanged = self:GetChild("Container").OnSizeChanged - OnSizeChanged
 
-			if self.__AutoHeight then
-				DoFixHeight(self:GetChild("Container"))
-			end
-
-			local bar = self:GetChild("Bar")
-			local viewheight, height = self.Height, self:GetChild("Container").Height
-			local curvalue = bar.Value
-
-			if viewheight >= height then
-				if self.__AutoHeight then
-					self:GetChild("Container").Height = viewheight
-				end
-				bar:SetValue(0)
-	            bar:Disable()
-				bar:Hide()
-			else
-				local maxValue = height - viewheight
-	            if curvalue > maxValue then curvalue = maxValue end
-	            bar:SetMinMaxValues(0,maxValue)
-				bar:SetValue(curvalue)
-	            bar:Enable()
-				bar:Show()
-			end
-
-			self:GetChild("Container").OnSizeChanged = self:GetChild("Container").OnSizeChanged + OnSizeChanged
-		end
 		------------------------------------------------------
 		-- Script
 		------------------------------------------------------
@@ -139,7 +111,7 @@ class "ScrollForm"
 			@return nil
 		]======]
 		function UpdateSize(self)
-
+			return DoFixHeight(self)
 		end
 
 		------------------------------------------------------
@@ -149,9 +121,6 @@ class "ScrollForm"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Container(self)
-
-	    end
 	endclass "Container"
 
     -- Scripts
@@ -297,6 +266,12 @@ class "ScrollForm"
 				scrollBar.Value = maxV
 			end
         end
+    end
+
+    local function OnSizeChanged(self)
+    	if self.__ScrollChild then
+
+    	end
     end
 
 	------------------------------------------------------
