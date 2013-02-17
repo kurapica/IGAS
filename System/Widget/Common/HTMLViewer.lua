@@ -21,13 +21,29 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Translate
 	------------------------------------------------------
+	_HTML_Color_Stack = {}
+
 	local function ParseColorToken(token, isEnd, args)
 		if isEnd then
-			return FontColor.CLOSE
-		elseif FontColor[token] then
-			return FontColor[token]
+			local last
+			for i = #_HTML_Color_Stack, 1, -1 do
+				last = tremove(_HTML_Color_Stack)
+				if last == token then
+					if i > 1 then
+						return FontColor[_HTML_Color_Stack[i-1]] or FontColor.NORMAL
+					else
+						return FontColor.CLOSE
+					end
+				end
+			end
+			return ""
 		else
-			return FontColor.NORMAL
+			tinsert(_HTML_Color_Stack, token)
+			if FontColor[token] then
+				return FontColor[token]
+			else
+				return FontColor.NORMAL
+			end
 		end
 	end
 
@@ -53,7 +69,7 @@ class "HTMLViewer"
 	local function ParseToken(set)
 		if set and set:len() >= 3 then
 			if set:sub(2, 2) == "/" then
-				local token = set:match("</(%w+)")
+			local token = set:match("</(%w+)")
 
 				if token and _HTML_TOKEN_MAP[token:lower()] then
 					return _HTML_TOKEN_MAP[token:lower()](token:lower(), true)
@@ -75,8 +91,12 @@ class "HTMLViewer"
 	end
 
 	local function ParseHTML(text)
+		wipe(_HTML_Color_Stack)
+
 		if type(text) == "string" and text ~= "" then
 			text = text:gsub("<.->", ParseToken)
+		else
+			text = ""
 		end
 		return text
 	end
@@ -400,18 +420,25 @@ class "HTMLViewer"
 		@param text string, text(with HTML markup) to be displayed
 		@return nil
 	]======]
-	function SetText(self, text, height)
-		if height and height > 0 then
-			self.__HTMLViewer.Height = height
-			self.ScrollChild:UpdateSize()
-		end
+	function SetText(self, text)
+		self.__HTMLContent = text
 		return self.__HTMLViewer:SetText(ParseHTML(text))
+	end
+
+	doc [======[
+		@name GetText
+		@type method
+		@desc Gets the contents of the htmlViewer
+		@return string
+	]======]
+	function GetText(self)
+		return self.__HTMLContent
 	end
 
 	doc [======[
 		@name SetTextColor
 		@type method
-		@desc ets the color of text in the frame
+		@desc Sets the color of text in the frame
 		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
 		@param textR number, Red component of the text color (0.0 - 1.0)
 		@param textG number, Green component of the text color (0.0 - 1.0)
@@ -441,42 +468,52 @@ class "HTMLViewer"
 		Type = Boolean,
 	}
 
+	doc [======[
+		@name Text
+		@type property
+		@desc The content of the html viewer
+	]======]
+	property "Text" {
+		Get = function(self)
+			return self:GetText()
+		end,
+		Set = function(self, value)
+			self:SetText(value)
+		end,
+		Type = String + nil,
+	}
+
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
 	local function OnHyperlinkClick(self, linkData, link, button)
-		return self.__Container:Fire("OnHyperlinkClick", linkData, link, button)
+		return self.Parent:Fire("OnHyperlinkClick", linkData, link, button)
 	end
 
 	local function OnHyperlinkEnter(self, linkData, link)
-		return self.__Container:Fire("OnHyperlinkEnter", linkData, link)
+		return self.Parent:Fire("OnHyperlinkEnter", linkData, link)
 	end
 
 	local function OnHyperlinkLeave(self, linkData, link)
-		return self.__Container:Fire("OnHyperlinkLeave", linkData, link)
+		return self.Parent:Fire("OnHyperlinkLeave", linkData, link)
 	end
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
     function HTMLViewer(self, name, parent)
-		local container = self.ScrollChild
+		local html = SimpleHTML("HTMLViewer", self)
+		self.ScrollChild = html
 
-		local html = SimpleHTML("HTMLViewer", container)
-		html:SetPoint("TOPLEFT", container, "TOPLEFT", 0, 0)
-		html:SetPoint("TOPRIGHT", container, "TOPRIGHT", 0, 0)
 		html:SetFontObject("GameFontNormal")
-
 		html.HyperlinksEnabled = true
-		html:SetHyperlinkFormat("|H%s|h%s|h")
+		html:SetHyperlinkFormat("|cff00FF00|H%s|h%s|h|r")
+		html:SetTextColor(1, 1, 1)
 
-		html.__Container = self
 		self.__HTMLViewer = html
 
 		html.OnHyperlinkClick = html.OnHyperlinkClick + OnHyperlinkClick
 		html.OnHyperlinkEnter = html.OnHyperlinkEnter + OnHyperlinkEnter
 		html.OnHyperlinkLeave = html.OnHyperlinkLeave + OnHyperlinkLeave
-
-		container:UpdateSize()
 	end
 endclass "HTMLViewer"

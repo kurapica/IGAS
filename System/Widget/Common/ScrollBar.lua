@@ -5,7 +5,7 @@
 --				2011/03/13	Recode as class
 
 -- Check Version
-local version = 8
+local version = 9
 if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
 	return
 end
@@ -97,6 +97,12 @@ class "ScrollBar"
             self:GetChild("DownBtn"):Disable()
         else
             self:GetChild("DownBtn"):Enable()
+        end
+
+        if not self:GetChild("UpBtn").Enabled and not self:GetChild("DownBtn").Enabled then
+        	self.Alpha = 0
+        else
+        	self.Alpha = 1
         end
 	end
 

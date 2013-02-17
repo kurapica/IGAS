@@ -912,6 +912,10 @@ do
 	function EnableDocument(enabled)
 		_EnableDocument = enabled and true or false
 	end
+
+	function IsDocumentEnabled()
+		return _EnableDocument or false
+	end
 end
 
 ------------------------------------------------------
@@ -3883,6 +3887,40 @@ do
 		end
 
 		doc [======[
+			@name GetStructType
+			@type method
+			@desc Get the type of the struct
+			@param struct
+			@return string
+		]======]
+		function GetStructType(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and rawget(_NSInfo, ns)
+
+			if info and info.Type == TYPE_STRUCT then
+				return info.SubType
+			end
+		end
+
+		doc [======[
+			@name GetStructArrayElement
+			@type method
+			@desc Get the array element type of the struct
+			@param ns
+			@return type the array element's type
+		]======]
+		function GetStructArrayElement(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and rawget(_NSInfo, ns)
+
+			if info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_ARRAY then
+				return info.ArrayElement
+			end
+		end
+
+		doc [======[
 			@name GetStructParts
 			@type method
 			@desc Get the parts of the struct
@@ -4210,6 +4248,16 @@ do
 		]======]
 		function EnableDocumentSystem(enabled)
 			EnableDocument(enabled)
+		end
+
+		doc [======[
+			@name IsDocumentSystemEnabled
+			@type method
+			@desc Whether the document system is enabled
+			@return boolean
+		]======]
+		function IsDocumentSystemEnabled()
+			return IsDocumentEnabled()
 		end
 
 		doc [======[
