@@ -179,80 +179,77 @@ do
 	end
 end
 
-----------------------------------------------------------
---- IFMovable
--- @type Interface
--- @name IFMovable
-----------------------------------------------------------
 interface "IFMovable"
+	doc [======[
+		@name IFMovable
+		@type interface
+		@desc IFMovable provide a frame moving system
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the object is moved by cursor
-	-- @name OnPositionChanged
-	-- @type script
-	-- @usage function obj:OnPositionChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnPositionChanged
+		@type script
+		@desc Fired when the object is moved by cursor
+	]======]
 	script "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Start move registered Object
-	-- @name _ModeOn
-	-- @class function
-	-- @param group group name
-	-- @usage IFMovable._ModeOn("Unit")
-	------------------------------------
+	doc [======[
+		@name _ModeOn
+		@type method
+		@desc Start moving registered Object
+		@param group string, group name
+		@return nil
+	]======]
 	function _ModeOn(group)
 		return _MaskOn(IFMovable, group)
 	end
 
-	------------------------------------
-	--- Stop move registered Object
-	-- @name _ModeOff
-	-- @class function
-	-- @param group group name
-	-- @usage IFMovable._ModeOff("Unit")
-	------------------------------------
+	doc [======[
+		@name _ModeOff
+		@type method
+		@desc Stop moving registered Object
+		@param group string, group name
+		@return nil
+	]======]
 	function _ModeOff(group)
 		return _MaskOff(IFMovable, group)
 	end
 
-	------------------------------------
-	--- Check if the group is mode on
-	-- @name _IsModeOn
-	-- @type function
-	-- @param group group name
-	-- @return true if the mode is on
-	------------------------------------
+	doc [======[
+		@name _IsModeOn
+		@type method
+		@desc Whether the group is mode on
+		@param group string, group name
+		@return boolean true if the mode is turn on for the group
+	]======]
 	function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFMovable_ModeOn[group]
 	end
 
-	------------------------------------
-	--- Toggle the mode
-	-- @name _Toggle
-	-- @type function
-	-- @param group group name
-	-- @usage IFMovable._Toggle("Unit")
-	------------------------------------
+	doc [======[
+		@name _Toggle
+		@type method
+		@desc Toggle the mode
+		@param group string, group name
+		@return nil
+	]======]
 	function _Toggle(group)
 		_MaskToggle(IFMovable, group)
 	end
 
-	------------------------------------
-	--- Get all group name
-	-- @name _GetGroupList
-	-- @class function
-	-- @return group name list
-	-- @usage IFMovable._GetGroupList()
-	------------------------------------
+	doc [======[
+		@name _GetGroupList
+		@type method
+		@desc Get all group name
+		@return table a list contains all groups
+	]======]
 	function _GetGroupList()
 		local ret = {}
 
@@ -265,25 +262,25 @@ interface "IFMovable"
 		return ret
 	end
 
-	------------------------------------
-	--- Remove item
-	-- @name Dispose
-	-- @type function
-	------------------------------------
-	function Dispose(self)
-		_GroupListMovable[self.IFMovingGroup][self] = nil
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- IFMovingGroup
+	doc [======[
+		@name IFMovingGroup
+		@type property
+		@desc The object's moving group name, default "Global"
+	]======]
 	property "IFMovingGroup" {
 		Get = function(self)
 			return _Global
 		end,
 	}
-	-- IFMovable
+
+	doc [======[
+		@name IFMovable
+		@type property
+		@desc Whether the object should be turn into the moving mode
+	]======]
 	property "IFMovable" {
 		Get = function(self)
 			return not self.__IFMovable_Block
@@ -295,6 +292,13 @@ interface "IFMovable"
 	}
 
 	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_GroupListMovable[self.IFMovingGroup][self] = nil
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function IFMovable(self)
@@ -304,80 +308,77 @@ interface "IFMovable"
 	end
 endinterface "IFMovable"
 
-----------------------------------------------------------
---- IFResizable
--- @type Interface
--- @name IFResizable
-----------------------------------------------------------
 interface "IFResizable"
+	doc [======[
+		@name IFResizable
+		@type interface
+		@desc IFResizable provide a frame resize system
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when a frame's size changes
-	-- @name OnSizeChanged
-	-- @type script
-	-- @usage function obj:OnSizeChanged()<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnSizeChanged
+		@type script
+		@desc Fired when a frame's size changes
+	]======]
 	script "OnSizeChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Start resize registered Object
-	-- @name _ModeOn
-	-- @class function
-	-- @param group group name
-	-- @usage IFResizingGroup._ModeOn("Unit")
-	------------------------------------
+	doc [======[
+		@name _ModeOn
+		@type method
+		@desc Start resizing registered Object
+		@param group string, group name
+		@return nil
+	]======]
 	function _ModeOn(group)
 		return _MaskOn(IFResizable, group)
 	end
 
-	------------------------------------
-	--- Stop resize registered Object
-	-- @name _ModeOff
-	-- @class function
-	-- @param group group name
-	-- @usage IFResizingGroup._ModeOff("Unit")
-	------------------------------------
+	doc [======[
+		@name _ModeOff
+		@type method
+		@desc Stop resizing registered Object
+		@param group string, group name
+		@return nil
+	]======]
 	function _ModeOff(group)
 		return _MaskOff(IFResizable, group)
 	end
 
-	------------------------------------
-	--- Check if the group is mode on
-	-- @name _IsModeOn
-	-- @type function
-	-- @param group group name
-	-- @return true if the mode is on
-	------------------------------------
+	doc [======[
+		@name _IsModeOn
+		@type method
+		@desc Whether the group is mode on
+		@param group string, group name
+		@return boolean true if the mode is turn on for the group
+	]======]
 	function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFResizable_ModeOn[group]
 	end
 
-	------------------------------------
-	--- Toggle the mode
-	-- @name _Toggle
-	-- @type function
-	-- @param group group name
-	-- @usage IFResizable._Toggle("Unit")
-	------------------------------------
+	doc [======[
+		@name _Toggle
+		@type method
+		@desc Toggle the mode
+		@param group string, group name
+		@return nil
+	]======]
 	function _Toggle(group)
 		_MaskToggle(IFResizable, group)
 	end
 
-	------------------------------------
-	--- Get all group name
-	-- @name _GetGroupList
-	-- @class function
-	-- @return group name list
-	-- @usage IFResizingGroup._GetGroupList()
-	------------------------------------
+	doc [======[
+		@name _GetGroupList
+		@type method
+		@desc Get all group name
+		@return table a list contains all groups
+	]======]
 	function _GetGroupList()
 		local ret = {}
 
@@ -390,25 +391,25 @@ interface "IFResizable"
 		return ret
 	end
 
-	------------------------------------
-	--- Remove item
-	-- @name Dispose
-	-- @type function
-	------------------------------------
-	function Dispose(self)
-		_GroupListResizable[self.IFResizingGroup][self] = nil
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- IFResizingGroup
+	doc [======[
+		@name IFResizingGroup
+		@type property
+		@desc The object's resizing group name, default "Global"
+	]======]
 	property "IFResizingGroup" {
 		Get = function(self)
 			return _Global
 		end,
 	}
-	-- IFResizable
+
+	doc [======[
+		@name IFResizable
+		@type property
+		@desc Whether the object should be turn into the resizing mode
+	]======]
 	property "IFResizable" {
 		Get = function(self)
 			return not self.__IFResizable_Block
@@ -418,6 +419,13 @@ interface "IFResizable"
 		end,
 		Type = System.Boolean,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_GroupListResizable[self.IFResizingGroup][self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

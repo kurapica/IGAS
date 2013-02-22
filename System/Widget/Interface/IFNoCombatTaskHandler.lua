@@ -124,23 +124,24 @@ function RegisterTask(func, ...)
 	end
 end
 
------------------------------------------------
---- IFNoCombatTaskHandler
--- @type interface
--- @name IFNoCombatTaskHandler
------------------------------------------------
 interface "IFNoCombatTaskHandler"
+	doc [======[
+		@name IFNoCombatTaskHandler
+		@type interface
+		@desc IFNoCombatTaskHandler provide a class method to register no-combat task
+	]======]
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Register task to do when no combat
-	-- @name RegisterNoCombatTask
-	-- @type function
-	-- @param func
-	-- @param ...
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name RegisterNoCombatTask
+		@type method
+		@desc Register task to do when no combat
+		@param func function, the task function
+		@param ... the function's parameters
+		@return nil
+	]======]
 	function RegisterNoCombatTask(self, func, ...)
 		if type(func) == "function" then
 			return RegisterTask(func, ...)
@@ -151,14 +152,14 @@ interface "IFNoCombatTaskHandler"
 		error("Usage: Object:RegisterNoCombatTask(func, ...) - 'func' must be function or method name.", 2)
 	end
 
-	------------------------------------
-	--- Register task to do when no combat
-	-- @name _RegisterNoCombatTask
-	-- @type function
-	-- @param func
-	-- @param ...
-	-- @return nil
-	------------------------------------
+	doc [======[
+		@name _RegisterNoCombatTask
+		@type method
+		@desc Register task to do when no combat
+		@param func function, the task function
+		@param ... the function's parameters
+		@return nil
+	]======]
 	function _RegisterNoCombatTask(func, ...)
 		if type(func) == "function" then
 			return RegisterTask(func, ...)

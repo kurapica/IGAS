@@ -64,12 +64,13 @@ do
 	end
 end
 
------------------------------------------------
---- IFAutoPosition
--- @type interface
--- @name IFAutoPosition
------------------------------------------------
 interface "IFAutoPosition"
+	doc [======[
+		@name IFAutoPosition
+		@type interface
+		@desc IFAutoPosition provide a position & size control system for frames.
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -104,34 +105,13 @@ interface "IFAutoPosition"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Dispose
-	-- @name Dispose
-	-- @type function
-	------------------------------------
-	function Dispose(self)
-		-- Clear save data
-		if self:HasScript("OnPositionChanged") and self.IFAutoPositionAutoPosition then
-			self.OnPositionChanged = self.OnPositionChanged - OnPositionChanged
-		end
-		if self:HasScript("OnSizeChanged") and self.IFAutoPositionAutoSize then
-			self.OnSizeChanged = self.OnSizeChanged - OnSizeChanged
-		end
 
-		if _IFAutoPosition_Loaded then
-			if self.IFAutoPositionForCharacter then
-				_DBChar[self:GetName()] = nil
-			else
-				_DB[self:GetName()] = nil
-			end
-		end
-	end
-
-	------------------------------------
-	--- Clear Position data
-	-- @name ClearPosition
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name ClearPosition
+		@type method
+		@desc Clear the position data
+		@return nil
+	]======]
 	function ClearPosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't clear position for auto position frame.", 2)
@@ -158,11 +138,12 @@ interface "IFAutoPosition"
 		end
 	end
 
-	------------------------------------
-	--- Clear Size data
-	-- @name ClearSize
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name ClearSize
+		@type method
+		@desc Clear the size data
+		@return nil
+	]======]
 	function ClearSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't clear size for auto size frame.", 2)
@@ -188,11 +169,13 @@ interface "IFAutoPosition"
 			end
 		end
 	end
-	------------------------------------
-	--- Load Position from db
-	-- @name LoadPosition
-	-- @type function
-	------------------------------------
+
+	doc [======[
+		@name LoadPosition
+		@type method
+		@desc Load the position data
+		@return nil
+	]======]
 	function LoadPosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't load position for auto position frame.", 2)
@@ -211,11 +194,12 @@ interface "IFAutoPosition"
 		end
 	end
 
-	------------------------------------
-	--- Load Size from db
-	-- @name LoadSize
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name LoadSize
+		@type method
+		@desc Load the size data
+		@return nil
+	]======]
 	function LoadSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't load size for auto size frame.", 2)
@@ -234,11 +218,12 @@ interface "IFAutoPosition"
 		end
 	end
 
-	------------------------------------
-	--- Save position to db
-	-- @name SavePosition
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name SavePosition
+		@type method
+		@desc Save the position data
+		@return nil
+	]======]
 	function SavePosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't save position for auto position frame.", 2)
@@ -255,11 +240,12 @@ interface "IFAutoPosition"
 		end
 	end
 
-	------------------------------------
-	--- Save size to db
-	-- @name SaveSize
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name SaveSize
+		@type method
+		@desc Save the size data
+		@return nil
+	]======]
 	function SaveSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't save size for auto size frame.", 2)
@@ -279,24 +265,59 @@ interface "IFAutoPosition"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- IFAutoPositionForCharacter
+	doc [======[
+		@name IFAutoPositionForCharacter
+		@type property
+		@desc Whether the data is stored for the character, default true
+	]======]
 	property "IFAutoPositionForCharacter" {
 		Get = function(self)
 			return true
 		end,
 	}
-	-- IFAutoPositionAutoSize
+
+	doc [======[
+		@name IFAutoPositionAutoSize
+		@type property
+		@desc Whether should load and save the size data automatically, default true
+	]======]
 	property "IFAutoPositionAutoSize" {
 		Get = function(self)
 			return true
 		end,
 	}
-	-- IFAutoPositionAutoPosition
+
+	doc [======[
+		@name IFAutoPositionAutoPosition
+		@type property
+		@desc Whether should load and save the position data automatically, default true
+	]======]
 	property "IFAutoPositionAutoPosition" {
 		Get = function(self)
 			return true
 		end,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		-- Clear save data
+		if self:HasScript("OnPositionChanged") and self.IFAutoPositionAutoPosition then
+			self.OnPositionChanged = self.OnPositionChanged - OnPositionChanged
+		end
+		if self:HasScript("OnSizeChanged") and self.IFAutoPositionAutoSize then
+			self.OnSizeChanged = self.OnSizeChanged - OnSizeChanged
+		end
+
+		if _IFAutoPosition_Loaded then
+			if self.IFAutoPositionForCharacter then
+				_DBChar[self:GetName()] = nil
+			else
+				_DB[self:GetName()] = nil
+			end
+		end
+	end
 
 	------------------------------------------------------
 	-- Initialize
