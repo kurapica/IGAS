@@ -8,13 +8,14 @@ if not IGAS:NewAddon("IGAS.Widget.IFElementPanel", version) then
 	return
 end
 
------------------------------------------------
---- IFElementPanel
--- @type interface
--- @name IFElementPanel
------------------------------------------------
 interface "IFElementPanel"
 	extend "IFIterator"
+
+	doc [======[
+		@name IFElementPanel
+		@type interface
+		@desc IFElementPanel provides features to build an panel to contain elements of same class in a grid, the elements are created by the IFElementPanel
+	]======]
 
 	local function AdjustElement(element, self)
 		if not element.ID then return end
@@ -107,12 +108,13 @@ interface "IFElementPanel"
 		end
 	end
 
-	-----------------------------------------------
-	--- Element
-	-- @type class
-	-- @name Element
-	-----------------------------------------------
 	class "Element"
+		doc [======[
+			@name Element
+			@type class
+			@desc Element is an accessor to the IFElementPanel's elements, used like object.Element[i].Prop = value
+		]======]
+
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
@@ -145,7 +147,20 @@ interface "IFElementPanel"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnElementAdd
+		@type script
+		@desc Fired when an element is added
+		@param element System.Widget.Region, the new element that added to the panel
+	]======]
 	script "OnElementAdd"
+
+	doc [======[
+		@name OnElementRemove
+		@type script
+		@desc Fired when an element is removed
+		@param element System.Widget.Region, the new element that removed from the panel
+	]======]
 	script "OnElementRemove"
 
 	------------------------------------------------------
@@ -160,6 +175,15 @@ interface "IFElementPanel"
 	-- @return self
 	-- @return firstKey
 	------------------------------------
+	doc [======[
+		@name Next
+		@type method
+		@desc Get the next element
+		@param key
+		@return nextFunc
+		@return	self
+		@return firstKey
+	]======]
 	function Next(self, key)
 		return nextItem, self, tonumber(key) or 0
 	end
