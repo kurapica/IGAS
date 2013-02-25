@@ -8,34 +8,22 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldown", version) then
 	return
 end
 
-----------------------------------------------------------
---- IFCooldown
--- @type Interface
--- @name IFCooldown
-----------------------------------------------------------
 interface "IFCooldown"
+	doc [======[
+		@name IFCooldown
+		@type interface
+		@desc IFCooldown provide a root interface for cooldown features
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
-	------------------------------------
-	--- ScriptType, Run when the object's cooldown need update
-	-- @name OnCooldownUpdate
-	-- @type script
-	-- @usage function obj:OnCooldownUpdate(start, duration)<br>
-	--    -- do someting<br>
-	-- end
-	------------------------------------
+	doc [======[
+		@name OnCooldownUpdate
+		@type script
+		@desc Fired when the object's cooldown need update
+		@param start number, the start time of the cooldown
+		@param duration number, the duration of the cooldown
+	]======]
 	script "OnCooldownUpdate"
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
 endinterface "IFCooldown"

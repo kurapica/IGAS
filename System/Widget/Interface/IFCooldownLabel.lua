@@ -8,13 +8,14 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldownLabel", version) then
 	return
 end
 
-----------------------------------------------------------
---- IFCooldownLabel
--- @type Interface
--- @name IFCooldownLabel
-----------------------------------------------------------
 interface "IFCooldownLabel"
 	extend "IFCooldown"
+
+	doc [======[
+		@name IFCooldownLabel
+		@type interface
+		@desc IFCooldownLabel is used to provide a label to display the cooldown
+	]======]
 
 	_IFCooldownLabel_List = _IFCooldownLabel_List or {}
 
@@ -88,20 +89,13 @@ interface "IFCooldownLabel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFCooldownLabel_List[self] = nil
-
-		if not next(_IFCooldownLabel_List) then
-			_IFCooldownLabel_Timer.Enabled = false
-		end
-	end
-
-	------------------------------------
-	--- Custom the label
-	-- @name SetUpCooldownLabel
-	-- @class function
-	-- @param label
-	------------------------------------
+	doc [======[
+		@name SetUpCooldownLabel
+		@type method
+		@desc Custom the label
+		@param label System.Widget.FontString
+		@return nil
+	]======]
 	function SetUpCooldownLabel(self, label)
 		label:SetPoint("BOTTOM")
 		if self.Height > 0 then
@@ -112,7 +106,11 @@ interface "IFCooldownLabel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- DecimalPlace
+	doc [======[
+		@name IFCooldownLabelUseDecimal
+		@type property
+		@desc Whether the cooldown label using decimal format
+	]======]
 	property "IFCooldownLabelUseDecimal" {
 		Get = function(self)
 			return self.__IFCooldownLabelUseDecimal
@@ -122,7 +120,12 @@ interface "IFCooldownLabel"
 		end,
 		Type = Boolean,
 	}
-	-- AutoColor
+
+	doc [======[
+		@name IFCooldownLabelAutoColor
+		@type property
+		@desc Whether the cooldown label using auto color
+	]======]
 	property "IFCooldownLabelAutoColor" {
 		Get = function(self)
 			return self.__IFCooldownLabelAutoColor
@@ -166,6 +169,17 @@ interface "IFCooldownLabel"
 	local function OnSizeChanged(self)
 		if self.Height > 0 then
 			self:GetChild("CooldownLabel"):SetFont(self:GetChild("CooldownLabel"):GetFont(), self.Height * 4 / 7, "OUTLINE")
+		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFCooldownLabel_List[self] = nil
+
+		if not next(_IFCooldownLabel_List) then
+			_IFCooldownLabel_Timer.Enabled = false
 		end
 	end
 

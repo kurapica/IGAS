@@ -7,13 +7,14 @@ if not IGAS:NewAddon("IGAS.Widget.IFContainer", version) then
 	return
 end
 
-----------------------------------------------------------
---- IFContainer
--- @type Interface
--- @name IFContainer
-----------------------------------------------------------
 interface "IFContainer"
 	extend "IFIterator"
+
+	doc [======[
+		@name IFContainer
+		@type interface
+		@desc IFContainer is used to provide a layout panel to contain ui elements
+	]======]
 
 	local function nextWidget(self, key)
 		key = key + 1
@@ -45,25 +46,22 @@ interface "IFContainer"
 	end
 
 	------------------------------------------------------
-	-- Enum
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Add Widget to the panel
-	-- @name AddWidget
-	-- @class function
-	-- @param [name] default the element's name
-	-- @param element
-	-- @param ...
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name AddWidget
+		@type method
+		@desc Add Widget to the panel
+		@format [name, ]element, ...
+		@param name string, the element's name when created
+		@param element
+		@param ...
+		@return number the element's index
+	]======]
 	function AddWidget(self, name, element, ...)
 		local widget
 
@@ -439,15 +437,6 @@ interface "IFContainer"
 		self.Panel:SetAllPoints(self)
 	end
 
-	------------------------------------
-	--- Get the next element, Overridable
-	-- @name Next
-	-- @class function
-	-- @param key
-	-- @return nextFunc
-	-- @return self
-	-- @return firstKey
-	------------------------------------
 	function Next(self, key)
 		return nextWidget, self, tonumber(key) or 0
 	end

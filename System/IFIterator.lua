@@ -26,15 +26,6 @@ interface "IFIterator"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Get the next element, Overridable
-	-- @name Next
-	-- @class function
-	-- @param key
-	-- @return nextFunc
-	-- @return self
-	-- @return firstKey
-	------------------------------------
 	doc [======[
 		@name Next
 		@type method
