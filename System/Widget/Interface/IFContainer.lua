@@ -13,7 +13,7 @@ interface "IFContainer"
 	doc [======[
 		@name IFContainer
 		@type interface
-		@desc IFContainer is used to provide a layout panel to contain ui elements
+		@desc IFContainer is used to provide a layout panel to contain ui elements for the ui objects
 	]======]
 
 	local function nextWidget(self, key)
@@ -56,10 +56,10 @@ interface "IFContainer"
 		@name AddWidget
 		@type method
 		@desc Add Widget to the panel
-		@format [name, ]element, ...
-		@param name string, the element's name when created
-		@param element
-		@param ...
+		@format [name, ]element[, ...]
+		@param name string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name
+		@param element System.Widget.Region-System.Widget.Region, an ui element or ui element class to be added
+		@param ... any,
 		@return number the element's index
 	]======]
 	function AddWidget(self, name, element, ...)
