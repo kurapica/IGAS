@@ -2,13 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFUnitLevel
--- @type Interface
--- @name IFUnitLevel
--- @need property Number+nil : Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitLevel", version) then
@@ -33,6 +26,13 @@ end
 interface "IFUnitLevel"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFUnitLevel
+		@type interface
+		@desc IFUnitName is used to handle the unit level's update
+		@overridable Value property, number, which used to receive the unit's level
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -40,15 +40,12 @@ interface "IFUnitLevel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFUnitLevelUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self, playerLevel)
 		if self.Unit then
 			local lvl = UnitLevel(self.Unit)
@@ -70,6 +67,13 @@ interface "IFUnitLevel"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFUnitLevelUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

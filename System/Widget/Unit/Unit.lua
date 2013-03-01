@@ -49,6 +49,12 @@ PowerBarColor[_G.SPELL_POWER_MANA] = ColorType(0.0, 0.6, 1)
 class "UnitList"
 	extend "IFIterator"
 
+	doc [======[
+		@name UnitList
+		@type class
+		@desc UnitList is used to contain ui elements that with the same unit for some special using
+	]======]
+
 	------------------------------------------------------
 	-- Event Manager
 	------------------------------------------------------
@@ -64,47 +70,50 @@ class "UnitList"
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnUnitListChanged
+		@type script
+		@desc Fired when the unit list's elements is added or removed
+	]======]
 	script "OnUnitListChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Parse event, Overridable
-	-- @name ParseEvent
-	-- @class function
-	-- @param event
-	-- @param unit
-	-- @param ... args
-	------------------------------------
+	doc [======[
+		@name ParseEvent
+		@type method
+		@desc Parse event, Overridable
+		@param event the event's name
+		@param ... the arguments
+		@return nil
+	]======]
 	function ParseEvent(self, event, unit, ...)
 		if self:HasUnit(unit) then
 			return self:EachK(unit, "Refresh", ...)
 		end
 	end
 
-	------------------------------------
-	--- Register a event
-	-- @name RegisterEvent
-	-- @class function
-	-- @param event the event's name
-	-- @return nil
-	-- @Usage IFModule:RegisterEvent("CUSTOM_EVENT_1")
-	------------------------------------
+	doc [======[
+		@name RegisterEvent
+		@type method
+		@desc Register an event
+		@param event string, the event name
+		@return nil
+	]======]
 	function RegisterEvent(self, event)
 		_UnitListEventManager:RegisterEvent(event)
 		_UnitListEventDistribution[event] = _UnitListEventDistribution[event] or {}
 		tinsert(_UnitListEventDistribution[event], self)
 	end
 
-	------------------------------------
-	--- Undo Register a event for an Module
-	-- @name UnregisterEvent
-	-- @class function
-	-- @param event the event's name
-	-- @return nil
-	-- @Usage IFModule:UnregisterEvent("CUSTOM_EVENT_1")
-	------------------------------------
+	doc [======[
+		@name UnregisterEvent
+		@type method
+		@desc Undo register an event
+		@param event string, the event name
+		@return nil
+	]======]
 	function UnregisterEvent(self, event)
 		_UnitListEventDistribution[event] = _UnitListEventDistribution[event] or {}
 
@@ -119,26 +128,17 @@ class "UnitList"
 		end
 	end
 
-	------------------------------------
-	--- Get the next element, Overridable
-	-- @name Next
-	-- @class function
-	-- @param key
-	-- @return nextFunc
-	-- @return self
-	-- @return firstKey
-	------------------------------------
 	function Next(self, key)
 		return _UnitList_Traverse[self], self, type(key) == "string" and key:lower() or nil
 	end
 
-	------------------------------------
-	--- Check if UnitList contains items with the unit
-	-- @name HasUnit
-	-- @type function
-	-- @param unit
-	-- @return boolean
-	------------------------------------
+	doc [======[
+		@name HasUnit
+		@type method
+		@desc Check if UnitList contains items with the unit
+		@param unit
+		@return boolean
+	]======]
 	function HasUnit(self, unit)
 		unit = type(unit) == "string" and unit:lower() or nil
 

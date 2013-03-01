@@ -55,11 +55,11 @@ interface "IFContainer"
 	doc [======[
 		@name AddWidget
 		@type method
-		@desc Add Widget to the panel
+		@desc Add element to the panel
 		@format [name, ]element[, ...]
 		@param name string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name
-		@param element System.Widget.Region-System.Widget.Region, an ui element or ui element class to be added
-		@param ... any,
+		@param element System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be added
+		@param ... arguments for the layout panel's AddWidget method
 		@return number the element's index
 	]======]
 	function AddWidget(self, name, element, ...)
@@ -86,15 +86,17 @@ interface "IFContainer"
 		end
 	end
 
-	------------------------------------
-	--- Insert Widget to the panel
-	-- @name InsertWidget
-	-- @class function
-	-- @param before the index to be insert
-	-- @param widget
-	-- @param ...
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name InsertWidget
+		@type method
+		@desc Insert element to the panel
+		@format before, [name, ]element[, ...]
+		@param before element that existed in the layout panel
+		@param name string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name
+		@param element System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be inserted
+		@param ... arguments for the layout panel's AddWidget method
+		@return number the element's index
+	]======]
 	function InsertWidget(self, before, name, element, ...)
 		local widget
 
@@ -119,14 +121,14 @@ interface "IFContainer"
 		end
 	end
 
-	------------------------------------
-	--- Get Widget from the panel
-	-- @name GetWidget
-	-- @class function
-	-- @param element
-	-- @return widget
-	-- @return index
-	------------------------------------
+	doc [======[
+		@name GetWidget
+		@type method
+		@desc Get element from the panel
+		@param element string | System.Widget.Region class, name or or ui element class
+		@return element the ui element
+		@return number the element's index
+	]======]
 	function GetWidget(self, element)
 		local widget
 
@@ -141,14 +143,18 @@ interface "IFContainer"
 		return self.Panel:GetWidget(widget)
 	end
 
-	------------------------------------
-	--- Remove Widget to the panel
-	-- @name RemoveWidget
-	-- @class function
-	-- @param element
-	-- @param [withoutDispose]
-	-- @return widget
-	------------------------------------
+	doc [======[
+		@name RemoveWidget
+		@type method
+		@desc Remove element from the panel
+		@format index|name|element[, withoutDispose]
+		@param index number, the index of the element
+		@param name string, the name of the element
+		@param element System.Widget.Region|System.Widget.VirtualUIObject, the element
+		@param withoutDispose boolean, true if need get the removed widget
+		@return element if withoutDispose is set to true
+
+	]======]
 	function RemoveWidget(self, element, withoutDispose)
 		local widget
 
@@ -163,17 +169,17 @@ interface "IFContainer"
 		return self.Panel:RemoveWidget(widget, withoutDispose)
 	end
 
-	------------------------------------
-	--- Set Widget's left margin and right margin
-	-- @name SetWidgetLeftRight
-	-- @class function
-	-- @param element
-	-- @param left left margin value
-	-- @param leftunit left margin's unit
-	-- @param right right margin value
-	-- @param rightunit right margin's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetLeftRight
+		@type method
+		@desc Set Widget's left margin and right margin
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit string, left margin's unit
+		@param right number, right margin value
+		@param rightunit string, right margin's unit
+		@return object the panel self
+	]======]
 	function SetWidgetLeftRight(self, element, left, leftunit, right, rightunit)
 		local widget
 
@@ -188,19 +194,30 @@ interface "IFContainer"
 		return self.Panel:SetWidgetLeftRight(widget, left, leftunit, right, rightunit)
 	end
 
+	doc [======[
+		@name SWLR
+		@type method
+		@desc Short for SetWidgetLeftRight, Set Widget's left margin and right margin
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@return object the panel self
+	]======]
 	SWLR = SetWidgetLeftRight
 
-	------------------------------------
-	--- Set Widget's left margin and width
-	-- @name SetWidgetLeftWidth
-	-- @class function
-	-- @param element
-	-- @param left left margin value
-	-- @param leftunit left margin's unit
-	-- @param width width value
-	-- @param widthunit width unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetLeftWidth
+		@type method
+		@desc Set Widget's left margin and width
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unit
+		@return object the panel self
+	]======]
 	function SetWidgetLeftWidth(self, element, left, leftunit, width, widthunit)
 		local widget
 
@@ -215,19 +232,30 @@ interface "IFContainer"
 		return self.Panel:SetWidgetLeftWidth(widget, left, leftunit, width, widthunit)
 	end
 
+	doc [======[
+		@name SWLW
+		@type method
+		@desc Short for SetWidgetLeftWidth.Set Widget's left margin and width
+		@param index|name|widget the ui element
+		@param left number, left margin value
+		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unit
+		@return object the panel self
+	]======]
 	SWLW = SetWidgetLeftWidth
 
-	------------------------------------
-	--- Set Widget's right margin and width
-	-- @name SetWidgetRightWidth
-	-- @class function
-	-- @param element
-	-- @param right right margin value
-	-- @param rightunit right margin's unit
-	-- @param width width value
-	-- @param widthunit width unitv
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetRightWidth
+		@type method
+		@desc Set Widget's right margin and width
+		@param index|name|widget the ui element
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
+		@return object the panel self
+	]======]
 	function SetWidgetRightWidth(self, element, right, rightunit, width, widthunit)
 		local widget
 
@@ -242,19 +270,30 @@ interface "IFContainer"
 		return self.Panel:SetWidgetRightWidth(widget, right, rightunit, width, widthunit)
 	end
 
+	doc [======[
+		@name SWRW
+		@type method
+		@desc Short for SetWidgetRightWidth. Set Widget's right margin and width
+		@param index|name|widget the ui element
+		@param right number, right margin value
+		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
+		@param width number, width value
+		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
+		@return object the panel self
+	]======]
 	SWRW = SetWidgetRightWidth
 
-	------------------------------------
-	--- Set Widget's top margin and bottom margin
-	-- @name SetWidgetTopBottom
-	-- @class function
-	-- @param element
-	-- @param top top margin value
-	-- @param topunit top margin's unit
-	-- @param bottom bottom margin value
-	-- @param bottomunit bottom margin's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetTopBottom
+		@type method
+		@desc Set Widget's top margin and bottom margin
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@return object the panel self
+	]======]
 	function SetWidgetTopBottom(self, element, top, topunit, bottom, bottomunit)
 		local widget
 
@@ -269,19 +308,31 @@ interface "IFContainer"
 		return self.Panel:SetWidgetTopBottom(widget, top, topunit, bottom, bottomunit)
 	end
 
+	doc [======[
+		@name SWTB
+		@type method
+		@desc description
+		@desc Short for SetWidgetTopBottom. Set Widget's top margin and bottom margin
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@return object the panel self
+	]======]
 	SWTB = SetWidgetTopBottom
 
-	------------------------------------
-	--- Set Widget's top margin and height
-	-- @name SetWidgetTopHeight
-	-- @class function
-	-- @param element
-	-- @param top top margin value
-	-- @param topunit top margin's unit
-	-- @param height height value
-	-- @param heightunit height's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetTopHeight
+		@type method
+		@desc Set Widget's top margin and height
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	function SetWidgetTopHeight(self, element, top, topunit, height, heightunit)
 		local widget
 
@@ -296,19 +347,30 @@ interface "IFContainer"
 		return self.Panel:SetWidgetTopHeight(widget, top, topunit, height, heightunit)
 	end
 
+	doc [======[
+		@name SWTH
+		@type method
+		@desc Short for SetWidgetTopHeight. Set Widget's top margin and height
+		@param index|name|widget the ui element
+		@param top number, top margin value
+		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	SWTH = SetWidgetTopHeight
 
-	------------------------------------
-	--- Set Widget's top margin and height
-	-- @name SetWidgetBottomHeight
-	-- @class function
-	-- @param element
-	-- @param bottom top margin value
-	-- @param bottomunit bottom margin's unit
-	-- @param height height value
-	-- @param heightunit height's unit
-	-- @return panel
-	------------------------------------
+	doc [======[
+		@name SetWidgetBottomHeight
+		@type method
+		@desc Set Widget's bottom margin and height
+		@param index|name|widget the ui element
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	function SetWidgetBottomHeight(self, element, bottom, bottomunit, height, heightunit)
 		local widget
 
@@ -323,41 +385,56 @@ interface "IFContainer"
 		return self.Panel:SetWidgetBottomHeight(widget, bottom, bottomunit, height, heightunit)
 	end
 
+	doc [======[
+		@name SWBH
+		@type method
+		@desc Short for SetWidgetBottomHeight. Set Widget's bottom margin and height
+		@param index|name|widget the ui element
+		@param bottom number, bottom margin value
+		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
+		@param height number, height value
+		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
+		@return object the panel self
+	]======]
 	SWBH = SetWidgetBottomHeight
 
-	------------------------------------
-	--- Update layout
-	-- @name RefreshLayout
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name RefreshLayout
+		@type method
+		@desc Refresh the layout panel
+		@return nil
+	]======]
 	function RefreshLayout(self)
 		return self.Panel:Layout()
 	end
 
-	------------------------------------
-	--- stop the refresh of the LayoutPanel
-	-- @name SuspendLayout
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name SuspendLayout
+		@type method
+		@desc Stop the refresh of the layout panel
+		@return nil
+	]======]
 	function SuspendLayout(self)
 		return self.Panel:SuspendLayout()
 	end
 
-	------------------------------------
-	--- resume the refresh of the LayoutPanel
-	-- @name ResumeLayout
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name ResumeLayout
+		@type method
+		@desc Resume the refresh of the layout panel
+		@return nil
+	]======]
 	function ResumeLayout(self)
 		return self.Panel:ResumeLayout()
 	end
 
-	------------------------------------
-	--- Set the panel's layout
-	-- @name SetLayout
-	-- @class function
-	-- @param layout
-	------------------------------------
+	doc [======[
+		@name SetLayout
+		@type method
+		@desc Set the layout panel's type
+		@param layout System.Widget.LayoutPanel class
+		@return nil
+	]======]
 	function SetLayout(self, layout)
 		layout = Reflector.Validate(-LayoutPanel, layout, "layout", "Usage : IFContainer:SetLayout(layout) : ")
 
@@ -387,23 +464,24 @@ interface "IFContainer"
 		obj.AutoLayout = self.AutoLayout
 	end
 
-	------------------------------------
-	--- Get the panel's layout
-	-- @name GetLayout
-	-- @class function
-	-- @return layout
-	------------------------------------
+	doc [======[
+		@name GetLayout
+		@type method
+		@desc Get the layout panel's type
+		@return class the layout panel's type
+	]======]
 	function GetLayout(self)
 		local obj = self:GetChild("Panel")
 
 		return obj and obj:GetClass() or LayoutPanel
 	end
 
-	------------------------------------
-	--- Get the panel object
-	-- @name GetPanel
-	-- @class function
-	------------------------------------
+	doc [======[
+		@name GetPanel
+		@type method
+		@desc Get the layout panel
+		@return System.Widget.LayoutPanel
+	]======]
 	function GetPanel(self)
 		local obj = self:GetChild("Panel")
 
@@ -426,12 +504,12 @@ interface "IFContainer"
 		return obj
 	end
 
-	------------------------------------
-	--- Update the container's panel's postion, Overridable
-	-- @name IFContainer:UpdatePanelPosition
-	-- @class function
-	-- @usage IFContainer:UpdatePanelPosition()
-	------------------------------------
+	doc [======[
+		@name UpdatePanelPosition
+		@type method
+		@desc Update the container's panel's postion, Overridable
+		@return nil
+	]======]
 	function UpdatePanelPosition(self)
 		self.Panel:ClearAllPoints()
 		self.Panel:SetAllPoints(self)
@@ -444,26 +522,42 @@ interface "IFContainer"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Panel
+	doc [======[
+		@name Panel
+		@type property
+		@desc The layout panel
+	]======]
 	property "Panel" {
 		Get = GetPanel,	-- don't want use custom GetPanel
 	}
 
-	-- Layout
+	doc [======[
+		@name Layout
+		@type property
+		@desc The layout panel's type
+	]======]
 	property "Layout" {
 		Set = SetLayout,
 		Get = GetLayout,
 		Type = - LayoutPanel,
 	}
 
-	-- Count
+	doc [======[
+		@name Count
+		@type property
+		@desc The element's count in the layout panel
+	]======]
 	property "Count" {
 		Get = function(self)
 			return self.Panel.Count
 		end,
 	}
 
-	-- AutoLayout
+	doc [======[
+		@name AutoLayout
+		@type property
+		@desc Whether the layout panel is auto update
+	]======]
 	property "AutoLayout" {
 		Get = function(self)
 			return self.__AutoLayout or false

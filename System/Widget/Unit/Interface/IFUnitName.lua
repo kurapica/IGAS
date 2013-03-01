@@ -2,13 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFUnitName
--- @type Interface
--- @name IFUnitName
--- @need property String : Text
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitName", version) then
@@ -32,6 +25,13 @@ end
 interface "IFUnitName"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFUnitName
+		@type interface
+		@desc IFUnitName is used to handle the unit name's update
+		@overridable Text property, string, which used to receive the unit's name
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -39,15 +39,12 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFUnitNameUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			local name, server = UnitName(self.Unit)
@@ -63,7 +60,11 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- WithServerName
+	doc [======[
+		@name WithServerName
+		@type property
+		@desc Whether show the server name
+	]======]
 	property "WithServerName" {
 		Get = function(self)
 			return self.__WithServerName
@@ -78,6 +79,13 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFUnitNameUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

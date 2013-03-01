@@ -4,13 +4,6 @@
 --				2011/03/13	Recode as class
 --              2012/07/04  Extend from IFSecureHandler
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- SecureButton is protected Button
--- <br><br>inherit <a href="..\Base\Button.html">Button</a> For all methods, properties and scriptTypes
--- @name SecureButton
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.SecureButton", version) then
@@ -20,6 +13,12 @@ end
 class "SecureButton"
 	inherit "Button"
 	extend "IFSecureHandler"
+
+	doc [======[
+		@name SecureButton
+		@type class
+		@desc SecureButton is used as the root widget class for secure buttons
+	]======]
 
 	------------------------------------------------------
 	-- Script

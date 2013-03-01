@@ -3,13 +3,6 @@
 -- Change Log  :
 --				2011/03/14	Recode as class
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- SecureFrame is protected frame
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name SecureFrame
--- @class table
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.SecureFrame", version) then
@@ -19,6 +12,12 @@ end
 class "SecureFrame"
 	inherit "Frame"
 	extend "IFSecureHandler"
+
+	doc [======[
+		@name SecureFrame
+		@type class
+		@desc SecureFrame is a root widget class for secure frames
+	]======]
 
 	------------------------------------------------------
 	-- Script
