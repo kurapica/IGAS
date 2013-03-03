@@ -2,14 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFHealth
--- @type Interface
--- @name IFHealth
--- @need property MinMax : 	MinMaxValue
--- @need property Number : 	Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealth", version) then
@@ -59,6 +51,14 @@ end
 interface "IFHealth"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFPowerFrequent
+		@type interface
+		@desc IFPowerFrequent is used to handle the unit health updating
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the health
+		@overridable Value property, number, used to receive the health's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -66,15 +66,12 @@ interface "IFHealth"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFHealthUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -94,6 +91,13 @@ interface "IFHealth"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFHealthUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFHealthUnitList[self] = nil
 	end
 
 	------------------------------------------------------

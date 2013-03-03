@@ -2,15 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFMana
--- @type Interface
--- @name IFMana
--- @need property Boolean : UsePowerColor
--- @need property MinMax : MinMaxValue
--- @need property Number : Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFMana", version) then
@@ -58,6 +49,14 @@ end
 interface "IFMana"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFMana
+		@type interface
+		@desc IFMana is used to handle the unit mana updating
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the mana
+		@overridable Value property, number, used to receive the mana's value
+	]======]
+
 	SPELL_POWER_MANA = SPELL_POWER_MANA
 
 	------------------------------------------------------
@@ -67,15 +66,12 @@ interface "IFMana"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFManaUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if not _M._UseHiddenMana or not self.Existed then return end
 
@@ -106,6 +102,13 @@ interface "IFMana"
 		else
 			_IFManaUnitList[self] = nil
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFManaUnitList[self] = nil
 	end
 
 	------------------------------------------------------

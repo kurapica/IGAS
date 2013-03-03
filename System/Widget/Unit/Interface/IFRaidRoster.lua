@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFRaidRoster
--- @type Interface
--- @name IFRaidRoster
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRaidRoster", version) then
@@ -30,6 +24,12 @@ end
 interface "IFRaidRoster"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFRaidRoster
+		@type interface
+		@desc IFRaidRoster is used to handle the unit raid roster state's updating
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -37,9 +37,6 @@ interface "IFRaidRoster"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFRaidRosterUnitList[self] = nil
-	end
 
 	------------------------------------------------------
 	-- Property
@@ -48,6 +45,13 @@ interface "IFRaidRoster"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFRaidRosterUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

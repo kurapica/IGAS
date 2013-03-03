@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFTarget
--- @type Interface
--- @name IFTarget
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFTarget", version) then
@@ -30,6 +24,13 @@ end
 interface "IFTarget"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFTarget
+		@type interface
+		@desc IFTarget is used to check whether the unit is the target
+		@overridable IsTarget property, boolean, which used to receive the check result
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -37,15 +38,12 @@ interface "IFTarget"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFTargetUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.IsTarget = self.Unit and UnitExists('target') and UnitIsUnit(self.Unit, 'target')
 	end
@@ -57,6 +55,13 @@ interface "IFTarget"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFTargetUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFPortrait
--- @type Interface
--- @name IFPortrait
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPortrait", version) then
@@ -36,7 +30,11 @@ end
 interface "IFPortrait"
 	extend "IFUnitElement"
 
-	_IFPortraitUnitList = _IFPortraitUnitList
+	doc [======[
+		@name IFPortrait
+		@type interface
+		@desc IFPortrait is used to handle the unit's portrait updating
+	]======]
 
 	------------------------------------------------------
 	-- Script
@@ -45,26 +43,12 @@ interface "IFPortrait"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFPortraitUnitList[self] = nil
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Script Handler
-	------------------------------------------------------
-	local function OnUnitChanged(self)
-		_IFPortraitUnitList[self] = self.Unit
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self, force)
 		if self:IsClass(PlayerModel) then
 			local guid = self.Unit and UnitGUID(self.Unit) or nil
@@ -86,6 +70,24 @@ interface "IFPortrait"
 		elseif self:IsClass(Texture) then
 			self.PortraitUnit = self.Unit
 		end
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Script Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFPortraitUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFPortraitUnitList[self] = nil
 	end
 
 	------------------------------------------------------

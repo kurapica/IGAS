@@ -2,13 +2,6 @@
 -- Create Date : 2012/08/06
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFAssistant
--- @type Interface
--- @name IFAssistant
--- @need property Boolean :	Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFAssistant", version) then
@@ -31,6 +24,13 @@ end
 interface "IFAssistant"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFAssistant
+		@type interface
+		@desc IFAssistant is used to check whether the unit is the assistant in the group
+		@overridable Visible property, boolean, which used to receive the check result
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -38,15 +38,12 @@ interface "IFAssistant"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFAssistantUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.IsGroupAssistant
 	end
@@ -58,6 +55,13 @@ interface "IFAssistant"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFAssistantUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/14
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFRune
--- @type Interface
--- @name IFRune
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRune", version) then
@@ -77,6 +71,17 @@ end
 interface "IFRune"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFRune
+		@type interface
+		@desc IFRune is used to handle the unit's rune power's updating
+		@overridable Visible property, boolean, used to receive the check result that whether the rune power should be shown
+		@usage For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
+		<br><br>RuneType property, number, the rune's type
+		<br><br>Ready property, boolean, whether the rune is Ready
+		<br><br>Energize property, boolean, whether the rune is energized
+	]======]
+
 	MAX_RUNES = MAX_RUNES
 
 	------------------------------------------------------
@@ -86,15 +91,12 @@ interface "IFRune"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFRuneUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		for i = 1, MAX_RUNES do
 			UpdatePowerType(self, i)
@@ -115,6 +117,13 @@ interface "IFRune"
 		else
 			_IFRuneUnitList[self] = nil
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFRuneUnitList[self] = nil
 	end
 
 	------------------------------------------------------

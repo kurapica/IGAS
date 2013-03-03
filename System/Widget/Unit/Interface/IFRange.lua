@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/14
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFRange
--- @type Interface
--- @name IFRange
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRange", version) then
@@ -34,6 +28,13 @@ end
 interface "IFRange"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFRange
+		@type interface
+		@desc IFRange is used to check whether the unit is in the spell range of the player
+		@overridable Alpha property, number, used to receive the result, default 1 if the unit is in range, 0.5 out of range
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -41,18 +42,12 @@ interface "IFRange"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFRangeUnitList[self] = nil
-		if not _IFRangeUnitList[_All] then
-			_IFRangeTimer.Enabled = false
-		end
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.InRange then
 			self.Alpha = 1
@@ -68,6 +63,16 @@ interface "IFRange"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFRangeUnitList[self] = nil
+		if not _IFRangeUnitList[_All] then
+			_IFRangeTimer.Enabled = false
+		end
+	end
 
 	------------------------------------------------------
 	-- Constructor

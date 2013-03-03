@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFThreat
--- @type Interface
--- @name IFThreat
--- @need property Number : ThreatLevel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFThreat", version) then
@@ -32,7 +25,12 @@ end
 interface "IFThreat"
 	extend "IFUnitElement"
 
-	_IFThreatUnitList = _IFThreatUnitList
+	doc [======[
+		@name IFThreat
+		@type interface
+		@desc IFThreat is used to handle the unit threat level's update
+		@overridable ThreatLevel property, number, which used to receive the unit's threat level
+	]======]
 
 	------------------------------------------------------
 	-- Script
@@ -41,14 +39,24 @@ interface "IFThreat"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFThreatUnitList[self] = nil
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
+	function Refresh(self)
+		self.ThreatLevel = self.Unit and UnitThreatSituation(self.Unit) or 0
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ThreatLevel
+	doc [======[
+		@name ThreatLevel
+		@type property
+		@desc The unit's threat level
+	]======]
 	property "ThreatLevel" {
 		Set = function(self, value)
 			if self:IsClass(LayeredRegion) then
@@ -68,6 +76,13 @@ interface "IFThreat"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFThreatUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFThreatUnitList[self] = nil
 	end
 
 	------------------------------------------------------

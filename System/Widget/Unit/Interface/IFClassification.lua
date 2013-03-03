@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFClassification
--- @type Interface
--- @name IFClassification
--- @need property Boolean :	Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassification", version) then
@@ -26,6 +19,13 @@ end
 interface "IFClassification"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFClassification
+		@type interface
+		@desc IFClassification is used to check whether the unit's classification, the default refresh method is used to check if the unit is a quest boss
+		@overridable Visible property, boolean, which used to receive the check result
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -33,15 +33,12 @@ interface "IFClassification"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFClassificationUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.Unit and UnitIsQuestBoss(self.Unit)
 	end
@@ -55,6 +52,13 @@ interface "IFClassification"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFClassificationUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFClassificationUnitList[self] = nil
 	end
 
 	------------------------------------------------------

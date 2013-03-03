@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFGroupLoot
--- @type Interface
--- @name IFGroupLoot
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroupLoot", version) then
@@ -32,6 +25,13 @@ end
 interface "IFGroupLoot"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFGroupLoot
+		@type interface
+		@desc IFGroupLoot is used to handle the root master indicator's updating
+		@overridable Visible property, boolean, used to receive the result that whether the root master indicator should be shown
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -39,15 +39,12 @@ interface "IFGroupLoot"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFGroupLootUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.InParty or self.InRaid then
 			local method, pid, rid = GetLootMethod()
@@ -80,6 +77,13 @@ interface "IFGroupLoot"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFGroupLootUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

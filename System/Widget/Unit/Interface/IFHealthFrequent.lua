@@ -2,14 +2,6 @@
 -- Create Date : 2012/10/29
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFHealthFrequent
--- @type Interface
--- @name IFHealthFrequent
--- @need property MinMax : 	MinMaxValue
--- @need property Number : 	Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealthFrequent", version) then
@@ -59,6 +51,14 @@ end
 interface "IFHealthFrequent"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFPowerFrequent
+		@type interface
+		@desc IFPowerFrequent is used to handle the unit frequent health updating
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the health
+		@overridable Value property, number, used to receive the health's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -66,15 +66,12 @@ interface "IFHealthFrequent"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFHealthFrequentUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -94,6 +91,13 @@ interface "IFHealthFrequent"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFHealthFrequentUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFHealthFrequentUnitList[self] = nil
 	end
 
 	------------------------------------------------------

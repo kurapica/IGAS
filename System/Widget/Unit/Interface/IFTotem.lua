@@ -2,14 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFTotem
--- @type Interface
--- @name IFTotem
--- @need property Boolean : Visible
--- @need property String : Icon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFTotem", version) then
@@ -47,6 +39,16 @@ end
 interface "IFTotem"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFTotem
+		@type interface
+		@desc IFTotem is used to handle the unit's totem updating
+		@usage For default, the object need contains MAX_TOTEMS elements, these elements should extend from System.Widget.IFCooldown, and with several properties:
+		<br><br>Icon property, string, used to receive the totem's image file path
+		<br><br>Slot property, number, used to receive the totem's slot index
+		<br><br>Visible property, boolean, used to receive the check result for whether should show the totem
+	]======]
+
 	MAX_TOTEMS = MAX_TOTEMS
 
 	------------------------------------------------------
@@ -56,15 +58,12 @@ interface "IFTotem"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFTotemUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		local btn
 
@@ -99,6 +98,12 @@ interface "IFTotem"
 	-- Script Handler
 	------------------------------------------------------
 
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFTotemUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -2,13 +2,6 @@
 -- Create Date : 2012/11/09
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFDebuffState
--- @type Interface
--- @name IFDebuffState
--- @need script : OnStateChanged
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFDebuffState", version) then
@@ -100,23 +93,35 @@ end
 interface "IFDebuffState"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFDebuffState
+		@type interface
+		@desc IFDebuffState is used to handle the unit debuff's update
+		@overridable HasMagic property, boolean, used to receive the result for whether the unit has a magic debuff
+		@overridable HasCurse property, boolean, used to receive the result for whether the unit has a curse debuff
+		@overridable HasDisease property, boolean, used to receive the result for whether the unit has a disease debuff
+		@overridable HasPoison property, boolean, used to receive the result for whether the unit has a poison debuff
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnStateChanged
+		@type script
+		@desc Fired when the unit's debuff state is changed
+	]======]
 	script "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFDebuffStateUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			UpdateAuraState(self.Unit)
@@ -132,6 +137,13 @@ interface "IFDebuffState"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFDebuffStateUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFDebuffStateUnitList[self] = nil
 	end
 
 	------------------------------------------------------

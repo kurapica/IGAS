@@ -2,14 +2,6 @@
 -- Create Date : 2012/07/14
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFComboPoint
--- @type Interface
--- @name IFComboPoint
--- @need property Number : Value
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFComboPoint", version) then
@@ -62,6 +54,14 @@ end
 interface "IFComboPoint"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFComboPoint
+		@type interface
+		@desc IFComboPoint is used to handle the unit's combo points
+		@overridable Visible property, boolean, used to receive the check result for whether the combo points should be shown(only for rogue and cat)
+		@overridable Value property, number, used to receive the unit's combo points's count
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -69,15 +69,12 @@ interface "IFComboPoint"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFComboPointUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Value = GetComboPoint()
 		self.Visible = CheckVisible()
@@ -90,6 +87,13 @@ interface "IFComboPoint"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFComboPointUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

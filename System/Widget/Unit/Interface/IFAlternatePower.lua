@@ -2,16 +2,6 @@
 -- Create Date : 2012/08/06
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFAlternatePower
--- @type Interface
--- @name IFAlternatePower
--- @need property MinMax : 	MinMaxValue
--- @need property Number : 	Value
--- @need property Boolean : Visible
--- @need property Number : 	BarType
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFAlternatePower", version) then
@@ -59,6 +49,16 @@ end
 interface "IFAlternatePower"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFAlternatePower
+		@type interface
+		@desc IFAlternatePower is used to handle the unit alternate power's update
+		@overridable BarType, string, the alternate power bar's type
+		@overridable MinMaxValue, MinMax, the min and max power value
+		@overridable Value, number, the alternate power's value
+		@overridable Visible, boolean, the alternate power bar's visible
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -66,15 +66,12 @@ interface "IFAlternatePower"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFAlternatePowerUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		return UpdateBar(self)
 	end
@@ -88,6 +85,13 @@ interface "IFAlternatePower"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFAlternatePowerUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFAlternatePowerUnitList[self] = nil
 	end
 
 	------------------------------------------------------

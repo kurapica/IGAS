@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/03
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFSpellHandler
--- @type Interface
--- @name IFSpellHandler
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFSpellHandler", version) then

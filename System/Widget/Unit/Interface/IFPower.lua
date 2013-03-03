@@ -2,15 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFPower
--- @type Interface
--- @name IFPower
--- @need property Boolean : UsePowerColor
--- @need property MinMax : MinMaxValue
--- @need property Number : Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPower", version) then
@@ -59,6 +50,14 @@ end
 interface "IFPower"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFPowerFrequent
+		@type interface
+		@desc IFPowerFrequent is used to handle the unit power updating
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the power
+		@overridable Value property, number, used to receive the power's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -66,15 +65,12 @@ interface "IFPower"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFPowerUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if not self.Existed then return end
 
@@ -115,12 +111,33 @@ interface "IFPower"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name UsePowerColor
+		@type property
+		@desc Whether the object use auto power color, the object should be a fontstring or texture
+	]======]
+	property "UsePowerColor" {
+		Get = function(self)
+			return self.__UsePowerColor
+		end,
+		Set = function(self, value)
+			self.__UsePowerColor = value
+		end,
+		Type = Boolean,
+	}
 
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFPowerUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFPowerUnitList[self] = nil
 	end
 
 	------------------------------------------------------

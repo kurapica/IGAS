@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFResting
--- @type Interface
--- @name IFResting
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFResting", version) then
@@ -29,6 +23,13 @@ end
 interface "IFResting"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFResting
+		@type interface
+		@desc IFResting is used to handle the unit resting state's updating
+		@overridable Visible property, boolean, used to receive the result that whether the resting indicator should be shown
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -36,15 +37,12 @@ interface "IFResting"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFRestingUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.Unit == "player" and IsResting()
 	end
@@ -63,6 +61,13 @@ interface "IFResting"
 			_IFRestingUnitList[self] = nil
 			self.Visible = false
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFRestingUnitList[self] = nil
 	end
 
 	------------------------------------------------------

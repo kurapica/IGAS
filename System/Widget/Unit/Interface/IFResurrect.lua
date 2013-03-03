@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFResurrect
--- @type Interface
--- @name IFResurrect
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFResurrect", version) then
@@ -31,6 +24,13 @@ end
 interface "IFResurrect"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFResurrect
+		@type interface
+		@desc IFResurrect is used to handle the unit resurrection state's updating
+		@overridable Visible property, boolean, used to receive the result that whether the resurrection indicator should be shown
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -38,15 +38,12 @@ interface "IFResurrect"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFResurrectUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.Unit and UnitHasIncomingResurrection(self.Unit)
 	end
@@ -58,6 +55,13 @@ interface "IFResurrect"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFResurrectUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

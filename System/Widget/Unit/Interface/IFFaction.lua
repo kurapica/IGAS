@@ -2,14 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFFaction
--- @type Interface
--- @name IFFaction
--- @need property String : TexturePath
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFFaction", version) then
@@ -39,6 +31,12 @@ end
 interface "IFFaction"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFFaction
+		@type interface
+		@desc IFFaction is used to handle the unit faction state's updating
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -46,9 +44,6 @@ interface "IFFaction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFFactionUnitList[self] = nil
-	end
 
 	------------------------------------------------------
 	-- Property
@@ -59,6 +54,13 @@ interface "IFFaction"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFFactionUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFFactionUnitList[self] = nil
 	end
 
 	------------------------------------------------------

@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFGroupRole
--- @type Interface
--- @name IFGroupRole
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroupRole", version) then
@@ -31,6 +25,12 @@ end
 interface "IFGroupRole"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFResting
+		@type interface
+		@desc IFResting is used to handle group role's updating
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -38,9 +38,6 @@ interface "IFGroupRole"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFGroupRoleUnitList[self] = nil
-	end
 
 	------------------------------------------------------
 	-- Property
@@ -49,6 +46,13 @@ interface "IFGroupRole"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFGroupRoleUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

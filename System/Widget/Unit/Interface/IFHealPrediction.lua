@@ -2,22 +2,6 @@
 -- Create Date : 2012/08/06
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFMyHealPrediction
--- @type Interface
--- @name IFMyHealPrediction
--- @need property Number : Value
--- @need property MinMax : MinMaxValue
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFAllHealPrediction
--- @type Interface
--- @name IFAllHealPrediction
--- @need property Number : Value
--- @need property MinMax : MinMaxValue
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealPrediction", version) then
@@ -91,6 +75,14 @@ end
 interface "IFMyHealPrediction"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFMyHealPrediction
+		@type interface
+		@desc IFMyHealPrediction is used to handle the unit's prediction health by the player
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
+		@overridable Value property, number, used to receive the prediction health's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -98,15 +90,12 @@ interface "IFMyHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFMyHealPredictionUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -131,6 +120,13 @@ interface "IFMyHealPrediction"
 	end
 
 	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFMyHealPredictionUnitList[self] = nil
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function IFMyHealPrediction(self)
@@ -150,6 +146,14 @@ endinterface "IFMyHealPrediction"
 interface "IFAllHealPrediction"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFMyHealPrediction
+		@type interface
+		@desc IFMyHealPrediction is used to handle the unit's prediction health by all player
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
+		@overridable Value property, number, used to receive the prediction health's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -157,15 +161,12 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFAllHealPredictionUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -187,6 +188,13 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFAllHealPredictionUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFAllHealPredictionUnitList[self] = nil
 	end
 
 	------------------------------------------------------

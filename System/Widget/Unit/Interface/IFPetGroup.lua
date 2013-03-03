@@ -107,6 +107,13 @@ function GetPetUnit(kind, index)
 end
 
 interface "IFPetGroup"
+
+	doc [======[
+		@name IFPetGroup
+		@type interface
+		@desc IFPetGroup is used to handle the pet group's updating
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -114,11 +121,12 @@ interface "IFPetGroup"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self:IsInterface(IFElementPanel) then
 			local kind, start, stop	 = GetGroupType()

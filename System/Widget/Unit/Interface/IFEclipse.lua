@@ -2,18 +2,6 @@
 -- Create Date : 2012/08/05
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFEclipse
--- @type Interface
--- @name IFEclipse
--- @need property Boolean :	Visible
--- @need property EclipseDirection : Direction - none, sun, moon
--- @need property Boolean : SunActivated
--- @need property Boolean : MoonActivated
--- @need property MinMax : 	MinMaxValue
--- @need property Number : 	Value
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFEclipse", version) then
@@ -136,6 +124,17 @@ end
 interface "IFEclipse"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFEclipse
+		@type interface
+		@desc IFEclipse is used to handle the updating for the player's eclipse power
+		@overridable EclipseDirection property, System.Widget.Unit.EclipseDirection, used to receive the eclipse's Direction
+		@overridable SunActivated property, boolean, used to receive whether the sun is activated
+		@overridable MoonActivated property, boolean, used to receive whether the moon is activated
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value
+		@overridable Value property, number, used to receive the eclipse power's value
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -143,15 +142,12 @@ interface "IFEclipse"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFEclipseUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if _M._ShowEclipse then
 			ShowEclipse(self)
@@ -174,6 +170,13 @@ interface "IFEclipse"
 			_IFEclipseUnitList[self] = nil
 			self.Visible = false
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFEclipseUnitList[self] = nil
 	end
 
 	------------------------------------------------------

@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFPhase
--- @type Interface
--- @name IFPhase
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPhase", version) then
@@ -30,6 +24,13 @@ end
 interface "IFPhase"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFPhase
+		@type interface
+		@desc IFPhase is used to check whether the unit is in the same phase with the player
+		@overridable Visible property, boolean, used to receive the result that whether the unit is in the same phase with the player
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -37,15 +38,12 @@ interface "IFPhase"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFPhaseUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.Unit and UnitInPhase(self.Unit)
 	end
@@ -57,6 +55,13 @@ interface "IFPhase"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFPhaseUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

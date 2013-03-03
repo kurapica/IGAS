@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFCombat
--- @type Interface
--- @name IFCombat
--- @need property Boolean :	Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFCombat", version) then
@@ -31,7 +24,12 @@ end
 interface "IFCombat"
 	extend "IFUnitElement"
 
-	_IFCombatUnitList = _IFCombatUnitList
+	doc [======[
+		@name IFCombat
+		@type interface
+		@desc IFCombat is used to check whether the player is in the combat
+		@overridable Visible property, boolean, which used to receive the check result
+	]======]
 
 	------------------------------------------------------
 	-- Script
@@ -40,15 +38,12 @@ interface "IFCombat"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFCombatUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = self.Unit == 'player' and UnitAffectingCombat('player')
 	end
@@ -63,6 +58,13 @@ interface "IFCombat"
 	local function OnUnitChanged(self)
 		_IFCombatUnitList[self] = self.Unit
 		Refresh(self)
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFCombatUnitList[self] = nil
 	end
 
 	------------------------------------------------------

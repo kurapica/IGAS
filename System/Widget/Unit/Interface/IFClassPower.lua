@@ -3,16 +3,6 @@
 -- Change Log  :
 --               2012/12/01 Update for PLAYER_LEVEL_UP, UnitLevel("player") need +1
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFClassPower
--- @type Interface
--- @name IFClassPower
--- @need property Number+nil : ClassPowerType
--- @need property MinMax : MinMaxValue
--- @need property Number : Value
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassPower", version) then
@@ -171,6 +161,16 @@ end
 interface "IFClassPower"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFClassPower
+		@type interface
+		@desc IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.
+		@overridable Visible property, boolean, which used to receive the check value for whether the class power need to be shown
+		@overridable MinMaxValue property, System.Widget.MinMax, which used to receive the unit's class power's min and max value
+		@overridable Value property, number, which is used to receive the unit's class power's value
+		@overridable ClassPowerType property, number | nil, which is used to receive the unit's class power's type
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -178,15 +178,12 @@ interface "IFClassPower"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFClassPowerUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if _M._PlayerClassMap then
 			return RefreshActivePower()
@@ -208,6 +205,13 @@ interface "IFClassPower"
 			_IFClassPowerUnitList[self] = nil
 			self.Visible = false
 		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFClassPowerUnitList[self] = nil
 	end
 
 	------------------------------------------------------

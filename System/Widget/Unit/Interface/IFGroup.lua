@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFGroup
--- @type Interface
--- @name IFGroup
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroup", version) then
@@ -102,6 +96,13 @@ function GetGroupRosterUnit(kind, index)
 end
 
 interface "IFGroup"
+
+	doc [======[
+		@name IFGroup
+		@type interface
+		@desc IFGroup is used to handle the group's updating
+	]======]
+
 	_DefaultRole = {
 		'TANK',
 		'HEALER',
@@ -115,11 +116,12 @@ interface "IFGroup"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self:IsInterface(IFElementPanel) then
 			local kind, start, stop	 = GetGroupType(self.KeepMaxPlayer)
@@ -178,7 +180,11 @@ interface "IFGroup"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- KeepMaxPlayer
+	doc [======[
+		@name KeepMaxPlayer
+		@type property
+		@desc Whether the element panel should contains the max count elements
+	]======]
 	property "KeepMaxPlayer" {
 		Get = function(self)
 			return self.__KeepMaxPlayer or false
@@ -188,7 +194,12 @@ interface "IFGroup"
 		end,
 		Type = System.Boolean,
 	}
-	-- SortByRole
+
+	doc [======[
+		@name SortByRole
+		@type property
+		@desc Whether the players should be sorted by rules
+	]======]
 	property "SortByRole" {
 		Get = function(self)
 			return self.__SortByRole
@@ -203,7 +214,12 @@ interface "IFGroup"
 		end,
 		Type = System.Boolean,
 	}
-	-- SortRole
+
+	doc [======[
+		@name SortRole
+		@type property
+		@desc The sort rule
+	]======]
 	property "SortRole" {
 		Get = function(self)
 			return self.__SortRole or _DefaultRole

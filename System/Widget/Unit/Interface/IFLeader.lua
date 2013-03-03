@@ -2,13 +2,6 @@
 -- Create Date : 2012/07/12
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFLeader
--- @type Interface
--- @name IFLeader
--- @need property Boolean : Visible
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFLeader", version) then
@@ -32,6 +25,13 @@ end
 interface "IFLeader"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFLeader
+		@type interface
+		@desc IFLeader is used to handle the unit leader state's updating
+		@overridable Visible property, boolean, used to receive the result that whether the leader indicator should be shown
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -39,15 +39,12 @@ interface "IFLeader"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFLeaderUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		self.Visible = (self.InParty or self.InRaid) and self.IsGroupLeader
 	end
@@ -59,6 +56,13 @@ interface "IFLeader"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFLeaderUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/14
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFReadyCheck
--- @type Interface
--- @name IFReadyCheck
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFReadyCheck", version) then
@@ -54,6 +48,17 @@ end
 interface "IFReadyCheck"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFReadyCheck
+		@type interface
+		@desc IFReadyCheck is used to handle the unit ready check state's updating
+		@overridable Visible property, boolean, used to receive the result that whether the ready check indicator should be shown
+		@overridable Alpha property, number, used to receive the ready check indicator's opacity
+		@overridable Start method, be called when the unit's ready check is started
+		@overridable Confirm method, be called when the unit's ready check is confirmed
+		@overridable Finish method, be called when the unit's ready check is finished
+	]======]
+
 	FINISH_TIME = 10
 	FADE_TIME = 1.5
 
@@ -69,15 +74,12 @@ interface "IFReadyCheck"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFReadyCheckUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Start the ready check
-	-- @name Start
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Start
+		@type method
+		@desc Start the ready check, overridable
+		@return nil
+	]======]
 	function Start(self)
 		if self:IsClass(Texture) then
 			self.TexturePath = READY_CHECK_WAITING_TEXTURE
@@ -87,12 +89,13 @@ interface "IFReadyCheck"
 		end
 	end
 
-	------------------------------------
-	--- Confirm the ready check
-	-- @name Confirm
-	-- @type function
-	-- @param ready boolean
-	------------------------------------
+	doc [======[
+		@name Confirm
+		@type method
+		@desc Confirm the ready check, overridable
+		@param ready boolean
+		@return nil
+	]======]
 	function Confirm(self, ready)
 		if self:IsClass(Texture) then
 			if ready then
@@ -107,11 +110,12 @@ interface "IFReadyCheck"
 		end
 	end
 
-	------------------------------------
-	--- Finish the ready check
-	-- @name Finish
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Finish
+		@type method
+		@desc Finish the ready check, overridable
+		@return nil
+	]======]
 	function Finish(self)
 		if self:IsClass(Texture) then
 			if self.ReadyCheckStatus == "waiting" then
@@ -148,6 +152,13 @@ interface "IFReadyCheck"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFReadyCheckUnitList[self] = nil
+	end
 
 	------------------------------------------------------
 	-- Constructor

@@ -2,12 +2,6 @@
 -- Create Date : 2012/08/03
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFAura
--- @type Interface
--- @name IFAura
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFAura", version) then
@@ -25,6 +19,11 @@ end
 interface "IFAura"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFAura
+		@type interface
+		@desc IFAura is used to handle the unit's aura updating
+	]======]
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -32,9 +31,6 @@ interface "IFAura"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFAuraUnitList[self] = nil
-	end
 
 	------------------------------------------------------
 	-- Property
@@ -45,6 +41,13 @@ interface "IFAura"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFAuraUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFAuraUnitList[self] = nil
 	end
 
 	------------------------------------------------------

@@ -2,13 +2,6 @@
 -- Create Date : 2012/11/09
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- IFConnect
--- @type Interface
--- @name IFConnect
--- @need property Boolean : Connected
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFConnect", version) then
@@ -53,23 +46,32 @@ end
 interface "IFConnect"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name IFConnect
+		@type interface
+		@desc IFConnect is used to check whether the unit is connected
+		@overridable Connected property, boolean, which used to receive the check result for whether the unit is connected
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
+	doc [======[
+		@name OnStateChanged
+		@type script
+		@desc Fired when the unit's connecting state is changed
+	]======]
 	script "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		_IFConnectUnitList[self] = nil
-	end
-
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc The default refresh method, overridable
+		@return nil
+	]======]
 	function Refresh(self)
 		if self.Unit then
 			self.Connected = UnitIsConnected(self.Unit)
@@ -85,6 +87,13 @@ interface "IFConnect"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFConnectUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFConnectUnitList[self] = nil
 	end
 
 	------------------------------------------------------
