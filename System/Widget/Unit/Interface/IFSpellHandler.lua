@@ -629,21 +629,36 @@ end
 -- IFSpellHandler._Group("GroupA").Spell("Holy Light", "target", false).Key = "ctrl-f"
 -----------------------------------------------
 interface "IFSpellHandler"
-	-----------------------------------------------
-	--- SpellHandlerGroup
-	-- @type class
-	-- @name SpellHandlerGroup
-	-----------------------------------------------
+	doc [======[
+		@name IFSpellHandler
+		@type interface
+		@desc IFSpellHandler provides hover and click spell casting for secure unit frames
+		@overridable IFSpellHandlerGroup property, string, used to mark the unit frame object into a group with the same behavior
+		@usage For a group named 'GroupA', it's easy to set or clear binding keys like :
+		<br>
+		<br>IFSpellHandler._Group("GroupA").Target.Key = "ctrl-f"
+		<br>IFSpellHandler._Group("GroupA").Focus.Key = "ctrl-f"
+		<br>IFSpellHandler._Group("GroupA").Assist.Key = "ctrl-f"
+		<br>
+		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").Key = "ctrl-f"
+		<br>IFSpellHandler._Group("GroupA").MacroText("/cast Holy Light").Key = "ctrl-f"
+		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").WithTarget.Key = "ctrl-f"
+		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").AsHelpful.WithTarget.Key = "ctrl-f"
+		<br>
+		<br>IFSpellHandler._Group("GroupA"):Clear("ctrl-f")
+	]======]
+
 	class "SpellHandlerGroup"
 		inherit "System.Object"
 
+		doc [======[
+			@name SpellHandlerGroup
+			@type class
+			@desc SpellHandlerGroup object is the manager for the binding key settings in a group
+		]======]
+
 		_IFSpellHandler_SpellHandlerGroup = _IFSpellHandler_SpellHandlerGroup or {}
 
-		-----------------------------------------------
-		--- ActionType
-		-- @type enum
-		-- @name ActionType
-		-----------------------------------------------
 		enum "ActionType" {
 			"Spell",
 			"Macro",
@@ -655,22 +670,12 @@ interface "IFSpellHandler"
 			"Assist",
 		}
 
-		-----------------------------------------------
-		--- ActionWith
-		-- @type enum
-		-- @name ActionWith
-		-----------------------------------------------
 		enum "ActionWith" {
 			"target",
 			"focus",
 			"assist",
 		}
 
-		-----------------------------------------------
-		--- KeySet
-		-- @type struct
-		-- @name KeySet
-		-----------------------------------------------
 		struct "KeySet"
 			HarmAction = ActionType + nil
 			HarmContent = System.String + System.Number + nil
@@ -680,12 +685,13 @@ interface "IFSpellHandler"
 			HelpWith = ActionWith + nil
 		endstruct "KeySet"
 
-		-----------------------------------------------
-		--- DataAccessor
-		-- @type class
-		-- @name DataAccessor
-		-----------------------------------------------
 		class "DataAccessor"
+			doc [======[
+				@name DataAccessor
+				@type class
+				@desc DataAccessor is a helper class to the SpellHandlerGroup to access the binding settings
+			]======]
+
 			------------------------------------------------------
 			-- Script
 			------------------------------------------------------
@@ -697,13 +703,22 @@ interface "IFSpellHandler"
 			------------------------------------------------------
 			-- Property
 			------------------------------------------------------
-			-- Group
+			doc [======[
+				@name Group
+				@type property
+				@desc The group's name
+			]======]
 			property "Group" {
 				Get = function(self)
 					return self.__GroupHandler.Group
 				end,
 			}
-			-- Type
+
+			doc [======[
+				@name Type
+				@type property
+				@desc The binding setting's type
+			]======]
 			property "Type" {
 				Get = function(self)
 					return self.__AccessType
@@ -718,48 +733,83 @@ interface "IFSpellHandler"
 				end,
 				Type = System.String,
 			}
-			-- Harmful
+
+			doc [======[
+				@name AsHarmful
+				@type property
+				@desc Mark the setting is for harmful target
+			]======]
 			property "AsHarmful" {
 				Get = function(self)
 					self.__AccessHarmful = true
 					return self
 				end,
 			}
-			-- Helpful
+
+			doc [======[
+				@name AsHelpful
+				@type property
+				@desc Mark the setting is for helpful target
+			]======]
 			property "AsHelpful" {
 				Get = function(self)
 					self.__AccessHarmful = false
 					return self
 				end,
 			}
-			-- WithTarget
+
+			doc [======[
+				@name WithTarget
+				@type property
+				@desc Mark the setting is combined with 'target' command
+			]======]
 			property "WithTarget" {
 				Get = function(self)
 					self.__AccessWith = "target"
 					return self
 				end,
 			}
-			-- WithFocus
+
+			doc [======[
+				@name WithFocus
+				@type property
+				@desc Mark the setting is combined with 'focus' command
+			]======]
 			property "WithFocus" {
 				Get = function(self)
 					self.__AccessWith = "focus"
 					return self
 				end,
 			}
-			-- WithAssist
+
+			doc [======[
+				@name WithAssist
+				@type property
+				@desc Mark the setting is combined with 'assist' command
+			]======]
 			property "WithAssist" {
 				Get = function(self)
 					self.__AccessWith = "assist"
 					return self
 				end,
 			}
-			-- With
+
+			doc [======[
+				@name With
+				@type property
+				@desc Get the with settings for the binding setting
+			]======]
 			property "With" {
 				Get = function(self)
 					return select(2, GetBindingDB(self.Group, self.__AccessType, self.__AccessContent))
 				end,
 			}
-			-- Key
+
+			doc [======[
+				@name Key
+				@type property
+				@desc The binding key for the setting
+			]======]
 			property "Key" {
 				Get = function(self)
 					return GetBindingDB(self.Group, self.__AccessType, self.__AccessContent)
@@ -903,40 +953,45 @@ interface "IFSpellHandler"
 		------------------------------------------------------
 		-- Script
 		------------------------------------------------------
+		doc [======[
+			@name OnSettingUpdate
+			@type script
+			@desc Fired when the settings is updateds
+		]======]
 		script "OnSettingUpdate"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		------------------------------------
-		--- Clear the settings
-		-- @name Clear
-		-- @type function
-		-- @return nil
-		------------------------------------
+		doc [======[
+			@name Clear
+			@type method
+			@desc Clear the settings
+			@return nil
+		]======]
 		function Clear(self, key)
 			if ClearBindingDB4Key(self.Group, key) then
 				self:Fire("OnSettingUpdate")
 			end
 		end
 
-		------------------------------------
-		--- Begin update settings and block script OnSettingUpdate
-		-- @name BeginUpdate
-		-- @type function
-		-- @return nil
-		------------------------------------
+		doc [======[
+			@name BeginUpdate
+			@type method
+			@desc Begin update settings and block script OnSettingUpdate
+			@return nil
+		]======]
 		function BeginUpdate(self)
 			self:BlockScript("OnSettingUpdate")
 			self.__BackUp = CopyData(_DBChar[self.Group])
 		end
 
-		------------------------------------
-		--- Commit the changes and un-block script OnSettingUpdate
-		-- @name CommitUpdate
-		-- @type function
-		-- @return nil
-		------------------------------------
+		doc [======[
+			@name CommitUpdate
+			@type method
+			@desc Commit the changes and un-block script OnSettingUpdate
+			@return nil
+		]======]
 		function CommitUpdate(self)
 			if self.__BackUp then
 				self:UnBlockScript("OnSettingUpdate")
@@ -949,12 +1004,12 @@ interface "IFSpellHandler"
 			end
 		end
 
-		------------------------------------
-		--- Cancel the changes and un-block script OnSettingUpdate
-		-- @name CancelUpdate
-		-- @type function
-		-- @return nil
-		------------------------------------
+		doc [======[
+			@name CancelUpdate
+			@type method
+			@desc Cancel the changes and un-block script OnSettingUpdate
+			@return nil
+		]======]
 		function CancelUpdate(self)
 			if self.__BackUp then
 				_DBChar[self.Group] = self.__BackUp
@@ -964,23 +1019,23 @@ interface "IFSpellHandler"
 			end
 		end
 
-		------------------------------------
-		--- Export settings
-		-- @name Export
-		-- @type function
-		-- @return key settings
-		------------------------------------
+		doc [======[
+			@name Export
+			@type method
+			@desc Export settings
+			@return table the settings
+		]======]
 		function Export(self)
 			return CopyData(_DBChar[self.Group])
 		end
 
-		------------------------------------
-		--- Import settings
-		-- @name Import
-		-- @type function
-		-- @param set the key settings
-		-- @return true if success
-		------------------------------------
+		doc [======[
+			@name Import
+			@type method
+			@desc Import settings
+			@param set table, the key settings
+			@return boolean true if success
+		]======]
 		function Import(self, set)
 			if type(set) == "table" and next(set) then
 				local result = {}
@@ -1016,7 +1071,11 @@ interface "IFSpellHandler"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Group
+		doc [======[
+			@name Group
+			@type property
+			@desc The group name
+		]======]
 		property "Group" {
 			Get = function(self)
 				return self.__Group
@@ -1077,18 +1136,13 @@ interface "IFSpellHandler"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Dispose(self)
-		-- Use real frame table to dispose, because the igas part frame table is already disposed.
-		IFNoCombatTaskHandler._RegisterNoCombatTask(RemoveUnitFrame, IGAS:GetUI(self), GetGroup(self.IFSpellHandlerGroup))
-	end
-
-	------------------------------------
-	--- Get the group setting object
-	-- @name _Group
-	-- @type function
-	-- @param group group name
-	-- @return group setting object
-	------------------------------------
+	doc [======[
+		@name _Group
+		@type method
+		@desc Get the group setting object
+		@param group string, the group's name
+		@return System.Widget.Unit.IFSpellHandler.SpellHandlerGroup
+	]======]
 	function _Group(group)
 		if group and type(group) ~= "string" then
 			return nil
@@ -1096,13 +1150,12 @@ interface "IFSpellHandler"
 		return SpellHandlerGroup(group)
 	end
 
-	------------------------------------
-	--- Get the group setting object
-	-- @name _GetGroupList
-	-- @type function
-	-- @param tbl optional, table to contain names
-	-- @return group name list
-	------------------------------------
+	doc [======[
+		@name _GetGroupList
+		@type method
+		@desc Get the all groups's name
+		@return table the name list
+	]======]
 	function _GetGroupList(tbl)
 		local ret = type(tbl) == "table" and tbl or {}
 
@@ -1118,11 +1171,24 @@ interface "IFSpellHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name IFSpellHandlerGroup
+		@type property
+		@desc The object's group name, overridable
+	]======]
 	property "IFSpellHandlerGroup" {
 		Get = function(self)
 			return _GlobalGroup
 		end,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		-- Use real frame table to dispose, because the igas part frame table is already disposed.
+		IFNoCombatTaskHandler._RegisterNoCombatTask(RemoveUnitFrame, IGAS:GetUI(self), GetGroup(self.IFSpellHandlerGroup))
+	end
 
 	------------------------------------------------------
 	-- Initialize
