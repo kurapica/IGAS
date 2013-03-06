@@ -53,7 +53,7 @@ function GetGroupType(chkMax)
 			else
 				local raidMax = 0
 
-				local raid_difficulty = GetRaidDifficulty()
+				local raid_difficulty = GetRaidDifficultyID()
 				if raid_difficulty == 1 or raid_difficulty == 3 then
 					raidMax = 10
 				elseif raid_difficulty == 2 or raid_difficulty == 4 then
