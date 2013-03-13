@@ -66,14 +66,14 @@ class "FontString"
 	doc [======[
 		@name GetStringWidth
 		@type method
-		@desc Returns the width of the text displayed in the font string. This value is based on the text currently displayed; e.g. a short text label results in a smaller width than a longer block of text. Very long blocks of text that don't fit the font string's dimensions all result in similar widths, because this method measures the width of the text displayed, which is truncated with an ellipsis ("бн").
+		@desc Returns the width of the text displayed in the font string. This value is based on the text currently displayed; e.g. a short text label results in a smaller width than a longer block of text. Very long blocks of text that don't fit the font string's dimensions all result in similar widths, because this method measures the width of the text displayed, which is truncated with an ellipsis.
 		@return number Width of the text currently displayed in the font string (in pixels)
 	]======]
 
 	doc [======[
 		@name GetText
 		@type method
-		@desc Returns the text currently set for display in the font string. This is not necessarily the text actually displayed: text that does not fit within the FontString's dimensions will be truncated with an ellipsis ("бн") for display.
+		@desc Returns the text currently set for display in the font string. This is not necessarily the text actually displayed: text that does not fit within the FontString's dimensions will be truncated with an ellipsis for display.
 		@return string Text to be displayed in the font string
 	]======]
 

@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 
 if not IGAS:NewAddon("IGAS.Widget.HTMLViewer", version) then
 	return
@@ -422,7 +422,8 @@ class "HTMLViewer"
 	]======]
 	function SetText(self, text)
 		self.__HTMLContent = text
-		return self.__HTMLViewer:SetText(ParseHTML(text))
+		self.__HTMLViewer:SetText(ParseHTML(text))
+		self.Value = 0
 	end
 
 	doc [======[
