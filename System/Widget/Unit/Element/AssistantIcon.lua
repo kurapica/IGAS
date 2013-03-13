@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- AssistantIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name AssistantIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.AssistantIcon", version) then
@@ -17,6 +11,12 @@ end
 class "AssistantIcon"
 	inherit "Texture"
 	extend "IFAssistant"
+
+	doc [======[
+		@name AssistantIcon
+		@type class
+		@desc The assistant icon
+	]======]
 
 	------------------------------------------------------
 	-- Constructor

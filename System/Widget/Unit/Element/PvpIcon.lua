@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- PvpIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name PvpIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.PvpIcon", version) then
@@ -17,6 +11,12 @@ end
 class "PvpIcon"
 	inherit "Texture"
 	extend "IFFaction"
+
+	doc [======[
+		@name PvpIcon
+		@type class
+		@desc The pvp indicator
+	]======]
 
 	------------------------------------------------------
 	-- Method

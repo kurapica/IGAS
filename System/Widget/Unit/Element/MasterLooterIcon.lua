@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- MasterLooterIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name MasterLooterIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.MasterLooterIcon", version) then
@@ -17,6 +11,12 @@ end
 class "MasterLooterIcon"
 	inherit "Texture"
 	extend "IFGroupLoot"
+
+	doc [======[
+		@name MasterLooterIcon
+		@type class
+		@desc The master looter indicator
+	]======]
 
 	------------------------------------------------------
 	-- Constructor

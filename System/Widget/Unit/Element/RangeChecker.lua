@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/18
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- RangeChecker
--- <br><br>inherit <a href="..\Base\VirtualUIObject.html">VirtualUIObject</a> For all methods, properties and scriptTypes
--- @name RangeChecker
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.RangeChecker", version) then
@@ -17,6 +11,12 @@ end
 class "RangeChecker"
 	inherit "VirtualUIObject"
 	extend "IFRange"
+
+	doc [======[
+		@name RangeChecker
+		@type class
+		@desc The in-range indicator
+	]======]
 
 	------------------------------------------------------
 	-- Script

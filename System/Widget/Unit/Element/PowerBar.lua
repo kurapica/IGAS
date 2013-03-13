@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- PowerBar
--- <br><br>inherit <a href="..\Base\StatusBar.html">StatusBar</a> For all methods, properties and scriptTypes
--- @name PowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.PowerBar", version) then
@@ -17,6 +11,12 @@ end
 class "PowerBar"
 	inherit "StatusBar"
 	extend "IFPower"
+
+	doc [======[
+		@name PowerBar
+		@type class
+		@desc The power bar
+	]======]
 
 	------------------------------------------------------
 	-- Constructor
@@ -30,6 +30,12 @@ endclass "PowerBar"
 class "PowerBarFrequent"
 	inherit "StatusBar"
 	extend "IFPowerFrequent"
+
+	doc [======[
+		@name PowerBarFrequent
+		@type class
+		@desc The frequent power bar
+	]======]
 
 	------------------------------------------------------
 	-- Constructor

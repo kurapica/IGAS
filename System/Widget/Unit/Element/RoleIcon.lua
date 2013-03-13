@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- RoleIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name RoleIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.RoleIcon", version) then
@@ -38,6 +32,12 @@ end
 class "RoleIcon"
 	inherit "Texture"
 	extend "IFGroupRole"
+
+	doc [======[
+		@name RoleIcon
+		@type class
+		@desc The group role indicator
+	]======]
 
 	------------------------------------------------------
 	-- Method

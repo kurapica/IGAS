@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- PriestPowerBar
--- @type Class
--- @name PriestPowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.PriestPowerBar", version) then
@@ -18,21 +12,32 @@ class "PriestPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
 
+	doc [======[
+		@name PriestPowerBar
+		@type class
+		@desc The priest power bar for shadow orbs
+	]======]
+
 	GameTooltip = _G.GameTooltip
 	PRIEST_BAR_NUM_ORBS = _G.PRIEST_BAR_NUM_ORBS
 
-	-----------------------------------------------
-	--- ShadowOrb
-	-- @type class
-	-- @name ShadowOrb
-	-----------------------------------------------
 	class "ShadowOrb"
 		inherit "Frame"
+
+		doc [======[
+			@name ShadowOrb
+			@type class
+			@desc The shadow orb element
+		]======]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Activated
+		doc [======[
+			@name Activated
+			@type property
+			@desc Whether the element is activated
+		]======]
 		property "Activated" {
 			Get = function(self)
 				return self.__Activated or false

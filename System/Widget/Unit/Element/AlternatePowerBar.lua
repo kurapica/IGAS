@@ -2,12 +2,6 @@
 -- Create Date : 2012/08/06
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- AlternatePowerBar
--- <br><br>inherit <a href="..\Base\StatusBar.html">StatusBar</a> For all methods, properties and scriptTypes
--- @name AlternatePowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.AlternatePowerBar", version) then
@@ -17,6 +11,12 @@ end
 class "AlternatePowerBar"
 	inherit "StatusBar"
 	extend "IFAlternatePower"
+
+	doc [======[
+		@name AlternatePowerBar
+		@type class
+		@desc the alternate power bar
+	]======]
 
 	------------------------------------------------------
 	-- Script

@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- ComboBar
--- @type Class
--- @name ComboBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.ComboBar", version) then
@@ -18,21 +12,32 @@ class "ComboBar"
 	inherit "Frame"
 	extend "IFComboPoint"
 
+	doc [======[
+		@name ComboBar
+		@type class
+		@desc The bar to show the combo points of the target
+	]======]
+
 	GameTooltip = _G.GameTooltip
 	MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 
-	-----------------------------------------------
-	--- ComboPoint
-	-- @type class
-	-- @name ComboPoint
-	-----------------------------------------------
 	class "ComboPoint"
 		inherit "Frame"
+
+		doc [======[
+			@name ComboPoint
+			@type class
+			@desc The combo point element
+		]======]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Activated
+		doc [======[
+			@name Activated
+			@type property
+			@desc Whether the combo point is activated
+		]======]
 		property "Activated" {
 			Get = function(self)
 				return self.__Activated or false

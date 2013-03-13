@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- NameLabel
--- <br><br>inherit <a href="..\Base\FontString.html">Texture</a> For all methods, properties and scriptTypes
--- @name NameLabel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.NameLabel", version) then
@@ -17,6 +11,12 @@ end
 class "NameLabel"
 	inherit "FontString"
 	extend "IFUnitName" "IFFaction"
+
+	doc [======[
+		@name NameLabel
+		@type class
+		@desc The unit name label with faction color settings
+	]======]
 
 	_RAID_CLASS_COLORS = _G.RAID_CLASS_COLORS
 	_DefaultColor = ColorType(1, 1, 1)
@@ -46,7 +46,11 @@ class "NameLabel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- UseTapColor
+	doc [======[
+		@name UseTapColor
+		@type property
+		@desc Whether using the tap color, default false
+	]======]
 	property "UseTapColor" {
 		Get = function(self)
 			return self.__UseTapColor
@@ -57,7 +61,12 @@ class "NameLabel"
 		end,
 		Type = System.Boolean,
 	}
-	-- UseSelectionColor
+
+	doc [======[
+		@name UseSelectionColor
+		@type property
+		@desc Whether using the selection color, default false
+	]======]
 	property "UseSelectionColor" {
 		Get = function(self)
 			return self.__UseSelectionColor
@@ -68,7 +77,12 @@ class "NameLabel"
 		end,
 		Type = System.Boolean,
 	}
-	-- UseClassColor
+
+	doc [======[
+		@name UseClassColor
+		@type property
+		@desc Whether using the class color, default false
+	]======]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor

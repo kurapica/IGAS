@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- MonkPowerBar
--- @type Class
--- @name MonkPowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.MonkPowerBar", version) then
@@ -18,22 +12,33 @@ class "MonkPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
 
+	doc [======[
+		@name MonkPowerBar
+		@type class
+		@desc The monk power bar
+	]======]
+
 	GameTooltip = _G.GameTooltip
 	CHI_POWER = _G.CHI_POWER
 	CHI_TOOLTIP = _G.CHI_TOOLTIP
 
-	-----------------------------------------------
-	--- LightEnergy
-	-- @type class
-	-- @name LightEnergy
-	-----------------------------------------------
 	class "LightEnergy"
 		inherit "Frame"
+
+		doc [======[
+			@name LightEnergy
+			@type class
+			@desc The chi element
+		]======]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Activated
+		doc [======[
+			@name Activated
+			@type property
+			@desc Whether the element is activated
+		]======]
 		property "Activated" {
 			Get = function(self)
 				return self.__Activated or false

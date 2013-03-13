@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- PaladinPowerBar
--- @type Class
--- @name PaladinPowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.PaladinPowerBar", version) then
@@ -17,6 +11,12 @@ end
 class "PaladinPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
+
+	doc [======[
+		@name PaladinPowerBar
+		@type class
+		@desc The holy power bar for the paladin
+	]======]
 
 	GameTooltip = _G.GameTooltip
 	HOLY_POWER = _G.HOLY_POWER

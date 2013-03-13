@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- RaidTargetIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name RaidTargetIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.RaidTargetIcon", version) then
@@ -17,6 +11,12 @@ end
 class "RaidTargetIcon"
 	inherit "Texture"
 	extend "IFRaidTarget"
+
+	doc [======[
+		@name RaidTargetIcon
+		@type class
+		@desc The raid target indicator
+	]======]
 
 	------------------------------------------------------
 	-- Constructor

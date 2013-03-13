@@ -8,13 +8,14 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.StatusText", version) then
 	return
 end
 
------------------------------------------------
---- StatusText
--- @type class
--- @name StatusText
------------------------------------------------
 class "StatusText"
 	inherit "FontString"
+
+	doc [======[
+		@name StatusText
+		@type class
+		@desc The fontstring used to display status value
+	]======]
 
 	abs = math.abs
 
@@ -33,11 +34,12 @@ class "StatusText"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the status, overridable
-	-- @name RefreshStatus
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name RefreshStatus
+		@type method
+		@desc Refresh the status, overridable
+		@return nil
+	]======]
 	function RefreshStatus(self)
 		if self.__Value then
 			if self.__ShowPercent and self.__Max then
@@ -66,51 +68,50 @@ class "StatusText"
 		end
 	end
 
-	------------------------------------
-	--- Sets the value of the HealthString
-	-- @name HealthString:SetValue
-	-- @class function
-	-- @param value Value indicating the amount of the HealthString's area to be filled in (between minValue and maxValue, where minValue, maxValue = HealthString:GetMinMaxValues()) (number)
-	------------------------------------
-	-- SetValue
+	doc [======[
+		@name SetValue
+		@type method
+		@desc Sets the value of the fontstring
+		@param value number, the value
+		@return nil
+	]======]
 	function SetValue(self, value)
 		if type(value) == "number" and value >= 0 then
 			self.__Value = value
 			return self:RefreshStatus()
 		end
 	end
-	------------------------------------
-	--- Returns the current value of the HealthString
-	-- @name HealthString:GetValue
-	-- @class function
-	-- @return value - Value indicating the amount of the HealthString's area to be filled in (between minValue and maxValue, where minValue, maxValue = HealthString:GetMinMaxValues()) (number)
-	------------------------------------
-	-- GetValue
+
+	doc [======[
+		@name GetValue
+		@type method
+		@desc Gets the value of the fontstring
+		@return number
+	]======]
 	function GetValue(self)
 		return self.__Value or 0
 	end
 
-	------------------------------------
-	--- Sets the minimum and maximum values of the HealthString
-	-- @name HealthString:SetMinMaxValues
-	-- @class function
-	-- @param minValue Lower boundary for values represented on the HealthString (number)
-	-- @param maxValue Upper boundary for values represented on the HealthString (number)
-	------------------------------------
-	-- SetMinMaxValues
+	doc [======[
+		@name SetMinMaxValues
+		@type method
+		@desc Sets the minimum and maximum values for the fontstring
+		@param min number, lower boundary for the values
+		@param max number, upper boundary for the values
+		@return nil
+	]======]
 	function SetMinMaxValues(self, min, max)
 		self.__Min, self.__Max = min, max
 		return self:RefreshStatus()
 	end
 
-	------------------------------------
-	--- Returns the minimum and maximum values of the HealthString
-	-- @name HealthString:GetMinMaxValues
-	-- @class function
-	-- @return minValue - Lower boundary for values represented on the HealthString (number)
-	-- @return maxValue - Upper boundary for values represented on the HealthString (number)
-	------------------------------------
-	-- GetMinMaxValues
+	doc [======[
+		@name GetMinMaxValues
+		@type method
+		@desc Gets the minimum and maximum values
+		@return min number, the lower boundary for the values
+		@return max number, the upper boundary for the values
+	]======]
 	function GetMinMaxValues(self)
 		return self.__Min, self.__Max
 	end
@@ -118,7 +119,11 @@ class "StatusText"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ValueFormat
+	doc [======[
+		@name ValueFormat
+		@type property
+		@desc The display value format, default "%.2f"
+	]======]
 	property "ValueFormat" {
 		Get = function(self)
 			return self.__ValueFormat or "%.2f"
@@ -128,7 +133,12 @@ class "StatusText"
 		end,
 		Type = System.String + nil,
 	}
-	-- MinMaxValue
+
+	doc [======[
+		@name MinMaxValue
+		@type property
+		@desc The minimum and maximum values
+	]======]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())
@@ -138,7 +148,12 @@ class "StatusText"
 		end,
 		Type = System.MinMax,
 	}
-	-- Value
+
+	doc [======[
+		@name Value
+		@type property
+		@desc The fontstring's value
+	]======]
 	property "Value" {
 		Get = function(self)
 			return self:GetValue()
@@ -148,7 +163,12 @@ class "StatusText"
 		end,
 		Type = System.Number,
 	}
-	-- ShowLost
+
+	doc [======[
+		@name ShowLost
+		@type property
+		@desc Whether show lost value
+	]======]
 	property "ShowLost" {
 		Get = function(self)
 			return self.__ShowLost
@@ -161,7 +181,12 @@ class "StatusText"
 		end,
 		Type = System.Boolean,
 	}
-	-- ShowMax
+
+	doc [======[
+		@name ShowMax
+		@type property
+		@desc Whether show the max value
+	]======]
 	property "ShowMax" {
 		Get = function(self)
 			return self.__ShowMax
@@ -174,7 +199,12 @@ class "StatusText"
 		end,
 		Type = System.Boolean,
 	}
-	-- MaxFormat
+
+	doc [======[
+		@name MaxFormat
+		@type property
+		@desc The display format when ShowMax is true, default "%s / %s"
+	]======]
 	property "MaxFormat" {
 		Get = function(self)
 			return self.__MaxFormat or "%s / %s"
@@ -184,7 +214,12 @@ class "StatusText"
 		end,
 		Type = System.String + nil,
 	}
-	-- ShowPercent
+
+	doc [======[
+		@name ShowPercent
+		@type property
+		@desc Whether show percent format
+	]======]
 	property "ShowPercent" {
 		Get = function(self)
 			return self.__ShowPercent
@@ -197,7 +232,12 @@ class "StatusText"
 		end,
 		Type = System.Boolean,
 	}
-	-- PercentFormat
+
+	doc [======[
+		@name PercentFormat
+		@type property
+		@desc The display format when ShowPercent is true, default "%d%%"
+	]======]
 	property "PercentFormat" {
 		Get = function(self)
 			return self.__PercentFormat or "%d%%"
@@ -213,34 +253,42 @@ class "StatusText"
 	end
 endclass "StatusText"
 
-------------------------------------------------------
--- HealthText
-------------------------------------------------------
 class "HealthText"
 	inherit "StatusText"
 	extend "IFHealth"
+	doc [======[
+		@name HealthText
+		@type class
+		@desc The status text for health
+	]======]
 endclass "HealthText"
 
-------------------------------------------------------
--- HealthTextFrequent
-------------------------------------------------------
 class "HealthTextFrequent"
 	inherit "StatusText"
 	extend "IFHealthFrequent"
+	doc [======[
+		@name HealthTextFrequent
+		@type class
+		@desc The status text for frequent health
+	]======]
 endclass "HealthTextFrequent"
 
-------------------------------------------------------
--- PowerText
-------------------------------------------------------
 class "PowerText"
 	inherit "StatusText"
 	extend "IFPower"
+	doc [======[
+		@name PowerText
+		@type class
+		@desc The status text for power
+	]======]
 endclass "PowerText"
 
-------------------------------------------------------
--- PowerTextFrequent
-------------------------------------------------------
 class "PowerTextFrequent"
 	inherit "StatusText"
 	extend "IFPowerFrequent"
+	doc [======[
+		@name PowerTextFrequent
+		@type class
+		@desc The status text for frequent power
+	]======]
 endclass "PowerTextFrequent"

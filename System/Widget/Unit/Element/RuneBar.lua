@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/18
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- RuneBar
--- <br><br>inherit <a href="..\Common\LayoutPanel.html">LayoutPanel</a> For all methods, properties and scriptTypes
--- @name RuneBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.RuneBar", version) then
@@ -17,6 +11,12 @@ end
 class "RuneBar"
 	inherit "LayoutPanel"
 	extend "IFRune"
+
+	doc [======[
+		@name RuneBar
+		@type class
+		@desc The rune bar for the deathknight
+	]======]
 
 	GameTooltip = _G.GameTooltip
 	RUNES_TOOLTIP = _G.RUNES_TOOLTIP

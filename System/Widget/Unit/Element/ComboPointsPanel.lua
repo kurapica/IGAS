@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- ComboPointsPanel
--- <br><br>inherit <a href="..\Common\LayoutPanel.html">LayoutPanel</a> For all methods, properties and scriptTypes
--- @name ComboPointsPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.ComboPointsPanel", version) then
@@ -18,13 +12,14 @@ class "ComboPointsPanel"
 	inherit "LayoutPanel"
 	extend "IFComboPoint"
 
+	doc [======[
+		@name ComboPointsPanel
+		@type class
+		@desc The panel to show the combo points on the target, abandoned
+	]======]
+
 	MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 
-	-----------------------------------------------
-	--- ComboPoint
-	-- @type class
-	-- @name ComboPoint
-	-----------------------------------------------
 	class "ComboPoint"
 		inherit "System.Object"
 	endclass "ComboPoint"

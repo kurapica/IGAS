@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- DisconnectIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name DisconnectIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.DisconnectIcon", version) then
@@ -17,6 +11,12 @@ end
 class "DisconnectIcon"
 	inherit "Texture"
 	extend "IFConnect"
+
+	doc [======[
+		@name DisconnectIcon
+		@type class
+		@desc The disconnect indicator
+	]======]
 
 	------------------------------------------------------
 	-- Script

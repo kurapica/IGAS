@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- WarlockPowerBar
--- @type Class
--- @name WarlockPowerBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.WarlockPowerBar", version) then
@@ -17,6 +11,12 @@ end
 class "WarlockPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
+
+	doc [======[
+		@name WarlockPowerBar
+		@type class
+		@desc The power bar for warlock
+	]======]
 
 	GameTooltip = _G.GameTooltip
 
@@ -43,13 +43,14 @@ class "WarlockPowerBar"
 		Destruction			= { left = 0.30078125, right = 0.37890625, top = 0.32812500, bottom = 0.67187500, height = 22, fileHeight = 64 },
 	}
 
-	-----------------------------------------------
-	--- Shard
-	-- @type class
-	-- @name Shard
-	-----------------------------------------------
 	class "Shard"
 		inherit "Frame"
+
+		doc [======[
+			@name Shard
+			@type class
+			@desc The shard element
+		]======]
 
 		------------------------------------------------------
 		-- Property
@@ -235,13 +236,14 @@ class "WarlockPowerBar"
 	    end
 	endclass "Shard"
 
-	-----------------------------------------------
-	--- BurningEmber
-	-- @type class
-	-- @name BurningEmber
-	-----------------------------------------------
 	class "BurningEmber"
 		inherit "Frame"
+
+		doc [======[
+			@name BurningEmber
+			@type class
+			@desc the burning ember element
+		]======]
 
 		------------------------------------------------------
 		-- Property

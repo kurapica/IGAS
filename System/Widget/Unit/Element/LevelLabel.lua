@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- LevelLabel
--- <br><br>inherit <a href="..\Base\FontString.html">Texture</a> For all methods, properties and scriptTypes
--- @name LevelLabel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.LevelLabel", version) then
@@ -18,10 +12,20 @@ class "LevelLabel"
 	inherit "FontString"
 	extend "IFUnitLevel"
 
+	doc [======[
+		@name LevelLabel
+		@type class
+		@desc The unit level indicator
+	]======]
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- LevelFormat
+	doc [======[
+		@name LevelFormat
+		@type property
+		@desc The level's format like 'Lvl %s', default '%s'
+	]======]
 	property "LevelFormat" {
 		Get = function(self)
 			return self.__LevelFormat or "%s"

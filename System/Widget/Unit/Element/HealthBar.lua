@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- HealthBar
--- <br><br>inherit <a href="..\Base\StatusBar.html">StatusBar</a> For all methods, properties and scriptTypes
--- @name HealthBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.HealthBar", version) then
@@ -119,6 +113,12 @@ class "HealthBar"
 	inherit "StatusBar"
 	extend "IFHealth" "IFDebuffState"
 
+	doc [======[
+		@name HealthBar
+		@type class
+		@desc The health bar with debuff state
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -144,7 +144,11 @@ class "HealthBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- UseDebuffColor
+	doc [======[
+		@name UseDebuffColor
+		@type property
+		@desc Whether use the debuff color
+	]======]
 	property "UseDebuffColor" {
 		Get = function(self)
 			return self.__UseDebuffColor or false
@@ -153,9 +157,14 @@ class "HealthBar"
 			self.__UseDebuffColor = Boolean
 			HealthBar_OnStateChanged(self)
 		end,
-		Type = System.Any,
+		Type = System.Boolean,
 	}
-	-- UseClassColor
+
+	doc [======[
+		@name UseClassColor
+		@type property
+		@desc Whether use the unit's class color
+	]======]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor or false
@@ -166,7 +175,12 @@ class "HealthBar"
 		end,
 		Type = System.Boolean,
 	}
-	-- Smooth
+
+	doc [======[
+		@name Smooth
+		@type property
+		@desc Whether smoothing the color changing
+	]======]
 	property "Smooth" {
 		Get = function(self)
 			return self.__Smooth or false
@@ -195,6 +209,12 @@ class "HealthBarFrequent"
 	inherit "StatusBar"
 	extend "IFHealthFrequent" "IFDebuffState"
 
+	doc [======[
+		@name HealthBarFrequent
+		@type class
+		@desc The frequent health bar with debuff state
+	]======]
+
 	------------------------------------------------------
 	-- Script
 	------------------------------------------------------
@@ -220,7 +240,11 @@ class "HealthBarFrequent"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- UseDebuffColor
+	doc [======[
+		@name UseDebuffColor
+		@type property
+		@desc Whether use the debuff color
+	]======]
 	property "UseDebuffColor" {
 		Get = function(self)
 			return self.__UseDebuffColor or false
@@ -231,7 +255,12 @@ class "HealthBarFrequent"
 		end,
 		Type = System.Any,
 	}
-	-- UseClassColor
+
+	doc [======[
+		@name UseClassColor
+		@type property
+		@desc Whether use the unit's class color
+	]======]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor or false
@@ -242,7 +271,12 @@ class "HealthBarFrequent"
 		end,
 		Type = System.Boolean,
 	}
-	-- Smooth
+
+	doc [======[
+		@name Smooth
+		@type property
+		@desc Whether smoothing the color changing
+	]======]
 	property "Smooth" {
 		Get = function(self)
 			return self.__Smooth or false

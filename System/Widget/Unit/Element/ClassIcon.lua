@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- ClassIcon
--- <br><br>inherit <a href="..\Base\Texture.html">Texture</a> For all methods, properties and scriptTypes
--- @name ClassIcon
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.ClassIcon", version) then
@@ -18,6 +12,12 @@ class "ClassIcon"
 	inherit "Texture"
 	extend "IFUnitElement"
 
+	doc [======[
+		@name ClassIcon
+		@type property
+		@desc The unit's class icon
+	]======]
+
 	CLASS_ICON_TCOORDS = CopyTable(_G.CLASS_ICON_TCOORDS)
 
 	------------------------------------------------------
@@ -27,11 +27,12 @@ class "ClassIcon"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	doc [======[
+		@name Refresh
+		@type method
+		@desc Refresh the unit's class icon
+		@return nil
+	]======]
 	function Refresh(self)
 		local cls = self.UnitClass
 		if cls then

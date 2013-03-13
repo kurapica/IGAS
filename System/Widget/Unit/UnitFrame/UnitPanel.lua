@@ -12,6 +12,12 @@ class "UnitPanel"
 	inherit "SecureFrame"
 	extend "IFElementPanel" "IFGroup"
 
+	doc [======[
+		@name UnitPanel
+		@type class
+		@desc The unit panel for party or raid members
+	]======]
+
 	MAX_RAID_MEMBERS = _G.MAX_RAID_MEMBERS
 	NUM_RAID_GROUPS = _G.NUM_RAID_GROUPS
 	MEMBERS_PER_RAID_GROUP = _G.MEMBERS_PER_RAID_GROUP
@@ -27,7 +33,6 @@ class "UnitPanel"
 		@name Refresh
 		@type method
 		@desc Refresh the unit panel
-		@param ...
 		@return nil
 	]======]
 	function Refresh(self)

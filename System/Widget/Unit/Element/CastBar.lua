@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- CastBar
--- <br><br>inherit <a href="..\Base\Frame.html">Frame</a> For all methods, properties and scriptTypes
--- @name CastBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.CastBar", version) then
@@ -17,6 +11,12 @@ end
 class "CastBar"
 	inherit "Frame"
 	extend "IFCast" "IFCooldownLabel" "IFCooldownStatus"
+
+	doc [======[
+		@name CastBar
+		@type class
+		@desc The cast bar
+	]======]
 
 	_DELAY_TEMPLATE = FontColor.RED .. "(%.1f)" .. FontColor.CLOSE
 
@@ -57,25 +57,12 @@ class "CastBar"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-
-	------------------------------------
-	--- Custom the label
-	-- @name SetUpCooldownLabel
-	-- @class function
-	-- @param label
-	------------------------------------
 	function SetUpCooldownLabel(self, label)
 		label:SetPoint("RIGHT")
 		label.JustifyH = "RIGHT"
 		label.FontObject = "TextStatusBarText"
 	end
 
-	------------------------------------
-	--- Custom the statusbar
-	-- @name SetUpCooldownStatus
-	-- @class function
-	-- @param status
-	------------------------------------
 	function SetUpCooldownStatus(self, status)
 		status:SetPoint("TOPLEFT", self.Icon, "TOPRIGHT")
 		status:SetPoint("BOTTOMRIGHT")
@@ -87,15 +74,6 @@ class "CastBar"
 		status.OnValueChanged = status.OnValueChanged + Status_OnValueChanged
 	end
 
-	------------------------------------
-	--- Fires when unit begins casting a spell
-	-- @name Start
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function Start(self, spell, rank, lineID, spellID)
 		local name, _, text, texture, startTime, endTime, _, _, notInterruptible = UnitCastingInfo(self.Unit)
 
@@ -131,15 +109,6 @@ class "CastBar"
 		self.Alpha = 1
 	end
 
-	------------------------------------
-	--- Fires when unit's spell cast fails
-	-- @name Fail
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function Fail(self, spell, rank, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
@@ -149,15 +118,6 @@ class "CastBar"
 		end
 	end
 
-	------------------------------------
-	--- Fires when unit stops or cancels casting a spell
-	-- @name Stop
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function Stop(self, spell, rank, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
@@ -167,15 +127,6 @@ class "CastBar"
 		end
 	end
 
-	------------------------------------
-	--- Fires when unit's spell cast is interrupted
-	-- @name Interrupt
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function Interrupt(self, spell, rank, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
@@ -185,33 +136,14 @@ class "CastBar"
 		end
 	end
 
-	------------------------------------
-	--- Fires when unit's spell cast becomes interruptible again
-	-- @name Interruptible
-	-- @type function
-	------------------------------------
 	function Interruptible(self)
 		self.Shield.Visible = false
 	end
 
-	------------------------------------
-	--- Fires when unit's spell cast becomes uninterruptible
-	-- @name UnInterruptible
-	-- @type function
-	------------------------------------
 	function UnInterruptible(self)
 		self.Shield.Visible = true
 	end
 
-	------------------------------------
-	--- Fires when unit's spell cast is delayed
-	-- @name Interrupt
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function Delay(self, spell, rank, lineID, spellID)
 		local name, _, text, texture, startTime, endTime = UnitCastingInfo(self.Unit)
 
@@ -232,15 +164,6 @@ class "CastBar"
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
 
-	------------------------------------
-	--- Fires when unit starts channeling a spell
-	-- @name ChannelStart
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function ChannelStart(self, spell, rank, lineID, spellID)
 		local name, _, text, texture, startTime, endTime, _, notInterruptible = UnitChannelInfo(self.Unit)
 
@@ -276,15 +199,6 @@ class "CastBar"
 		self.Alpha = 1
 	end
 
-	------------------------------------
-	--- Fires when unit's channeled spell is interrupted or delayed
-	-- @name ChannelUpdate
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function ChannelUpdate(self, spell, rank, lineID, spellID)
 		local name, _, text, texture, startTime, endTime = UnitChannelInfo(self.Unit)
 
@@ -310,15 +224,6 @@ class "CastBar"
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
 
-	------------------------------------
-	--- Fires when unit stops or cancels a channeled spell
-	-- @name ChannelStop
-	-- @type function
-	-- @param spell - The name of the spell that's being casted. (string)
-	-- @param rank - The rank of the spell that's being casted. (string)
-	-- @param lineID - Spell lineID counter. (number)
-	-- @param spellID - The id of the spell that's being casted. (number, spellID)
-	------------------------------------
 	function ChannelStop(self, spell, rank, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
@@ -328,15 +233,19 @@ class "CastBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- IFCooldownLabelUseDecimal
 	property "IFCooldownLabelUseDecimal" {
 		Get = function(self) return true end
 	}
-	-- IFCooldownLabelAutoColor
+
 	property "IFCooldownLabelAutoColor" {
 		Get = function(self) return false end
 	}
-	-- DelayFormatString
+
+	doc [======[
+		@name DelayFormatString
+		@type property
+		@desc The delay time format string like "%.1f"
+	]======]
 	property "DelayFormatString" {
 		Get = function(self)
 			return self.__DelayFormatString or _DELAY_TEMPLATE

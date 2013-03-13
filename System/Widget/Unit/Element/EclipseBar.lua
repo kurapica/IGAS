@@ -2,12 +2,6 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- EclipseBar
--- <br><br>inherit <a href="..\Base\StatusBar.html">StatusBar</a> For all methods, properties and scriptTypes
--- @name EclipseBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.EclipseBar", version) then
@@ -17,6 +11,12 @@ end
 class "EclipseBar"
 	inherit "Frame"
 	extend "IFEclipse"
+
+	doc [======[
+		@name EclipseBar
+		@type class
+		@desc The eclipse bar
+	]======]
 
 	SPELL_POWER_ECLIPSE = _G.SPELL_POWER_ECLIPSE
 

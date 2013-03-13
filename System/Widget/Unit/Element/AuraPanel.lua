@@ -2,12 +2,6 @@
 -- Create Date : 2012/08/03
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- AuraPanel
--- <br><br>inherit <a href="..\Common\ElementPanel.html">ElementPanel</a> For all methods, properties and scriptTypes
--- @name AuraPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.AuraPanel", version) then
@@ -17,6 +11,12 @@ end
 class "AuraPanel"
 	inherit "Frame"
 	extend "IFElementPanel""IFAura"
+
+	doc [======[
+		@name AuraPanel
+		@type class
+		@desc The aura panel to display buffs or debuffs
+	]======]
 
 	_FILTER_LIST = {
 		CANCELABLE = true,
@@ -51,6 +51,12 @@ class "AuraPanel"
 		inherit "Frame"
 		extend "IFCooldownIndicator"
 
+		doc [======[
+			@name AuraIcon
+			@type class
+			@desc The icon to display buff or debuff
+		]======]
+
 		_DebuffTypeColor = CopyTable(_G.DebuffTypeColor)
 
 		RAID_CLASS_COLORS = CopyTable(_G.RAID_CLASS_COLORS)
@@ -67,11 +73,16 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		------------------------------------
-		--- Refresh the icon
-		-- @name Refresh
-		-- @class function
-		------------------------------------
+		doc [======[
+			@name Refresh
+			@type method
+			@desc Refresh the icon
+			@format unit, index[, filter]
+			@param unit string, the unit
+			@param index number, the aura index
+			@param filter string, the filiter token
+			@return nil
+		]======]
 		function Refresh(self, unit, index, filter)
 			local name, rank, texture, count, dtype, duration, expires, caster, isStealable, shouldConsolidate, spellID, canApplyAura, isBossDebuff = UnitAura(unit, index, filter)
 
@@ -178,11 +189,6 @@ class "AuraPanel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh totems
-	-- @name Refresh
-	-- @class function
-	------------------------------------
 	function Refresh(self)
 		local index = 1
 		local i = 1
@@ -213,15 +219,16 @@ class "AuraPanel"
 		self:UpdatePanelSize()
 	end
 
-	------------------------------------
-	--- Custom Filter method
-	-- @name CustomFilter
-	-- @type function
-	-- @param unit
-	-- @param index
-	-- @param filter
-	-- @return boolean
-	------------------------------------
+	doc [======[
+		@name CustomFilter
+		@type method
+		@desc The custom filter method, overridable
+		@format unit, index[, filter]
+		@param unit string, the unit
+		@param index number, the aura index
+		@param filter string, the filiter token
+		@return boolean true if the aura should be shown
+	]======]
 	function CustomFilter(self, unit, index, filter)
 		return true
 	end
@@ -229,7 +236,11 @@ class "AuraPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Filter
+	doc [======[
+		@name Filter
+		@type property
+		@desc The filter token, CANCELABLE | HARMFUL | HELPFUL | NOT_CANCELABLE | PLAYER | RAID, can be combined with '|'
+	]======]
 	property "Filter" {
 		Get = function(self)
 			return self.__AuraPanelFilter
@@ -247,7 +258,12 @@ class "AuraPanel"
 		end,
 		Type = String + nil,
 	}
-	-- HighLightPlayer
+
+	doc [======[
+		@name HighLightPlayer
+		@type class
+		@desc Whether should highlight auras that casted by the player
+	]======]
 	property "HighLightPlayer" {
 		Get = function(self)
 			return self.__HighLightPlayer or false

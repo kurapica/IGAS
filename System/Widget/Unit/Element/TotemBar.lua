@@ -2,12 +2,6 @@
 -- Create Date : 2012/07/22
 -- Change Log  :
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- TotemBar
--- <br><br>inherit <a href="..\Common\LayoutPanel.html">LayoutPanel</a> For all methods, properties and scriptTypes
--- @name TotemBar
-----------------------------------------------------------------------------------------------------------------------------------------
-
 -- Check Version
 local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Unit.TotemBar", version) then
@@ -17,6 +11,12 @@ end
 class "TotemBar"
 	inherit "LayoutPanel"
 	extend "IFTotem"
+
+	doc [======[
+		@name TotemBar
+		@type class
+		@desc The totem bar
+	]======]
 
 	MAX_TOTEMS = _G.MAX_TOTEMS
 
