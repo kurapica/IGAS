@@ -14,12 +14,6 @@ _MinMax = MinMax(0, 1)
 
 SPEC_MONK_BREWMASTER = _G.SPEC_MONK_BREWMASTER
 
-if select(2, UnitClass('player')) == 'MONK' then
-	_UseStagger = true
-else
-	_UseStagger = false
-end
-
 function _IFStaggerUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_DISPLAYPOWER")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -92,11 +86,7 @@ interface "IFStagger"
 	-- Script Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		if self.Unit == "player" then
-			_IFStaggerUnitList[self] = self.Unit
-		else
-			_IFStaggerUnitList[self] = nil
-		end
+		_IFStaggerUnitList[self] = self.Unit
 	end
 
 	------------------------------------------------------
@@ -110,27 +100,7 @@ interface "IFStagger"
 	-- Constructor
 	------------------------------------------------------
 	function IFStagger(self)
-		if _M._UseStagger then
-			self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-			-- Default Texture
-			if self:IsClass(StatusBar) then
-				if not self.StatusBarTexturePath then
-					self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
-				end
-			end
-
-			local info = PowerBarColor['MANA']
-
-			if self:IsClass(StatusBar) then
-				self:SetStatusBarColor(info.r, info.g, info.b)
-			elseif self:IsClass(LayeredRegion) then
-				self:SetVertexColor(info.r, info.g, info.b, 1)
-			end
-
-			self.MouseEnabled = false
-		else
-			self.Visible = false
-		end
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.MouseEnabled = false
 	end
 endinterface "IFStagger"
