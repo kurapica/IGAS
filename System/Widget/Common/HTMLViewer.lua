@@ -394,28 +394,29 @@ class "HTMLViewer"
 	doc [======[
 		@name SetText
 		@type method
-		@desc For HTML formatting, the entire text must be enclosed in <html><body> and </body></html> tags.
-		<br>All tags must be closed (img and br must use self-closing syntax; e.g. <br/>, not <br >).
+		@desc For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.
+		<br>All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br &gt;).
 		<br>Tags are case insensitive, but closing tags must match the case of opening tags.
 		<br>Attribute values must be enclosed in single or double quotation marks (" or ').
-		<br>Characters occurring in HTML markup must be entity-escaped (&quot; &lt; &gt; &amp;); no other entity-escapes are supported.
-		<br>Unrecognized tags and their contents are ignored (e.g. given <h1><foo>bar</foo>baz</h1>, only "baz" will appear).
+		<br>Characters occurring in HTML markup must be entity-escaped (&amp;quot; &amp;lt; &amp;gt; &amp;amp;); no other entity-escapes are supported.
+		<br>Unrecognized tags and their contents are ignored (e.g. given &lt;h1&gt;&lt;foo&gt;bar&lt;/foo&gt;baz&lt;/h1&gt;, only "baz" will appear).
 		<br>Any HTML parsing error will result in the raw HTML markup being displayed.
 		<br>Only the following tags and attributes are supported:
 		<br>
-		<br>p, h1, h2, h3 - Block elements; e.g. <p align="left">
+		<br>p, h1, h2, h3 - Block elements; e.g. &lt;p align="left"&gt;
 		<br>
 		<br>align - Text alignment style (optional); allowed values are left, center, and right.
-		<br>img - Image; may only be used as a block element (not inline with text); e.g. <img src="Interface\Icons\INV_Misc_Rune_01" />.
+		<br>img - Image; may only be used as a block element (not inline with text); e.g. &lt;img src="Interface\Icons\INV_Misc_Rune_01" /&gt;.
 		<br>
 		<br>src - Path to the image file (filename extension omitted).
 		<br>align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.
 		<br>width - Width at which to display the image (in pixels; optional).
 		<br>height - Height at which to display the image (in pixels; optional).
-		<br>a - Inline hyperlink; e.g. <a href="aLink">text</a>
+		<br>a - Inline hyperlink; e.g. &lt;a href="aLink"&gt;text&lt;/a&gt;
 		<br>
 		<br>href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.
-		<br>br - Explicit line break in text; e.g. <br />.
+		<br>br - Explicit line break in text; e.g. &lt;br /&gt;.
+		<br>
 		<br>
 		@param text string, text(with HTML markup) to be displayed
 		@return nil

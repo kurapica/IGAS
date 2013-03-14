@@ -68,7 +68,7 @@ interface "IFAutoPosition"
 	doc [======[
 		@name IFAutoPosition
 		@type interface
-		@desc IFAutoPosition provide a position & size control system for frames.
+		@desc IFAutoPosition provide a position &amp; size control system for frames.
 	]======]
 
 	------------------------------------------------------

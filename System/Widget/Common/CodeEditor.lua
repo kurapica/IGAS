@@ -17,7 +17,7 @@ class "CodeEditor"
 	doc [======[
 		@name CodeEditor
 		@type class
-		@desc CodeEditor object is using as a lua code editor
+		@desc CodeEditor object is used as a lua code editor
 	]======]
 
 	GRN    ='	'

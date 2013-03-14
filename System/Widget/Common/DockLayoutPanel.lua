@@ -2,12 +2,6 @@
 -- Create Date : 5/13/2012
 -- ChangeLog
 
-----------------------------------------------------------------------------------------------------------------------------------------
---- DockLayoutPanel
--- <br><br>inherit <a href=".\LayoutPanel.html">LayoutPanel</a> For all methods, properties and scriptTypes
--- @name DockLayoutPanel
-----------------------------------------------------------------------------------------------------------------------------------------
-
 local version = 6
 if not IGAS:NewAddon("IGAS.Widget.DockLayoutPanel", version) then
 	return
@@ -21,7 +15,7 @@ class "DockLayoutPanel"
 	doc [======[
 		@name DockLayoutPanel
 		@type class
-		@desc DockLayoutPanel is using to contain other widget elements and manager their size & position with the dock settings.
+		@desc DockLayoutPanel is using to contain other widget elements and manager their size &amp; position with the dock settings.
 	]======]
 
 	_NORTH = "NORTH"

@@ -380,7 +380,7 @@ class "ScrollBar"
 	doc [======[
 		@name MinMaxValue
 		@type property
-		@desc the min & max boundary of the scrollbar's values
+		@desc the min &amp; max boundary of the scrollbar's values
 	]======]
 	property "MinMaxValue" {
 		Get = function(self)
