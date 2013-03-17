@@ -104,6 +104,11 @@ class "UnitList"
 	function RegisterEvent(self, event)
 		_UnitListEventManager:RegisterEvent(event)
 		_UnitListEventDistribution[event] = _UnitListEventDistribution[event] or {}
+		for i, lst in ipairs(_UnitListEventDistribution[event]) do
+			if lst == self then
+				return
+			end
+		end
 		tinsert(_UnitListEventDistribution[event], self)
 	end
 

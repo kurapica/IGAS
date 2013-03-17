@@ -42,7 +42,7 @@
 	<Script file="Interface\IFTotem.lua"/>
 	<Script file="Interface\IFUnitName.lua"/>
 	<Script file="Interface\IFUnitLevel.lua"/>
-	<!-- Script file="Interface\IFStagger.lua"/ -->
+	<Script file="Interface\IFStagger.lua"/>
 
 	<!-- Elements -->
 	<Script file="Element\AlternatePowerBar.lua"/>

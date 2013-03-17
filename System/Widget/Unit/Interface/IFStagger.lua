@@ -9,43 +9,67 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFStagger", version) then
 end
 
 _IFStaggerUnitList = _IFStaggerUnitList or UnitList(_Name)
+_IFStaggerUnitMaxHealthCache = _IFStaggerUnitMaxHealthCache or {}
 
 _MinMax = MinMax(0, 1)
 
 SPEC_MONK_BREWMASTER = _G.SPEC_MONK_BREWMASTER
 
 function _IFStaggerUnitList:OnUnitListChanged()
-	self:RegisterEvent("UNIT_DISPLAYPOWER")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR")
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+
+	UpdateCondition(self)
 
 	self.OnUnitListChanged = nil
 end
 
-function _IFStaggerUnitList:ParseEvent(event, unit, type)
+function _IFStaggerUnitList:ParseEvent(event, unit)
 	if unit and unit ~= "player" then return end
 
-	if event == "UNIT_POWER" then
-		self:EachK("player", "Value", UnitPower(unit, SPELL_POWER_MANA))
-	elseif event == "UNIT_MAXPOWER" then
-		_MinMax.max = UnitPowerMax("player", SPELL_POWER_MANA)
-		self:EachK("player", "MinMaxValue", _MinMax)
-		self:EachK("player", "Value", UnitPower(unit, SPELL_POWER_MANA))
+	if event == "UNIT_HEALTH_FREQUENT" then
+		_MinMax.max = UnitHealthMax(unit)
+		if _IFStaggerUnitMaxHealthCache[unit] ~= _MinMax.max then
+			_IFStaggerUnitMaxHealthCache[unit] = _MinMax.max
+			self:EachK(unit, "MinMaxValue", _MinMax)
+		end
+
+		self:EachK(unit, "Value", UnitStagger(unit))
+	elseif event == "UNIT_MAXHEALTH" then
+		_MinMax.max = UnitHealthMax(unit)
+		_IFStaggerUnitMaxHealthCache[unit] = _MinMax.max
+		self:EachK(unit, "MinMaxValue", _MinMax)
+
+		self:EachK(unit, "Value", UnitStagger(unit))
+	elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+		UpdateCondition(self)
+	end
+end
+
+function UpdateCondition(self)
+	-- Only for player now
+	if SPEC_MONK_BREWMASTER == GetSpecialization() then
+		self:RegisterEvent("UNIT_MAXHEALTH")
+		self:RegisterEvent("UNIT_HEALTH_FREQUENT")
+		self:EachK("player", "Visible", true)
 	else
-		self:EachK("player", "Refresh")
+		self:UnregisterEvent("UNIT_MAXHEALTH")
+		self:UnregisterEvent("UNIT_HEALTH_FREQUENT")
+		self:EachK("player", "Visible", false)
 	end
 end
 
 interface "IFStagger"
 	extend "IFUnitElement"
 
+	SPEC_MONK_BREWMASTER = SPEC_MONK_BREWMASTER
+
 	doc [======[
 		@name IFStagger
 		@type interface
 		@desc IFStagger is used to handle the unit's stagger
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the mana
-		@overridable Value property, number, used to receive the mana's value
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the health
+		@overridable Value property, number, used to receive the stagger's value
+		@overridable Visible property, boolean, used to receive the result whether should show the stagger value
 	]======]
 
 	------------------------------------------------------
@@ -62,20 +86,14 @@ interface "IFStagger"
 		@return nil
 	]======]
 	function Refresh(self)
-		if not _M._UseStagger or not self.Existed then return end
-
-		if UnitPowerType('player') == SPELL_POWER_MANA or (select(2, UnitClass('player')) == 'MONK' and GetSpecialization() ~= 2) then
-			return self:Hide()
+		if self.Unit == "player" and select(2, UnitClass("player")) == "MONK" and SPEC_MONK_BREWMASTER == GetSpecialization() then
+			_MinMax.max = UnitHealthMax(self.Unit)
+			self.MinMaxValue = _MinMax
+			self.Value = UnitStagger(self.Unit)
 		else
-			self:Show()
+			self.Value = 0
+			self.Visible = false
 		end
-
-		local min, max = UnitPower(self.Unit, SPELL_POWER_MANA), UnitPowerMax(self.Unit, SPELL_POWER_MANA)
-
-		_MinMax.max = max
-		self.MinMaxValue = _MinMax
-
-		self.Value = min
 	end
 
 	------------------------------------------------------
@@ -86,7 +104,11 @@ interface "IFStagger"
 	-- Script Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFStaggerUnitList[self] = self.Unit
+		if self.Unit == "player" then
+			_IFStaggerUnitList[self] = self.Unit
+		else
+			_IFStaggerUnitList[self] = nil
+		end
 	end
 
 	------------------------------------------------------
@@ -100,7 +122,11 @@ interface "IFStagger"
 	-- Constructor
 	------------------------------------------------------
 	function IFStagger(self)
-		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-		self.MouseEnabled = false
+		if select(2, UnitClass("player")) == "MONK" then
+			self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+			self.MouseEnabled = false
+		else
+			self.Visible = false
+		end
 	end
 endinterface "IFStagger"

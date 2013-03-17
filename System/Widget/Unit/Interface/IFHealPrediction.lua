@@ -3,19 +3,22 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealPrediction", version) then
 	return
 end
 
 _IFMyHealPredictionUnitList = _IFMyHealPredictionUnitList or UnitList(_Name.."My")
 _IFAllHealPredictionUnitList = _IFAllHealPredictionUnitList or UnitList(_Name.."All")
+_IFAbsorbUnitList = _IFAbsorbUnitList or UnitList(_Name.."Absorb")
+
 _IFHealPredictionUnitMaxHealthCache = _IFHealPredictionUnitMaxHealthCache or {}
 
 _MinMax = MinMax(0, 1)
 
 function _IFMyHealPredictionUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_HEAL_PREDICTION")
+	self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
 	self:RegisterEvent("UNIT_MAXHEALTH")
 	self:RegisterEvent("UNIT_HEALTH")
 
@@ -24,6 +27,7 @@ end
 
 function _IFAllHealPredictionUnitList:OnUnitListChanged()
 	_IFMyHealPredictionUnitList:RegisterEvent("UNIT_HEAL_PREDICTION")
+	_IFMyHealPredictionUnitList:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED")
 	_IFMyHealPredictionUnitList:RegisterEvent("UNIT_MAXHEALTH")
 	_IFMyHealPredictionUnitList:RegisterEvent("UNIT_HEALTH")
 
@@ -33,19 +37,28 @@ end
 MAX_INCOMING_HEAL_OVERFLOW = 1
 
 function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
-	if _IFMyHealPredictionUnitList:HasUnit(unit) or _IFAllHealPredictionUnitList:HasUnit(unit) then
-		if event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEALTH" then
+	if _IFMyHealPredictionUnitList:HasUnit(unit) or _IFAllHealPredictionUnitList:HasUnit(unit) or _IFAbsorbUnitList:HasUnit(unit) then
+		if event == "UNIT_MAXHEALTH" then
+			_MinMax.max = UnitHealthMax(unit)
+			_IFHealPredictionUnitMaxHealthCache[unit] = _MinMax.max
+			_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+			_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+			_IFAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
+		else
 			local myIncomingHeal = UnitGetIncomingHeals(unit, "player") or 0
 			local allIncomingHeal = UnitGetIncomingHeals(unit) or 0
+			local totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
 
 			local health = UnitHealth(unit)
 			local maxHealth = UnitHealthMax(unit)
 
+			-- Update max health
 			if _IFHealPredictionUnitMaxHealthCache[unit] ~= maxHealth then
 				_MinMax.max = maxHealth
 				_IFHealPredictionUnitMaxHealthCache[unit] = maxHealth
 				_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
 				_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+				_IFAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
 			end
 
 			--See how far we're going over.
@@ -61,13 +74,19 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 				allIncomingHeal = allIncomingHeal - myIncomingHeal
 			end
 
+			local overAbsorb = false;
+			--We don't overfill the absorb bar
+			if ( health + myIncomingHeal + allIncomingHeal + totalAbsorb >= maxHealth ) then
+				if ( totalAbsorb > 0 ) then
+					overAbsorb = true;
+				end
+				totalAbsorb = max(0,maxHealth - (health + myIncomingHeal + allIncomingHeal));
+			end
+
 			_IFMyHealPredictionUnitList:EachK(unit, "Value", myIncomingHeal)
 			_IFAllHealPredictionUnitList:EachK(unit, "Value", allIncomingHeal)
-		elseif event == "UNIT_MAXHEALTH" then
-			_MinMax.max = UnitHealthMax(unit)
-			_IFHealPredictionUnitMaxHealthCache[unit] = _MinMax.max
-			_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-			_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
+			_IFAbsorbUnitList:EachK(unit, "Value", totalAbsorb)
+			_IFAbsorbUnitList:EachK(unit, "OverAbsorb", overAbsorb)
 		end
 	end
 end
@@ -90,12 +109,6 @@ interface "IFMyHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -142,7 +155,6 @@ interface "IFMyHealPrediction"
 	end
 endinterface "IFMyHealPrediction"
 
-
 interface "IFAllHealPrediction"
 	extend "IFUnitElement"
 
@@ -161,12 +173,6 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)
@@ -212,3 +218,67 @@ interface "IFAllHealPrediction"
 		self.MouseEnabled = false
 	end
 endinterface "IFAllHealPrediction"
+
+interface "IFAbsorb"
+	extend "IFUnitElement"
+
+	doc [======[
+		@name IFAbsorb
+		@type interface
+		@desc IFAbsorb is used to handle the unit's total absorb value
+		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
+		@overridable Value property, number, used to receive the total absorb value
+		@overridable OverAbsorb Property, boolean, used to receive the result whether the unit's absorb effect is overdose
+	]======]
+
+	------------------------------------------------------
+	-- Script
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	function Refresh(self)
+		if self.Unit then
+			_MinMax.max = UnitHealthMax(self.Unit)
+			self.MinMaxValue = _MinMax
+			self.Value = 0
+		else
+			_MinMax.max = 100
+			self.MinMaxValue = _MinMax
+			self.Value = 0
+		end
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Script Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFAbsorbUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFAbsorbUnitList[self] = nil
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function IFAbsorb(self)
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+
+		-- Default Texture
+		if self:IsClass(StatusBar) and not self.StatusBarTexture then
+			self.StatusBarTexturePath = [[Interface\RaidFrame\Shield-Fill]]
+		end
+
+		self.MouseEnabled = false
+	end
+endinterface "IFAbsorb"
