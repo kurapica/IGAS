@@ -47,7 +47,7 @@ class "PetUnitPanel"
 		@desc Activate the unit panel
 		@return nil
 	]======]
-	function Activate(self, ...)
+	function Activate(self)
 		if self.__Deactivated then
 			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 				self.__Deactivated = nil
@@ -60,10 +60,9 @@ class "PetUnitPanel"
 		@name Deactivate
 		@type method
 		@desc Deactivate the unit panel
-		@param ...
 		@return nil
 	]======]
-	function Deactivate(self, ...)
+	function Deactivate(self)
 		if not self.__Deactivated then
 			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 				self.__Deactivated = true

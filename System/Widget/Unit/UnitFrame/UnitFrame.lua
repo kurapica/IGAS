@@ -208,7 +208,7 @@ class "UnitFrame"
 		@desc Activate the unit frame
 		@return nil
 	]======]
-	function Activate(self, ...)
+	function Activate(self)
 		if self.__Deactivated then
 			local unitId = type(self.__Deactivated) == "string" and self.__Deactivated or nil
 
@@ -222,10 +222,9 @@ class "UnitFrame"
 		@name Deactivate
 		@type method
 		@desc Deactivate the unit frame
-		@param ...
 		@return nil
 	]======]
-	function Deactivate(self, ...)
+	function Deactivate(self)
 		if not self.__Deactivated then
 			self.__Deactivated = self:GetUnit() or true
 			SetUnit(self, nil)

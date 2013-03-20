@@ -81,9 +81,53 @@ interface "IFUnitElement"
 		-- need override
 	end
 
+	doc [======[
+		@name Activate
+		@type method
+		@desc Activate the unit element
+		@return nil
+	]======]
+	function Activate(self)
+		if self.__Deactivated then
+			self.__Deactivated = nil
+			return self:Refresh()
+		end
+	end
+
+	doc [======[
+		@name Deactivate
+		@type method
+		@desc Deactivate the unit element
+		@return nil
+	]======]
+	function Deactivate(self)
+		if not self.__Deactivated then
+			self.__Deactivated = self.Unit or true
+			return self:Refresh()
+		end
+	end
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Activated
+		@type property
+		@desc Whether the unit element is activated
+	]======]
+	property "Activated" {
+		Get = function(self)
+			return not self.__Deactivated
+		end,
+		Set = function(self, value)
+			if value then
+				self:Activate()
+			else
+				self:Deactivate()
+			end
+		end,
+		Type = Boolean,
+	}
+
 	doc [======[
 		@name Unit
 		@type property
