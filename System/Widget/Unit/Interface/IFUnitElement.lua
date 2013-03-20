@@ -88,9 +88,10 @@ interface "IFUnitElement"
 		@return nil
 	]======]
 	function Activate(self)
-		if self.__Deactivated then
-			self.__Deactivated = nil
-			return self:Refresh()
+		if self.__IFUnitElement_Deactivated then
+			local unit = type(self.__IFUnitElement_Deactivated) == "string" and self.__IFUnitElement_Deactivated or nil
+			self.__IFUnitElement_Deactivated = nil
+			self.Unit = unit
 		end
 	end
 
@@ -101,9 +102,10 @@ interface "IFUnitElement"
 		@return nil
 	]======]
 	function Deactivate(self)
-		if not self.__Deactivated then
-			self.__Deactivated = self.Unit or true
-			return self:Refresh()
+		if not self.__IFUnitElement_Deactivated then
+			local unit = self.Unit
+			self.Unit = nil
+			self.__IFUnitElement_Deactivated = unit or true
 		end
 	end
 	------------------------------------------------------
@@ -116,7 +118,7 @@ interface "IFUnitElement"
 	]======]
 	property "Activated" {
 		Get = function(self)
-			return not self.__Deactivated
+			return not self.__IFUnitElement_Deactivated
 		end,
 		Set = function(self, value)
 			if value then
@@ -139,7 +141,10 @@ interface "IFUnitElement"
 		end,
 		Set = function(self, unit)
 			unit = unit and unit:lower()
-			if self.__IFUnitElement_Unit ~= unit then
+
+			if self.__IFUnitElement_Deactivated then
+				self.__IFUnitElement_Deactivated = unit or true
+			elseif self.__IFUnitElement_Unit ~= unit then
 				self.__IFUnitElement_Unit = unit
 				self:Fire("OnUnitChanged")
 				self:Refresh()
