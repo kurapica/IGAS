@@ -243,10 +243,12 @@ interface "IFAbsorb"
 			_MinMax.max = UnitHealthMax(self.Unit)
 			self.MinMaxValue = _MinMax
 			self.Value = 0
+			self.OverAbsorb = false
 		else
 			_MinMax.max = 100
 			self.MinMaxValue = _MinMax
 			self.Value = 0
+			self.OverAbsorb = false
 		end
 	end
 

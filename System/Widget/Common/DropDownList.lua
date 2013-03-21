@@ -689,7 +689,7 @@ class "DropDownList"
 		]======]
 		property "Checked" {
 			Set = function(self, flag)
-				self:GetChild("Check").Visible = (flag and true) or false
+				self:GetChild("Check").Visible = flag
 				self:Fire("OnCheckChanged")
 			end,
 
