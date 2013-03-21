@@ -7,7 +7,7 @@
 --				2011/03/13	Recode as class
 
 -- Check Version
-local version = 17
+local version = 18
 
 if not IGAS:NewAddon("IGAS.Widget.DropDownList", version) then
 	return
@@ -888,7 +888,7 @@ class "DropDownList"
 	end
 
 	local function OnLeave(self)
-		if self.Visible then
+		if self.Visible and not self.__DisableAutoHide then
 			self:GetChild("DropDownList_Timer").Interval = 2
 		end
         if self.__MenuBase then
@@ -899,7 +899,9 @@ class "DropDownList"
 	end
 
     local function OnShow(self, ...)
-        self:GetChild("DropDownList_Timer").Interval = 2
+    	if not self.__DisableAutoHide then
+        	self:GetChild("DropDownList_Timer").Interval = 2
+        end
 
         -- Set the dropdownframe scale
 		local uiScale
@@ -1880,6 +1882,21 @@ class "DropDownList"
 		end,
 
 		Type = Number,
+	}
+
+	doc [======[
+		@name AutoHide
+		@type property
+		@desc Whether auto hide the dropdownlist
+	]======]
+	property "AutoHide" {
+		Get = function(self)
+			return not self.__DdList.__DisableAutoHide
+		end,
+		Set = function(self, value)
+			self.__DdList.__DisableAutoHide = not value
+		end,
+		Type = System.Boolean,
 	}
 
 	------------------------------------------------------

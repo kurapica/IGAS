@@ -90,7 +90,15 @@ interface "IFUnitElement"
 	function Activate(self)
 		if self.__IFUnitElement_Deactivated then
 			local unit = type(self.__IFUnitElement_Deactivated) == "string" and self.__IFUnitElement_Deactivated or nil
+
+			-- Unblock the unit settings
 			self.__IFUnitElement_Deactivated = nil
+
+			-- Set the Visible property back
+			self.Visible = self.__IFUnitElement_DeactivatedVisible
+			self.__IFUnitElement_DeactivatedVisible = nil
+
+			-- Set the Unit property back
 			self.Unit = unit
 		end
 	end
@@ -104,8 +112,14 @@ interface "IFUnitElement"
 	function Deactivate(self)
 		if not self.__IFUnitElement_Deactivated then
 			local unit = self.Unit
+
+			-- Block the unit settings after the deactivation
 			self.Unit = nil
 			self.__IFUnitElement_Deactivated = unit or true
+
+			-- Change the Visible property if existed
+			self.__IFUnitElement_DeactivatedVisible = self.Visible
+			self.Visible = false
 		end
 	end
 	------------------------------------------------------
