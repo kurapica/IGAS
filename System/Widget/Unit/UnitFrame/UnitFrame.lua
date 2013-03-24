@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -314,26 +314,6 @@ class "UnitFrame"
 		_GameTooltip:FadeOut()
 	end
 
-	local function ShowMenu(self)
-		local unit = self:GetAttribute("unit")
-		local menu
-
-		if unit == "player" then
-			menu = _G.PlayerFrameDropDown
-		elseif unit == "pet" then
-			menu = _G.PetFrameDropDown
-		elseif unit == "target" then
-			menu = _G.TargetFrameDropDown
-		elseif unit == "focus" then
-			menu = _G.FocusFrameDropDown
-		end
-
-		if menu then
-       		HideDropDownMenu(1)
-       		ToggleDropDownMenu(1, nil, menu, self:GetName(), "cursor")
-		end
-	end
-
 	local function OnShow(self)
 		self:UpdateElements()
 	end
@@ -351,9 +331,7 @@ class "UnitFrame"
 
 		self:SetAttribute("*type1", "target")
 		self:SetAttribute("shift-type1", "focus")	-- default
-		self:SetAttribute("*type2", "menu")
-
-		IGAS:GetUI(self).menu = ShowMenu
+		self:SetAttribute("*type2", "togglemenu")
 
 		self:RegisterForClicks("AnyUp")
 
