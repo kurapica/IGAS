@@ -440,7 +440,9 @@ do
 
 			UpdateMainActionBar = [=[
 				local page = ...
-				if page == "possess" then
+				if HasTempShapeshiftActionBar() then
+					page = GetTempShapeshiftBarIndex()
+				elseif page == "possess" then
 					page = Manager:GetFrameRef("MainMenuBarArtFrame"):GetAttribute("actionpage")
 					if page <= 10 then
 						page = Manager:GetFrameRef("OverrideActionBar"):GetAttribute("actionpage")
@@ -449,6 +451,7 @@ do
 						page = 12
 					end
 				end
+				print("New action page index is " .. tostring(page))
 				MainPage[0] = page
 				for btn in pairs(IFActionHandler_MainPage) do
 					btn:SetAttribute("actionpage", MainPage[0])
@@ -471,6 +474,11 @@ do
 			tinsert(state, ("[bar:%d]%d"):format(i, i))
 		end
 
+		-- bonusbar map
+		for i = 1, 4 do
+			tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
+		end
+
 		-- stance
 		local _, playerclass = UnitClass("player")
 
@@ -484,10 +492,7 @@ do
 			tinsert(state, "[stance:2]7")
 		end
 
-		-- bonusbar map
-		for i = 1, 4 do
-			tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
-		end
+		tinsert(state, "[stance:1]tempshapeshift1")
 
 		tinsert(state, "1")
 
