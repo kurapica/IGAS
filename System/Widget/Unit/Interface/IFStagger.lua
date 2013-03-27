@@ -33,13 +33,13 @@ function _IFStaggerUnitList:ParseEvent(event, unit)
 			self:EachK(unit, "MinMaxValue", _MinMax)
 		end
 
-		self:EachK(unit, "Value", UnitStagger(unit))
+		self:EachK(unit, "Value", UnitStagger(unit) or 0)
 	elseif event == "UNIT_MAXHEALTH" then
 		_MinMax.max = UnitHealthMax(unit)
 		_IFStaggerUnitMaxHealthCache[unit] = _MinMax.max
 		self:EachK(unit, "MinMaxValue", _MinMax)
 
-		self:EachK(unit, "Value", UnitStagger(unit))
+		self:EachK(unit, "Value", UnitStagger(unit) or 0)
 	elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
 		UpdateCondition(self)
 	end
@@ -51,6 +51,7 @@ function UpdateCondition(self)
 		self:RegisterEvent("UNIT_MAXHEALTH")
 		self:RegisterEvent("UNIT_HEALTH_FREQUENT")
 		self:EachK("player", "Visible", true)
+		self:EachK("player", "Refresh")
 	else
 		self:UnregisterEvent("UNIT_MAXHEALTH")
 		self:UnregisterEvent("UNIT_HEALTH_FREQUENT")
@@ -87,9 +88,10 @@ interface "IFStagger"
 	]======]
 	function Refresh(self)
 		if self.Unit == "player" and select(2, UnitClass("player")) == "MONK" and SPEC_MONK_BREWMASTER == GetSpecialization() then
-			_MinMax.max = UnitHealthMax(self.Unit)
+			_MinMax.max = UnitHealthMax("player")
+			if _MinMax.max == 0 then _MinMax.max = 100 end -- Keep safe
 			self.MinMaxValue = _MinMax
-			self.Value = UnitStagger(self.Unit)
+			self.Value = UnitStagger("player") or 0
 		else
 			self.Value = 0
 			self.Visible = false
