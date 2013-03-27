@@ -451,7 +451,6 @@ do
 						page = 12
 					end
 				end
-				print("New action page index is " .. tostring(page))
 				MainPage[0] = page
 				for btn in pairs(IFActionHandler_MainPage) do
 					btn:SetAttribute("actionpage", MainPage[0])
@@ -492,7 +491,7 @@ do
 			tinsert(state, "[stance:2]7")
 		end
 
-		tinsert(state, "[stance:1]tempshapeshift1")
+		--tinsert(state, "[stance:1]tempshapeshift1")
 
 		tinsert(state, "1")
 
