@@ -440,8 +440,12 @@ do
 
 			UpdateMainActionBar = [=[
 				local page = ...
-				if HasTempShapeshiftActionBar() then
-					page = GetTempShapeshiftBarIndex()
+				if page == "tempshapeshift" then
+					if HasTempShapeshiftActionBar() then
+						page = GetTempShapeshiftBarIndex()
+					else
+						page = 1
+					end
 				elseif page == "possess" then
 					page = Manager:GetFrameRef("MainMenuBarArtFrame"):GetAttribute("actionpage")
 					if page <= 10 then
@@ -473,11 +477,6 @@ do
 			tinsert(state, ("[bar:%d]%d"):format(i, i))
 		end
 
-		-- bonusbar map
-		for i = 1, 4 do
-			tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
-		end
-
 		-- stance
 		local _, playerclass = UnitClass("player")
 
@@ -487,11 +486,15 @@ do
 		elseif playerclass == "WARRIOR" then
 			tinsert(state, "[stance:2]7")
 			tinsert(state, "[stance:3]8")
-		elseif playerclass == "MONK" then
-			tinsert(state, "[stance:2]7")
 		end
 
-		--tinsert(state, "[stance:1]tempshapeshift1")
+		-- bonusbar map
+		for i = 1, 4 do
+			tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
+		end
+
+		-- Fix for temp shape shift bar
+		tinsert(state, "[stance:1]tempshapeshift")
 
 		tinsert(state, "1")
 
