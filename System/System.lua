@@ -90,6 +90,14 @@ end
 
 namespace "System"
 
+format = string.format
+
+function assert(flag, msg, ...)
+	if not flag then
+		error(format(msg, ...), 2)
+	end
+end
+
 ------------------------------------------------------
 -- Boolean
 ------------------------------------------------------
@@ -104,7 +112,7 @@ endstruct "Boolean"
 ------------------------------------------------------
 struct "String"
 	function Validate(value)
-		assert(type(value) == "string", ("%s must be a string, got %s."):format("%s", type(value)))
+		assert(type(value) == "string", "%s must be a string, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "String"
@@ -114,7 +122,7 @@ endstruct "String"
 ------------------------------------------------------
 struct "Number"
 	function Validate(value)
-		assert(type(value) == "number", ("%s must be a number, got %s."):format("%s", type(value)))
+		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "Number"
@@ -124,7 +132,7 @@ endstruct "Number"
 ------------------------------------------------------
 struct "Function"
 	function Validate(value)
-		assert(type(value) == "function", ("%s must be a function, got %s."):format("%s", type(value)))
+		assert(type(value) == "function", "%s must be a function, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "Function"
@@ -134,7 +142,7 @@ endstruct "Function"
 ------------------------------------------------------
 struct "Table"
 	function Validate(value)
-		assert(type(value) == "table", ("%s must be a table, got %s."):format("%s", type(value)))
+		assert(type(value) == "table", "%s must be a table, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "Table"
@@ -144,7 +152,7 @@ endstruct "Table"
 ------------------------------------------------------
 struct "Userdata"
 	function Validate(value)
-		assert(type(value) == "userdata", ("%s must be a userdata, got %s."):format("%s", type(value)))
+		assert(type(value) == "userdata", "%s must be a userdata, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "Userdata"
@@ -154,7 +162,7 @@ endstruct "Userdata"
 ------------------------------------------------------
 struct "Thread"
 	function Validate(value)
-		assert(type(value) == "thread", ("%s must be a thread, got %s."):format("%s", type(value)))
+		assert(type(value) == "thread", "%s must be a thread, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "Thread"
@@ -173,7 +181,7 @@ endstruct "Any"
 ------------------------------------------------------
 struct "LocaleString"
 	function Validate(value)
-		assert(type(value) == "string", ("%s must be a string, got %s."):format("%s", type(value)))
+		assert(type(value) == "string", "%s must be a string, got %s.", "%s", type(value))
 		return value
 	end
 endstruct "LocaleString"
@@ -183,8 +191,8 @@ endstruct "LocaleString"
 ------------------------------------------------------
 struct "PositiveNumber"
 	function Validate(value)
-		assert(type(value) == "number", ("%s must be a number, got %s."):format("%s", type(value)))
-		assert(value > 0, ("%s must be greater than zero."):format("%s"))
+		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
+		assert(value > 0, "%s must be greater than zero.")
 		return value
 	end
 endstruct "PositiveNumber"

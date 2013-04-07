@@ -3,26 +3,41 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRange", version) then
 	return
 end
 
-_All = "all"
 _IFRangeUnitList = _IFRangeUnitList or UnitList(_Name)
 
 _IFRangeTimer = Timer("IGAS_IFRange_Timer")
 _IFRangeTimer.Enabled = false
 _IFRangeTimer.Interval = 0.2
 
-function RefreshAlive(self)
-	if self.IsConnected then
-		return self:Refresh()
+_IFRangeCache = _IFRangeCache or {}
+
+function InRange(unit)
+	local inRange, checkedRange = UnitInRange(unit)
+
+	return inRange or not checkedRange
+end
+
+function RefreshUnit(unit)
+	if UnitExists(unit) and UnitIsConnected(unit) then
+		local inRange = InRange(unit)
+
+		if _IFRangeCache[unit] ~= inRange then
+			_IFRangeCache[unit] = inRange
+
+			_IFRangeUnitList:EachK(unit, "Alpha", inRange and 1 or 0.5)
+		end
 	end
 end
 
 function _IFRangeTimer:OnTimer()
-	_IFRangeUnitList:EachK(_All, RefreshAlive)
+	for unit in pairs(_IFRangeUnitList) do
+		RefreshUnit(unit)
+	end
 end
 
 interface "IFRange"
@@ -63,22 +78,22 @@ interface "IFRange"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFRangeUnitList[self] = self.Unit
+	end
 
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
 		_IFRangeUnitList[self] = nil
-		if not _IFRangeUnitList[_All] then
-			_IFRangeTimer.Enabled = false
-		end
 	end
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function IFRange(self)
-		_IFRangeUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
 		_IFRangeTimer.Enabled = true
 	end
 endinterface "IFRange"

@@ -304,6 +304,12 @@ enum "FontColor" {
 ------------------------------------------------------
 -- Structs
 ------------------------------------------------------
+function assert(flag, msg, ...)
+	if not flag then
+		error(format(msg, ...), 2)
+	end
+end
+
 -- Point
 struct "Point"
 	x = Number
@@ -361,8 +367,8 @@ endstruct "Inset"
 -- ColorFloat
 struct "ColorFloat"
 	function Validate(value)
-		assert(type(value) == "number", ("%s must be a number, got %s."):format("%s", type(value)))
-		assert(value >= 0 and value <= 1, ("%s must in [0-1], got %s."):format("%s", tostring(value)))
+		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
+		assert(value >= 0 and value <= 1, "%s must in [0-1].")
 		return value
 	end
 endstruct "ColorFloat"
@@ -413,8 +419,8 @@ struct "AnimOrderType"
 	local floor = math.floor
 
 	function Validate(value)
-		assert(type(value) == "number", ("%s must be a number, got %s."):format("%s", type(value)))
-		assert(value >=0 and value <= 100, ("%s must be in [0-100], got %s."):format("%s", tostring(value)))
+		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
+		assert(value >=0 and value <= 100, "%s must be in [0-100], got %s.")
 
 		return floor(value)
 	end

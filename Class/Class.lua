@@ -75,6 +75,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/12/24 Dispose system modified.
 --               2012/12/25 Doc system added.Interface system improved.
 --               2013/01/25 object.Disposed is set to true after calling object:Dispose() as a mark
+--               2013/04/07 Lower the memory usage
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -120,7 +121,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 65
+local version = 66
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -3016,7 +3017,13 @@ do
 
 			-- Check Base
 			if info.BaseEnv then
-				return info.BaseEnv[key]
+				local value = info.BaseEnv[key]
+
+				if type(value) == "table" or type(value) == "function" then
+					rawset(self, key, value)
+				end
+
+				return value
 			end
 		end
 
@@ -3073,7 +3080,7 @@ do
 	function ValidateStruct(strt, value)
 		local info = _NSInfo[strt]
 
-		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0 then
 			assert(type(value) == "table", ("%s must be a table, got %s."):format("%s", type(value)))
 
 			for _, n in ipairs(info.Members) do
