@@ -1,14 +1,14 @@
 -- Author      : Kurapica
 -- Create Date : 2012/06/25
 -- Change Log  :
+--               2013/04/08 Reduce the refresh times
 
 -- Check Version
-local version = 2
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitName", version) then
 	return
 end
 
-_All = "all"
 _IFUnitNameUnitList = _IFUnitNameUnitList or UnitList(_Name)
 
 function _IFUnitNameUnitList:OnUnitListChanged()
@@ -18,8 +18,14 @@ function _IFUnitNameUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
-function _IFUnitNameUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+function _IFUnitNameUnitList:ParseEvent(event, unit)
+	if event == "UNIT_NAME_UPDATE" and self:HasUnit(unit) then
+		self:EachK(unit, "Refresh")
+	elseif event == "GROUP_ROSTER_UPDATE" then
+		for unit in pairs(self) do
+			self:EachK(unit, "Refresh")
+		end
+	end
 end
 
 interface "IFUnitName"
@@ -79,6 +85,9 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFUnitNameUnitList[self] = self.Unit
+	end
 
 	------------------------------------------------------
 	-- Dispose
@@ -91,6 +100,6 @@ interface "IFUnitName"
 	-- Constructor
 	------------------------------------------------------
 	function IFUnitName(self)
-		_IFUnitNameUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
 	end
 endinterface "IFUnitName"
