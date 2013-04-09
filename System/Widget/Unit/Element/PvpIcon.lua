@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.PvpIcon", version) then
 	return
 end
@@ -27,11 +27,12 @@ class "PvpIcon"
 	-- @type function
 	------------------------------------
 	function Refresh(self)
-		if self.IsPVPFreeForAll then
+		local unit = self.Unit
+		if unit and UnitIsPVPFreeForAll(unit) then
 			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-FFA]]
 			self.Visible = true
-		elseif self.IsPVP and self.Faction then
-			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-]]..self.Faction
+		elseif unit and UnitIsPVP(unit) and (select(1, UnitFactionGroup(self.Unit))) then
+			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-]]..(select(1, UnitFactionGroup(self.Unit)))
 			self.Visible = true
 		else
 			self.Visible = false

@@ -24,14 +24,15 @@ function _IFReadyCheckUnitList:ParseEvent(event)
 end
 
 function RefreshCheck(self, event)
-	if not self.Existed then
+	local unit = self.Unit
+	if not unit or not UnitExists(unit) then
 		self.ReadyCheckStatus = nil
 		self.Visible = false
 		return
 	end
 
 	if event == "READY_CHECK" or event == "READY_CHECK_CONFIRM" then
-		local status = GetReadyCheckStatus(self.Unit)
+		local status = GetReadyCheckStatus(unit)
 
 		if status == "ready" then
 			return self:Confirm(true)

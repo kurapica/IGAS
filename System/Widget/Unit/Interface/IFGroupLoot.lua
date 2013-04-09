@@ -46,7 +46,8 @@ interface "IFGroupLoot"
 		@return nil
 	]======]
 	function Refresh(self)
-		if self.InParty or self.InRaid then
+		local unit = self.Unit
+		if unit and (UnitInParty(unit) or UnitInRaid(unit)) then
 			local method, pid, rid = GetLootMethod()
 
 			if(method == 'master') then

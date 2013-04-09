@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPortrait", version) then
 	return
 end
@@ -51,8 +51,9 @@ interface "IFPortrait"
 	]======]
 	function Refresh(self, force)
 		if self:IsClass(PlayerModel) then
-			local guid = self.Unit and UnitGUID(self.Unit) or nil
-			if not self.Existed or not self.IsConnected or not self.IsVisible then
+			local unit = self.Unit
+			local guid = unit and UnitGUID(unit) or nil
+			if not unit or not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
 				self.Guid = nil
 				self:SetCamDistanceScale(0.25)
 				self:SetPortraitZoom(0)

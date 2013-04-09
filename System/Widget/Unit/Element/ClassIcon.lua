@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.ClassIcon", version) then
 	return
 end
@@ -34,7 +34,7 @@ class "ClassIcon"
 		@return nil
 	]======]
 	function Refresh(self)
-		local cls = self.UnitClass
+		local cls = self.Unit and (select(2, UnitClassBase(self.Unit)))
 		if cls then
 			self.Alpha = 1
 			self:SetTexCoord(unpack(CLASS_ICON_TCOORDS[cls]))

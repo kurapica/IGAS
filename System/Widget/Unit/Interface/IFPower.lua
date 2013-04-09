@@ -72,9 +72,10 @@ interface "IFPower"
 		@return nil
 	]======]
 	function Refresh(self)
-		if not self.Existed then return end
+		local unit = self.Unit
+		if not unit or not UnitExists(unit) then return end
 
-		local powerType, powerToken, altR, altG, altB = UnitPowerType(self.Unit)
+		local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
 
 		if self.UsePowerColor then
 			local info = PowerBarColor[powerToken]
@@ -96,12 +97,12 @@ interface "IFPower"
 			end
 		end
 
-		local min, max = UnitPower(self.Unit, powerType), UnitPowerMax(self.Unit, powerType)
+		local min, max = UnitPower(unit, powerType), UnitPowerMax(unit, powerType)
 
 		_MinMax.max = max
 		self.MinMaxValue = _MinMax
 
-		if UnitIsConnected(self.Unit) then
+		if UnitIsConnected(unit) then
 			self.Value = min
 		else
 			self.Value = max

@@ -59,6 +59,9 @@ _RAID_CLASS_COLORS = CopyTable(_G.RAID_CLASS_COLORS)
 _DebuffTypeColors = CopyTable(_G.DebuffTypeColor)
 
 function HealthBar_OnStateChanged(self)
+	local unit = self.Unit
+	if not unit or not UnitExists(unit) then return end
+
 	local value = self.Value
 	local color
 	local r, g, b
@@ -69,7 +72,6 @@ function HealthBar_OnStateChanged(self)
 	else
 		value = 0
 	end
-	if not self.Existed then return end
 
 	-- Choose color
 	if self.UseDebuffColor then

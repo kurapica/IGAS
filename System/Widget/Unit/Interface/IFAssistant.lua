@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFAssistant", version) then
 	return
 end
@@ -45,7 +45,8 @@ interface "IFAssistant"
 		@return nil
 	]======]
 	function Refresh(self)
-		self.Visible = self.IsGroupAssistant
+		local unit = self.Unit
+		self.Visible = unit and UnitInRaid(unit) and UnitIsGroupAssistant(unit) and not UnitIsGroupLeader(unit)
 	end
 
 	------------------------------------------------------

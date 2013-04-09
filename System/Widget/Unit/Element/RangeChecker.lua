@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.RangeChecker", version) then
 	return
 end
@@ -29,15 +29,15 @@ class "RangeChecker"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Alpha
-	property "Alpha" {
-		Get = function(self)
-			return self.Parent.Alpha
-		end,
+	-- InRange
+	property "InRange" {
 		Set = function(self, value)
-			self.Parent.Alpha = value
+			if value then
+				self.Parent.Alpha = 1
+			else
+				self.Parent.Alpha = 0.5
+			end
 		end,
-		Type = System.Number,
 	}
 
 	------------------------------------------------------

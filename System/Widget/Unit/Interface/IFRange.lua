@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRange", version) then
 	return
 end
@@ -16,7 +16,7 @@ _IFRangeTimer.Interval = 0.2
 
 _IFRangeCache = _IFRangeCache or {}
 
-function InRange(unit)
+function IsInRange(unit)
 	local inRange, checkedRange = UnitInRange(unit)
 
 	return inRange or not checkedRange
@@ -24,12 +24,12 @@ end
 
 function RefreshUnit(unit)
 	if UnitExists(unit) and UnitIsConnected(unit) then
-		local inRange = InRange(unit)
+		local inRange = IsInRange(unit)
 
 		if _IFRangeCache[unit] ~= inRange then
 			_IFRangeCache[unit] = inRange
 
-			_IFRangeUnitList:EachK(unit, "Alpha", inRange and 1 or 0.5)
+			_IFRangeUnitList:EachK(unit, "InRange", inRange)
 		end
 	end
 end
@@ -47,7 +47,7 @@ interface "IFRange"
 		@name IFRange
 		@type interface
 		@desc IFRange is used to check whether the unit is in the spell range of the player
-		@overridable Alpha property, number, used to receive the result, default 1 if the unit is in range, 0.5 out of range
+		@overridable InRange property, boolean, used to receive the result, whether the unit is in the spell range of the player
 	]======]
 
 	------------------------------------------------------
@@ -64,10 +64,10 @@ interface "IFRange"
 		@return nil
 	]======]
 	function Refresh(self)
-		if self.InRange then
-			self.Alpha = 1
+		if self.Unit and IsInRange(self.Unit) then
+			self.InRange = true
 		else
-			self.Alpha = 0.5
+			self.InRange = false
 		end
 	end
 

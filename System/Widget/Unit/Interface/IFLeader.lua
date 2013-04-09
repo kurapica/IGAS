@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFLeader", version) then
 	return
 end
@@ -46,7 +46,8 @@ interface "IFLeader"
 		@return nil
 	]======]
 	function Refresh(self)
-		self.Visible = (self.InParty or self.InRaid) and self.IsGroupLeader
+		local unit = self.Unit
+		self.Visible = unit and (UnitInParty(unit) or UnitInRaid(unit)) and UnitIsGroupLeader(unit)
 	end
 
 	------------------------------------------------------
