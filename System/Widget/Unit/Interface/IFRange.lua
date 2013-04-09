@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRange", version) then
 	return
 end
@@ -64,11 +64,7 @@ interface "IFRange"
 		@return nil
 	]======]
 	function Refresh(self)
-		if self.Unit and IsInRange(self.Unit) then
-			self.InRange = true
-		else
-			self.InRange = false
-		end
+		self.InRange = _IFRangeCache[self.Unit]
 	end
 
 	------------------------------------------------------
