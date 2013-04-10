@@ -5,7 +5,7 @@
 --              2012/09/04  Rotate & Shear method added
 
 -- Check Version
-local version = 12
+local version = 13
 if not IGAS:NewAddon("IGAS.Widget.Texture", version) then
 	return
 end
@@ -321,7 +321,7 @@ class "Texture"
 		end
 
 		while radian < 0 do
-			radian = degree + 2 * math.pi
+			radian = radian + 2 * math.pi
 		end
 		radian = radian % (2 * math.pi)
 
@@ -445,7 +445,7 @@ class "Texture"
 		end
 
 		while radian < - math.pi/2 do
-			radian = degree + 2 * math.pi
+			radian = radian + 2 * math.pi
 		end
 		radian = radian % (2 * math.pi)
 
