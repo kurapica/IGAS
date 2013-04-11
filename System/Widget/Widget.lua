@@ -562,11 +562,6 @@ _BaseFrame:Hide()
 
 ------------------------------------
 --- Store blz UI's methodes to IGAS's Widget
--- @name StoreBlzMethod
--- @class function
--- @param super the super class
--- @param sample the blz UI element's instance
--- @usage StoreBlzMethod(Region, CreateFrame"Frame"))
 ------------------------------------
 function StoreBlzMethod(cls, managerCls, managerCls2)
 	local clsEnv = getfenv(2)
