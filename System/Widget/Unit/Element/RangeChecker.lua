@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.RangeChecker", version) then
 	return
 end
@@ -52,25 +52,6 @@ class "RangeChecker"
 	}
 
 	doc [======[
-		@name Interval
-		@type property
-		@desc The refresh interval
-	]======]
-	property "Interval" {
-		Get = function(self)
-			return self.__Interval
-		end,
-		Set = function(self, int)
-			if int > 0.1 then
-				self.__Interval = int
-			else
-				self.__Interval = 0.1
-			end
-		end,
-		Type = Number,
-	}
-
-	doc [======[
 		@name UseIndicator
 		@type property
 		@desc description
@@ -104,14 +85,6 @@ class "RangeChecker"
 	-- Script Handler
 	------------------------------------------------------
 	local function OnUpdate(self, elapsed)
-		--self.__OnUpdateTimer = (self.__OnUpdateTimer or 0) + elapsed
-
-		--if self.__OnUpdateTimer < self.__Interval then
-		--	return
-		--end
-		
-		--self.__OnUpdateTimer = 0
-
 		local unit = self.Unit
 
 		if UnitIsVisible(unit) then
@@ -123,7 +96,9 @@ class "RangeChecker"
 			if tarx and tary and x and y then
 				self.Alpha = 1
 
-				if tarx >= x then
+				if tarx == x and tary == y then
+					rad = facing
+				elseif tarx >= x then
 					if tary < y then
 						rad = atan((tarx - x)/(y - tary))
 					elseif tary == y then
@@ -148,13 +123,18 @@ class "RangeChecker"
 		end
 	end
 
+	local function OnSizeChanged(self)
+		local width, height = self:GetSize()
+		local min = math.min(width, height)
+		self:GetChild("Indicator"):SetSize(min, min)
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function RangeChecker(self)
 		self:SetSize(32, 32)
 		self.Visible = false
-		self.__Interval = 0.1
 
 		local icon = Texture("Indicator", self)
 		icon:SetPoint("CENTER")
@@ -162,5 +142,6 @@ class "RangeChecker"
 		self.TexturePath = [[Interface\Minimap\MiniMap-QuestArrow]]
 
 		self.OnUpdate = self.OnUpdate + OnUpdate
+		self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged
 	end
 endclass "RangeChecker"
