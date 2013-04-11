@@ -568,21 +568,32 @@ _BaseFrame:Hide()
 -- @param sample the blz UI element's instance
 -- @usage StoreBlzMethod(Region, CreateFrame"Frame"))
 ------------------------------------
-function StoreBlzMethod(cls, managerCls)
+function StoreBlzMethod(cls, managerCls, managerCls2)
 	local clsEnv = getfenv(2)
-	local name = Reflector.GetName(cls)
-	local super = Reflector.GetSuperClass(cls)
 
-	local sample, manageSample
+	local sample
+	local baseF = _BaseFrame
 
-	if managerCls and Reflector.IsClass(managerCls) then
-		local mname = Reflector.GetName(managerCls)
-		manageSample = managerCls(mname, _BaseFrame)
-		sample = cls(name, manageSample)
-	elseif managerCls then
-		sample = managerCls
+	if managerCls2 then
+		if Reflector.IsClass(managerCls2) then
+			baseF = managerCls2(Reflector.GetName(managerCls2), baseF)
+		else
+			baseF = managerCls2
+		end
+	end
+
+	if managerCls then
+		if Reflector.IsClass(managerCls) then
+			baseF = managerCls(Reflector.GetName(managerCls), baseF)
+		else
+			baseF = managerCls
+		end
+	end
+
+	if Reflector.IsClass(cls) then
+		sample = cls(Reflector.GetName(cls), baseF)
 	else
-		sample = cls(name, _BaseFrame)
+		sample = cls
 	end
 
 	if type(IGAS:GetUI(sample)) ~= "table" or getmetatable(IGAS:GetUI(sample)) == nil or type(getmetatable(IGAS:GetUI(sample)).__index) ~= "table" then
