@@ -284,7 +284,7 @@ class "TreeView"
 			@type method
 			@desc Add child-node to the treenode
 			@param node table, a table contains node informations
-			@return nil
+			@return System.Widget.TreeView.TreeNode the created tree node
 			@usage object:AddNode{Text = "Show Text"}
 		]======]
 		function AddNode(self, node)
@@ -1510,7 +1510,7 @@ class "TreeView"
 		@type method
 		@desc Adds child-nodes by the given information
 		@param node table, a table contains the node's information
-		@return nil
+		@return System.Widget.TreeView.TreeNode the created tree node
 		@usage object:AddNode{["Text"] = "Show Text"}
 	]======]
 	function AddNode(self, node)
