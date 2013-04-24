@@ -3,7 +3,7 @@
 --               2012.05.14 Fix cursor position after format color
 
 -- Check Version
-local version = 8
+local version = 9
 
 if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
@@ -19,15 +19,6 @@ class "CodeEditor"
 		@type class
 		@desc CodeEditor object is used as a lua code editor
 	]======]
-
-	GRN    ='	'
-	YEL    ='|cffffff00'
-	RED    ='|cffff0000'
-	WHT    ='|cffffffff'
-	BLU    ='|cff8888ff'
-	DRKBLU ='|cff1b0495'
-	ORN    ='|cffff9C00'
-	GRY    ='|cffA0A0A0'
 
 	_G = _G
 
