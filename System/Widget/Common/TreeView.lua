@@ -8,9 +8,10 @@
 --				2011/04/06	Using MetaData to keep data of the tree.
 --				2011/06/20	OnDoubleClick script added.
 --				2012/03/25  Recode to increase the performance
+--              2013/04/26  NoOrderChange property is added to TreeNode
 
 -- Check Version
-local version = 16
+local version = 17
 if not IGAS:NewAddon("IGAS.Widget.TreeView", version) then
 	return
 end
@@ -648,6 +649,21 @@ class "TreeView"
 			end,
 		}
 
+		doc [======[
+			@name NoOrderChange
+			@type property
+			@desc Whether the node's order can't be changed if the parent's ChildOrderChangable is true
+		]======]
+		property "NoOrderChange" {
+			Get = function(self)
+				return self.MetaData.NoOrderChange
+			end,
+			Set = function(self, value)
+				self.MetaData.NoOrderChange = value
+			end,
+			Type = Boolean,
+		}
+
 		------------------------------------------------------
 		-- Dispose
 		------------------------------------------------------
@@ -778,7 +794,7 @@ class "TreeView"
 		upArrow.Owner = nil
 		downArrow.Owner = nil
 
-		if flag or not self.__TreeNode or not self.__TreeNode.Parent.ChildOrderChangable then
+		if flag or not self.__TreeNode or self.__TreeNode.NoOrderChange or not self.__TreeNode.Parent.ChildOrderChangable then
 			return
 		end
 
@@ -947,13 +963,13 @@ class "TreeView"
 	end
 
 	local function OrderButton_OnUpClick(self)
-		if self.Owner then
+		if self.Owner and self.Owner.Index > 1 and not self.Owner.Parent:GetNode(self.Owner.Index-1).NoOrderChange then
 			self.Owner.Index = self.Owner.Index - 1
 		end
 	end
 
 	local function OrderButton_OnDownClick(self)
-		if self.Owner then
+		if self.Owner and self.Owner.Parent.ChildNodeCount > self.Owner.Index and not self.Owner.Parent:GetNode(self.Owner.Index+1).NoOrderChange then
 			self.Owner.Index = self.Owner.Index + 1
 		end
 	end
