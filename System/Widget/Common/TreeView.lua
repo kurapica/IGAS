@@ -757,7 +757,7 @@ class "TreeView"
 				btnFunc.Owner = self.__TreeNode
 
 				if not btnPrev then
-					if self.Parent:GetChild("UpArrow").Visible then
+					if self.Parent:GetChild("UpArrow").Visible or self.Parent:GetChild("DownArrow").Visible then
 						btnFunc:SetPoint("RIGHT", self, "RIGHT", -30, 0)
 					else
 						btnFunc:SetPoint("RIGHT", self, "RIGHT", -15, 0)
@@ -800,8 +800,15 @@ class "TreeView"
 
 		upArrow:SetPoint("TOP", self, "TOP", 0, -3)
 		upArrow:SetPoint("RIGHT", self, "RIGHT", -15, 0)
-		upArrow.Visible = true
-		downArrow.Visible = true
+
+		if self.__TreeNode.Index > 1 and not self.__TreeNode.Parent:GetNode(self.__TreeNode.Index-1).NoOrderChange then
+			upArrow.Visible = true
+		end
+
+		if self.__TreeNode.Index < self.__TreeNode.Parent.ChildNodeCount and not self.__TreeNode.Parent:GetNode(self.__TreeNode.Index+1).NoOrderChange then
+			downArrow.Visible = true
+		end
+
 		upArrow.Owner = self.__TreeNode
 		downArrow.Owner = self.__TreeNode
 	end

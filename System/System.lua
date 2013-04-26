@@ -10,6 +10,7 @@
 --               2012/06/12 IsInterface method added to Object
 --               2012/07/18 ThreadCall method added to Object
 --               2012/07/18 PositiveNumber added to System
+--               2013/04/26 Remove assert to reduce cost
 
 ------------------------------------------------------------------------
 -- The base struct types is defined here
@@ -28,7 +29,7 @@
 --
 --	Object
 ------------------------------------------------------------------------
-local version = 14
+local version = 15
 
 ------------------------------------------------------
 -- Version Check & Environment
@@ -112,7 +113,9 @@ endstruct "Boolean"
 ------------------------------------------------------
 struct "String"
 	function Validate(value)
-		assert(type(value) == "string", "%s must be a string, got %s.", "%s", type(value))
+		if type(value) ~= "string" then
+			error(format("%s must be a string, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "String"
@@ -122,7 +125,9 @@ endstruct "String"
 ------------------------------------------------------
 struct "Number"
 	function Validate(value)
-		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
+		if type(value) ~= "number" then
+			error(format("%s must be a number, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "Number"
@@ -132,7 +137,9 @@ endstruct "Number"
 ------------------------------------------------------
 struct "Function"
 	function Validate(value)
-		assert(type(value) == "function", "%s must be a function, got %s.", "%s", type(value))
+		if type(value) ~= "function" then
+			error(format("%s must be a function, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "Function"
@@ -142,7 +149,9 @@ endstruct "Function"
 ------------------------------------------------------
 struct "Table"
 	function Validate(value)
-		assert(type(value) == "table", "%s must be a table, got %s.", "%s", type(value))
+		if type(value) ~= "table" then
+			error(format("%s must be a table, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "Table"
@@ -152,7 +161,9 @@ endstruct "Table"
 ------------------------------------------------------
 struct "Userdata"
 	function Validate(value)
-		assert(type(value) == "userdata", "%s must be a userdata, got %s.", "%s", type(value))
+		if type(value) ~= "userdata" then
+			error(format("%s must be a userdata, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "Userdata"
@@ -162,7 +173,9 @@ endstruct "Userdata"
 ------------------------------------------------------
 struct "Thread"
 	function Validate(value)
-		assert(type(value) == "thread", "%s must be a thread, got %s.", "%s", type(value))
+		if type(value) ~= "thread" then
+			error(format("%s must be a thread, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "Thread"
@@ -181,7 +194,9 @@ endstruct "Any"
 ------------------------------------------------------
 struct "LocaleString"
 	function Validate(value)
-		assert(type(value) == "string", "%s must be a string, got %s.", "%s", type(value))
+		if type(value) ~= "string" then
+			error(format("%s must be a string, got %s.", "%s", type(value)))
+		end
 		return value
 	end
 endstruct "LocaleString"
@@ -191,8 +206,12 @@ endstruct "LocaleString"
 ------------------------------------------------------
 struct "PositiveNumber"
 	function Validate(value)
-		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
-		assert(value > 0, "%s must be greater than zero.")
+		if type(value) ~= "number" then
+			error(format("%s must be a number, got %s.", "%s", type(value)))
+		end
+		if value <= 0 then
+			error("%s must be greater than zero.")
+		end
 		return value
 	end
 endstruct "PositiveNumber"
