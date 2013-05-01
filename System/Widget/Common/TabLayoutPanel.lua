@@ -2,7 +2,7 @@
 -- Create Date : 5/29/2012
 -- ChangeLog
 
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.TabLayoutPanel", version) then
 	return
 end
@@ -252,14 +252,14 @@ class "TabLayoutPanel"
 
 				if otherWidget and otherWidget.__TabLayoutPanel_Selected then
 					otherWidget.__TabLayoutPanel_Selected = nil
-
-					self:Fire("OnTabChange", otherWidget, widget)
-
 					break
 				end
+
+				otherWidget = nil
 			end
 
 			widget.__TabLayoutPanel_Selected = true
+			self:Fire("OnTabChange", otherWidget, widget)
 		end
 	end
 
@@ -385,7 +385,7 @@ class "TabLayoutPanel"
 		if obj then
 			SelectOther(self, obj)
 
-			obj = Super.RemoveWidget(self, index, withoutDispose)
+			obj = Super.RemoveWidget(self, index, withoutDispose or self.__NoAutoDisposing)
 
 			UpdateHeader(self)
 
@@ -514,6 +514,21 @@ class "TabLayoutPanel"
 			SelectWidget(self, widget)
 		end,
 		Type = Region,
+	}
+
+	doc [======[
+		@name AutoDisposing
+		@type property
+		@desc Whether should auto disposing the object if closed
+	]======]
+	property "AutoDisposing" {
+		Get = function(self)
+			return not self.__NoAutoDisposing
+		end,
+		Set = function(self, value)
+			self.__NoAutoDisposing = not value
+		end,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------
