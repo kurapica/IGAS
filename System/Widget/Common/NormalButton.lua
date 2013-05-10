@@ -1,10 +1,11 @@
 -- Author      : Kurapica
 -- Create Date : 2010.10.18
 -- Change Log  :
---				2011/03/13	Recode as class
+--				2011/03/13 Recode as class
+--              2013/05/10 AutoSize property added
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.NormalButton", version) then
 	return
 end
@@ -168,6 +169,35 @@ class "NormalButton"
 		return self.__Style or TEMPLATE_NONE
 	end
 
+	doc [======[
+		@name SetText
+		@type method
+		@desc Sets the text displayed as the button's label
+		@param text string, text to be displayed as the button's label
+		@return nil
+	]======]
+	function SetText(self, text)
+		text = text or ""
+
+		Super.SetText(self, text)
+
+		if self.AutoSize then
+			-- adjust width
+			local width = self:GetTextWidth()
+			if ( width > 30 ) then
+				self:SetWidth(width + 10)
+			else
+				self:SetWidth(40)
+			end
+
+			-- adjust height
+			local height = self:GetNormalFontObject() and self:GetNormalFontObject():GetStringHeight()
+			if self.Height <= height + 4 then
+				self.Height = height + 4
+			end
+		end
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -184,6 +214,37 @@ class "NormalButton"
 			self:SetStyle(style)
 		end,
 		Type = NormalButtonStyle,
+	}
+
+	doc [======[
+		@name AutoSize
+		@type property
+		@desc Whether should auto change the button's size when text is changed
+	]======]
+	property "AutoSize" {
+		Get = function(self)
+			return self.__AutoSize
+		end,
+		Set = function(self, value)
+			self.__AutoSize = value
+
+			if value then
+				-- adjust width
+				local width = self:GetTextWidth()
+				if ( width > 30 ) then
+					self:SetWidth(width + 10)
+				else
+					self:SetWidth(40)
+				end
+
+				-- adjust height
+				local height = self:GetNormalFontObject() and self:GetNormalFontObject():GetStringHeight()
+				if self.Height <= height + 4 then
+					self.Height = height + 4
+				end
+			end
+		end,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------
