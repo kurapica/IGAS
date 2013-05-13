@@ -292,6 +292,49 @@ class "CodeEditor"
 		System.Array.Sort(self.__Definition)
 	end
 
+	local function compare(t1, t2)
+		if strsub(t1, 1, 1) == "_" then
+			if strsub(t2, 1, 1) == "_" then
+				return compare(strsub(t1, 2, -1), strsub(t2, 2, -1))
+			else
+				return true
+			end
+		elseif strsub(t2, 1, 1) == "_" then
+			return false
+		else
+			return strupper(t1 or "") < strupper(t2 or "")
+		end
+	end
+	
+	local function GetIndex(list, name, sIdx, eIdx)
+		if not sIdx then
+			if not next(list) then
+				return nil
+			end
+			sIdx = 1
+			eIdx = #list
+		end
+		if sIdx == eIdx then
+			if sIdx > 1 then
+				return sIdx - 1
+			else
+				return nil
+			end
+		end
+		local f = floor((sIdx + eIdx) / 2)
+		if compare(list[f], name) then
+			if not compare(list[f + 1], name) then
+				return f
+			else
+				return GetIndex(list, name, f + 1, eIdx)
+			end
+		elseif strupper(list[f]) == strupper(name) then
+			return GetIndex(list, name, f, f)
+		else
+			return GetIndex(list, name, sIdx, f)
+		end
+	end
+
 	-- Token
 	local function nextNumber(str, pos, noPeriod, cursorPos, trueWord, newPos)
 		pos = pos or 1
@@ -1138,8 +1181,6 @@ class "CodeEditor"
 
 		-- Definition
 		local define = self.__Definition
-		local prevID
-		local skipForIndent
 
 		while true do
 			prevToken = token
@@ -1257,32 +1298,6 @@ class "CodeEditor"
 			else
 				tinsert(content, word)
 				rightSpace = false
-			end
-
-			-- Check assignment
-			if not skipForIndent or skipForIndent > indent then
-				skipForIndent = nil
-
-				if token == _Token.ASSIGNMENT then
-
-				elseif token == _Token.IDENTIFIER then
-					if _KeyWord[trueWord] then
-						if trueWord == "local" then
-
-						elseif trueWord == "class" then
-
-						elseif trueWord == "function" then
-
-						end
-					else
-
-					end
-				elseif token == _Token.SPACE then
-					-- skip
-				else
-					prevID = nil
-				end
-			else
 			end
 
 			pos = nextPos
