@@ -7,7 +7,7 @@
 --              2012/05/13 Fix delete on double click selected multi-text
 --              2013/02/07 Recode for scrollForm's change, and fix the double click error
 -- Check Version
-local version = 15
+local version = 16
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -216,7 +216,7 @@ class "MultiLineTextBox"
 	_KeyScan.KeyboardEnabled = true
 	_KeyScan.FrameStrata = "TOOLTIP"
 	_KeyScan.Visible = false
-	_KeyScan:ActiveThread("OnKeyDown")
+	--_KeyScan:ActiveThread("OnKeyDown")
 
 	------------------------------------------------------
 	-- Thread Helper

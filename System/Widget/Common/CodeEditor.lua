@@ -271,6 +271,7 @@ class "CodeEditor"
 	_List = List("List", _CodeSmartHelper)
 	_List.FrameStrata = "TOOLTIP"
 	_List.DisplayItemCount = 8
+	_List.Visible = false
 
     -- Scripts
 	local function ReplaceBlock(str, startp, endp, replace)
@@ -279,6 +280,16 @@ class "CodeEditor"
 
 	local function AdjustCursorPosition(self, pos)
 		MultiLineTextBox.AdjustCursorPosition(self, pos)
+	end
+
+	local function InitDefinition(self)
+		wipe(self.__Definition)
+
+		for k in pairs(_KeyWord) do
+			tinsert(self.__Definition)
+		end
+
+		System.Array.Sort(self.__Definition)
 	end
 
 	-- Token
@@ -1108,7 +1119,7 @@ class "CodeEditor"
 	end
 
 	-- Indent
-	local function FormatIndent(str, self, inCluded)
+	local function FormatIndent(str, self)
 		local pos = 1
 
 		local token
@@ -1127,34 +1138,8 @@ class "CodeEditor"
 
 		-- Definition
 		local define = self.__Definition
-		local env = self.Enviroment
 		local prevID
 		local skipForIndent
-
-		-- Check Enviroment
-		if inCluded then
-			local mdl = str:match("IGAS:NewAddon[%s%(]*[\"\']([_%w%.]+)")
-
-			if mdl then
-				mdl = IGAS:GetAddon(mdl, true)
-
-				if not mdl then
-					return
-				end
-
-				while env and mdl ~= env do
-					env = env._Parent
-				end
-
-				if not env then
-					return
-				end
-
-				env = mdl
-			else
-				return
-			end
-		end
 
 		while true do
 			prevToken = token
@@ -1884,30 +1869,6 @@ class "CodeEditor"
         str = str:gsub("\124\124", "\124")
         return str
 	end
-	--[[
-	function ShowCodeHelper(self, list)
-		if type(list) == "table" and #list > 0 then
-			_CodeSmartHelper.__CodeEditor = self
-			_CodeSmartHelper.Visible = false
-			_CodeSmartHelper:ClearAllPoints()
-			_CodeSmartHelper:SetPoint("TOPLEFT", self, "TOPLEFT", self.__X+6, -self.__Y)
-
-			_List.Items = list
-
-			_CodeSmartHelper.Visible = true
-		end
-	end
-
-	function IncludeCode(self, code)
-		if type(code) == "string" and code ~= "" then
-			FormatIndent(code, self, true)
-		end
-	end
-
-	function ResetEnviroment(self)
-		self.Enviroment = nil
-		wipe(self.__Definition)
-	end--]]
 
 	------------------------------------------------------
 	-- Property
@@ -2017,24 +1978,6 @@ class "CodeEditor"
 		end,
 
 		Type = String,
-	}
-
-	doc [======[
-		@name Enviroment
-		@type property
-		@desc the code's enviroment
-	]======]
-	property "Enviroment" {
-		Get = function(self)
-			self.__Env = self.__Env or _G
-			return self.__Env
-		end,
-
-		Set = function(self, env)
-			self.__Env = env or _G
-		end,
-
-		Type = Table + nil,
 	}
 
 	------------------------------------------------------
@@ -2242,7 +2185,8 @@ class "CodeEditor"
 		self.OnCut = self.OnCut + OnCut
 
 		-- Enviroment
-		self.__Env = _G
 		self.__Definition = {}
+
+		InitDefinition(self)
 	end
 endclass "CodeEditor"
