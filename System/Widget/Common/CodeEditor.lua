@@ -252,27 +252,6 @@ class "CodeEditor"
 		[_Byte.VERTICAL] = -1,
 	}
 
-	------------------------------------------------------
-	-- Code smart helper
-	------------------------------------------------------
-	_CodeSmartHelper = EditBox("IGAS_CodeEditor_CodeHelper", IGAS.WorldFrame)
-	_CodeSmartHelper:SetBackdropColor(0, 0, 0, 1)
-	_CodeSmartHelper:SetTextInsets(0, 0, 0, 0)
-	_CodeSmartHelper.JustifyH = "LEFT"
-	_CodeSmartHelper.JustifyV = "MIDDLE"
-	_CodeSmartHelper.FontObject = "GameFontNormalSmall"
-	_CodeSmartHelper.FrameStrata = "TOOLTIP"
-	_CodeSmartHelper.MouseEnabled = true
-	_CodeSmartHelper.AutoFocus = true
-	_CodeSmartHelper.Width = 180
-	_CodeSmartHelper.Height = 26
-	_CodeSmartHelper.Visible = false
-
-	_List = List("List", _CodeSmartHelper)
-	_List.FrameStrata = "TOOLTIP"
-	_List.DisplayItemCount = 8
-	_List.Visible = false
-
     -- Scripts
 	local function ReplaceBlock(str, startp, endp, replace)
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
@@ -283,55 +262,10 @@ class "CodeEditor"
 	end
 
 	local function InitDefinition(self)
-		wipe(self.__Definition)
+		self:ClearAutoCompleteList()
 
 		for k in pairs(_KeyWord) do
-			tinsert(self.__Definition)
-		end
-
-		System.Array.Sort(self.__Definition)
-	end
-
-	local function compare(t1, t2)
-		if strsub(t1, 1, 1) == "_" then
-			if strsub(t2, 1, 1) == "_" then
-				return compare(strsub(t1, 2, -1), strsub(t2, 2, -1))
-			else
-				return true
-			end
-		elseif strsub(t2, 1, 1) == "_" then
-			return false
-		else
-			return strupper(t1 or "") < strupper(t2 or "")
-		end
-	end
-	
-	local function GetIndex(list, name, sIdx, eIdx)
-		if not sIdx then
-			if not next(list) then
-				return nil
-			end
-			sIdx = 1
-			eIdx = #list
-		end
-		if sIdx == eIdx then
-			if sIdx > 1 then
-				return sIdx - 1
-			else
-				return nil
-			end
-		end
-		local f = floor((sIdx + eIdx) / 2)
-		if compare(list[f], name) then
-			if not compare(list[f + 1], name) then
-				return f
-			else
-				return GetIndex(list, name, f + 1, eIdx)
-			end
-		elseif strupper(list[f]) == strupper(name) then
-			return GetIndex(list, name, f, f)
-		else
-			return GetIndex(list, name, sIdx, f)
+			self:InsertAutoCompleteWord(k)
 		end
 	end
 
@@ -1178,9 +1112,6 @@ class "CodeEditor"
 		local trueWord
 
 		local tab = self.TabWidth
-
-		-- Definition
-		local define = self.__Definition
 
 		while true do
 			prevToken = token
@@ -2101,90 +2032,6 @@ class "CodeEditor"
 		return FormatColor4Line(self)
 	end
 
-	function _List:OnItemChoosed(key, text)
-		_CodeSmartHelper.Text = text
-	end
-
-	function _List:OnItemDoubleClick(key, text)
-		_CodeSmartHelper.Text = text
-		_CodeSmartHelper:Fire("OnEnterPressed")
-	end
-
-	function _CodeSmartHelper:OnShow()
-		self.Text = ""
-		_List:ClearAllPoints()
-		if self:GetBottom() - _List.Height > 0 then
-			_List:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
-			_List:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT")
-		else
-			_List:SetPoint("BOTTOMLEFT", self, "TOPLEFT")
-			_List:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT")
-		end
-		_List:Refresh()
-		_List:SelectItemByValue(nil)
-		self:SetFocus()
-	end
-
-	function _CodeSmartHelper:OnCharComposition(char)
-		local list = _List.Items
-		local text = self:GetText()
-		local i, name
-
-		if not text or text == "" then
-			return
-		end
-
-		i, name = next(list, GetIndex(list, text))
-		while i do
-			if strfind(strupper(name), strupper(text), 1, 1) == 1 then
-				_List:SelectItemByIndex(i)
-				self:SetText(name)
-				if (self:IsInIMECompositionMode()) then
-					self:HighlightText(strlen(text) - strlen(char), -1)
-				else
-					self:HighlightText(strlen(text), -1)
-				end
-				return
-			end
-			i, name = next(list, i)
-		end
-	end
-
-	function _CodeSmartHelper:OnChar(char)
-		if ( not self:IsInIMECompositionMode() ) then
-			self:Fire("OnCharComposition", char)
-		end
-	end
-
-	function _CodeSmartHelper:OnEditFocusGained()
-		self:HighlightText()
-	end
-
-	function _CodeSmartHelper:OnEditFocusLost()
-		self.Visible = false
-	end
-
-	function _CodeSmartHelper:OnTabPressed()
-		self:Fire("OnEnterPressed")
-	end
-
-	function _CodeSmartHelper:OnEnterPressed()
-		self:HighlightText(0, 0)
-
-		self.__CodeEditor:SetFocus()
-		self.__CodeEditor:Insert(self.Text)
-		self.Visible = false
-		self.__CodeEditor = nil
-	end
-
-	function _CodeSmartHelper:OnEscapePressed()
-		self:HighlightText(0, 0)
-		self.Text = ""
-		self.__CodeEditor:SetFocus()
-		self.Visible = false
-		self.__CodeEditor = nil
-	end
-
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
@@ -2200,8 +2047,6 @@ class "CodeEditor"
 		self.OnCut = self.OnCut + OnCut
 
 		-- Enviroment
-		self.__Definition = {}
-
 		InitDefinition(self)
 	end
 endclass "CodeEditor"

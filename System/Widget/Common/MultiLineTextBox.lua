@@ -224,8 +224,53 @@ class "MultiLineTextBox"
 	_Thread = System.Threading.Thread()
 
 	------------------------------------------------------
+	-- Code smart helper
+	------------------------------------------------------
+	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
+	_List.FrameStrata = "TOOLTIP"
+	_List.DisplayItemCount = 8
+	_List.Visible = false
+
+	------------------------------------------------------
 	-- Local functions
 	------------------------------------------------------
+	local function compare(t1, t2)
+		return strupper(t1 or "") < strupper(t2 or "")
+	end
+
+	local function GetIndex(list, name, sIdx, eIdx)
+		if not sIdx then
+			if not next(list) then
+				return 0
+			end
+			sIdx = 1
+			eIdx = #list
+
+			-- Border check
+			if compare(name, list[sIdx]) then
+				return 0
+			elseif compare(list[eIdx], name) then
+				return eIdx
+			end
+		end
+
+		if sIdx == eIdx then
+			return sIdx
+		end
+
+		local m = floor((sIdx + eIdx) / 2)
+
+		if compare(name, list[f+1]) then
+			return GetIndex(list, name, sIdx, f)
+		else
+			return GetIndex(list, name, f+1, eIdx)
+		end
+	end
+
+	local function TransMatchWord(w)
+		return "["..w:lower()..w:upper().."][%w_]*"
+	end
+
 	local function ReplaceBlock(str, startp, endp, replace)
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
@@ -2417,6 +2462,38 @@ class "MultiLineTextBox"
 		return self.__TabWidth or _TabWidth
 	end
 
+	doc [======[
+		@name ClearAutoCompleteList
+		@type method
+		@desc Clear the auto complete list
+		@return nil
+	]======]
+	function ClearAutoCompleteList(self)
+		wipe(self.AutoCompleteList)
+	end
+
+	doc [======[
+		@name InsertAutoCompleteWord(self, word)
+		@type method
+		@desc Insert word to the auto complete list
+		@param word string, the world that need for auto complete
+		@return nil
+	]======]
+	function InsertAutoCompleteWord(self, word)
+		if type(word) == "string" and strtrim(word) ~= "" then
+			word = strtrim(word)
+
+			local lst = self.AutoCompleteList
+			local idx = GetIndex(lst, word)
+
+			if lst[idx] == word then
+				return
+			end
+
+			tinsert(lst, idx + 1, word)
+		end
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -2796,6 +2873,22 @@ class "MultiLineTextBox"
 		Type = Number + nil,
 	}
 
+	doc [======[
+		@name AutoCompleteList
+		@type property
+		@desc The auto complete list like {"if", "then", "else"}
+	]======]
+	property "AutoCompleteList" {
+		Get = function(self)
+			self.__AutoCompleteList = self.__AutoCompleteList or {}
+			return self.__AutoCompleteList
+		end,
+		Set = function(self, value)
+			self.__AutoCompleteList = type(value) == "table" and value or {}
+		end,
+		Type = System.Table,
+	}
+
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
@@ -2913,8 +3006,6 @@ class "MultiLineTextBox"
 			local startp, endp = GetWord(str, cursorPos)
 
 			if startp and endp then
-				--AdjustCursorPosition(self, endp)
-
 				self:HighlightText(startp - 1, endp)
 			end
 
@@ -2973,6 +3064,35 @@ class "MultiLineTextBox"
 		if self.__OperationOnLine == _Operation.CUT then
 			self:Fire("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
 			SaveOperation(self)
+		elseif self.__OperationOnLine == _Operation.INPUTCHAR and next(self.AutoCompleteList) then
+			-- Handle the auto complete
+			local startp, endp, word = GetWord(MultiLineTextBox.GetText(self), cursorPos)
+
+			if word and word:len() > 0 then
+				-- Match the auto complete list
+				_List.Visible = false
+				_List:Clear()
+
+				local uword = "^" .. word:upper():gsub("[%w_]", TransMatchWord)
+				local lst = self.AutoCompleteList
+
+				local sIdx = GetIndex(lst, word:upper())
+
+				for i = sIdx, #lst do
+					if lst[i]:match(uword) then
+						_List:AddItem(i, i)
+					end
+				end
+
+				if _List.ItemCount > 0 then
+					-- Should show the auto complete list
+
+				end
+			else
+				_List.Visible = false
+			end
+		else
+			_List.Visible = false
 		end
 
 		return self:Fire("OnCursorChanged", x, y, w, h)
@@ -3189,7 +3309,7 @@ class "MultiLineTextBox"
 		self = self.__Container
 
 		if self.__InPasting or not self:HasFocus() then
-			return
+			return true
 		end
 
 		self.__InCharComposition = nil
@@ -3486,6 +3606,18 @@ class "MultiLineTextBox"
 		if _Thread:IsSuspended() then
 			_Thread:Resume()
 		end
+	end
+
+	function _List:OnItemChoosed(key, text)
+
+	end
+
+	function _List:OnItemDoubleClick(key, text)
+
+	end
+
+	function _List:OnShow()
+
 	end
 
 	------------------------------------------------------
