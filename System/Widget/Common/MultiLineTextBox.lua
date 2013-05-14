@@ -228,7 +228,8 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
 	_List.FrameStrata = "TOOLTIP"
-	_List.DisplayItemCount = 8
+	_List.DisplayItemCount = 5
+	_List.Width = 150
 	_List.Visible = false
 
 	------------------------------------------------------
@@ -258,7 +259,7 @@ class "MultiLineTextBox"
 			return sIdx
 		end
 
-		local m = floor((sIdx + eIdx) / 2)
+		local f = floor((sIdx + eIdx) / 2)
 
 		if compare(name, list[f+1]) then
 			return GetIndex(list, name, sIdx, f)
@@ -268,7 +269,65 @@ class "MultiLineTextBox"
 	end
 
 	local function TransMatchWord(w)
-		return "["..w:lower()..w:upper().."][%w_]*"
+		return "(["..w:lower()..w:upper().."])([%w_]*)"
+	end
+
+	local function RemoveColor(str)
+		local byte
+		local pos = 1
+		local ret = ""
+
+		if not str or #str == 0 then return "" end
+
+		byte = strbyte(str, pos)
+
+		while true do
+			if byte == _Byte.VERTICAL then
+				-- handle the color code
+				pos = pos + 1
+				byte = strbyte(str, pos)
+
+				if byte == _Byte.c then
+					pos = pos + 9
+				elseif byte == _Byte.r then
+					pos = pos + 1
+				else
+					pos = pos - 1
+					break
+				end
+
+				byte = strbyte(str, pos)
+			else
+				if not byte then
+					break
+				elseif byte == _Byte.SPACE or byte == _Byte.TAB then
+					break
+				elseif _Special[byte] then
+					break
+				end
+
+				ret = ret .. strchar(byte)
+
+				pos = pos + 1
+				byte = strbyte(str, pos)
+			end
+		end
+
+		return ret
+	end
+
+	local function ApplyColor(...)
+		local ret = ""
+
+		for i = 1, select('#', ...) do
+			if i % 2 == 1 then
+				ret = ret .. FontColor.WHITE .. select(i, ...) .. FontColor.CLOSE
+			else
+				ret = ret .. FontColor.GRAY .. select(i, ...) .. FontColor.CLOSE
+			end
+		end
+
+		return ret
 	end
 
 	local function ReplaceBlock(str, startp, endp, replace)
@@ -919,6 +978,35 @@ class "MultiLineTextBox"
 		self.__InPasting = nil
 	end
 
+	local function ApplyAutoComplete(self)
+		_List.Visible = false
+		_List:Clear()
+
+		if next(self.AutoCompleteList) then
+			-- Handle the auto complete
+			local startp, endp, word = GetWord(self.__Text.Text, self.CursorPosition)
+
+			word = RemoveColor(word)
+
+			if word and word:match("^[%w_]+$") then
+				-- Match the auto complete list
+				local uword = "^" .. word:gsub("[%w_]", TransMatchWord) .. "$"
+				local lst = self.AutoCompleteList
+				local header = word:sub(1, 1)
+
+				local sIdx = GetIndex(lst, header)
+
+				for i = sIdx, #lst do
+					if compare(header, lst[i]:sub(1, 1)) then break end
+
+					if lst[i]:match(uword) then
+						_List:AddItem(lst[i], (lst[i]:gsub(uword, ApplyColor)))
+					end
+				end
+			end
+		end
+	end
+
 	_IndentFunc = _IndentFunc or {}
 	_ShiftIndentFunc = _ShiftIndentFunc or {}
 
@@ -1399,6 +1487,15 @@ class "MultiLineTextBox"
 
 				AdjustCursorPosition(self, startp - 1 + len)
 			end
+		end
+
+		ApplyAutoComplete(self)
+	
+		if _List.ItemCount > 0 then
+			-- Handle the auto complete
+			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
+			_List.Visible = true
+			_List.SelectedIndex = 1
 		end
 
 		self:Fire("OnBackspaceFinished")
@@ -2482,6 +2579,7 @@ class "MultiLineTextBox"
 	function InsertAutoCompleteWord(self, word)
 		if type(word) == "string" and strtrim(word) ~= "" then
 			word = strtrim(word)
+			word = RemoveColor(word)
 
 			local lst = self.AutoCompleteList
 			local idx = GetIndex(lst, word)
@@ -2989,6 +3087,20 @@ class "MultiLineTextBox"
 
 		local cursorPos = self.CursorPosition
 
+		if self.__OperationOnLine == _Operation.INPUTCHAR then
+			ApplyAutoComplete(self)
+		
+			if _List.ItemCount > 0 then
+				-- Handle the auto complete
+				_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
+				_List.Visible = true
+				_List.SelectedIndex = 1
+			end
+		else
+			_List:Clear()
+			_List.Visible = false
+		end
+
 		if cursorPos == self.__OldCursorPosition and self.__OperationOnLine ~= _Operation.CUT then
 			return
 		end
@@ -3064,35 +3176,6 @@ class "MultiLineTextBox"
 		if self.__OperationOnLine == _Operation.CUT then
 			self:Fire("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
 			SaveOperation(self)
-		elseif self.__OperationOnLine == _Operation.INPUTCHAR and next(self.AutoCompleteList) then
-			-- Handle the auto complete
-			local startp, endp, word = GetWord(MultiLineTextBox.GetText(self), cursorPos)
-
-			if word and word:len() > 0 then
-				-- Match the auto complete list
-				_List.Visible = false
-				_List:Clear()
-
-				local uword = "^" .. word:upper():gsub("[%w_]", TransMatchWord)
-				local lst = self.AutoCompleteList
-
-				local sIdx = GetIndex(lst, word:upper())
-
-				for i = sIdx, #lst do
-					if lst[i]:match(uword) then
-						_List:AddItem(i, i)
-					end
-				end
-
-				if _List.ItemCount > 0 then
-					-- Should show the auto complete list
-
-				end
-			else
-				_List.Visible = false
-			end
-		else
-			_List.Visible = false
 		end
 
 		return self:Fire("OnCursorChanged", x, y, w, h)
@@ -3214,6 +3297,23 @@ class "MultiLineTextBox"
 		local startp, endp, str, lineBreak
 		local shiftDown = IsShiftKeyDown()
 		local cursorPos = self.CursorPosition
+
+		if _List.Visible then
+			startp, endp, str = GetWord(text, self.CursorPosition)
+
+			str = _List:GetSelectedItemValue()
+
+			if str then
+				self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+
+				AdjustCursorPosition(self, startp + str:len() - 1)
+
+				return self:Fire("OnPasting", startp, startp + str:len() - 1)
+			else
+				_List.Visible = false
+				_List:Clear()
+			end
+		end
 
 		if self.__HighlightTextStart and self.__HighlightTextEnd and self.__HighlightTextEnd > self.__HighlightTextStart then
 			startp, endp, str = GetLines(text, self.__HighlightTextStart, self.__HighlightTextEnd)
@@ -3434,6 +3534,18 @@ class "MultiLineTextBox"
 					end
 
 					if key == "UP" then
+						if _List.Visible then
+							self.FocusEditor.AltArrowKeyMode = true
+
+							if _List.SelectedIndex > 1 then
+								_List.SelectedIndex = _List.SelectedIndex - 1
+							end
+
+							return
+						else
+							self.FocusEditor.AltArrowKeyMode = false
+						end
+
 						local _, _, _, line = GetPrevLinesByReturn(editor.__Text.Text, cursorPos, 1)
 
 						if line > 0 then
@@ -3451,6 +3563,18 @@ class "MultiLineTextBox"
 					end
 
 					if key == "DOWN" then
+						if _List.Visible then
+							self.FocusEditor.AltArrowKeyMode = true
+
+							if _List.SelectedIndex < _List.ItemCount then
+								_List.SelectedIndex = _List.SelectedIndex + 1
+							end
+
+							return
+						else
+							self.FocusEditor.AltArrowKeyMode = false							
+						end
+
 						local _, _, _, line = GetLinesByReturn(editor.__Text.Text, cursorPos, 1)
 
 						if line > 0 then

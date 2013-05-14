@@ -191,7 +191,7 @@ class "NormalButton"
 			end
 
 			-- adjust height
-			local height = self:GetNormalFontObject() and self:GetNormalFontObject():GetStringHeight()
+			local height = self:GetNormalFontObject() and self:GetNormalFontObject().Font.height
 			if self.Height <= height + 4 then
 				self.Height = height + 4
 			end
@@ -238,7 +238,7 @@ class "NormalButton"
 				end
 
 				-- adjust height
-				local height = self:GetNormalFontObject() and self:GetNormalFontObject():GetStringHeight()
+				local height = self:GetNormalFontObject() and self:GetNormalFontObject().Font.height
 				if self.Height <= height + 4 then
 					self.Height = height + 4
 				end

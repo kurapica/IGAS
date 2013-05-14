@@ -1204,6 +1204,8 @@ class "CodeEditor"
 					tinsert(content, word)
 				else
 					tinsert(content, word)
+
+					self:InsertAutoCompleteWord(word)
 				end
 				rightSpace = false
 			elseif _WordWrap[token] == _IndentNone then
@@ -1579,6 +1581,8 @@ class "CodeEditor"
 		local startIndent = 0
 		local prevToken
 
+		InitDefinition(self)
+
 		while true do
 			prevToken = token
 			token, nextPos, trueWord = nextToken(str, pos, nil, true)
@@ -1671,6 +1675,8 @@ class "CodeEditor"
 					tinsert(content, instructionColor .. word .. _EndColor)
 				else
 					tinsert(content, defaultColor .. word .. _EndColor)
+
+					self:InsertAutoCompleteWord(word)
 				end
 				rightSpace = false
 			else
@@ -2038,7 +2044,7 @@ class "CodeEditor"
     function CodeEditor(self, name, parent)
 		-- Script Handlers
 		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed
-		self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
+		--self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
 		self.OnChar = self.OnChar + OnChar
 		self.OnOperationListChanged = self.OnOperationListChanged + OnOperationListChanged
 		self.OnPasting = self.OnPasting + OnPasting
