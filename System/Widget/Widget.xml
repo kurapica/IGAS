@@ -68,6 +68,11 @@
 	<Script file="Interface\IFElementPanel.lua"/>
 	<Script file="Interface\IFNoCombatTaskHandler.lua"/>
 
+	<!-- Secure Base -->
+	<Script file="Secure\IFSecureHandler.lua"/>
+	<Script file="Secure\SecureFrame.lua"/>
+	<Script file="Secure\SecureButton.lua"/>
+
 	<!-- Custom Widget -->
 	<Script file="Common\NormalButton.lua"/>
 	<Script file="Common\ColorPicker.lua"/>
@@ -89,11 +94,6 @@
 	<Script file="Common\CodeEditor.lua"/>
 	<Script file="Common\ElementPanel.lua"/>
 	<Script file="Common\HTMLViewer.lua"/>
-
-	<!-- Secure Base -->
-	<Script file="Secure\IFSecureHandler.lua"/>
-	<Script file="Secure\SecureFrame.lua"/>
-	<Script file="Secure\SecureButton.lua"/>
 
 	<!-- Unit System -->
 	<Include file="Unit\Unit.xml"/>

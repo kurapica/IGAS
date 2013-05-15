@@ -6,6 +6,8 @@
 --              2012/04/10 Fix the margin click
 --              2012/05/13 Fix delete on double click selected multi-text
 --              2013/02/07 Recode for scrollForm's change, and fix the double click error
+--              2013/05/15 Auto complete function added
+
 -- Check Version
 local version = 16
 
@@ -30,7 +32,7 @@ class "MultiLineTextBox"
 	-- Local Settings
 	------------------------------------------------------
 	_DBL_CLK_CHK = 0.3
-	_FIRST_WAITTIME = 0.5
+	_FIRST_WAITTIME = 0.3
 	_CONTINUE_WAITTIME = 0.1
 	_ConcatReturn = nil
 
@@ -233,10 +235,28 @@ class "MultiLineTextBox"
 	_List.Visible = false
 
 	------------------------------------------------------
+	-- Short Key Block
+	------------------------------------------------------
+	_BtnBlockUp = SecureButton("IGAS_MultiLineTextBox_UpBlock", IGAS.WorldFrame)
+	_BtnBlockDown = SecureButton("IGAS_MultiLineTextBox_DownBlock", IGAS.WorldFrame)
+	_BtnBlockUp.Visible = false
+	_BtnBlockDown.Visible = false
+
+	------------------------------------------------------
 	-- Local functions
 	------------------------------------------------------
 	local function compare(t1, t2)
-		return strupper(t1 or "") < strupper(t2 or "")
+		t1 = t1 or ""
+		t2 = t2 or ""
+
+		local ut1 = strupper(t1)
+		local ut2 = strupper(t2)
+
+		if ut1 == ut2 then
+			return t1 < t2
+		else
+			return ut1 < ut2
+		end
 	end
 
 	local function GetIndex(list, name, sIdx, eIdx)
@@ -1007,6 +1027,16 @@ class "MultiLineTextBox"
 		end
 	end
 
+	local function BlockShortKey()
+		SetOverrideBindingClick(IGAS:GetUI(_BtnBlockDown), false, "DOWN", _BtnBlockDown.Name, "LeftButton")
+		SetOverrideBindingClick(IGAS:GetUI(_BtnBlockUp), false, "UP", _BtnBlockUp.Name, "LeftButton")
+	end
+
+	local function UnblockShortKey()
+		ClearOverrideBindings(IGAS:GetUI(_BtnBlockDown))
+		ClearOverrideBindings(IGAS:GetUI(_BtnBlockUp))
+	end
+
 	_IndentFunc = _IndentFunc or {}
 	_ShiftIndentFunc = _ShiftIndentFunc or {}
 
@@ -1490,7 +1520,7 @@ class "MultiLineTextBox"
 		end
 
 		ApplyAutoComplete(self)
-	
+
 		if _List.ItemCount > 0 then
 			-- Handle the auto complete
 			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
@@ -3089,7 +3119,7 @@ class "MultiLineTextBox"
 
 		if self.__OperationOnLine == _Operation.INPUTCHAR then
 			ApplyAutoComplete(self)
-		
+
 			if _List.ItemCount > 0 then
 				-- Handle the auto complete
 				_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
@@ -3250,6 +3280,8 @@ class "MultiLineTextBox"
 		_KeyScan.FocusEditor = self
 		_KeyScan.Visible = true
 
+		IFNoCombatTaskHandler._RegisterNoCombatTask(BlockShortKey)
+
 		return self:Fire("OnEditFocusGained", ...)
 	end
 
@@ -3260,6 +3292,8 @@ class "MultiLineTextBox"
 			EndPrevKey(self)
 			_KeyScan.FocusEditor = nil
 			_KeyScan.Visible = false
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(UnblockShortKey)
 		end
 
 		return self:Fire("OnEditFocusLost", ...)
@@ -3572,7 +3606,7 @@ class "MultiLineTextBox"
 
 							return
 						else
-							self.FocusEditor.AltArrowKeyMode = false							
+							self.FocusEditor.AltArrowKeyMode = false
 						end
 
 						local _, _, _, line = GetLinesByReturn(editor.__Text.Text, cursorPos, 1)
@@ -3733,15 +3767,26 @@ class "MultiLineTextBox"
 	end
 
 	function _List:OnItemChoosed(key, text)
+		local editor = _KeyScan.FocusEditor
+		if not editor then
+			_List.Visible = false
+			_List:Clear()
+			return
+		end
 
-	end
+		local ct = editor.__Text.Text
+		local startp, endp = GetWord(ct, editor.CursorPosition)
 
-	function _List:OnItemDoubleClick(key, text)
+		if key then
+			editor.__Text.Text = ReplaceBlock(ct, startp, endp, key)
 
-	end
+			AdjustCursorPosition(editor, startp + key:len() - 1)
 
-	function _List:OnShow()
-
+			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
+		else
+			_List.Visible = false
+			_List:Clear()
+		end
 	end
 
 	------------------------------------------------------

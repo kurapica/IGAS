@@ -12,8 +12,6 @@ end
 class "CodeEditor"
 	inherit "MultiLineTextBox"
 
-	import "System.Threading"
-
 	doc [======[
 		@name CodeEditor
 		@type class
