@@ -1521,13 +1521,6 @@ class "MultiLineTextBox"
 
 		ApplyAutoComplete(self)
 
-		if _List.ItemCount > 0 then
-			-- Handle the auto complete
-			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
-			_List.Visible = true
-			_List.SelectedIndex = 1
-		end
-
 		self:Fire("OnBackspaceFinished")
 	end
 
@@ -3119,15 +3112,16 @@ class "MultiLineTextBox"
 
 		if self.__OperationOnLine == _Operation.INPUTCHAR then
 			ApplyAutoComplete(self)
-
-			if _List.ItemCount > 0 then
-				-- Handle the auto complete
-				_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
-				_List.Visible = true
-				_List.SelectedIndex = 1
-			end
-		else
+		elseif self.__OperationOnLine ~= _Operation.BACKSPACE then
 			_List:Clear()
+		end
+
+		if _List.ItemCount > 0 then
+			-- Handle the auto complete
+			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
+			_List.Visible = true
+			_List.SelectedIndex = 1
+		else
 			_List.Visible = false
 		end
 

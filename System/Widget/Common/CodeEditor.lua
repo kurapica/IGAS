@@ -260,9 +260,13 @@ class "CodeEditor"
 	end
 
 	local function InitDefinition(self)
+		self.__IdentifierCache = self.__IdentifierCache or {}
+		wipe(self.__IdentifierCache)
+
 		self:ClearAutoCompleteList()
 
 		for k in pairs(_KeyWord) do
+			self.__IdentifierCache[k] = true
 			self:InsertAutoCompleteWord(k)
 		end
 	end
@@ -1055,6 +1059,11 @@ class "CodeEditor"
 					tinsert(content, instructionColor .. word .. _EndColor)
 				else
 					tinsert(content, defaultColor .. word .. _EndColor)
+
+					if not colorTable.__IdentifierCache[word] then
+						colorTable.__IdentifierCache[word] = true
+						colorTable:InsertAutoCompleteWord(word)
+					end
 				end
 			elseif token == _Token.NUMBER then
 				tinsert(content, numberColor .. word .. _EndColor)
@@ -1202,8 +1211,6 @@ class "CodeEditor"
 					tinsert(content, word)
 				else
 					tinsert(content, word)
-
-					self:InsertAutoCompleteWord(word)
 				end
 				rightSpace = false
 			elseif _WordWrap[token] == _IndentNone then
@@ -1674,7 +1681,11 @@ class "CodeEditor"
 				else
 					tinsert(content, defaultColor .. word .. _EndColor)
 
-					self:InsertAutoCompleteWord(word)
+					word = RemoveColor(word)
+					if not self.__IdentifierCache[word] then
+						self.__IdentifierCache[word] = true
+						self:InsertAutoCompleteWord(word)
+					end
 				end
 				rightSpace = false
 			else
