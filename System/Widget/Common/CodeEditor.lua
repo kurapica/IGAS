@@ -1059,11 +1059,6 @@ class "CodeEditor"
 					tinsert(content, instructionColor .. word .. _EndColor)
 				else
 					tinsert(content, defaultColor .. word .. _EndColor)
-
-					if not colorTable.__IdentifierCache[word] then
-						colorTable.__IdentifierCache[word] = true
-						colorTable:InsertAutoCompleteWord(word)
-					end
 				end
 			elseif token == _Token.NUMBER then
 				tinsert(content, numberColor .. word .. _EndColor)
@@ -1211,6 +1206,11 @@ class "CodeEditor"
 					tinsert(content, word)
 				else
 					tinsert(content, word)
+					
+					if not self.__IdentifierCache[word] then
+						self.__IdentifierCache[word] = true
+						self:InsertAutoCompleteWord(word)
+					end
 				end
 				rightSpace = false
 			elseif _WordWrap[token] == _IndentNone then
