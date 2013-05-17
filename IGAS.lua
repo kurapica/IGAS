@@ -4,7 +4,7 @@
 -- Create Date : 2011/03/01
 -- ChangeLog   :
 
-local version = 4
+local version = 5
 
 if not IGAS:NewAddon("IGAS", version) then
 	return
@@ -17,7 +17,7 @@ end
 _AutoWrapper = false
 
 -- Set true to enable document system, false to disable and reduce memory usage.
-System.Reflector.EnableDocumentSystem(false)
+System.Reflector.EnableDocumentSystem(true)
 
 ----------------------------------------------
 -- Looger

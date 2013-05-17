@@ -9,7 +9,7 @@
 --              2013/05/15 Auto complete function added
 
 -- Check Version
-local version = 16
+local version = 17
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -234,6 +234,19 @@ class "MultiLineTextBox"
 	_List.Width = 150
 	_List.Visible = false
 
+	_AutoCacheKeys = {}
+	_AutoCacheItems = {}
+	_AutoWordWeightCache = {}
+	_AutoWordMap = {}
+
+	_AutoCheckKey = ""
+	_AutoCheckWord = ""
+
+	_List.Keys = _AutoCacheKeys
+	_List.Items = _AutoCacheItems
+
+	_BackAutoCache = {}
+
 	------------------------------------------------------
 	-- Short Key Block
 	------------------------------------------------------
@@ -245,7 +258,7 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Local functions
 	------------------------------------------------------
-	local function compare(t1, t2)
+	local function Compare(t1, t2)
 		t1 = t1 or ""
 		t2 = t2 or ""
 
@@ -259,6 +272,10 @@ class "MultiLineTextBox"
 		end
 	end
 
+	local function CompareWeight(t1, t2)
+		return (_AutoWordWeightCache[t1] or 0) < (_AutoWordWeightCache[t2] or 0)
+	end
+
 	local function GetIndex(list, name, sIdx, eIdx)
 		if not sIdx then
 			if not next(list) then
@@ -268,9 +285,9 @@ class "MultiLineTextBox"
 			eIdx = #list
 
 			-- Border check
-			if compare(name, list[sIdx]) then
+			if Compare(name, list[sIdx]) then
 				return 0
-			elseif compare(list[eIdx], name) then
+			elseif Compare(list[eIdx], name) then
 				return eIdx
 			end
 		end
@@ -281,7 +298,7 @@ class "MultiLineTextBox"
 
 		local f = floor((sIdx + eIdx) / 2)
 
-		if compare(name, list[f+1]) then
+		if Compare(name, list[f+1]) then
 			return GetIndex(list, name, sIdx, f)
 		else
 			return GetIndex(list, name, f+1, eIdx)
@@ -289,7 +306,7 @@ class "MultiLineTextBox"
 	end
 
 	local function TransMatchWord(w)
-		return "(["..w:lower()..w:upper().."])([%w_]*)"
+		return "(["..w:lower()..w:upper().."])([%w_]-)"
 	end
 
 	local function RemoveColor(str)
@@ -338,14 +355,34 @@ class "MultiLineTextBox"
 
 	local function ApplyColor(...)
 		local ret = ""
+		local word = ""
+		local pos = 0
 
-		for i = 1, select('#', ...) do
+		local weight = 0
+		local n = select('#', ...)
+
+		for i = 1, n do
+			word = select(i, ...)
+
 			if i % 2 == 1 then
-				ret = ret .. FontColor.WHITE .. select(i, ...) .. FontColor.CLOSE
+				pos = floor((i+1)/2)
+				ret = ret .. FontColor.WHITE .. word .. FontColor.CLOSE
+
+				if word ~= _AutoCheckKey:sub(pos, pos) then
+					weight = weight + 1
+				end
 			else
-				ret = ret .. FontColor.GRAY .. select(i, ...) .. FontColor.CLOSE
+				ret = ret .. FontColor.GRAY .. word .. FontColor.CLOSE
+
+				if i < n then
+					weight = weight + word:len()
+				end
 			end
 		end
+
+		_AutoWordWeightCache[_AutoCheckWord] = weight
+
+		_AutoWordMap[_AutoCheckWord] = ret
 
 		return ret
 	end
@@ -1008,20 +1045,48 @@ class "MultiLineTextBox"
 
 			word = RemoveColor(word)
 
+			wipe(_AutoCacheKeys)
+			wipe(_AutoCacheItems)
+			wipe(_AutoWordMap)
+			wipe(_AutoWordWeightCache)
+
 			if word and word:match("^[%w_]+$") then
+				_AutoCheckKey = word
+
+				word = word:lower()
+
 				-- Match the auto complete list
 				local uword = "^" .. word:gsub("[%w_]", TransMatchWord) .. "$"
 				local lst = self.AutoCompleteList
 				local header = word:sub(1, 1)
 
+				if not header or #header == 0 then return end
+
 				local sIdx = GetIndex(lst, header)
 
-				for i = sIdx, #lst do
-					if compare(header, lst[i]:sub(1, 1)) then break end
+				if sIdx == 0 then sIdx = 1 end
 
-					if lst[i]:match(uword) then
-						_List:AddItem(lst[i], (lst[i]:gsub(uword, ApplyColor)))
+				for i = sIdx, #lst do
+					if #(lst[i]) == 0 or Compare(header, lst[i]:sub(1, 1)) then break end
+
+					_AutoCheckWord = lst[i]
+
+					if _AutoCheckWord:match(uword) then
+						_AutoCheckWord:gsub(uword, ApplyColor)
+
+						tinsert(_AutoCacheKeys, _AutoCheckWord)
 					end
+
+					Array.Sort(_AutoCacheKeys, CompareWeight)
+
+					for i, v in ipairs(_AutoCacheKeys) do
+						_AutoCacheItems[i] = _AutoWordMap[v]
+					end
+				end
+
+				if #_AutoCacheKeys == 1 and _AutoCacheKeys[1] == _AutoCheckKey then
+					wipe(_AutoCacheKeys)
+					wipe(_AutoCacheItems)
 				end
 			end
 		end
@@ -3286,6 +3351,8 @@ class "MultiLineTextBox"
 			EndPrevKey(self)
 			_KeyScan.FocusEditor = nil
 			_KeyScan.Visible = false
+			_List.Visible = false
+			_List:Clear()
 
 			IFNoCombatTaskHandler._RegisterNoCombatTask(UnblockShortKey)
 		end
@@ -3327,11 +3394,19 @@ class "MultiLineTextBox"
 		local cursorPos = self.CursorPosition
 
 		if _List.Visible then
+			wipe(_BackAutoCache)
+
 			startp, endp, str = GetWord(text, self.CursorPosition)
 
 			str = _List:GetSelectedItemValue()
 
 			if str then
+				for _, v in ipairs(_List.Keys) do
+					tinsert(_BackAutoCache, v)
+				end
+
+				_BackAutoCache[0] = _List.SelectedIndex
+
 				self.__Text.Text = ReplaceBlock(text, startp, endp, str)
 
 				AdjustCursorPosition(self, startp + str:len() - 1)
@@ -3340,6 +3415,25 @@ class "MultiLineTextBox"
 			else
 				_List.Visible = false
 				_List:Clear()
+			end
+		elseif #_BackAutoCache > 0 then
+			startp, endp, str = GetWord(text, self.CursorPosition)
+
+			str = RemoveColor(str)
+
+			if str == _BackAutoCache[_BackAutoCache[0]] then
+				_BackAutoCache[0] = _BackAutoCache[0] + 1
+				str = _BackAutoCache[_BackAutoCache[0]]
+
+				if str then
+					self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+
+					AdjustCursorPosition(self, startp + str:len() - 1)
+
+					return self:Fire("OnPasting", startp, startp + str:len() - 1)
+				else
+					wipe(_BackAutoCache)
+				end
 			end
 		end
 
@@ -3771,7 +3865,18 @@ class "MultiLineTextBox"
 		local ct = editor.__Text.Text
 		local startp, endp = GetWord(ct, editor.CursorPosition)
 
+		wipe(_BackAutoCache)
+
 		if key then
+			for _, v in ipairs(_List.Keys) do
+				tinsert(_BackAutoCache, v)
+			end
+
+			_BackAutoCache[0] = _List.SelectedIndex
+
+			_List.Visible = false
+			_List:Clear()
+
 			editor.__Text.Text = ReplaceBlock(ct, startp, endp, key)
 
 			AdjustCursorPosition(editor, startp + key:len() - 1)
