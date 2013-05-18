@@ -9,7 +9,7 @@
 --              2013/05/15 Auto complete function added
 
 -- Check Version
-local version = 17
+local version = 18
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -3183,7 +3183,7 @@ class "MultiLineTextBox"
 
 		if _List.ItemCount > 0 then
 			-- Handle the auto complete
-			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h)
+			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h + self.Value)
 			_List.Visible = true
 			_List.SelectedIndex = 1
 		else
