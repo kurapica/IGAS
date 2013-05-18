@@ -3423,6 +3423,11 @@ class "MultiLineTextBox"
 
 			if str == _BackAutoCache[_BackAutoCache[0]] then
 				_BackAutoCache[0] = _BackAutoCache[0] + 1
+
+				if _BackAutoCache[0] > #_BackAutoCache then
+					_BackAutoCache[0] = 1
+				end
+
 				str = _BackAutoCache[_BackAutoCache[0]]
 
 				if str then
