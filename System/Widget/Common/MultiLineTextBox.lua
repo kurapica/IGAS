@@ -7,9 +7,10 @@
 --              2012/05/13 Fix delete on double click selected multi-text
 --              2013/02/07 Recode for scrollForm's change, and fix the double click error
 --              2013/05/15 Auto complete function added
+--              2013/05/19 Auto pairs function added
 
 -- Check Version
-local version = 18
+local version = 19
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -200,6 +201,18 @@ class "MultiLineTextBox"
 		UNKNOWN = true,
 	}
 
+	-- Auto Pairs
+	_AutoPairs = {
+		[_Byte.LEFTBRACKET] = _Byte.RIGHTBRACKET, -- []
+		[_Byte.LEFTPAREN] = _Byte.RIGHTPAREN, -- ()
+		[_Byte.LEFTWING] = _Byte.RIGHTWING, --()
+		[_Byte.SINGLE_QUOTE] = true, -- ''
+		[_Byte.DOUBLE_QUOTE] = true, -- ''
+		[_Byte.RIGHTBRACKET] = false,
+		[_Byte.RIGHTPAREN] = false,
+		[_Byte.RIGHTWING] = false,
+	}
+
 	-- Temp list
 	_BackSpaceList = {}
 
@@ -336,10 +349,6 @@ class "MultiLineTextBox"
 				byte = strbyte(str, pos)
 			else
 				if not byte then
-					break
-				elseif byte == _Byte.SPACE or byte == _Byte.TAB then
-					break
-				elseif _Special[byte] then
 					break
 				end
 
@@ -1546,7 +1555,47 @@ class "MultiLineTextBox"
 				end
 			end
 
-			str = ReplaceBlock(str, prevPos, pos, "")
+			-- Auto pairs check
+			local char = str:sub(prevPos, pos)
+			local offset = pos
+
+			char = RemoveColor(char)
+
+			if char and char:len() == 1 and _AutoPairs[strbyte(char)] then
+				offset = offset + 1
+
+				byte = strbyte(str, offset)
+
+				while true do
+					if byte == _Byte.VERTICAL then
+						-- handle the color code
+						offset = offset + 1
+						byte = strbyte(str, offset)
+
+						if byte == _Byte.c then
+							offset = offset + 9
+						elseif byte == _Byte.r then
+							offset = offset + 1
+						else
+							offset = offset - 1
+							break
+						end
+
+						byte = strbyte(str, offset)
+					else
+						break
+					end
+				end
+
+				if (_AutoPairs[strbyte(char)] == true and byte == strbyte(char)) or _AutoPairs[strbyte(char)] == byte then
+					-- pass
+				else
+					offset = pos
+				end
+			end
+
+			-- Delete
+			str = ReplaceBlock(str, prevPos, offset, "")
 
 			self.__Text.Text = str
 
@@ -3537,6 +3586,99 @@ class "MultiLineTextBox"
 
 		if self.__InPasting or not self:HasFocus() then
 			return true
+		end
+
+		-- Auto paris
+		local char = ...
+
+		if char and _AutoPairs[strbyte(char)] ~= nil then
+			local text = self.__Text.Text
+			local cursorPos = self.CursorPosition
+
+			local startp, endp, str = GetLines(text, cursorPos)
+
+			-- Check if in string
+			local pos = 1
+			local byte = strbyte(str, pos)
+			local cPos = cursorPos - startp + 1
+			local isString = 0
+			local preEscape = false
+
+			while byte do
+				if pos == cPos then
+					break
+				end
+
+				if not preEscape then
+					if byte == _Byte.SINGLE_QUOTE then
+						if isString == 0 then
+							isString = 1
+						elseif isString == 1 then
+							isString = 0
+						end
+					elseif byte == _Byte.DOUBLE_QUOTE then
+						if isString == 0 then
+							isString = 2
+						elseif isString == 2 then
+							isString = 0
+						end
+					end
+				end
+
+				if byte == _Byte.BACKSLASH then
+					preEscape = not preEscape
+				else
+					preEscape = false
+				end
+
+				pos = pos + 1
+				byte = strbyte(str,  pos)
+			end
+
+			startp, endp, str = GetWord(text, cursorPos)
+
+			if str and str ~= "" then
+				local header = str:sub(1, cursorPos + 1 - startp)
+				local tail = str:sub(cursorPos + 2  - startp, -1)
+
+				header = RemoveColor(header) or ""
+				tail = RemoveColor(tail) or ""
+
+				if header and header ~= "" then
+					local byte = strbyte(char)
+					local tbyte = tail ~= "" and strbyte(tail, 1) or 0
+ 
+					if _AutoPairs[byte] == false then
+						-- end pairs like ] ) }
+						if isString == 0 and tail and tail ~= "" and tail:sub(1, 1) == char then
+							str = header:sub(1, -2) .. tail
+
+							self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+							AdjustCursorPosition(self, startp + header:len() - 1)
+						end
+					elseif _AutoPairs[byte] == true then
+						-- ' "
+						if tail and tail ~= "" and tail:sub(1, 1) == char then
+							str = header:sub(1, -2) .. tail
+
+							self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+							AdjustCursorPosition(self, startp + header:len() - 1)
+						elseif isString == 0 and tail == "" or tbyte == _Byte.SPACE or tbyte == _Byte.TAB or (_AutoPairs[tbyte] == false) then
+							str = header .. char .. tail
+ 
+							self.__Text.Text =  ReplaceBlock(text, startp, endp, str)
+							AdjustCursorPosition(self, startp + header:len() - 1)
+						end
+					else
+						if tail == "" or tbyte == _Byte.SPACE or tbyte == _Byte.TAB or (_AutoPairs[tbyte] == false) then
+							str = header .. strchar(_AutoPairs[byte]) .. tail	
+
+							self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+							AdjustCursorPosition(self, startp + header:len() - 1)
+						end
+					end
+				end
+			end
 		end
 
 		self.__InCharComposition = nil
