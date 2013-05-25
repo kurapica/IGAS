@@ -10,7 +10,7 @@
 --              2013/05/19 Auto pairs function added
 
 -- Check Version
-local version = 19
+local version = 20
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -771,7 +771,7 @@ class "MultiLineTextBox"
 		return startp
 	end
 
-	local function GetWord(str, cursorPos)
+	local function GetWord(str, cursorPos, noTail)
 		local startp, endp = GetLines(str, cursorPos)
 
 		if startp > endp then return end
@@ -781,6 +781,7 @@ class "MultiLineTextBox"
 		local prevPos = startp
 		local byte
 		local curIndex = -1
+		local prevSpecial = nil
 
 		while prevPos <= endp do
 			byte = strbyte(str, prevPos)
@@ -892,6 +893,7 @@ class "MultiLineTextBox"
 
 			local nextIndex = curIndex
 
+			prevSpecial = isSpecial
 			isSpecial = nil
 
 			while nextIndex <= _BackSpaceList.LastIndex do
@@ -913,6 +915,10 @@ class "MultiLineTextBox"
 					-- skip
 				elseif isSpecial == nil then
 					isSpecial = _Special[byte] and true or false
+
+					if noTail and isSpecial ~= prevSpecial then
+						break
+					end
 				elseif isSpecial then
 					if not _Special[byte] then
 						break
@@ -1050,7 +1056,7 @@ class "MultiLineTextBox"
 
 		if next(self.AutoCompleteList) then
 			-- Handle the auto complete
-			local startp, endp, word = GetWord(self.__Text.Text, self.CursorPosition)
+			local startp, endp, word = GetWord(self.__Text.Text, self.CursorPosition, true)
 
 			word = RemoveColor(word)
 
@@ -1058,6 +1064,7 @@ class "MultiLineTextBox"
 			wipe(_AutoCacheItems)
 			wipe(_AutoWordMap)
 			wipe(_AutoWordWeightCache)
+
 
 			if word and word:match("^[%w_]+$") then
 				_AutoCheckKey = word
@@ -3445,7 +3452,7 @@ class "MultiLineTextBox"
 		if _List.Visible then
 			wipe(_BackAutoCache)
 
-			startp, endp, str = GetWord(text, self.CursorPosition)
+			startp, endp, str = GetWord(text, self.CursorPosition, true)
 
 			str = _List:GetSelectedItemValue()
 
@@ -3466,7 +3473,7 @@ class "MultiLineTextBox"
 				_List:Clear()
 			end
 		elseif #_BackAutoCache > 0 then
-			startp, endp, str = GetWord(text, self.CursorPosition)
+			startp, endp, str = GetWord(text, self.CursorPosition, true)
 
 			str = RemoveColor(str)
 
@@ -4010,7 +4017,7 @@ class "MultiLineTextBox"
 		end
 
 		local ct = editor.__Text.Text
-		local startp, endp = GetWord(ct, editor.CursorPosition)
+		local startp, endp = GetWord(ct, editor.CursorPosition, true)
 
 		wipe(_BackAutoCache)
 

@@ -1,6 +1,7 @@
 -- Author      : Kurapica
 -- Create Date : 2012/06/24
 -- Change Log  :
+--               2013/05/25 Reduce memory cost
 
 -- Check Version
 local version = 4
@@ -28,7 +29,7 @@ class "UnitFrame"
 	local function OnUpdate(self, elapsed)
 		self.__OnUpdateTimer = (self.__OnUpdateTimer or 0) + elapsed
 
-		if self.__OnUpdateTimer > self.Interval then
+		if self.__OnUpdateTimer > self.__Interval then
 			self.__OnUpdateTimer = 0
 			return self:UpdateElements()
 		end
@@ -262,7 +263,7 @@ class "UnitFrame"
 			if int > 0.1 then
 				self.__Interval = int
 			else
-				self.__Interval = nil
+				self.__Interval = 0.5
 			end
 		end,
 		Type = Number,
@@ -338,6 +339,8 @@ class "UnitFrame"
 		self.OnEnter = self.OnEnter + OnEnter
 		self.OnLeave = self.OnLeave + OnLeave
 		self.OnShow = self.OnShow + OnShow
+
+		self.__Interval = 0.5
     end
 
 	------------------------------------------------------

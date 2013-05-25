@@ -788,7 +788,14 @@ do
 		elseif kind == "spell" then
 			return IsConsumableSpell(target)
 		elseif kind == "item" then
-			return IsConsumableItem(target)
+			-- return IsConsumableItem(target) blz sucks, wait until IsConsumableItem is fixed
+			local _, _, _, _, _, _, _, maxStack = GetItemInfo(target)
+
+			if IsUsableItem(target) and maxStack and maxStack > 1 then
+				return true
+			else
+				return false
+			end
 		end
 	end
 
