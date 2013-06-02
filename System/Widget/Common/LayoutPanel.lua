@@ -541,7 +541,6 @@ class "LayoutPanel"
 	doc [======[
 		@name SWTB
 		@type method
-		@desc description
 		@desc Short for SetWidgetTopBottom. Set Widget's top margin and bottom margin
 		@param index|name|widget the ui element
 		@param top number, top margin value
