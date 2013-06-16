@@ -2,9 +2,10 @@
 -- Create Date : 7/16/2008 11:15
 -- Change Log  :
 --				2011/03/13	Recode as class
+--              2013/06/14  Fix text won't display when create it in the game with no hardware trigger(Hate to fix things caused by blz)
 
 -- Check Version
-local version = 7
+local version = 8
 if not IGAS:NewAddon("IGAS.Widget.EditBox", version) then
 	return
 end
@@ -18,6 +19,8 @@ class "EditBox"
 		@type class
 		@desc EditBoxes are used to allow the player to type text into a UI component.
 	]======]
+
+	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
 
 	------------------------------------------------------
 	-- Script
@@ -409,6 +412,15 @@ class "EditBox"
 		@param text string, text to be placed in the edit box
 		@return nil
 	]======]
+	function SetText(self, text)
+		self.__UI:SetText(text)
+
+		if _FirstLoadedFix[self] then
+			_FirstLoadedFix[self] = nil
+
+			self.__UI:SetCursorPosition(0)
+		end
+	end
 
 	doc [======[
 		@name SetTextInsets
@@ -675,6 +687,10 @@ class "EditBox"
 	------------------------------------------------------
 	function Constructor(self, name, parent, ...)
 		return CreateFrame("EditBox", nil, parent, ...)
+	end
+
+	function EditBox(self)
+		_FirstLoadedFix[self] = true
 	end
 endclass "EditBox"
 

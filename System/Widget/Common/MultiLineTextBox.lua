@@ -10,7 +10,7 @@
 --              2013/05/19 Auto pairs function added
 
 -- Check Version
-local version = 20
+local version = 21
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -3368,6 +3368,12 @@ class "MultiLineTextBox"
 	end
 
     local function OnEscapePressed(self, ...)
+    	if _List.Visible then
+    		_List.Visible = false
+    		_List:Clear()
+    		return true
+    	end
+
         self:ClearFocus()
 		self = self.__Container
 		return self:Fire("OnEscapePressed", ...)
