@@ -8,9 +8,10 @@
 --              2013/02/07 Recode for scrollForm's change, and fix the double click error
 --              2013/05/15 Auto complete function added
 --              2013/05/19 Auto pairs function added
+--              2013/06/16 Fix undo/redo for tab and shift-tab
 
 -- Check Version
-local version = 21
+local version = 22
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -2194,7 +2195,7 @@ class "MultiLineTextBox"
 			startp, endp = endp, startp
 		end
 
-		if startp ~= endp and self.__OperationOnLine then
+		if startp ~= endp and self.__OperationOnLine and self.__OperationOnLine ~= _Operation.INPUTTAB then
 			SaveOperation(self)
 		end
 
@@ -3660,7 +3661,7 @@ class "MultiLineTextBox"
 				if header and header ~= "" then
 					local byte = strbyte(char)
 					local tbyte = tail ~= "" and strbyte(tail, 1) or 0
- 
+
 					if _AutoPairs[byte] == false then
 						-- end pairs like ] ) }
 						if isString == 0 and tail and tail ~= "" and tail:sub(1, 1) == char then
@@ -3678,13 +3679,13 @@ class "MultiLineTextBox"
 							AdjustCursorPosition(self, startp + header:len() - 1)
 						elseif isString == 0 and tail == "" or tbyte == _Byte.SPACE or tbyte == _Byte.TAB or (_AutoPairs[tbyte] == false) then
 							str = header .. char .. tail
- 
+
 							self.__Text.Text =  ReplaceBlock(text, startp, endp, str)
 							AdjustCursorPosition(self, startp + header:len() - 1)
 						end
 					else
 						if tail == "" or tbyte == _Byte.SPACE or tbyte == _Byte.TAB or (_AutoPairs[tbyte] == false) then
-							str = header .. strchar(_AutoPairs[byte]) .. tail	
+							str = header .. strchar(_AutoPairs[byte]) .. tail
 
 							self.__Text.Text = ReplaceBlock(text, startp, endp, str)
 							AdjustCursorPosition(self, startp + header:len() - 1)
