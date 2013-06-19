@@ -267,7 +267,7 @@ interface "IFFont"
 			return ColorType(self:GetShadowColor())
 		end,
 		Set = function(self, color)
-			self:SetShadowColor(color.r, color,g, color.b, color.a)
+			self:SetShadowColor(color.r, color.g, color.b, color.a)
 		end,
 		Type = ColorType,
 	}

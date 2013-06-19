@@ -2782,7 +2782,7 @@ class "MultiLineTextBox"
 			return ColorType(self:GetShadowColor())
 		end,
 		Set = function(self, color)
-			self:SetShadowColor(color.r, color,g, color.b, color.a)
+			self:SetShadowColor(color.r, color.g, color.b, color.a)
 		end,
 		Type = ColorType,
 	}
@@ -2827,7 +2827,7 @@ class "MultiLineTextBox"
 			return ColorType(self:GetTextColor())
 		end,
 		Set = function(self, color)
-			self:SetTextColor(color.r, color,g, color.b, color.a)
+			self:SetTextColor(color.r, color.g, color.b, color.a)
 		end,
 		Type = ColorType,
 	}
