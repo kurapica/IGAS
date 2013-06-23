@@ -51,9 +51,9 @@ interface "IFPower"
 	extend "IFUnitElement"
 
 	doc [======[
-		@name IFPowerFrequent
+		@name IFPower
 		@type interface
-		@desc IFPowerFrequent is used to handle the unit power updating
+		@desc IFPower is used to handle the unit power updating
 		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the power
 		@overridable Value property, number, used to receive the power's value
 	]======]

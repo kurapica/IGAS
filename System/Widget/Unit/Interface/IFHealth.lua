@@ -52,9 +52,9 @@ interface "IFHealth"
 	extend "IFUnitElement"
 
 	doc [======[
-		@name IFPowerFrequent
+		@name IFHealth
 		@type interface
-		@desc IFPowerFrequent is used to handle the unit health updating
+		@desc IFHealth is used to handle the unit health updating
 		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the health
 		@overridable Value property, number, used to receive the health's value
 	]======]

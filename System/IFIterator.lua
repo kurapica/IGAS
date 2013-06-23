@@ -16,7 +16,7 @@ interface "IFIterator"
 		@name IFIterator
 		@type interface
 		@desc The IFiterator interface provide objrect Each, EachK method to help itertor object's element.
-		@need Next method return itertor, itertor object, first key to help traverse elements
+		@overridable Next method return itertor, itertor object, first key to help traverse elements
 	]======]
 
 	local function SetObjectProperty(self, prop, value)
