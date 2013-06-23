@@ -383,7 +383,7 @@ class "Button"
 	doc [======[
 		@name ButtonState
 		@type property
-		@desc the button's current state: DISABLED, NORMAL, PUSHED
+		@desc the button's current state: NORMAL, PUSHED
 	]======]
 	property "ButtonState" {
 		Get = function(self)
