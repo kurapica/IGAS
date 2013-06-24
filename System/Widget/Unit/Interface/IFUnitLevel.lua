@@ -29,7 +29,7 @@ interface "IFUnitLevel"
 	doc [======[
 		@name IFUnitLevel
 		@type interface
-		@desc IFUnitName is used to handle the unit level's update
+		@desc IFUnitLevel is used to handle the unit level's update
 		@overridable Value property, number, which used to receive the unit's level
 	]======]
 

@@ -26,9 +26,9 @@ interface "IFGroupRole"
 	extend "IFUnitElement"
 
 	doc [======[
-		@name IFResting
+		@name IFGroupRole
 		@type interface
-		@desc IFResting is used to handle group role's updating
+		@desc IFGroupRole is used to handle group role's updating
 	]======]
 
 	------------------------------------------------------

@@ -27,7 +27,7 @@ interface "IFRaidTarget"
 	doc [======[
 		@name IFRaidTarget
 		@type interface
-		@desc IFRaidTarget is used to handle the unit's raid target icon's updating
+		@desc IFRaidTarget is used to handle the unit's raid target icon's updating(only for texture)
 	]======]
 
 	------------------------------------------------------

@@ -159,9 +159,9 @@ interface "IFAllHealPrediction"
 	extend "IFUnitElement"
 
 	doc [======[
-		@name IFMyHealPrediction
+		@name IFAllHealPrediction
 		@type interface
-		@desc IFMyHealPrediction is used to handle the unit's prediction health by all player
+		@desc IFAllHealPrediction is used to handle the unit's prediction health by all player
 		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
 		@overridable Value property, number, used to receive the prediction health's value
 	]======]

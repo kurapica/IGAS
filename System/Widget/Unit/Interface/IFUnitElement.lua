@@ -55,7 +55,8 @@ interface "IFUnitElement"
 	doc [======[
 		@name IFUnitElement
 		@type interface
-		@desc IFUnitElement is the root interface for the unit system, contains several useful property definitions
+		@desc IFUnitElement is the root interface for the unit system, contains several useful definitions
+		@overridable Refresh method, used to refresh the element
 	]======]
 
 	------------------------------------------------------

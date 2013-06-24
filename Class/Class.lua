@@ -43,7 +43,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/05/06 System.Reflector.Validate(type, value, name, prefix) mod
 --               2012/05/07 System.Reflector.BuildType removed
 --               2012/05/14 Type add sub & unm metamethodes
---               2012/05/21 Keyword 'Super' is added to the class enviroment
+--               2012/05/21 Keyword 'Super' is added to the class environment
 --               2012/06/27 Interface system added
 --               2012/06/28 Interface can access it's methodes
 --               2012/06/29 System.Reflector Update for Interface
@@ -76,6 +76,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/12/25 Doc system added.Interface system improved.
 --               2013/01/25 object.Disposed is set to true after calling object:Dispose() as a mark
 --               2013/04/07 Lower the memory usage
+--               2013/06/24 IGAS:Install([env]) added, used to add keywords into current environment
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -121,7 +122,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 66
+local version = 67
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -890,7 +891,7 @@ do
 
 			if value then
 				if type(part) == "string" then
-					if part == "param" or part == "return" or part == "need" then
+					if part == "param" or part == "return" or part == "need" or part == "overridable" then
 						if value:match("@" .. part .. "%s+([^@%s]+)%s*([^@]*)") then
 							return value:gmatch("@" .. part .. "%s+([^@%s]+)%s*([^@]*)")
 						end
@@ -1158,7 +1159,7 @@ do
 	-- @usage interface "IFSocket"
 	------------------------------------
 	function interface(name)
-		if type(name) ~= "string" or name:find("%.") or not name:match("[_%w]+") then
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: interface "interfacename"]], 2)
 		end
 		local fenv = getfenv(2)
@@ -1166,8 +1167,6 @@ do
 
 		-- Create interface or get it
 		local IF
-
-		name = name:match("[_%w]+")
 
 		if ns then
 			IF = BuildNameSpace(ns, name)
@@ -1178,7 +1177,7 @@ do
 				end
 
 				if _NSInfo[IF].BaseEnv and _NSInfo[IF].BaseEnv ~= fenv then
-					error(("%s is defined in another place, can't be defined here."):format(name), 2)
+					error(("%s is defined in another environment, can't be defined here."):format(name), 2)
 				end
 			end
 		else
@@ -1200,7 +1199,7 @@ do
 		info = _NSInfo[IF]
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = ns
-		info.BaseEnv = fenv
+		info.BaseEnv = info.BaseEnv or fenv
 		info.Script = info.Script or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
@@ -1405,9 +1404,9 @@ do
 		info.Script[name] = true
 	end
 
-	_TEMP_PROPERTY = _TEMP_PROPERTY or {}
-
 	local function SetProperty2IF(info, name, set)
+		local tempProperty = {}
+
 		if type(set) ~= "table" then
 			error([=[Usage: property "propertyName" {
 				Get = function(self)
@@ -1420,16 +1419,14 @@ do
 			}]=], 2)
 		end
 
-		wipe(_TEMP_PROPERTY)
-
 		for i, v in pairs(set) do
 			if type(i) == "string" then
 				if i:lower() == "get" then
-					_TEMP_PROPERTY.Get = v
+					tempProperty.Get = v
 				elseif i:lower() == "set" then
-					_TEMP_PROPERTY.Set = v
+					tempProperty.Set = v
 				elseif i:lower() == "type" then
-					_TEMP_PROPERTY.Type = v
+					tempProperty.Type = v
 				end
 			end
 		end
@@ -1440,23 +1437,23 @@ do
 		wipe(prop)
 
 		prop.Name = name
-		prop.Get = type(_TEMP_PROPERTY.Get) == "function" and _TEMP_PROPERTY.Get
-		prop.Set = type(_TEMP_PROPERTY.Set) == "function" and _TEMP_PROPERTY.Set
+		prop.Get = type(tempProperty.Get) == "function" and tempProperty.Get
+		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
 
-		if _TEMP_PROPERTY.Type then
-			local ok, _type = pcall(_BuildType, _TEMP_PROPERTY.Type, name)
+		if tempProperty.Type then
+			local ok, _type = pcall(_BuildType, tempProperty.Type, name)
 			if ok then
 				prop.Type = _type
 			else
 				_type = strtrim(_type:match(":%d+:(.*)$") or _type)
 
-				wipe(_TEMP_PROPERTY)
+				wipe(tempProperty)
 
 				error(_type, 3)
 			end
 		end
 
-		wipe(_TEMP_PROPERTY)
+		wipe(tempProperty)
 	end
 
 	------------------------------------
@@ -2017,35 +2014,31 @@ do
 		return obj
 	end
 
-	------------------------------------
-	--- Create class in currect environment's namespace or default namespace
-	-- @name class
-	-- @class function
-	-- @param name the class's name
-	-- @usage class "Form"
-	------------------------------------
-	function class(name)
-		if type(name) ~= "string" or name:find("%.") or not name:match("[_%w]+") then
-			error([[Usage: class "classname"]], 2)
+	function BuildClass(name, asPart)
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
+			if asPart then
+				error([[Usage: partclass "classname"]], 3)
+			else
+				error([[Usage: class "classname"]], 3)
+			end
 		end
-		local fenv = getfenv(2)
+		local fenv = getfenv(3)
 		local ns = GetNameSpace4Env(fenv)
 
 		-- Create class or get it
 		local cls
-
-		name = name:match("[_%w]+")
 
 		if ns then
 			cls = BuildNameSpace(ns, name)
 
 			if _NSInfo[cls] then
 				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_CLASS then
-					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 2)
+					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 3)
 				end
 
+				-- @todo, will class can be changed in other environment?
 				if _NSInfo[cls].BaseEnv and _NSInfo[cls].BaseEnv ~= fenv then
-					error(("%s is defined in another place, can't be defined here."):format(name), 2)
+					error(("%s is defined in another environment, can't be defined here."):format(name), 3)
 				end
 			end
 		else
@@ -2057,7 +2050,7 @@ do
 		end
 
 		if not cls then
-			error("no class is created.", 2)
+			error("no class is created.", 3)
 		end
 
 		-- save class to the environment
@@ -2067,7 +2060,7 @@ do
 		info = _NSInfo[cls]
 		info.Type = TYPE_CLASS
 		info.NameSpace = ns
-		info.BaseEnv = fenv
+		info.BaseEnv = info.BaseEnv or fenv
 		info.Script = info.Script or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
@@ -2076,13 +2069,15 @@ do
 		_ClsEnv2Info[info.ClassEnv] = info
 
 		-- Clear
-		info.Constructor = nil
-		wipe(info.Property)
-		wipe(info.Script)
-		wipe(info.Method)
-		for i, v in pairs(info.ClassEnv) do
-			if type(v) == "function" then
-				info.ClassEnv[i] = nil
+		if not asPart then
+			info.Constructor = nil
+			wipe(info.Property)
+			wipe(info.Script)
+			wipe(info.Method)
+			for i, v in pairs(info.ClassEnv) do
+				if type(v) == "function" then
+					info.ClassEnv[i] = nil
+				end
 			end
 		end
 
@@ -2096,30 +2091,39 @@ do
 		info.Cache4Interface = info.Cache4Interface or {}
 
 		-- SuperClass
-		local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
+		if not asPart then
+			local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
 
-		if prevInfo and prevInfo.ChildClass then
-			prevInfo.ChildClass[info.Owner] = nil
+			if prevInfo and prevInfo.ChildClass then
+				prevInfo.ChildClass[info.Owner] = nil
+			end
+
+			info.SuperClass = nil
 		end
-
-		info.SuperClass = nil
 
 		-- ExtendInterface
 		info.ExtendInterface = info.ExtendInterface or {}
 
-		for _, IF in ipairs(info.ExtendInterface) do
-			if _NSInfo[IF].ExtendClass then
-				_NSInfo[IF].ExtendClass[info.Owner] = nil
+		if not asPart then
+			for _, IF in ipairs(info.ExtendInterface) do
+				if _NSInfo[IF].ExtendClass then
+					_NSInfo[IF].ExtendClass[info.Owner] = nil
+				end
 			end
+			wipe(info.ExtendInterface)
 		end
-		wipe(info.ExtendInterface)
 
 		-- Import
 		info.Import4Env = info.Import4Env or {}
-		wipe(info.Import4Env)
+
+		if not asPart then
+			wipe(info.Import4Env)
+		end
 
 		-- Clear dispose method
-		info[_DisposeMethod] = nil
+		if not asPart then
+			info[_DisposeMethod] = nil
+		end
 
 		-- MetaTable
 		info.MetaTable = info.MetaTable or {}
@@ -2128,219 +2132,13 @@ do
 			local rMeta
 
 			-- Clear
-			for meta, flag in pairs(_KeyMeta) do
-				rMeta = flag and meta or "_"..meta
-				SetMetaFunc(rMeta, info.ChildClass, MetaTable[rMeta], nil)
-				MetaTable[rMeta] = nil
-			end
-
-			local ClassEnv = info.ClassEnv
-			local Cache4Script = info.Cache4Script
-			local Cache4Property = info.Cache4Property
-			local Cache4Method = info.Cache4Method
-			local ClassName = info.Name
-
-			MetaTable.__class = cls
-
-			MetaTable.__metatable = cls
-
-			MetaTable.__index = function(self, key)
-				if type(key) == "string" and not key:find("^__") then
-					-- Property Get
-					if Cache4Property[key] then
-						if Cache4Property[key]["Get"] then
-							return Cache4Property[key]["Get"](self)
-						else
-							error(("%s is write-only."):format(tostring(key)),2)
-						end
-					end
-
-					-- Dispose Method
-					if key == _DisposeMethod then
-						return DisposeObject
-					end
-
-					-- Method Get
-					if not key:find("^_") and Cache4Method[key] then
-						return Cache4Method[key]
-					end
-
-					-- Scripts
-					if Cache4Script[key] ~= nil then
-						if type(rawget(self, "__Scripts")) ~= "table" or getmetatable(self.__Scripts) ~= _MetaScripts then
-							rawset(self, "__Scripts", setmetatable({_Owner = self}, _MetaScripts))
-						end
-
-						return self.__Scripts[key]
-					end
-				end
-
-				-- Custom index metametods
-				if rawget(MetaTable, "___index") then
-					if type(rawget(MetaTable, "___index")) == "table" then
-						return rawget(MetaTable, "___index")[key]
-					elseif type(rawget(MetaTable, "___index")) == "function" then
-						return rawget(MetaTable, "___index")(self, key)
-						--[[local ok, ret = pcall(rawget(MetaTable, "___index"), self, key)
-
-						if not ok then
-							ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-							error(ret, 2)
-						end
-
-						return ret--]]
-					end
+			if not asPart then
+				for meta, flag in pairs(_KeyMeta) do
+					rMeta = flag and meta or "_"..meta
+					SetMetaFunc(rMeta, info.ChildClass, MetaTable[rMeta], nil)
+					MetaTable[rMeta] = nil
 				end
 			end
-
-			MetaTable.__newindex = function(self, key, value)
-				if type(key) == "string" and not key:find("^__") then
-					-- Property Set
-					if Cache4Property[key] then
-						if Cache4Property[key]["Set"] then
-							return Cache4Property[key]["Set"](self, CheckProperty(Cache4Property[key], value))
-						else
-							error(("%s is read-only."):format(tostring(key)),2)
-						end
-					end
-
-					-- Scripts
-					if Cache4Script[key] ~= nil then
-						if type(rawget(self, "__Scripts")) ~= "table" or getmetatable(self.__Scripts) ~= _MetaScripts then
-							rawset(self, "__Scripts", setmetatable({_Owner = self}, _MetaScripts))
-						end
-
-						if value == nil or type(value) == "function" then
-							if Cache4Script[key] then
-								if self.__Scripts[key][0] ~= value then
-									rawset(self.__Scripts[key], 0, value)
-									CallScriptWithoutCreate(self, "OnScriptHandlerChanged", key)
-								end
-							else
-								error(("%s is not supported for class '%s'."):format(tostring(key), ClassName), 2)
-							end
-						elseif type(value) == "table" and getmetatable(value) == _MetaScriptHandler then
-							if value == self.__Scripts[key] then
-								return
-							end
-
-							for i = #self.__Scripts[key], 0, -1 do
-								tremove(self.__Scripts[key], i)
-							end
-
-							for i =0, #value do
-								self.__Scripts[key][i] = value[i]
-							end
-
-							CallScriptWithoutCreate(self, "OnScriptHandlerChanged", key)
-						else
-							error("can't set this value to a scipt handler.", 2)
-						end
-
-						return
-					end
-				end
-
-				-- Custom newindex metametods
-				if type(rawget(MetaTable, "___newindex")) == "function" then
-					return rawget(MetaTable, "___newindex")(self, key, value)
-					--[[local ok, ret = pcall(rawget(MetaTable, "___newindex"), self, key, value)
-
-					if not ok then
-						ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-						error(ret, 2)
-					end
-
-					return ret--]]
-				end
-
-				rawset(self,key,value)			-- Other key can be set as usual
-			end
-		end
-
-		-- Set the environment to class's environment
-		setfenv(2, info.ClassEnv)
-	end
-
-	------------------------------------
-	--- Part class definition
-	-- @name partclass
-	-- @type function
-	-- @param name the class's name
-	-- @usage partclass "Form"
-	------------------------------------
-	function partclass(name)
-		if type(name) ~= "string" or name:find("%.") or not name:match("[_%w]+") then
-			error([[Usage: class "classname"]], 2)
-		end
-		local fenv = getfenv(2)
-		local ns = GetNameSpace4Env(fenv)
-
-		-- Create class or get it
-		local cls
-
-		name = name:match("[_%w]+")
-
-		if ns then
-			cls = BuildNameSpace(ns, name)
-
-			if _NSInfo[cls] then
-				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_CLASS then
-					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 2)
-				end
-
-				if _NSInfo[cls].BaseEnv and _NSInfo[cls].BaseEnv ~= fenv then
-					error(("%s is defined in another place, can't be defined here."):format(name), 2)
-				end
-			end
-		else
-			cls = fenv[name]
-
-			if not(_NSInfo[cls] and _NSInfo[cls].BaseEnv == fenv and _NSInfo[cls].NameSpace == nil and _NSInfo[cls].Type == TYPE_CLASS) then
-				cls = BuildNameSpace(nil, name)
-			end
-		end
-
-		if not cls then
-			error("no class is created.", 2)
-		end
-
-		-- save class to the environment
-		rawset(fenv, name, cls)
-
-		-- Build class
-		info = _NSInfo[cls]
-		info.Type = TYPE_CLASS
-		info.NameSpace = ns
-		info.BaseEnv = fenv
-		info.Script = info.Script or {}
-		info.Property = info.Property or {}
-		info.Method = info.Method or {}
-
-		info.ClassEnv = info.ClassEnv or setmetatable({}, _MetaClsEnv)
-		_ClsEnv2Info[info.ClassEnv] = info
-
-		-- Set namespace
-		SetNameSpace4Env(info.ClassEnv, cls)
-
-		-- Cache
-		info.Cache4Script = info.Cache4Script or {}
-		info.Cache4Property = info.Cache4Property or {}
-		info.Cache4Method = info.Cache4Method or {}
-		info.Cache4Interface = info.Cache4Interface or {}
-
-		info.ExtendInterface = info.ExtendInterface or {}
-
-		-- Import
-		info.Import4Env = info.Import4Env or {}
-
-		-- MetaTable
-		info.MetaTable = info.MetaTable or {}
-		do
-			local MetaTable = info.MetaTable
-			local rMeta
 
 			local ClassEnv = info.ClassEnv
 			local Cache4Script = info.Cache4Script
@@ -2469,7 +2267,29 @@ do
 		end
 
 		-- Set the environment to class's environment
-		setfenv(2, info.ClassEnv)
+		setfenv(3, info.ClassEnv)
+	end
+
+	------------------------------------
+	--- Create class in currect environment's namespace or default namespace
+	-- @name class
+	-- @class function
+	-- @param name the class's name
+	-- @usage class "Form"
+	------------------------------------
+	function class(name)
+		BuildClass(name)
+	end
+
+	------------------------------------
+	--- Part class definition
+	-- @name partclass
+	-- @type function
+	-- @param name the class's name
+	-- @usage partclass "Form"
+	------------------------------------
+	function partclass(name)
+		BuildClass(name, true)
 	end
 
 	------------------------------------
@@ -2715,9 +2535,9 @@ do
 		info.Script[name] = (flag == 0)
 	end
 
-	_TEMP_PROPERTY = _TEMP_PROPERTY or {}
-
 	local function SetProperty2Cls(info, name, set)
+		local tempProperty = {}
+
 		if type(set) ~= "table" then
 			error([=[Usage: property "propertyName" {
 				Get = function(self)
@@ -2730,16 +2550,14 @@ do
 			}]=], 2)
 		end
 
-		wipe(_TEMP_PROPERTY)
-
 		for i, v in pairs(set) do
 			if type(i) == "string" then
 				if i:lower() == "get" then
-					_TEMP_PROPERTY.Get = v
+					tempProperty.Get = v
 				elseif i:lower() == "set" then
-					_TEMP_PROPERTY.Set = v
+					tempProperty.Set = v
 				elseif i:lower() == "type" then
-					_TEMP_PROPERTY.Type = v
+					tempProperty.Type = v
 				end
 			end
 		end
@@ -2750,23 +2568,23 @@ do
 		wipe(prop)
 
 		prop.Name = name
-		prop.Get = type(_TEMP_PROPERTY.Get) == "function" and _TEMP_PROPERTY.Get
-		prop.Set = type(_TEMP_PROPERTY.Set) == "function" and _TEMP_PROPERTY.Set
+		prop.Get = type(tempProperty.Get) == "function" and tempProperty.Get
+		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
 
-		if _TEMP_PROPERTY.Type then
-			local ok, _type = pcall(_BuildType, _TEMP_PROPERTY.Type, name)
+		if tempProperty.Type then
+			local ok, _type = pcall(_BuildType, tempProperty.Type, name)
 			if ok then
 				prop.Type = _type
 			else
 				_type = strtrim(_type:match(":%d+:(.*)$") or _type)
 
-				wipe(_TEMP_PROPERTY)
+				wipe(tempProperty)
 
 				error(_type, 3)
 			end
 		end
 
-		wipe(_TEMP_PROPERTY)
+		wipe(tempProperty)
 	end
 
 	------------------------------------
@@ -2904,14 +2722,12 @@ do
 	--}
 	------------------------------------
 	function enum(name)
-		if type(name) ~= "string" or name:find("%.") or strtrim(name:match("[_%w]+") or "") == "" then
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: enum "enumName" {
 				"enumValue1",
 				"enumValue2",
 			}]], 2)
 		end
-
-		name = name:match("[_%w]+")
 
 		local fenv = getfenv(2)
 		local ns = GetNameSpace4Env(fenv)
@@ -3203,17 +3019,19 @@ do
 			return ret
 		end
 	end
+
 	------------------------------------
 	--- create a structure
 	-- @name struct
 	-- @class function
 	-- @param name the name of the enum
-	-- @usage struct "ButtonState" {
-	--
-	--}
+	-- @usage struct "Point"
+	--    x = System.Number
+	--    y = System.Number
+	-- endstruct "Point"
 	------------------------------------
 	function struct(name)
-		if type(name) ~= "string" or name:find("%.") or not name:match("[_%w]+") then
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: struct "structname"]], 2)
 		end
 		local fenv = getfenv(2)
@@ -3221,8 +3039,6 @@ do
 
 		-- Create class or get it
 		local strt
-
-		name = name:match("[_%w]+")
 
 		if ns then
 			strt = BuildNameSpace(ns, name)
@@ -3233,7 +3049,7 @@ do
 				end
 
 				if _NSInfo[strt].BaseEnv and _NSInfo[strt].BaseEnv ~= fenv then
-					error(("%s is defined in another place, can't be defined here."):format(name), 2)
+					error(("%s is defined in another environment, can't be defined here."):format(name), 2)
 				end
 			end
 		else
@@ -3255,7 +3071,7 @@ do
 		info = _NSInfo[strt]
 		info.Type = TYPE_STRUCT
 		info.NameSpace = ns
-		info.BaseEnv = fenv
+		info.BaseEnv = info.BaseEnv or fenv
 		info.Members = nil
 		info.ArrayElement = nil
 		info.UserValidate = nil
@@ -4182,7 +3998,31 @@ do
 			end
 		end
 
-		_Test_Type = _BuildType(nil)
+		-- Recycle the test type object
+		_Validate_Type = setmetatable({}, {
+			__call = function(self, key)
+				if key then
+					if type(key) == "table" and self[key] then
+						key.AllowNil = nil
+						key[1] = nil
+						key.Name = nil
+
+						tinsert(self, key)
+					end
+				else
+					if #self > 0 then
+						return tremove(self, #self)
+					else
+						local ret = _BuildType(nil)
+
+						-- Mark it as recycle table
+						self[ret] = true
+
+						return ret
+					end
+				end
+			end,
+		})
 
 		doc [======[
 			@name Validate
@@ -4209,11 +4049,13 @@ do
 			end
 
 			if IsNameSpace(types) then
-				_Test_Type.AllowNil = nil
-				_Test_Type[1] = types
-				_Test_Type.Name = name
+				local vtype = _Validate_Type()
 
-				types = _Test_Type
+				vtype.AllowNil = nil
+				vtype[1] = types
+				vtype.Name = name
+
+				types = vtype
 			end
 
 			local ok, _type = pcall(_BuildType, types, name)
@@ -4221,6 +4063,9 @@ do
 			if ok then
 				if _type then
 					ok, value = pcall(_type.Validate, _type, value)
+
+					-- Recycle
+					_Validate_Type(types)
 
 					if not ok then
 						value = strtrim(value:match(":%d+:(.*)$") or value)
@@ -4235,10 +4080,16 @@ do
 							error(value, 2)
 						end
 					end
+				else
+					-- Recycle
+					_Validate_Type(types)
 				end
 
 				return value
 			else
+				-- Recycle
+				_Validate_Type(types)
+
 				error("Usage : System.Reflector.Validate(type, value[, name[, prefix]]) : type - must be nil, enum, struct or class.", 2)
 			end
 
@@ -4828,14 +4679,7 @@ end
 -- Global Settings
 ------------------------------------------------------
 do
-	---[[
-	_G.partclass = _G.partclass or partclass
-	_G.class = _G.class or class
-	_G.enum = _G.enum or enum
-	_G.namespace = _G.namespace or namespace
-	_G.struct = _G.struct or struct
-	_G.interface = _G.interface or interface
-	_G.import = function(name, all)
+	function import_install(name, all)
 		local ns = Reflector.ForName(name)
 		local env = getfenv(2)
 
@@ -4851,7 +4695,6 @@ do
 			error("No such namespace.", 2)
 		end
 	end
-	--]]
 
 	_Class_KeyWords.namespace = namespace
 	_Class_KeyWords.class = class
@@ -4863,4 +4706,21 @@ do
 	function IGAS:GetNameSpace(ns)
 		return Reflector.ForName(ns)
 	end
+
+	function IGAS:Install(env)
+		env = type(env) == "table" and env or getfenv(2)
+
+		if env then
+			env.partclass = env.partclass or partclass
+			env.class = env.class or class
+			env.enum = env.enum or enum
+			env.namespace = env.namespace or namespace
+			env.struct = env.struct or struct
+			env.interface = env.interface or interface
+			env.import = env.import or import_install
+		end
+	end
+
+	-- Install to the global environment
+	IGAS:Install(_G)
 end
