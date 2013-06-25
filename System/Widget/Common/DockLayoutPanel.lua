@@ -1,8 +1,9 @@
 -- Author      : Kurapica
 -- Create Date : 5/13/2012
 -- ChangeLog
+--               2013/06/25 Fix RemoveWidget propblem
 
-local version = 6
+local version = 7
 if not IGAS:NewAddon("IGAS.Widget.DockLayoutPanel", version) then
 	return
 end
@@ -380,15 +381,25 @@ class "DockLayoutPanel"
 		@return nil
 	]======]
 	function RemoveWidget(self, index, withoutDispose)
-		local obj = Super.RemoveWidget(self, index, withoutDispose)
+		local obj = Super.RemoveWidget(self, index, true)
 
 		if obj then
+			if self.__DockLayoutHasLast == obj then
+				self.__DockLayoutHasLast = nil
+			end
+
 			obj.__DockLayout_DIR = nil
 			obj.__DockLayout_SIZE = nil
 			obj.__DockLayout_UNIT = nil
 
 			if Reflector.ObjectIsClass(obj, Region) then
 				obj.OnVisibleChanged = obj.OnVisibleChanged - OnVisibleChanged
+			end
+
+			if not withoutDispose then
+				obj:Dispose()
+
+				obj = nil
 			end
 		end
 
