@@ -83,7 +83,7 @@ interface "IFCooldownLabel"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -140,7 +140,7 @@ interface "IFCooldownLabel"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnCooldownUpdate(self, start, duration)
 		local label = self:GetChild("CooldownLabel")

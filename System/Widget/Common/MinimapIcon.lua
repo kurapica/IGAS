@@ -18,7 +18,6 @@ class "MinimapIcon"
 		@desc MinimapIcon is used to add icon to minimap
 	]======]
 
-	-- Script
     GameTooltip = IGAS.GameTooltip
     Minimap = IGAS.Minimap
 
@@ -85,7 +84,7 @@ class "MinimapIcon"
         from, to = getAnchors(self)
 
 		if not self.__Tooltip or strtrim(self.__Tooltip) == "" then
-			self.__Mask:Fire("OnEnter", ...)
+			self.__Mask:Raise("OnEnter", ...)
 			return
 		end
 
@@ -93,15 +92,15 @@ class "MinimapIcon"
         GameTooltip:ClearAllPoints()
         GameTooltip:SetPoint(from, self, to, 0, 0)
 		GameTooltip:SetText(self.__Tooltip)
-        self.__Mask:Fire("OnGameTooltipShow", GameTooltip)
+        self.__Mask:Raise("OnGameTooltipShow", GameTooltip)
         GameTooltip:Show()
 
-		self.__Mask:Fire("OnEnter", ...)
+		self.__Mask:Raise("OnEnter", ...)
     end
 
     local function OnLeave(self, ...)
         GameTooltip:Hide()
-		self.__Mask:Fire("OnLeave", ...)
+		self.__Mask:Raise("OnLeave", ...)
     end
 
     local function OnMouseDown(self, ...)
@@ -126,7 +125,7 @@ class "MinimapIcon"
         self:GetChild("Icon"):SetTexCoord(0, 1, 0, 1)
         self.OnUpdate = OnUpdate
         GameTooltip:Hide()
-		self.__Mask:Fire("OnDragStart", ...)
+		self.__Mask:Raise("OnDragStart", ...)
     end
 
     local function OnDragStop(self, ...)
@@ -134,8 +133,8 @@ class "MinimapIcon"
         self:GetChild("Icon"):SetTexCoord(0.05, 0.95, 0.05, 0.95)
         self:UnlockHighlight()
 
-		self.__Mask:Fire("OnDragStop", ...)
-        self.__Mask:Fire("OnPositionChanged")
+		self.__Mask:Raise("OnDragStop", ...)
+        self.__Mask:Raise("OnPositionChanged")
     end
 
 	local function OnClick(self, button, down)
@@ -149,61 +148,61 @@ class "MinimapIcon"
 			return
 		end
 
-		self.__Mask:Fire("OnClick", button, down)
+		self.__Mask:Raise("OnClick", button, down)
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnPositionChanged
-		@type script
+		@type event
 		@desc Run when the MinimapIcon's position is changed
 	]======]
-	script "OnPositionChanged"
+	event "OnPositionChanged"
 
 	doc [======[
 		@name Run when the mouse is over the icon, and the tooltip is set
-		@type script
+		@type event
 		@desc description
 		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
 	]======]
-	script "OnGameTooltipShow"
+	event "OnGameTooltipShow"
 
 	doc [======[
 		@name OnClick
-		@type script
+		@type event
 		@desc Run when icon is clicked
 	]======]
-	script "OnClick"
+	event "OnClick"
 
 	doc [======[
 		@name OnEnter
-		@type script
+		@type event
 		@desc Run when mouse is over the icon
 	]======]
-	script "OnEnter"
+	event "OnEnter"
 
 	doc [======[
 		@name OnLeave
-		@type script
+		@type event
 		@desc Run when mouse is leaving the icon
 	]======]
-	script "OnLeave"
+	event "OnLeave"
 
 	doc [======[
 		@name OnDragStart
-		@type script
+		@type event
 		@desc Run when start dragging the icon
 	]======]
-	script "OnDragStart"
+	event "OnDragStart"
 
 	doc [======[
 		@name OnDragStop
-		@type script
+		@type event
 		@desc Run when stop dragging the icon
 	]======]
-	script "OnDragStop"
+	event "OnDragStop"
 
 	------------------------------------------------------
 	-- Method

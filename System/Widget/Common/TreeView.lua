@@ -230,52 +230,52 @@ class "TreeView"
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 		doc [======[
 			@name OnToggle
-			@type script
+			@type event
 			@desc Run when the treenode is toggled
 		]======]
-		script "OnToggle"
+		event "OnToggle"
 
 		doc [======[
 			@name OnDoubleClick
-			@type script
+			@type event
 			@desc Run when the treenode is double-clicked
 			@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 		]======]
-		script "OnDoubleClick"
+		event "OnDoubleClick"
 
 		doc [======[
 			@name OnFunctionClick
-			@type script
+			@type event
 			@desc Run when the function button of the treenode is clicked
 			@param funcName string, the function button's name
 		]======]
-		script "OnFunctionClick"
+		event "OnFunctionClick"
 
 		doc [======[
 			@name OnSelected
-			@type script
+			@type event
 			@desc Run when the treenode is selected
 		]======]
-		script "OnSelected"
+		event "OnSelected"
 
 		doc [======[
 			@name OnGameTooltipShow
-			@type script
+			@type event
 			@desc Run when the mouse is over an item, and the tooltip is set
 			@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
 		]======]
-		script "OnGameTooltipShow"
+		event "OnGameTooltipShow"
 
 		doc [======[
 			@name OnIndexChanged
-			@type script
+			@type event
 			@desc Run when the node's index is changed
 		]======]
-		script "OnIndexChanged"
+		event "OnIndexChanged"
 
 		------------------------------------------------------
 		-- Method
@@ -354,10 +354,10 @@ class "TreeView"
 				Refresh(self)
 			end
 
-			Object.Fire(self, "OnSelected")
+			Object.Raise(self, "OnSelected")
 
 			if Object.IsClass(self, TreeNode) then
-				return Object.Fire(root, "OnNodeSelected", self)
+				return Object.Raise(root, "OnNodeSelected", self)
 			end
 		end
 
@@ -377,7 +377,7 @@ class "TreeView"
 
 		doc [======[
 			@name GetToggleState
-			@type script
+			@type event
 			@desc Gets the TreeNode's toggle state
 			@return boolean true if the TreeNode is toggled
 		]======]
@@ -403,10 +403,10 @@ class "TreeView"
 
 			Refresh(self)
 
-			Object.Fire(self, "OnToggle")
+			Object.Raise(self, "OnToggle")
 
 			if Object.IsClass(self, TreeNode) then
-				return Object.Fire(self.__Root, "OnNodeToggle", self)
+				return Object.Raise(self.__Root, "OnNodeToggle", self)
 			end
 		end
 
@@ -528,8 +528,8 @@ class "TreeView"
 							parent.MetaData[i + 1] = node.MetaData
 						end
 
-						Object.Fire(node, "OnIndexChanged")
-						Object.Fire(node.__Root, "OnNodeIndexChanged", node)
+						Object.Raise(node, "OnIndexChanged")
+						Object.Raise(node.__Root, "OnNodeIndexChanged", node)
 					end
 				else
 					for i = self.__NodeIndex + 1, index, 1 do
@@ -544,8 +544,8 @@ class "TreeView"
 							parent.MetaData[i - 1] = node.MetaData
 						end
 
-						Object.Fire(node, "OnIndexChanged")
-						Object.Fire(node.__Root, "OnNodeIndexChanged", node)
+						Object.Raise(node, "OnIndexChanged")
+						Object.Raise(node.__Root, "OnNodeIndexChanged", node)
 					end
 				end
 
@@ -558,8 +558,8 @@ class "TreeView"
 					parent.MetaData[index] = self.MetaData
 				end
 
-				Object.Fire(self, "OnIndexChanged")
-				Object.Fire(self.__Root, "OnNodeIndexChanged", self)
+				Object.Raise(self, "OnIndexChanged")
+				Object.Raise(self.__Root, "OnNodeIndexChanged", self)
 
 				return Refresh(self)
 			end,
@@ -693,7 +693,7 @@ class "TreeView"
 	endclass "TreeNode"
 
 	------------------------------------------------------
-	-- Script Handlers
+	-- Event Handlers
 	------------------------------------------------------
 	local _FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -856,11 +856,11 @@ class "TreeView"
 	end
 
 	local function ScrollBar_OnEnter(self)
-		return self.Parent:Fire("OnEnter")
+		return self.Parent:Raise("OnEnter")
 	end
 
 	local function ScrollBar_OnLeave(self)
-		return self.Parent:Fire("OnLeave")
+		return self.Parent:Raise("OnLeave")
 	end
 
 	local function ScrollBar_OnValueChanged(self)
@@ -906,10 +906,10 @@ class "TreeView"
 
 		local node = self.__TreeNode
 
-		Object.Fire(node, "OnDoubleClick", button)
+		Object.Raise(node, "OnDoubleClick", button)
 
 		if Object.IsClass(node, TreeNode) then
-			return Object.Fire(node.__Root, "OnDoubleClick", node, button)
+			return Object.Raise(node.__Root, "OnDoubleClick", node, button)
 		end
 	end
 
@@ -924,8 +924,8 @@ class "TreeView"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(self.__TreeNode.Text)
-			self.__TreeNode:Fire("OnGameTooltipShow", GameTooltip)
-			self.Parent:Fire("OnNodeGameTooltipShow", GameTooltip, self.__TreeNode)
+			self.__TreeNode:Raise("OnGameTooltipShow", GameTooltip)
+			self.Parent:Raise("OnNodeGameTooltipShow", GameTooltip, self.__TreeNode)
 			GameTooltip:Show()
 		end
 
@@ -935,14 +935,14 @@ class "TreeView"
 		RefreshOrderButton(self)
 		RefreshFunctionButton(self)
 
-		return-- self.Parent:Fire("OnEnter")
+		return-- self.Parent:Raise("OnEnter")
 	end
 
 	local function TreeNode_OnLeave(self)
 		GameTooltip:ClearLines()
 		GameTooltip:Hide()
 
-		return-- self.Parent:Fire("OnLeave")
+		return-- self.Parent:Raise("OnLeave")
 	end
 
 	local function ToggleBtn_OnClick(self)
@@ -953,10 +953,10 @@ class "TreeView"
 
 	local function FuncButton_OnClick(self)
 		if self.Owner then
-			Object.Fire(self.Owner, "OnFunctionClick", self.Text)
+			Object.Raise(self.Owner, "OnFunctionClick", self.Text)
 
 			if Object.IsClass(self.Owner, TreeNode) then
-				return Object.Fire(self.Parent, "OnNodeFunctionClick", self.Text, self.Owner)
+				return Object.Raise(self.Parent, "OnNodeFunctionClick", self.Text, self.Owner)
 			end
 		end
 	end
@@ -1448,58 +1448,58 @@ class "TreeView"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnNodeToggle
-		@type script
+		@type event
 		@desc Run when a treenode is toggled
 		@param node System.Widget.TreeView.TreeNode
 	]======]
-	script "OnNodeToggle"
+	event "OnNodeToggle"
 
 	doc [======[
 		@name OnDoubleClick
-		@type script
+		@type event
 		@desc Run when the button is double-clicked
 		@param node System.Widget.TreeView.TreeNode
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 	]======]
-	script "OnDoubleClick"
+	event "OnDoubleClick"
 
 	doc [======[
 		@name OnNodeFunctionClick
-		@type script
+		@type event
 		@desc Run when a treenode's function button is clicked
 		@param funcName the function button's name
 		@param node System.Widget.TreeView.TreeNode
 	]======]
-	script "OnNodeFunctionClick"
+	event "OnNodeFunctionClick"
 
 	doc [======[
 		@name OnNodeSelected
-		@type script
+		@type event
 		@desc Run when an treenode in the treeview is selected
 		@param node System.Widget.TreeView.TreeNode
 	]======]
-	script "OnNodeSelected"
+	event "OnNodeSelected"
 
 	doc [======[
 		@name OnNodeGameTooltipShow
-		@type script
+		@type event
 		@desc Run when the mouse is over an item, and the tooltip is set
 		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
 		@param node System.Widget.TreeView.TreeNode
 	]======]
-	script "OnNodeGameTooltipShow"
+	event "OnNodeGameTooltipShow"
 
 	doc [======[
 		@name OnNodeIndexChanged
-		@type script
+		@type event
 		@desc Run when a node's index is changed
 		@param node System.Widget.TreeView.TreeNode
 	]======]
-	script "OnNodeIndexChanged"
+	event "OnNodeIndexChanged"
 
 	------------------------------------------------------
 	-- Method

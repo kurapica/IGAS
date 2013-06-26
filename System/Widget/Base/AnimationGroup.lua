@@ -21,60 +21,60 @@ class "AnimationGroup"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnFinished
-		@type script
+		@type event
 		@desc Run when the animation group finishes animating
 		@param requested boolean, true if animation finished because of a call to AnimationGroup:Finish(); false otherwise
 	]======]
-	script "OnFinished"
+	event "OnFinished"
 
 	doc [======[
 		@name OnLoad
-		@type script
+		@type event
 		@desc Run when the frame is created, no use in IGAS
 	]======]
-	script "OnLoad"
+	event "OnLoad"
 
 	doc [======[
 		@name OnLoop
-		@type script
+		@type event
 		@desc Run when the animation group's loop state changes
 		@param loopState System.Widget.AnimLoopStateType, the animation group's loop state
 	]======]
-	script "OnLoop"
+	event "OnLoop"
 
 	doc [======[
 		@name OnPause
-		@type script
+		@type event
 		@desc Run when the animation group is paused
 	]======]
-	script "OnPause"
+	event "OnPause"
 
 	doc [======[
 		@name OnPlay
-		@type script
+		@type event
 		@desc Run when the animation group begins to play
 	]======]
-	script "OnPlay"
+	event "OnPlay"
 
 	doc [======[
 		@name OnStop
-		@type script
+		@type event
 		@desc Run when the animation group is stopped
 		@param requested boolean true if the animation was stopped due to a call to the animation's or group's :Stop() method; false if the animation was stopped for other reasons
 	]======]
-	script "OnStop"
+	event "OnStop"
 
 	doc [======[
 		@name OnUpdate
-		@type script
+		@type event
 		@desc Run each time the screen is drawn by the game engine
 		@param elapsed number, Number of seconds since the OnUpdate handlers were last run (likely a fraction of a second)
 	]======]
-	script "OnUpdate"
+	event "OnUpdate"
 
 	------------------------------------------------------
 	-- Method
@@ -346,7 +346,7 @@ class "AnimationGroup"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

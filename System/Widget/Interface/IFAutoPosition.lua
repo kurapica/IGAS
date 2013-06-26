@@ -72,11 +72,11 @@ interface "IFAutoPosition"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnPositionChanged(self)
 		if not _IFAutoPosition_Loaded then return end
@@ -303,10 +303,10 @@ interface "IFAutoPosition"
 	------------------------------------------------------
 	function Dispose(self)
 		-- Clear save data
-		if self:HasScript("OnPositionChanged") and self.IFAutoPositionAutoPosition then
+		if self:HasEvent("OnPositionChanged") and self.IFAutoPositionAutoPosition then
 			self.OnPositionChanged = self.OnPositionChanged - OnPositionChanged
 		end
-		if self:HasScript("OnSizeChanged") and self.IFAutoPositionAutoSize then
+		if self:HasEvent("OnSizeChanged") and self.IFAutoPositionAutoSize then
 			self.OnSizeChanged = self.OnSizeChanged - OnSizeChanged
 		end
 
@@ -339,10 +339,10 @@ interface "IFAutoPosition"
 				_IFAutoPosition_LoadingList[self] = 0 + (self.IFAutoPositionAutoSize and 1 or 0) + (self.IFAutoPositionAutoPosition and 2 or 0)
 			end
 
-			if self:HasScript("OnPositionChanged") and self.IFAutoPositionAutoPosition then
+			if self:HasEvent("OnPositionChanged") and self.IFAutoPositionAutoPosition then
 				self.OnPositionChanged = self.OnPositionChanged + OnPositionChanged
 			end
-			if self:HasScript("OnSizeChanged") and self.IFAutoPositionAutoSize then
+			if self:HasEvent("OnSizeChanged") and self.IFAutoPositionAutoSize then
 				self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged
 			end
 		end

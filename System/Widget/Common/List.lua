@@ -39,7 +39,7 @@ class "List"
 		TEMPLATE_LIGHT,
     }
 
-	-- Script
+    -- Backdrop settings
 	_FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -53,6 +53,7 @@ class "List"
 		insets = { left = 11, right = 12, top = 12, bottom = 9 }
 	}
 
+	-- Help functions
     local function getAnchors(frame)
         local x, y = frame:GetCenter()
         local xFrom, xTo = "", ""
@@ -94,17 +95,17 @@ class "List"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(parent.Items[self.ID])
-			parent:Fire("OnGameTooltipShow", GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+			parent:Raise("OnGameTooltipShow", GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 			GameTooltip:Show()
 		end
-		self.Parent:Fire("OnEnter")
+		self.Parent:Raise("OnEnter")
 	end
 
 	local function Item_OnLeave(self)
 		_OnGameTooltip = nil
 		GameTooltip:ClearLines()
         GameTooltip:Hide()
-		self.Parent:Fire("OnLeave")
+		self.Parent:Raise("OnLeave")
 	end
 
 	local function Item_OnClick(self)
@@ -114,20 +115,20 @@ class "List"
 			parent:GetChild("ListBtn_"..i).HighlightLocked = false
 		end
 		self.HighlightLocked = true
-		return parent:Fire("OnItemChoosed", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+		return parent:Raise("OnItemChoosed", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 	end
 
 	local function Item_OnDoubleClick(self)
 		local parent = self.Parent
-		return parent:Fire("OnItemDoubleClick", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+		return parent:Raise("OnItemDoubleClick", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 	end
 
 	local function ScrollBar_OnEnter(self)
-		return self.Parent:Fire("OnEnter")
+		return self.Parent:Raise("OnEnter")
 	end
 
 	local function ScrollBar_OnLeave(self)
-		return self.Parent:Fire("OnLeave")
+		return self.Parent:Raise("OnLeave")
 	end
 
 	local function RefreshItem(self, btnIdx, itemIdx)
@@ -192,7 +193,7 @@ class "List"
 				GameTooltip:ClearAllPoints()
 				GameTooltip:SetPoint(from, btn, to, 0, 0)
 				GameTooltip:SetText(self.Items[btn.ID])
-				self:Fire("OnGameTooltipShow", GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
+				self:Raise("OnGameTooltipShow", GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
 				GameTooltip:Show()
 			end
 		end
@@ -380,28 +381,28 @@ class "List"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnGameTooltipShow
-		@type script
+		@type event
 		@desc Run when the mouse is over an item, and the Tooltip property is set
 		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
 		@param key any, the choosed item's value
 		@param text string, the choosed item's text
 		@param icon string, the choosed item's icon texture path
 	]======]
-	script "OnGameTooltipShow"
+	event "OnGameTooltipShow"
 
 	doc [======[
 		@name OnItemChoosed
-		@type script
+		@type event
 		@desc Run when the choosed item is changed
 		@param key any, the choosed item's value
 		@param text string, the choosed item's text
 		@param icon string, the choosed item's icon texture path
 	]======]
-	script "OnItemChoosed"
+	event "OnItemChoosed"
 
 	doc [======[
 		@name OnItemDoubleClick
@@ -411,7 +412,7 @@ class "List"
 		@param text string, the choosed item's text
 		@param icon string, the choosed item's icon texture path
 	]======]
-	script "OnItemDoubleClick"
+	event "OnItemDoubleClick"
 
 	------------------------------------------------------
 	-- Method
@@ -491,7 +492,7 @@ class "List"
 
 		if self.__ChooseItem ~= index then
 			self.__ChooseItem = index
-			--self:Fire("OnItemChoosed", self.Keys[self.__ChooseItem], self.Items[self.__ChooseItem], self.Icons[self.__ChooseItem], self.Frames[self.__ChooseItem])
+			--self:Raise("OnItemChoosed", self.Keys[self.__ChooseItem], self.Items[self.__ChooseItem], self.Icons[self.__ChooseItem], self.Frames[self.__ChooseItem])
 		end
 	end
 

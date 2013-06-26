@@ -28,8 +28,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 -- Create Date : 2011/02/01
 -- ChangeLog   :
 --               2011/04/14	System.Reflector added.
---               2011/05/11 Script handlers can run as thread.
---				 2011/05/30 System.Reflector.GetParts added.
+--               2011/05/11 Event handlers can run as thread.
+--               2011/05/30 System.Reflector.GetParts added.
 --               2011/06/24 Property definition ignore case
 --               2011/07/04 Struct no longer need Constructor and Validate function
 --               2011/07/08 System.Reflector.IsAbstractClass(cls) added
@@ -47,7 +47,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/06/27 Interface system added
 --               2012/06/28 Interface can access it's methodes
 --               2012/06/29 System.Reflector Update for Interface
---               2012/06/30 BlockScript, IsScriptBlocked, UnBlockScript added to Reflector
+--               2012/06/30 BlockEvent, IsEventBlocked, UnBlockEvent added to Reflector
 --               2012/07/01 Interface can extend from multi-interface
 --               2012/07/08 IFDispose added to support interface disposing
 --               2012/07/09 Using cache to keep interface list for class object creation
@@ -64,7 +64,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2012/09/07 Fix can't extend interface that defined in the class
 --               2012/09/20 class without constructor now will use Super class's constructor.
 --                          System.Reflector change to Interface.
---               2012/10/08 Object Method, Property, Script can't start with '_'.
+--               2012/10/08 Object Method, Property, Event can't start with '_'.
 --               2012/10/13 partclass keyword added to support part class definition.
 --               2012/11/07 Interface constructor invoking mechanism improved.
 --               2012/11/11 Disposing objects when Object created failded.
@@ -77,6 +77,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/01/25 object.Disposed is set to true after calling object:Dispose() as a mark
 --               2013/04/07 Lower the memory usage
 --               2013/06/24 IGAS:Install([env]) added, used to add keywords into current environment
+--               2013/06/26 keyword script -> event
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -87,7 +88,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 -- class "MyClass"						-- declare starting to define the class
 --		inherit "Object"					-- declare the class is inherited from System.Object
 --
---		script "OnNameChanged"	-- declare the class have a script named "OnNameChanged"
+--		event "OnNameChanged"	-- declare the class have an event named "OnNameChanged"
 --
 --		function Print(self)				-- the global functions will be treated as the class's methodes, self means the object
 --			print(self._Name)
@@ -99,7 +100,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --			end,
 --			Set = function(self, value)	-- the set method for property "Name"
 --				self._Name = value
---				self:OnNameChanged(value)	-- raise the "OnNameChanged" script to trigger it's handler functions.
+--				self:OnNameChanged(value)	-- raise the "OnNameChanged" event to trigger it's handler functions.
 --			end,
 --			Type = String,				-- the property "Name"'s type, so when you assign a value to Name, it should be checked.
 --		}
@@ -115,14 +116,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 --
 --	myObj:Print()						-- print out : Test
 --
---	function myObj:OnNameChanged(name)	-- define the script handler for 'OnNameChanged'
+--	function myObj:OnNameChanged(name)	-- define the event handler for 'OnNameChanged'
 --		print("The Name is changed to "..name)
 --	end
 --
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 67
+local version = 68
 
 ------------------------------------------------------
 -- Version Check & Class Environment
@@ -156,7 +157,7 @@ do
 
 	setfenv(1, _Meta._Class_ENV)
 
-	-- Scripts
+	-- Common functions
 	strtrim = strtrim or function(s)
 	  return s and (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -1021,8 +1022,8 @@ do
 	end
 
 	do
-		_BaseScripts = _BaseScripts or {
-			OnScriptHandlerChanged = true,
+		_BaseEvents = _BaseEvents or {
+			OnEventHandlerChanged = true,
 		}
 
 		function CloneWithoutOverride(dest, src)
@@ -1079,19 +1080,19 @@ do
 			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface, cache)
 			wipe(cache)
 
-			-- Cache4Script
-			wipe(info.Cache4Script)
-			--- BaseScripts
-			CloneWithoutOverride(info.Cache4Script, _BaseScripts)
-			--- self script
-			CloneWithoutOverride(info.Cache4Script, info.Script)
-			--- superclass script
+			-- Cache4Event
+			wipe(info.Cache4Event)
+			--- BaseEvents
+			CloneWithoutOverride(info.Cache4Event, _BaseEvents)
+			--- self event
+			CloneWithoutOverride(info.Cache4Event, info.Event)
+			--- superclass event
 			if info.SuperClass then
-				CloneWithoutOverride(info.Cache4Script, _NSInfo[info.SuperClass].Cache4Script)
+				CloneWithoutOverride(info.Cache4Event, _NSInfo[info.SuperClass].Cache4Event)
 			end
-			--- extend script
+			--- extend event
 			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride(info.Cache4Script, _NSInfo[IF].Cache4Script)
+				CloneWithoutOverride(info.Cache4Event, _NSInfo[IF].Cache4Event)
 			end
 
 			-- Cache4Property
@@ -1200,7 +1201,7 @@ do
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = ns
 		info.BaseEnv = info.BaseEnv or fenv
-		info.Script = info.Script or {}
+		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
 
@@ -1210,7 +1211,7 @@ do
 		-- Clear
 		info.Constructor = nil
 		wipe(info.Property)
-		wipe(info.Script)
+		wipe(info.Event)
 		wipe(info.Method)
 		for i, v in pairs(info.InterfaceEnv) do
 			if type(v) == "function" then
@@ -1222,7 +1223,7 @@ do
 		SetNameSpace4Env(info.InterfaceEnv, IF)
 
 		-- Cache
-		info.Cache4Script = info.Cache4Script or {}
+		info.Cache4Event = info.Cache4Event or {}
 		info.Cache4Property = info.Cache4Property or {}
 		info.Cache4Method = info.Cache4Method or {}
 		info.Cache4Interface = info.Cache4Interface or {}
@@ -1382,15 +1383,15 @@ do
 	end
 
 	------------------------------------
-	--- Add or remove a script for current interface
-	-- @name script
+	--- Add or remove an event for current interface
+	-- @name event
 	-- @class function
-	-- @param name the name of the script
-	-- @usage script "OnClick"
+	-- @param name the name of the event
+	-- @usage event "OnClick"
 	------------------------------------
-	function script_IF(name)
+	function event_IF(name)
 		if type(name) ~= "string" or name:find("^_") then
-			error([[Usage: script "scriptName"]], 2)
+			error([[Usage: event "eventName"]], 2)
 		end
 
 		local env = getfenv(2)
@@ -1398,10 +1399,10 @@ do
 		local info = _IFEnv2Info[env]
 
 		if not info then
-			error("can't use script here.", 2)
+			error("can't use event here.", 2)
 		end
 
-		info.Script[name] = true
+		info.Event[name] = true
 	end
 
 	local function SetProperty2IF(info, name, set)
@@ -1527,7 +1528,7 @@ do
 	_KeyWord4IFEnv.interface = interface
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
-	_KeyWord4IFEnv.script = script_IF
+	_KeyWord4IFEnv.event = event_IF
 	_KeyWord4IFEnv.property = property_IF
 	_KeyWord4IFEnv.endinterface = endinterface
 
@@ -1745,10 +1746,10 @@ do
 		end
 	end
 
-	-- metatable for ScriptHandler
-	_MetaScriptHandler = _MetaScriptHandler or {}
+	-- metatable for EventHandler
+	_MetaEventHandler = _MetaEventHandler or {}
 	do
-		_MetaScriptHandler.__index = {
+		_MetaEventHandler.__index = {
 			Add = function(self, func)
 				if type(func) ~= "function" then
 					error("Usage: obj.OnXXXX:Add(func)", 2)
@@ -1763,7 +1764,7 @@ do
 				tinsert(self, func)
 
 				if self._Owner and self._Name then
-					CallScriptWithoutCreate(self._Owner, "OnScriptHandlerChanged", self._Name)
+					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
 				end
 
 				return self
@@ -1784,7 +1785,7 @@ do
 				end
 
 				if flag and self._Owner and self._Name then
-					CallScriptWithoutCreate(self._Owner, "OnScriptHandlerChanged", self._Name)
+					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
 				end
 
 				return self
@@ -1800,7 +1801,7 @@ do
 				end
 
 				if flag and self._Owner and self._Name then
-					CallScriptWithoutCreate(self._Owner, "OnScriptHandlerChanged", self._Name)
+					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
 				end
 
 				return self
@@ -1810,7 +1811,7 @@ do
 			end,
 		}
 
-		_MetaScriptHandler.__add = function(self, func)
+		_MetaEventHandler.__add = function(self, func)
 			if type(func) ~= "function" then
 				error("Usage: obj.OnXXXX = obj.OnXXXX + func", 2)
 			end
@@ -1824,13 +1825,13 @@ do
 			tinsert(self, func)
 
 			if self._Owner and self._Name then
-				CallScriptWithoutCreate(self._Owner, "OnScriptHandlerChanged", self._Name)
+				CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
 			end
 
 			return self
 		end
 
-		_MetaScriptHandler.__sub = function(self, func)
+		_MetaEventHandler.__sub = function(self, func)
 			local flag = false
 
 			if type(func) ~= "function" then
@@ -1846,7 +1847,7 @@ do
 			end
 
 			if flag and self._Owner and self._Name then
-				CallScriptWithoutCreate(self._Owner, "OnScriptHandlerChanged", self._Name)
+				CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
 			end
 
 			return self
@@ -1856,7 +1857,7 @@ do
 		local resume = coroutine.resume
 		local status = coroutine.status
 
-		_MetaScriptHandler.__call = function(self, obj, ...)
+		_MetaEventHandler.__call = function(self, obj, ...)
 			if not obj then
 				error("Usage: obj:OnXXXX(...).", 2)
 			end
@@ -1883,7 +1884,7 @@ do
 					return errorhandler(ret)
 				end
 
-				if not rawget(obj, "__Scripts") then
+				if not rawget(obj, "__Events") then
 					-- means it's disposed
 					ret = true
 				end
@@ -1905,22 +1906,22 @@ do
 		end
 	end
 
-	_MetaScripts = _MetaScripts or {}
+	_MetaEvents = _MetaEvents or {}
 	do
-		_MetaScripts.__index = function(self, key)
-			-- Check Script
+		_MetaEvents.__index = function(self, key)
+			-- Check Event
 			local cls = self._Owner and getmetatable(self._Owner)
 
-			if _NSInfo[cls].Cache4Script[key] == nil then
+			if _NSInfo[cls].Cache4Event[key] == nil then
 				return
 			end
 
-			-- Add Script Handler
-			rawset(self, key, setmetatable({_Owner = self._Owner, _Name = key}, _MetaScriptHandler))
+			-- Add Event Handler
+			rawset(self, key, setmetatable({_Owner = self._Owner, _Name = key}, _MetaEventHandler))
 			return rawget(self, key)
 		end
 
-		_MetaScripts.__newindex = function(self, key, value)
+		_MetaEvents.__newindex = function(self, key, value)
 		end
 	end
 
@@ -1980,9 +1981,9 @@ do
 		return value
 	end
 
-	function CallScriptWithoutCreate(self, scriptName, ...)
-		if rawget(self, "__Scripts") and rawget(self.__Scripts, scriptName) then
-			return self[scriptName](self, ...)
+	function CallEventWithoutCreate(self, eventName, ...)
+		if rawget(self, "__Events") and rawget(self.__Events, eventName) then
+			return self[eventName](self, ...)
 		end
 	end
 
@@ -2061,7 +2062,7 @@ do
 		info.Type = TYPE_CLASS
 		info.NameSpace = ns
 		info.BaseEnv = info.BaseEnv or fenv
-		info.Script = info.Script or {}
+		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
 
@@ -2072,7 +2073,7 @@ do
 		if not asPart then
 			info.Constructor = nil
 			wipe(info.Property)
-			wipe(info.Script)
+			wipe(info.Event)
 			wipe(info.Method)
 			for i, v in pairs(info.ClassEnv) do
 				if type(v) == "function" then
@@ -2085,7 +2086,7 @@ do
 		SetNameSpace4Env(info.ClassEnv, cls)
 
 		-- Cache
-		info.Cache4Script = info.Cache4Script or {}
+		info.Cache4Event = info.Cache4Event or {}
 		info.Cache4Property = info.Cache4Property or {}
 		info.Cache4Method = info.Cache4Method or {}
 		info.Cache4Interface = info.Cache4Interface or {}
@@ -2141,7 +2142,7 @@ do
 			end
 
 			local ClassEnv = info.ClassEnv
-			local Cache4Script = info.Cache4Script
+			local Cache4Event = info.Cache4Event
 			local Cache4Property = info.Cache4Property
 			local Cache4Method = info.Cache4Method
 			local ClassName = info.Name
@@ -2171,13 +2172,13 @@ do
 						return Cache4Method[key]
 					end
 
-					-- Scripts
-					if Cache4Script[key] ~= nil then
-						if type(rawget(self, "__Scripts")) ~= "table" or getmetatable(self.__Scripts) ~= _MetaScripts then
-							rawset(self, "__Scripts", setmetatable({_Owner = self}, _MetaScripts))
+					-- Events
+					if Cache4Event[key] ~= nil then
+						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
+							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
 						end
 
-						return self.__Scripts[key]
+						return self.__Events[key]
 					end
 				end
 
@@ -2211,35 +2212,35 @@ do
 						end
 					end
 
-					-- Scripts
-					if Cache4Script[key] ~= nil then
-						if type(rawget(self, "__Scripts")) ~= "table" or getmetatable(self.__Scripts) ~= _MetaScripts then
-							rawset(self, "__Scripts", setmetatable({_Owner = self}, _MetaScripts))
+					-- Events
+					if Cache4Event[key] ~= nil then
+						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
+							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
 						end
 
 						if value == nil or type(value) == "function" then
-							if Cache4Script[key] then
-								if self.__Scripts[key][0] ~= value then
-									rawset(self.__Scripts[key], 0, value)
-									CallScriptWithoutCreate(self, "OnScriptHandlerChanged", key)
+							if Cache4Event[key] then
+								if self.__Events[key][0] ~= value then
+									rawset(self.__Events[key], 0, value)
+									CallEventWithoutCreate(self, "OnEventHandlerChanged", key)
 								end
 							else
 								error(("%s is not supported for class '%s'."):format(tostring(key), ClassName), 2)
 							end
-						elseif type(value) == "table" and getmetatable(value) == _MetaScriptHandler then
-							if value == self.__Scripts[key] then
+						elseif type(value) == "table" and getmetatable(value) == _MetaEventHandler then
+							if value == self.__Events[key] then
 								return
 							end
 
-							for i = #self.__Scripts[key], 0, -1 do
-								tremove(self.__Scripts[key], i)
+							for i = #self.__Events[key], 0, -1 do
+								tremove(self.__Events[key], i)
 							end
 
 							for i =0, #value do
-								self.__Scripts[key][i] = value[i]
+								self.__Events[key][i] = value[i]
 							end
 
-							CallScriptWithoutCreate(self, "OnScriptHandlerChanged", key)
+							CallEventWithoutCreate(self, "OnEventHandlerChanged", key)
 						else
 							error("can't set this value to a scipt handler.", 2)
 						end
@@ -2508,16 +2509,16 @@ do
 	end
 
 	------------------------------------
-	--- Add or remove a script for current class
-	-- @name script
+	--- Add or remove an event for current class
+	-- @name event
 	-- @class function
-	-- @param name the name of the script, if started with "-" means to remove this script
-	-- @usage script "OnClick"
-	-- @usage script "-OnClick"
+	-- @param name the name of the event, if started with "-" means to remove this event
+	-- @usage event "OnClick"
+	-- @usage event "-OnClick"
 	------------------------------------
-	function script_Cls(name)
+	function event_Cls(name)
 		if type(name) ~= "string" or name:find("^_") then
-			error([[Usage: script "[-]scriptName"]], 2)
+			error([[Usage: event "[-]eventName"]], 2)
 		end
 
 		local env = getfenv(2)
@@ -2525,14 +2526,14 @@ do
 		local info = _ClsEnv2Info[env]
 
 		if not info then
-			error("can't use script here.", 2)
+			error("can't use event here.", 2)
 		end
 
 		local flag
 
 		name, flag = name:gsub("^-", "")
 
-		info.Script[name] = (flag == 0)
+		info.Event[name] = (flag == 0)
 	end
 
 	local function SetProperty2Cls(info, name, set)
@@ -2660,7 +2661,7 @@ do
 	_KeyWord4ClsEnv.inherit = inherit_Cls
 	_KeyWord4ClsEnv.extend = extend_Cls
 	_KeyWord4ClsEnv.import = import_Cls
-	_KeyWord4ClsEnv.script = script_Cls
+	_KeyWord4ClsEnv.event = event_Cls
 	_KeyWord4ClsEnv.property = property_Cls
 	_KeyWord4ClsEnv.endclass = endclass
 
@@ -3474,16 +3475,16 @@ do
 		end
 
 		doc [======[
-			@name GetScripts
+			@name GetEvents
 			@type method
-			@desc Get the scripts of the class
+			@desc Get the events of the class
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
-			@param noSuper no super script handlers
-			@return table the script handler list
-			@usage System.Reflector.GetScripts(System.Object)
+			@param noSuper no super event handlers
+			@return table the event handler list
+			@usage System.Reflector.GetEvents(System.Object)
 		]======]
-		function GetScripts(ns, noSuper)
+		function GetEvents(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			local info = ns and _NSInfo[ns]
@@ -3491,7 +3492,7 @@ do
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
 				local ret = {}
 
-				for i, v in pairs(noSuper and info.Script or info.Cache4Script) do
+				for i, v in pairs(noSuper and info.Event or info.Cache4Event) do
 					if v then
 						tinsert(ret, i)
 					end
@@ -3691,21 +3692,21 @@ do
 		end
 
 		doc [======[
-			@name HasScript
+			@name HasEvent
 			@type method
-			@desc Check if the class|interface has that script
+			@desc Check if the class|interface has that event
 			@param class|interface
-			@param script the script handler name
-			@return true if the class|interface has the script
-			@usage System.Reflector.HasScript(Addon, "OnEvent")
+			@param event the event handler name
+			@return true if the class|interface has the event
+			@usage System.Reflector.HasEvent(Addon, "OnEvent")
 		]======]
-		function HasScript(cls, sc)
+		function HasEvent(cls, sc)
 			if type(cls) == "string" then cls = ForName(cls) end
 
 			local info = _NSInfo[cls]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
-				return info.Cache4Script[sc] or false
+				return info.Cache4Event[sc] or false
 			end
 		end
 
@@ -3865,9 +3866,9 @@ do
 		doc [======[
 			@name ActiveThread
 			@type method
-			@desc Active thread mode for special scripts.
+			@desc Active thread mode for special events.
 			@param object
-			@param ... script handler name list
+			@param ... event handler name list
 			@return nil
 			@usage System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")
 		]======]
@@ -3879,7 +3880,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasScript(cls, name) then
+					if HasEvent(cls, name) then
 						obj[name]._ThreadActivated = true
 					end
 				end
@@ -3889,17 +3890,17 @@ do
 		doc [======[
 			@name IsThreadActivated
 			@type method
-			@desc Whether the thread mode is activated for special scripts.
+			@desc Whether the thread mode is activated for special events.
 			@param obect
-			@param script
-			@return boolean true if the object has active thread mode for the given script.
+			@param event
+			@return boolean true if the object has active thread mode for the given event.
 			@usage System.Reflector.IsThreadActivated(obj, "OnClick")
 		]======]
 		function IsThreadActivated(obj, sc)
 			local cls = GetObjectClass(obj)
 			local name
 
-			if cls and HasScript(cls, sc) then
+			if cls and HasEvent(cls, sc) then
 				return obj[sc]._ThreadActivated or false
 			end
 
@@ -3909,9 +3910,9 @@ do
 		doc [======[
 			@name InactiveThread
 			@type method
-			@desc Inactive thread mode for special scripts.
+			@desc Inactive thread mode for special events.
 			@param object
-			@param ... script name list
+			@param ... event name list
 			@return nil
 			@usage System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")
 		]======]
@@ -3923,7 +3924,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasScript(cls, name) then
+					if HasEvent(cls, name) then
 						obj[name]._ThreadActivated = nil
 					end
 				end
@@ -3931,15 +3932,15 @@ do
 		end
 
 		doc [======[
-			@name BlockScript
+			@name BlockEvent
 			@type method
-			@desc Block script for object
+			@desc Block event for object
 			@param object
-			@param ... the script handler name list
+			@param ... the event handler name list
 			@return nil
-			@usage System.Reflector.BlockScript(obj, "OnClick", "OnEnter")
+			@usage System.Reflector.BlockEvent(obj, "OnClick", "OnEnter")
 		]======]
-		function BlockScript(obj, ...)
+		function BlockEvent(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
 
@@ -3947,7 +3948,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasScript(cls, name) then
+					if HasEvent(cls, name) then
 						obj[name]._Blocked = true
 					end
 				end
@@ -3955,19 +3956,19 @@ do
 		end
 
 		doc [======[
-			@name IsScriptBlocked
+			@name IsEventBlocked
 			@type method
-			@desc Whether the script is blocked for object
+			@desc Whether the event is blocked for object
 			@param object
-			@param script
-			@return boolean true if the script is blocked
-			@usage System.Reflector.IsScriptBlocked(obj, "OnClick")
+			@param event
+			@return boolean true if the event is blocked
+			@usage System.Reflector.IsEventBlocked(obj, "OnClick")
 		]======]
-		function IsScriptBlocked(obj, sc)
+		function IsEventBlocked(obj, sc)
 			local cls = GetObjectClass(obj)
 			local name
 
-			if cls and HasScript(cls, sc) then
+			if cls and HasEvent(cls, sc) then
 				return obj[sc]._Blocked or false
 			end
 
@@ -3975,15 +3976,15 @@ do
 		end
 
 		doc [======[
-			@name UnBlockScript
+			@name UnBlockEvent
 			@type method
-			@desc Un-Block script for object
+			@desc Un-Block event for object
 			@param object
-			@param ... script handler name list
+			@param ... event handler name list
 			@return nil
-			@usage System.Reflector.UnBlockScript(obj, "OnClick", "OnEnter")
+			@usage System.Reflector.UnBlockEvent(obj, "OnClick", "OnEnter")
 		]======]
-		function UnBlockScript(obj, ...)
+		function UnBlockEvent(obj, ...)
 			local cls = GetObjectClass(obj)
 			local name
 
@@ -3991,7 +3992,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasScript(cls, name) then
+					if HasEvent(cls, name) then
 						obj[name]._Blocked = nil
 					end
 				end
@@ -4154,11 +4155,11 @@ do
 			@name Help
 			@type method
 			@desc Get the document detail
-			@format class|interface[, script|property|method, name]
+			@format class|interface[, event|property|method, name]
 			@format class|interface, name
 			@format enum|struct
 			@param class|interface|enum|struct
-			@param script|property|method
+			@param event|property|method
 			@param name the name to query
 			@return string the detail information
 		]======]
@@ -4316,10 +4317,10 @@ do
 							end
 						end
 
-						-- Script
-						if next(info.Script) then
-							result = result .. "\n  Script :"
-							for sc in pairs(info.Script) do
+						-- Event
+						if next(info.Event) then
+							result = result .. "\n  Event :"
+							for sc in pairs(info.Event) do
 								result = result .. "\n    " .. sc
 							end
 						end
@@ -4440,8 +4441,8 @@ do
 						querytype = doctype
 
 						if not querytype then
-							if HasScript(ns, name) then
-								querytype = "script"
+							if HasEvent(ns, name) then
+								querytype = "event"
 							elseif HasProperty(ns, name) then
 								querytype = "property"
 							elseif type(ns[name]) == "function" then
@@ -4468,13 +4469,13 @@ do
 							result = result .. "\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
 						end
 
-						if querytype == "script" then
+						if querytype == "event" then
 							-- Format
 							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
 							if desc then
 								result = result .. "\n  Format :"
 								for fmt in desc do
-									result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the script\n    end"
+									result = result .. "\n    " .. "function object:" .. name .. "(" .. fmt .. ")\n        -- Handle the event\n    end"
 								end
 							else
 								result = result .. "\n  Format :\n    function object:" .. name .. "("
@@ -4494,7 +4495,7 @@ do
 									end
 								end
 
-								result = result .. ")\n        -- Handle the script\n    end"
+								result = result .. ")\n        -- Handle the event\n    end"
 							end
 
 							-- Params

@@ -6,7 +6,7 @@
 --				2011/03/01	Recode as class
 
 -- Check Version
-local version = 14
+local version = 15
 if not IGAS:NewAddon("IGAS.Widget.UIObject", version) then
 	return
 end
@@ -24,9 +24,9 @@ class "UIObject"
 	]======]
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
-	-- OnScriptHandlerChanged
+	-- OnEventHandlerChanged
 	_ScriptHandler = _ScriptHandler or {}
 
 	local function GetEventHandler(handler)
@@ -35,13 +35,13 @@ class "UIObject"
 		end
 		if not _ScriptHandler[handler] then
 			_ScriptHandler[handler] = function(self, ...)
-				return self.__Wrapper and self.__Wrapper:Fire(handler, ...)
+				return self.__Wrapper and self.__Wrapper:Raise(handler, ...)
 			end
 		end
 		return _ScriptHandler[handler]
 	end
 
-	local function OnScriptHandlerChanged(self, scriptName)
+	local function OnEventHandlerChanged(self, scriptName)
 		local _UI = rawget(self, "__UI")
 
 		if type(_UI) ~= "table" or _UI == self or type(_UI.HasScript) ~= "function" or not _UI:HasScript(scriptName) then
@@ -68,14 +68,8 @@ class "UIObject"
 		end
 	end
 
-	local function OnEvent(self, event, ...)
-		if type(self[event]) == "function" then
-			return self[event](self, ...)
-		end
-	end
-
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -314,143 +308,28 @@ class "UIObject"
 	doc [======[
 		@name GetScript
 		@type method
-		@desc Return the script handler of the given name
+		@desc Return the script handler of the given name (discarded)
 		@param name string, the script's name
 		@return function the script handler if existed
 	]======]
 	function GetScript(self, name)
-		if type(name) ~= "string" then
-			error(("Usage : UIObject:GetScript(name) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-
-		local _UI = rawget(self, "__UI")
-
-		if type(_UI) == "table" and _UI ~= self and type(_UI.HasScript) == "function" and _UI:HasScript(name) then
-			local handler = _UI:GetScript(name)
-
-			if handler == _ScriptHandler[name] then
-				return type(self.__Scripts) == "table" and rawget(self.__Scripts, name) and rawget(rawget(self.__Scripts, name), 0)
-			else
-				return handler
-			end
-		end
-
-		return type(self.__Scripts) == "table" and rawget(self.__Scripts, name) and rawget(rawget(self.__Scripts, name), 0)
+		error(("Usage : func = object.%s"):format(tostring(name)), 2)
 	end
 
 	doc [======[
 		@name SetScript
 		@type method
-		@desc Set the script hanlder of the given name
+		@desc Set the script hanlder of the given name (discarded)
 		@param name string, the script's name
 		@param handler function, the script handler
 		@return nil
 	]======]
 	function SetScript(self, name, func)
-		if type(name) ~= "string" then
-			error(("Usage : UIObject:SetScript(name, func) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-		if func ~= nil and type(func) ~= "function" then
-			error(("Usage : UIObject:SetScript(name, func) : 'func' - function or nil expected, got %s."):format(type(func)), 2)
-		end
-
-		if not self:HasScript(name) then
-			error(("%s is not a supported script."):format(name), 2)
-		end
-
-		self[name] = func
+		error(("Usage : object.%s = func"):format(tostring(name)), 2)
 	end
 
 	function HookScript(self, name, func)
-		error(("Usage : UIObject.%s = UIObject.%s + func"):format(tostring(name), tostring(name)), 2)
-	end
-
-	doc [======[
-		@name IsEventRegistered
-		@type method
-		@desc Check if the widget object has registered the given name event
-		@param name string, the event's name
-		@return boolean true if the event is registered
-	]======]
-	function IsEventRegistered(self, event)
-		if self.InDesignMode then
-			self.__RegisterEventList = self.__RegisterEventList or {}
-			return self.__RegisterEventList[event] or false
-		end
-		if type(event) == "string" and event ~= "" then
-			return (IGAS:GetUI(self).IsEventRegistered and IGAS:GetUI(self):IsEventRegistered(event)) or Object.IsEventRegistered(self, event)
-		else
-			error(("Usage : UIObject:IsRegistered(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
-	end
-
-	doc [======[
-		@name RegisterEvent
-		@type method
-		@desc Register event for the object
-		@param event string, the event's name
-		@return nil
-	]======]
-	function RegisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			if self.InDesignMode then
-				self.__RegisterEventList = self.__RegisterEventList or {}
-				self.__RegisterEventList[event] = true
-				return
-			end
-
-			if IGAS:GetUI(self).RegisterEvent then
-				IGAS:GetUI(self):RegisterEvent(event)
-			end
-
-			if not IGAS:GetUI(self).RegisterEvent or not IGAS:GetUI(self):IsEventRegistered(event) then
-				Object.RegisterEvent(self, event)
-			end
-
-			self.OnEvent = self.OnEvent + OnEvent
-		else
-			error(("Usage : UIObject:RegisterEvent(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
-	end
-
-	doc [======[
-		@name UnregisterAllEvents
-		@type method
-		@desc Un-register all events
-		@return nil
-	]======]
-	function UnregisterAllEvents(self)
-		if self.InDesignMode then
-			self.__RegisterEventList = self.__RegisterEventList or {}
-			wipe(self.__RegisterEventList)
-			return
-		end
-		IGAS:GetUI(self):UnregisterAllEvents()
-		Object.UnregisterAllEvents(self)
-	end
-
-	doc [======[
-		@name UnregisterEvent
-		@type method
-		@desc Un-register given name event
-		@param event string, the event's name
-		@return nil
-	]======]
-	function UnregisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			if self.InDesignMode then
-				self.__RegisterEventList = self.__RegisterEventList or {}
-				self.__RegisterEventList[event] = nil
-				return
-			end
-
-			if IGAS:GetUI(self).UnregisterEvent then
-				IGAS:GetUI(self):UnregisterEvent(event)
-			end
-			Object.UnregisterEvent(self, event)
-		else
-			error(("Usage : UIObject:Unregister(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
+		error(("Usage : object.%s = object.%s + func"):format(tostring(name), tostring(name)), 2)
 	end
 
 	------------------------------------------------------
@@ -580,7 +459,7 @@ class "UIObject"
 			self.__UI = name
 			name.__Wrapper = self
 
-			self.OnScriptHandlerChanged = self.OnScriptHandlerChanged + OnScriptHandlerChanged
+			self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
 
 			SetName(self, name:GetName() or "Name"..random(100000))
 
@@ -605,7 +484,7 @@ class "UIObject"
 		self.__UI = obj
 		obj.__Wrapper = self
 
-		self.OnScriptHandlerChanged = self.OnScriptHandlerChanged + OnScriptHandlerChanged
+		self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
 
 		SetName(self, name)
 		SetParent(self, parent)

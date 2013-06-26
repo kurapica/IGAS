@@ -26,7 +26,7 @@ do
 	end
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	function OnLoad(self)
 		-- DB
@@ -693,7 +693,7 @@ interface "IFSpellHandler"
 			]======]
 
 			------------------------------------------------------
-			-- Script
+			-- Event
 			------------------------------------------------------
 
 			------------------------------------------------------
@@ -838,7 +838,7 @@ interface "IFSpellHandler"
 						self.__AccessWith,
 						self.__AccessHarmful)
 
-					self.__GroupHandler:Fire("OnSettingUpdate")
+					self.__GroupHandler:Raise("OnSettingUpdate")
 				end,
 				Type = System.String,
 			}
@@ -951,14 +951,14 @@ interface "IFSpellHandler"
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 		doc [======[
 			@name OnSettingUpdate
-			@type script
+			@type event
 			@desc Fired when the settings is updateds
 		]======]
-		script "OnSettingUpdate"
+		event "OnSettingUpdate"
 
 		------------------------------------------------------
 		-- Method
@@ -971,7 +971,7 @@ interface "IFSpellHandler"
 		]======]
 		function Clear(self, key)
 			if ClearBindingDB4Key(self.Group, key) then
-				self:Fire("OnSettingUpdate")
+				self:Raise("OnSettingUpdate")
 			end
 		end
 
@@ -982,7 +982,7 @@ interface "IFSpellHandler"
 			@return nil
 		]======]
 		function BeginUpdate(self)
-			self:BlockScript("OnSettingUpdate")
+			self:BlockEvent("OnSettingUpdate")
 			self.__BackUp = CopyData(_DBChar[self.Group])
 		end
 
@@ -994,10 +994,10 @@ interface "IFSpellHandler"
 		]======]
 		function CommitUpdate(self)
 			if self.__BackUp then
-				self:UnBlockScript("OnSettingUpdate")
+				self:UnBlockEvent("OnSettingUpdate")
 
 				if not CompareData(_DBChar[self.Group], self.__BackUp) then
-					self:Fire("OnSettingUpdate")
+					self:Raise("OnSettingUpdate")
 				end
 
 				self.__BackUp = nil
@@ -1015,7 +1015,7 @@ interface "IFSpellHandler"
 				_DBChar[self.Group] = self.__BackUp
 				self.__BackUp = nil
 
-				self:UnBlockScript("OnSettingUpdate")
+				self:UnBlockEvent("OnSettingUpdate")
 			end
 		end
 
@@ -1062,7 +1062,7 @@ interface "IFSpellHandler"
 				end
 
 				_DBChar[self.Group] = CopyData(result)
-				self:Fire("OnSettingUpdate")
+				self:Raise("OnSettingUpdate")
 			else
 				self:Clear()
 			end
@@ -1083,7 +1083,7 @@ interface "IFSpellHandler"
 		}
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function OnSettingUpdate(self)
 			IFNoCombatTaskHandler._RegisterNoCombatTask(SetupGroup, self.Group)
@@ -1130,7 +1130,7 @@ interface "IFSpellHandler"
 	endclass "SpellHandlerGroup"
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

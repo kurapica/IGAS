@@ -20,42 +20,42 @@ class "Button"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnClick
-		@type script
+		@type event
 		@desc Run when the button is clicked
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 		@param down boolean, true for a mouse button down action; false for button up or other actions
 	]======]
-	script "OnClick"
+	event "OnClick"
 
 	doc [======[
 		@name OnDoubleClick
-		@type script
+		@type event
 		@desc Run when the button is double-clicked
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 	]======]
-	script "OnDoubleClick"
+	event "OnDoubleClick"
 
 	doc [======[
 		@name PostClick
-		@type script
+		@type event
 		@desc Run immediately following the button's `OnClick` handler with the same arguments
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 		@param down boolean, true for a mouse button down action; false for button up or other actions
 	]======]
-	script "PostClick"
+	event "PostClick"
 
 	doc [======[
 		@name PreClick
-		@type script
+		@type event
 		@desc Run immediately before the button's `OnClick` handler with the same arguments
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 		@param down boolean, true for a mouse button down action; false for button up or other actions
 	]======]
-	script "PreClick"
+	event "PreClick"
 
 	------------------------------------------------------
 	-- Method
@@ -643,7 +643,7 @@ class "Button"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

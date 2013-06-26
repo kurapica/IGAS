@@ -26,7 +26,7 @@ interface "IFContainer"
 	end
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function Panel_OnMinResizeChanged(self, width, height)
 		if self.Parent:GetNumPoints() == 0 or width == 0 or height == 0 or not self:GetLeft() then return end
@@ -46,7 +46,7 @@ interface "IFContainer"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

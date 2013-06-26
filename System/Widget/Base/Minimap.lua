@@ -18,7 +18,7 @@ class "Minimap"
 		@desc Minimap is a frame type whose backdrop is filled in with a top-down representation of the area around the character being played.
 	]======]
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -162,7 +162,7 @@ class "Minimap"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

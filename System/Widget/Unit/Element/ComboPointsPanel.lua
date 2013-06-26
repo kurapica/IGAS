@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/06/25
 -- Change Log  :
 
@@ -25,7 +25,7 @@ class "ComboPointsPanel"
 	endclass "ComboPoint"
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

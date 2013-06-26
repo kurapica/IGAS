@@ -102,35 +102,35 @@ class "HTMLViewer"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnHyperlinkClick
-		@type script
+		@type event
 		@desc Run when the mouse clicks a hyperlink in the SimpleHTML frame
 		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
 		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
 		@param button string, name of the mouse button responsible for the click action
 	]======]
-	script "OnHyperlinkClick"
+	event "OnHyperlinkClick"
 
 	doc [======[
 		@name OnHyperlinkEnter
-		@type script
+		@type event
 		@desc Run when the mouse moves over a hyperlink in the SimpleHTML frame
 		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
 		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
 	]======]
-	script "OnHyperlinkEnter"
+	event "OnHyperlinkEnter"
 
 	doc [======[
 		@name OnHyperlinkLeave
-		@type script
+		@type event
 		@desc Run when the mouse moves away from a hyperlink in the SimpleHTML frame
 		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
 		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
 	]======]
-	script "OnHyperlinkLeave"
+	event "OnHyperlinkLeave"
 
 	------------------------------------------------------
 	-- Method
@@ -486,18 +486,18 @@ class "HTMLViewer"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnHyperlinkClick(self, linkData, link, button)
-		return self.Parent:Fire("OnHyperlinkClick", linkData, link, button)
+		return self.Parent:Raise("OnHyperlinkClick", linkData, link, button)
 	end
 
 	local function OnHyperlinkEnter(self, linkData, link)
-		return self.Parent:Fire("OnHyperlinkEnter", linkData, link)
+		return self.Parent:Raise("OnHyperlinkEnter", linkData, link)
 	end
 
 	local function OnHyperlinkLeave(self, linkData, link)
-		return self.Parent:Fire("OnHyperlinkLeave", linkData, link)
+		return self.Parent:Raise("OnHyperlinkLeave", linkData, link)
 	end
 
 	------------------------------------------------------

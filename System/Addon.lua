@@ -39,7 +39,7 @@
 -- Version Check & Environment
 ------------------------------------------------------
 do
-	local version = 14
+	local version = 15
 
 	local _Meta = getmetatable(IGAS)
 
@@ -75,7 +75,7 @@ do
 
 	setfenv(1, _Meta._Addon_ENV)
 
-	-- Scripts
+	-- Common functions
 	strtrim = strtrim or function(s)
 	  return (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -157,7 +157,7 @@ interface "IFModule"
 
 						_EventDistribution[event][obj] = true
 					else
-						return Object.RegisterEvent(obj, event)
+						error("Usage : IFModule:RegisterEvent(event) : 'event' - not existed.", 3)
 					end
 				end
 			end
@@ -166,8 +166,6 @@ interface "IFModule"
 			function _EventManager:IsRegistered(event, obj)
 				if _EventDistribution[event] then
 					return _EventDistribution[event][obj] or false
-				else
-					return Object.IsEventRegistered(obj, event)
 				end
 			end
 
@@ -180,8 +178,6 @@ interface "IFModule"
 						if not next(_EventDistribution[event]) and not _UsedEvent[event] then
 							self:UnregisterEvent(event)
 						end
-					else
-						return Object.UnregisterEvent(obj, event)
 					end
 				end
 			end
@@ -197,8 +193,6 @@ interface "IFModule"
 						end
 					end
 				end
-
-				return Object.UnregisterAllEvents(obj)
 			end
 
 			--  Special Settings for _EventManager
@@ -216,7 +210,7 @@ interface "IFModule"
 					if _EventDistribution[event] then
 						for obj in pairs(_EventDistribution[event]) do
 							if not _Info[obj].Disabled then
-								Object.Fire(obj, "OnEvent", event, ...)
+								Object.Raise(obj, "OnEvent", event, ...)
 							end
 						end
 					end
@@ -224,7 +218,7 @@ interface "IFModule"
 
 				-- Loading
 				local function loading(self)
-					Object.Fire(self, "OnLoad")
+					Object.Raise(self, "OnLoad")
 
 					if _Info[self].Module then
 						for _, mdl in pairs(_Info[self].Module) do
@@ -236,7 +230,7 @@ interface "IFModule"
 				-- Enabling
 				local function enabling(self)
 					if not _Info[self].Disabled then
-						Object.Fire(self, "OnEnable")
+						Object.Raise(self, "OnEnable")
 
 						if _Info[self].Module then
 							for _, mdl in pairs(_Info[self].Module) do
@@ -348,9 +342,9 @@ interface "IFModule"
 						for mdl, func in pairs(_store) do
 							if mdl ~= 0 and not _Info[mdl].Disabled then
 								if func == true then
-									Object.Fire(mdl, "OnHook", targetFunc, ...)
+									Object.Raise(mdl, "OnHook", targetFunc, ...)
 								else
-									Object.Fire(mdl, "OnHook", func, ...)
+									Object.Raise(mdl, "OnHook", func, ...)
 								end
 							end
 						end
@@ -407,9 +401,9 @@ interface "IFModule"
 							for mdl, func in pairs(_store) do
 								if mdl ~= 0 and not _Info[mdl].Disabled then
 									if func == true then
-										Object.Fire(mdl, "OnHook", targetFunc, ...)
+										Object.Raise(mdl, "OnHook", targetFunc, ...)
 									else
-										Object.Fire(mdl, "OnHook", func, ...)
+										Object.Raise(mdl, "OnHook", func, ...)
 									end
 								end
 							end
@@ -487,7 +481,7 @@ interface "IFModule"
 				_SlashFuncs[name] = _SlashFuncs[name] or function(msg, input)
 					local mdl = IGAS:GetAddon(name)
 					if mdl then
-						return Object.Fire(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
+						return Object.Raise(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
 					end
 				end
 				return _SlashFuncs[name]
@@ -604,53 +598,63 @@ interface "IFModule"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnLoad
-		@type script
+		@type event
 		@desc Fired when the addon(module) and it's saved variables is loaded
 	]======]
-	script "OnLoad"
+	event "OnLoad"
 
 	doc [======[
 		@name OnEnable
-		@type script
+		@type event
 		@desc Fired when the addon(module) is enabled
 	]======]
-	script "OnEnable"
+	event "OnEnable"
 
 	doc [======[
 		@name OnDisable
-		@type script
+		@type event
 		@desc Fired when the addon(module) is disabled
 	]======]
-	script "OnDisable"
+	event "OnDisable"
 
 	doc [======[
 		@name OnDispose
-		@type script
+		@type event
 		@desc Fired when the addon(module) is dispoing
 	]======]
-	script "OnDispose"
+	event "OnDispose"
 
 	doc [======[
 		@name OnSlashCmd
-		@type script
+		@type event
 		@desc Fired when the addon(module) registered slash commands is called
 		@param option the first word in slash command
 		@param info remain string
 	]======]
-	script "OnSlashCmd"
+	event "OnSlashCmd"
 
 	doc [======[
 		@name OnHook
-		@type script
+		@type event
 		@desc Fired when the addon(module) hooked function is called, already has default handler, so no need to handle yourself
 		@param function the hooked function name
 		@param ... arguments from the hooked function
 	]======]
-	script "OnHook"
+	event "OnHook"
+
+	doc [======[
+		@name OnEvent
+		@type event
+		@desc Run whenever an event fires for which the addon(module) has registered
+		@format event[, ...]
+		@param event string, the event's name
+		@param ... the event's parameters
+	]======]
+	event "OnEvent"
 
 	------------------------------------------------------
 	-- Method
@@ -742,7 +746,7 @@ interface "IFModule"
 			_Info[self].Disabled = nil
 			_Info[self].DefaultState = nil
 
-			if _Logined then Object.Fire(self, "OnEnable") end
+			if _Logined then Object.Raise(self, "OnEnable") end
 
 			if not _Info[self].Module then return end
 
@@ -764,7 +768,7 @@ interface "IFModule"
 		if not _Info[self].Disabled then
 			_Info[self].Disabled = true
 
-			if _Logined then Object.Fire(self, "OnDisable") end
+			if _Logined then Object.Raise(self, "OnDisable") end
 
 			if not _Info[self].Module then return end
 
@@ -1081,7 +1085,7 @@ interface "IFModule"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnEvent(self, event, ...)
 		if type(self[event]) == "function" then
@@ -1104,7 +1108,7 @@ interface "IFModule"
 		local info = _Info[self]
 		local chk, ret
 
-		Object.Fire(self, "OnDispose")
+		Object.Raise(self, "OnDispose")
 
 		if self.UnregisterAllEvents then
 			self:UnregisterAllEvents()
@@ -1173,11 +1177,6 @@ class "Addon"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		-- Object has same name method, so need override
-		RegisterEvent = IFModule.RegisterEvent
-		IsEventRegistered = IFModule.IsEventRegistered
-		UnregisterAllEvents = IFModule.UnregisterAllEvents
-		UnregisterEvent = IFModule.UnregisterEvent
 
 		------------------------------------------------------
 		-- Property
@@ -1320,17 +1319,12 @@ class "Addon"
 	endclass "Module"
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	RegisterEvent = IFModule.RegisterEvent
-	IsEventRegistered = IFModule.IsEventRegistered
-	UnregisterAllEvents = IFModule.UnregisterAllEvents
-	UnregisterEvent = IFModule.UnregisterEvent
-
 	doc [======[
 		@name AddSavedVariable
 		@type method

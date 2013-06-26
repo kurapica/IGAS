@@ -1024,7 +1024,7 @@ class "MultiLineTextBox"
 		self.__OperationStartOnLine = nil
 		self.__OperationEndOnLine = nil
 
-		return self:Fire("OnOperationListChanged")
+		return self:Raise("OnOperationListChanged")
 	end
 
 	local function NewOperation(self, oper)
@@ -1376,7 +1376,7 @@ class "MultiLineTextBox"
 			end
 		end
 
-		self:Fire("OnDeleteFinished")
+		self:Raise("OnDeleteFinished")
 	end
 
 	local function Thread_BACKSPACE(self)
@@ -1643,161 +1643,161 @@ class "MultiLineTextBox"
 
 		ApplyAutoComplete(self)
 
-		self:Fire("OnBackspaceFinished")
+		self:Raise("OnBackspaceFinished")
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnTextChanged
-		@type script
+		@type event
 		@desc Run when the edit box's text is changed
 		@param isUserInput boolean
 	]======]
-	script "OnTextChanged"
+	event "OnTextChanged"
 
 	doc [======[
 		@name OnCursorChanged
-		@type script
+		@type event
 		@desc Run when the position of the text insertion cursor in the edit box changes
 		@param x number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
 		@param y number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)
 		@param width number, width of the cursor graphic (in pixels)
 		@param height number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
 	]======]
-	script "OnCursorChanged"
+	event "OnCursorChanged"
 
 	doc [======[
 		@name OnEditFocusGained
-		@type script
+		@type event
 		@desc Run when the edit box becomes focused for keyboard input
 	]======]
-	script "OnEditFocusGained"
+	event "OnEditFocusGained"
 
 	doc [======[
 		@name OnEditFocusLost
-		@type script
+		@type event
 		@desc Run when the edit box loses keyboard input focus
 	]======]
-	script "OnEditFocusLost"
+	event "OnEditFocusLost"
 
 	doc [======[
 		@name OnEnterPressed
-		@type script
+		@type event
 		@desc Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnEnterPressed"
+	event "OnEnterPressed"
 
 	doc [======[
 		@name OnEscapePressed
-		@type script
+		@type event
 		@desc Run when the Escape key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnEscapePressed"
+	event "OnEscapePressed"
 
 	doc [======[
 		@name OnInputLanguageChanged
-		@type script
+		@type event
 		@desc Run when the edit box's language input mode changes
 		@param language string, name of the new input language
 	]======]
-	script "OnInputLanguageChanged"
+	event "OnInputLanguageChanged"
 
 	doc [======[
 		@name OnSpacePressed
-		@type script
+		@type event
 		@desc Run when the space bar is pressed while the edit box has keyboard focus
 	]======]
-	script "OnSpacePressed"
+	event "OnSpacePressed"
 
 	doc [======[
 		@name OnTabPressed
-		@type script
+		@type event
 		@desc Run when the Tab key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnTabPressed"
+	event "OnTabPressed"
 
 	doc [======[
 		@name OnTextSet
-		@type script
+		@type event
 		@desc Run when the edit box's text is set programmatically
 	]======]
-	script "OnTextSet"
+	event "OnTextSet"
 
 	doc [======[
 		@name OnChar
-		@type script
+		@type event
 		@desc Run for each text character typed in the frame
 		@param char string, the text character typed
 	]======]
-	script "OnChar"
+	event "OnChar"
 
 	doc [======[
 		@name OnCharComposition
-		@type script
+		@type event
 		@desc Run when the edit box's input composition mode changes
 		@param text string, The text entered
 	]======]
-	script "OnCharComposition"
+	event "OnCharComposition"
 
 	doc [======[
 		@name OnFunctionKey
-		@type script
+		@type event
 		@desc Run when the edit box's FunctionKey is pressed
 		@param key string, the function key (like 'F5')
 	]======]
-	script "OnFunctionKey"
+	event "OnFunctionKey"
 
 	doc [======[
 		@name OnControlKey
-		@type script
+		@type event
 		@desc Run when the edit box's control key is pressed
 		@param text string, The text entered
 	]======]
-	script "OnControlKey"
+	event "OnControlKey"
 
 	doc [======[
 		@name OnOperationListChanged
-		@type script
+		@type event
 		@desc Run when the edit box's operation list is changed
 		@param startp number, the start position
 		@param endp number, the end position
 	]======]
-	script "OnOperationListChanged"
+	event "OnOperationListChanged"
 
 	doc [======[
 		@name OnDeleteFinished
-		@type script
+		@type event
 		@desc Run when the delete key is up
 	]======]
-	script "OnDeleteFinished"
+	event "OnDeleteFinished"
 
 	doc [======[
 		@name OnBackspaceFinished
-		@type script
+		@type event
 		@desc Run when the backspace key is up
 	]======]
-	script "OnBackspaceFinished"
+	event "OnBackspaceFinished"
 
 	doc [======[
 		@name OnPasting
-		@type script
+		@type event
 		@desc Run when pasting finished
 		@param startp number, the start position
 		@param endp number, the end position
 	]======]
-	script "OnPasting"
+	event "OnPasting"
 
 	doc [======[
 		@name OnCut
-		@type script
+		@type event
 		@desc Run when cut finished
 		@param startp number, the start position
 		@param endp number, the end position
 		@param cutText string, the cut text
 	]======]
-	script "OnCut"
+	event "OnCut"
 
 	------------------------------------------------------
 	-- Method
@@ -2514,7 +2514,7 @@ class "MultiLineTextBox"
 
 			self.__OperationIndex = self.__OperationIndex - 1
 
-			return self:Fire("OnOperationListChanged", startp, endp)
+			return self:Raise("OnOperationListChanged", startp, endp)
 		end
 	end
 
@@ -2551,7 +2551,7 @@ class "MultiLineTextBox"
 
 			self.__OperationIndex = self.__OperationIndex + 1
 
-			return self:Fire("OnOperationListChanged", startp, endp)
+			return self:Raise("OnOperationListChanged", startp, endp)
 		end
 	end
 
@@ -3133,7 +3133,7 @@ class "MultiLineTextBox"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function Frame_OnMouseUp(self)
 		if not self.__Text:HasFocus() then
@@ -3258,7 +3258,7 @@ class "MultiLineTextBox"
 			local startp, endp = self.__HighlightTextStart, cursorPos
 			self:HighlightText(cursorPos, cursorPos)
 
-			return self:Fire("OnPasting", startp, endp)
+			return self:Raise("OnPasting", startp, endp)
 		elseif self.__DBLCLKSELTEXT then
 			local str = self.__Text.Text
 			local startp, endp = GetWord(str, cursorPos)
@@ -3320,11 +3320,11 @@ class "MultiLineTextBox"
 		end
 
 		if self.__OperationOnLine == _Operation.CUT then
-			self:Fire("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
+			self:Raise("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
 			SaveOperation(self)
 		end
 
-		return self:Fire("OnCursorChanged", x, y, w, h)
+		return self:Raise("OnCursorChanged", x, y, w, h)
     end
 
 	local function OnMouseDown(self, ...)
@@ -3350,7 +3350,7 @@ class "MultiLineTextBox"
 			end
 		end
 
-		return self:Fire("OnMouseDown", ...)
+		return self:Raise("OnMouseDown", ...)
 	end
 
 	local function OnMouseUp(self, ...)
@@ -3365,7 +3365,7 @@ class "MultiLineTextBox"
 			self.__MouseDownTime = nil
 		end
 
-		return self:Fire("OnMouseUp", ...)
+		return self:Raise("OnMouseUp", ...)
 	end
 
     local function OnEscapePressed(self, ...)
@@ -3377,13 +3377,13 @@ class "MultiLineTextBox"
 
         self:ClearFocus()
 		self = self.__Container
-		return self:Fire("OnEscapePressed", ...)
+		return self:Raise("OnEscapePressed", ...)
     end
 
     local function OnTextChanged(self, ...)
 		self = self.__Container
 
-		return self:Fire("OnTextChanged", ...)
+		return self:Raise("OnTextChanged", ...)
 	end
 
 	local function OnSizeChanged(self)
@@ -3404,7 +3404,7 @@ class "MultiLineTextBox"
 
 		IFNoCombatTaskHandler._RegisterNoCombatTask(BlockShortKey)
 
-		return self:Fire("OnEditFocusGained", ...)
+		return self:Raise("OnEditFocusGained", ...)
 	end
 
     local function OnEditFocusLost(self, ...)
@@ -3420,7 +3420,7 @@ class "MultiLineTextBox"
 			IFNoCombatTaskHandler._RegisterNoCombatTask(UnblockShortKey)
 		end
 
-		return self:Fire("OnEditFocusLost", ...)
+		return self:Raise("OnEditFocusLost", ...)
 	end
 
     local function OnEnterPressed(self, ...)
@@ -3428,17 +3428,17 @@ class "MultiLineTextBox"
 
 		self = self.__Container
 
-		return self:Fire("OnEnterPressed", ...)
+		return self:Raise("OnEnterPressed", ...)
 	end
 
     local function OnInputLanguageChanged(self, ...)
 		self = self.__Container
-		return self:Fire("OnInputLanguageChanged", ...)
+		return self:Raise("OnInputLanguageChanged", ...)
 	end
 
     local function OnSpacePressed(self, ...)
 		self = self.__Container
-		return self:Fire("OnSpacePressed", ...)
+		return self:Raise("OnSpacePressed", ...)
 	end
 
     local function OnTabPressed(self, ...)
@@ -3474,7 +3474,7 @@ class "MultiLineTextBox"
 
 				AdjustCursorPosition(self, startp + str:len() - 1)
 
-				return self:Fire("OnPasting", startp, startp + str:len() - 1)
+				return self:Raise("OnPasting", startp, startp + str:len() - 1)
 			else
 				_List.Visible = false
 				_List:Clear()
@@ -3498,7 +3498,7 @@ class "MultiLineTextBox"
 
 					AdjustCursorPosition(self, startp + str:len() - 1)
 
-					return self:Fire("OnPasting", startp, startp + str:len() - 1)
+					return self:Raise("OnPasting", startp, startp + str:len() - 1)
 				else
 					wipe(_BackAutoCache)
 				end
@@ -3587,12 +3587,12 @@ class "MultiLineTextBox"
 			end
 		end
 
-		return self:Fire("OnTabPressed", ...)
+		return self:Raise("OnTabPressed", ...)
 	end
 
     local function OnTextSet(self, ...)
 		self = self.__Container
-		return self:Fire("OnTextSet", ...)
+		return self:Raise("OnTextSet", ...)
 	end
 
 	local function OnChar(self, ...)
@@ -3697,7 +3697,7 @@ class "MultiLineTextBox"
 
 		self.__InCharComposition = nil
 
-		return self:Fire("OnChar", ...)
+		return self:Raise("OnChar", ...)
 	end
 
 	local function OnCharComposition(self, ...)
@@ -3705,7 +3705,7 @@ class "MultiLineTextBox"
 
 		self.__InCharComposition = true
 
-		return self:Fire("OnCharComposition", ...)
+		return self:Raise("OnCharComposition", ...)
 	end
 
 	function _KeyScan:OnKeyDown(key)
@@ -3953,7 +3953,7 @@ class "MultiLineTextBox"
 					return
 				end
 
-				return editor:Fire("OnFunctionKey", key)
+				return editor:Raise("OnFunctionKey", key)
 			end
 
 			-- Don't consider multi-modified keys
@@ -3988,7 +3988,7 @@ class "MultiLineTextBox"
 					_Thread.Thread = Thread_GoLine
 					return _Thread(editor)
 				elseif editor.__RegisterControl and editor.__RegisterControl[key] then
-					return editor:Fire("OnControlKey", key)
+					return editor:Raise("OnControlKey", key)
 				else
 					return
 				end
@@ -4042,7 +4042,7 @@ class "MultiLineTextBox"
 
 			AdjustCursorPosition(editor, startp + key:len() - 1)
 
-			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
+			return editor:Raise("OnPasting", startp, startp + key:len() - 1)
 		else
 			_List.Visible = false
 			_List:Clear()

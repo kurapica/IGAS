@@ -40,7 +40,7 @@ class "TabGroup"
     class "TabButton"
 		inherit "Button"
 
-        -- Scripts
+        -- Events
         local _FrameBackdrop = {
             bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
             edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -96,17 +96,17 @@ class "TabGroup"
         end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 		------------------------------------
-		--- ScriptType, Run when the TabButton is selected
+		--- EventType, Run when the TabButton is selected
 		-- @name TabButton:OnTabSelect
 		-- @class function
 		-- @usage function TabButton:OnTabSelect()<br>
 		--    -- do someting<br>
 		-- end
 		------------------------------------
-		script "OnTabSelect"
+		event "OnTabSelect"
 
 		------------------------------------------------------
 		-- Method
@@ -161,7 +161,7 @@ class "TabGroup"
 				end
 			end
 
-			self:Fire("OnTabSelect")
+			self:Raise("OnTabSelect")
 		end
 
 		------------------------------------
@@ -405,12 +405,12 @@ class "TabGroup"
 	--------------------- TabGroup  -------------------
 	------------------------------------------------------
 
-    -- Scripts
+    -- Events
     local function CloseButtOnClick(self)
 		if self.Parent.InDesignMode then
 			return
 		end
-		self.Parent:Fire("OnTabClose")
+		self.Parent:Raise("OnTabClose")
         if self.Parent.__HeaderContainer.__SelectTab then
             self.Parent.__HeaderContainer.__SelectTab:Dispose()
         end
@@ -458,7 +458,7 @@ class "TabGroup"
         local parent = self.Parent
 
         if parent.__SelectTab ~= self then
-            parent.__Root:Fire("OnTabChange", parent.__SelectTab, self)
+            parent.__Root:Raise("OnTabChange", parent.__SelectTab, self)
             parent.__SelectTab = self
         end
     end
@@ -486,10 +486,10 @@ class "TabGroup"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	------------------------------------
-	--- ScriptType, Run when the an Tab is selected
+	--- EventType, Run when the an Tab is selected
 	-- @name TabGroup:OnTabChange
 	-- @class function
 	-- @param oldTab
@@ -498,17 +498,17 @@ class "TabGroup"
 	--    -- do someting<br>
 	-- end
 	------------------------------------
-	script "OnTabChange"
+	event "OnTabChange"
 
 	------------------------------------
-	--- ScriptType, Run when an tab is closed
+	--- EventType, Run when an tab is closed
 	-- @name TabGroup:OnTabClose
 	-- @class function
 	-- @usage function TabGroup:OnTabClose()<br>
 	--    -- do someting<br>
 	-- end
 	------------------------------------
-	script "OnTabClose"
+	event "OnTabClose"
 
 	------------------------------------------------------
 	-- Method

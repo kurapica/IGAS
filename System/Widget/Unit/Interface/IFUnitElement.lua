@@ -60,14 +60,14 @@ interface "IFUnitElement"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnUnitChanged
-		@type script
+		@type event
 		@desc Fired when the object's unit is changed
 	]======]
-	script "OnUnitChanged"
+	event "OnUnitChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -161,7 +161,7 @@ interface "IFUnitElement"
 				self.__IFUnitElement_Deactivated = unit or true
 			elseif self.__IFUnitElement_Unit ~= unit then
 				self.__IFUnitElement_Unit = unit
-				self:Fire("OnUnitChanged")
+				self:Raise("OnUnitChanged")
 				self:Refresh()
 			end
 		end,

@@ -43,7 +43,7 @@ class "DropDownList"
 	function _DropDownColorPicker:OnColorPicked(red, green, blue, alpha)
 		if self._DropDownButton then
 			self._DropDownButton.ColorSwatch.NormalTexture:SetVertexColor(red, green, blue, alpha)
-			self._DropDownButton:Fire("OnColorPicked", red, green, blue, alpha)
+			self._DropDownButton:Raise("OnColorPicked", red, green, blue, alpha)
 		end
 	end
 
@@ -64,22 +64,22 @@ class "DropDownList"
 
 		itemHeight = 16
 
-        -- Scripts
+        -- Events
         --- colorBack
         local function colorsWatch_OnClick(self)
-            self.Parent:Fire("OnClick")
+            self.Parent:Raise("OnClick")
 			_DropDownColorPicker._DropDownButton = self.Parent
 			_DropDownColorPicker.Visible = true
         end
 
         local function colorsWatch_OnEnter(self)
             self:GetChild("SwatchBg"):SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-			self.Parent:Fire("OnEnter")
+			self.Parent:Raise("OnEnter")
         end
 
         local function colorsWatch_OnLeave(self)
             self:GetChild("SwatchBg"):SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-			self.Parent:Fire("OnLeave")
+			self.Parent:Raise("OnLeave")
         end
 
         local function hideDropList(self)
@@ -156,23 +156,23 @@ class "DropDownList"
 
         local function expandArrow_OnEnter(self)
             showDropDownList(self.Parent)
-			self.Parent.Parent:Fire("OnEnter")
+			self.Parent.Parent:Raise("OnEnter")
         end
 
         local function expandArrow_OnLeave(self)
-            self.Parent.Parent:Fire("OnLeave")
+            self.Parent.Parent:Raise("OnLeave")
         end
 
         -- Item
         local function item_OnEnter(self)
             showDropDownList(self)
             self:GetChild("HighLight"):Show()
-            self.Parent:Fire("OnEnter")
+            self.Parent:Raise("OnEnter")
         end
 
         local function item_OnLeave(self)
             self:GetChild("HighLight"):Hide()
-            self.Parent:Fire("OnLeave")
+            self.Parent:Raise("OnLeave")
         end
 
         local function updateWidth(self)
@@ -231,36 +231,36 @@ class "DropDownList"
 
 		local function Frame_OnEnter(self)
 			if self.__MenuBase then
-				return self.__MenuBase:Fire("OnEnter")
+				return self.__MenuBase:Raise("OnEnter")
 			end
 		end
 
 		local function Frame_OnLeave(self)
 			if self.__MenuBase then
-				return self.__MenuBase:Fire("OnLeave")
+				return self.__MenuBase:Raise("OnLeave")
 			end
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 		doc [======[
 			@name OnCheckChanged
-			@type script
+			@type event
 			@desc Run when the button's checking state is changed
 		]======]
-		script "OnCheckChanged"
+		event "OnCheckChanged"
 
 		doc [======[
 			@name OnColorPicked
-			@type script
+			@type event
 			@desc Run when the color is selected
 			@param r number, [0-1], the red part of the color
 			@param g number, [0-1], the green part of the color
 			@param b number, [0-1], the blue part of the color
 			@param a number, [0-1], the alpha part of the color
 		]======]
-		script "OnColorPicked"
+		event "OnColorPicked"
 
 		------------------------------------------------------
 		-- Method
@@ -690,7 +690,7 @@ class "DropDownList"
 		property "Checked" {
 			Set = function(self, flag)
 				self:GetChild("Check").Visible = flag
-				self:Fire("OnCheckChanged")
+				self:Raise("OnCheckChanged")
 			end,
 
 			Get = function(self)
@@ -830,7 +830,7 @@ class "DropDownList"
             text:SetHeight(16)
             self:SetFontString(text)
 
-            -- Script
+            -- Event
             self.OnEnter = self.OnEnter + item_OnEnter
             self.OnLeave = self.OnLeave + item_OnLeave
             self.OnClick = self.OnClick + OnClick
@@ -846,7 +846,6 @@ class "DropDownList"
 	--------------------- DropDownList ----------------------
 	------------------------------------------------------
 
-	-- Script
 	_FrameBackdrop = {
         bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -881,10 +880,10 @@ class "DropDownList"
 		self:GetChild("DropDownList_Timer").Interval = 0
 
         if self.__MenuBase then
-            self.__MenuBase:Fire("OnEnter")
+            self.__MenuBase:Raise("OnEnter")
         end
 
-		return self.__Mask:Fire("OnEnter")
+		return self.__Mask:Raise("OnEnter")
 	end
 
 	local function OnLeave(self)
@@ -892,10 +891,10 @@ class "DropDownList"
 			self:GetChild("DropDownList_Timer").Interval = 2
 		end
         if self.__MenuBase then
-            self.__MenuBase:Fire("OnLeave")
+            self.__MenuBase:Raise("OnLeave")
         end
 
-		return self.__Mask:Fire("OnLeave")
+		return self.__Mask:Raise("OnLeave")
 	end
 
     local function OnShow(self, ...)
@@ -918,7 +917,7 @@ class "DropDownList"
 		self:SetScale(uiScale)
 
         if self.__MenuLevel > 1 then
-            return self.__Mask:Fire("OnShow")
+            return self.__Mask:Raise("OnShow")
         end
 
 		if not self.__Mask.InDesignMode then
@@ -968,7 +967,7 @@ class "DropDownList"
             end
         end
 
-		return self.__Mask:Fire("OnShow")
+		return self.__Mask:Raise("OnShow")
     end
 
     local function OnHide(self, ...)
@@ -977,48 +976,48 @@ class "DropDownList"
 		hideDropList(self)
 
         if self.__MenuLevel > 1 then
-            return self.__Mask:Fire("OnHide")
+            return self.__Mask:Raise("OnHide")
         end
 
         if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList == self then
             _DropDownListContainer.__ShowList = nil
         end
 
-		return self.__Mask:Fire("OnHide")
+		return self.__Mask:Raise("OnHide")
     end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnShow
-		@type script
+		@type event
 		@desc Run when the Region becomes visible
 	]======]
-	script "OnShow"
+	event "OnShow"
 
 	doc [======[
 		@name OnHide
-		@type script
+		@type event
 		@desc Run when the Region's visbility changes to hidden
 	]======]
-	script "OnHide"
+	event "OnHide"
 
 	doc [======[
 		@name OnEnter
-		@type script
+		@type event
 		@desc Run when the mouse cursor enters the frame's interactive area
 		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)
 	]======]
-	script "OnEnter"
+	event "OnEnter"
 
 	doc [======[
 		@name OnLeave
-		@type script
+		@type event
 		@desc Run when the mouse cursor leaves the frame's interactive area
 		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)
 	]======]
-	script "OnLeave"
+	event "OnLeave"
 
 	------------------------------------------------------
 	-- Method

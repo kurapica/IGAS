@@ -19,24 +19,24 @@ class "Slider"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	-----------------------------------------------------
 	doc [======[
 		@name OnMinMaxChanged
-		@type script
+		@type event
 		@desc Fired when the slider's minimum and maximum values change
 		@param min new minimun value of the slider bar
 		@param max new maximum value of the slider bar
 	]======]
-	script "OnMinMaxChanged"
+	event "OnMinMaxChanged"
 
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Fired when the slider's value changes
 		@param value new value of the slider bar
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -262,7 +262,7 @@ class "Slider"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

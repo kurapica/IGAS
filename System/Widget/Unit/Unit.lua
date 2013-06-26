@@ -68,14 +68,14 @@ class "UnitList"
 	end)
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnUnitListChanged
-		@type script
+		@type event
 		@desc Fired when the unit list's elements is added or removed
 	]======]
-	script "OnUnitListChanged"
+	event "OnUnitListChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -263,7 +263,7 @@ class "UnitList"
 			end
 		end
 
-		Object.Fire(self, "OnUnitListChanged")
+		Object.Raise(self, "OnUnitListChanged")
 	end
 
 	function __call(self, unit)

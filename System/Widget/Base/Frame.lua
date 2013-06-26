@@ -12,6 +12,8 @@ end
 class "Frame"
 	inherit "Region"
 
+	local OnEvent
+
 	doc [======[
 		@name Frame
 		@type class
@@ -23,182 +25,182 @@ class "Frame"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnAttributeChanged
-		@type script
+		@type event
 		@desc Run when a frame attribute is changed
 		@param name string, name of the changed attribute, always lower case
 		@param value any, new value of the attribute
 	]======]
-	script "OnAttributeChanged"
+	event "OnAttributeChanged"
 
 	doc [======[
 		@name OnChar
-		@type script
+		@type event
 		@desc Run for each text character typed in the frame
 		@param char string, the text character typed
 	]======]
-	script "OnChar"
+	event "OnChar"
 
 	doc [======[
 		@name OnDisable
-		@type script
+		@type event
 		@desc Run when the frame is disabled
 	]======]
-	script "OnDisable"
+	event "OnDisable"
 
 	doc [======[
 		@name OnDragStart
-		@type script
+		@type event
 		@desc Run when the mouse is dragged starting in the frame
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 	]======]
-	script "OnDragStart"
+	event "OnDragStart"
 
 	doc [======[
 		@name OnDragStop
-		@type script
+		@type event
 		@desc Run when the mouse button is released after a drag started in the frame
 	]======]
-	script "OnDragStop"
+	event "OnDragStop"
 
 	doc [======[
 		@name OnEnable
-		@type script
+		@type event
 		@desc Run when the frame is enabled
 	]======]
-	script "OnEnable"
+	event "OnEnable"
 
 	doc [======[
 		@name OnEnter
-		@type script
+		@type event
 		@desc Run when the mouse cursor enters the frame's interactive area
 		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)
 	]======]
-	script "OnEnter"
+	event "OnEnter"
 
 	doc [======[
 		@name OnEvent
-		@type script
+		@type event
 		@desc Run whenever an event fires for which the frame is registered
 		@format event[, ...]
 		@param event string, the event's name
 		@param ... the event's parameters
 	]======]
-	script "OnEvent"
+	event "OnEvent"
 
 	doc [======[
 		@name OnHide
-		@type script
+		@type event
 		@desc Run when the frame's visbility changes to hidden
 	]======]
-	script "OnHide"
+	event "OnHide"
 
 	doc [======[
 		@name OnKeyDown
-		@type script
+		@type event
 		@desc Run when a keyboard key is pressed if the frame is keyboard enabled
 		@param key string, name of the key pressed
 	]======]
-	script "OnKeyDown"
+	event "OnKeyDown"
 
 	doc [======[
 		@name OnKeyUp
-		@type script
+		@type event
 		@desc Run when a keyboard key is released if the frame is keyboard enabled
 		@param key string, name of the key pressed
 	]======]
-	script "OnKeyUp"
+	event "OnKeyUp"
 
 	doc [======[
 		@name OnLeave
-		@type script
+		@type event
 		@desc Run when the mouse cursor leaves the frame's interactive area
 		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)
 	]======]
-	script "OnLeave"
+	event "OnLeave"
 
 	doc [======[
 		@name OnLoad
-		@type script
+		@type event
 		@desc Run when the frame is created, no using in IGAS coding
 	]======]
-	script "OnLoad"
+	event "OnLoad"
 
 	doc [======[
 		@name OnMouseDown
-		@type script
+		@type event
 		@desc Run when a mouse button is pressed while the cursor is over the frame
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 	]======]
-	script "OnMouseDown"
+	event "OnMouseDown"
 
 	doc [======[
 		@name OnMouseUp
-		@type script
+		@type event
 		@desc Run when the mouse button is released following a mouse down action in the frame
 		@param button string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton
 	]======]
-	script "OnMouseUp"
+	event "OnMouseUp"
 
 	doc [======[
 		@name OnMouseWheel
-		@type script
+		@type event
 		@desc Run when the frame receives a mouse wheel scrolling action
 		@param delta number, 1 for a scroll-up action, -1 for a scroll-down action
 	]======]
-	script "OnMouseWheel"
+	event "OnMouseWheel"
 
 	doc [======[
 		@name OnReceiveDrag
-		@type script
+		@type event
 		@desc Run when the mouse button is released after dragging into the frame
 	]======]
-	script "OnReceiveDrag"
+	event "OnReceiveDrag"
 
 	doc [======[
 		@name OnShow
-		@type script
+		@type event
 		@desc Run when the frame becomes visible
 	]======]
-	script "OnShow"
+	event "OnShow"
 
 	doc [======[
 		@name OnSizeChanged
-		@type script
+		@type event
 		@desc Run when a frame's size changes
 		@param width number, new width of the frame
 		@param height number, new height of the frame
 	]======]
-	script "OnSizeChanged"
+	event "OnSizeChanged"
 
 	doc [======[
 		@name OnUpdate
-		@type script
+		@type event
 		@desc Run each time the screen is drawn by the game engine
 		@param elapsed number, number of seconds since the OnUpdate handlers were last run (likely a fraction of a second)
 	]======]
-	script "OnUpdate"
+	event "OnUpdate"
 
 	doc [======[
 		@name OnMinResizeChanged
-		@type script
+		@type event
 		@desc Run when a frame's minresize changes
 		@param width number, new width of the frame
 		@param height number, new height of the frame
 	]======]
-	script "OnMinResizeChanged"
+	event "OnMinResizeChanged"
 
 	doc [======[
 		@name OnMaxResizeChanged
-		@type script
+		@type event
 		@desc Run when a frame's minresize changes
 		@param width number, new width of the frame
 		@param height number, new height of the frame
 	]======]
-	script "OnMaxResizeChanged"
+	event "OnMaxResizeChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -782,7 +784,7 @@ class "Frame"
 	]======]
 	function SetMaxResize(self, maxWidth, maxHeight)
 		self.__UI:SetMaxResize(maxWidth, maxHeight)
-		return self:Fire("OnMaxResizeChanged", maxWidth, maxHeight)
+		return self:Raise("OnMaxResizeChanged", maxWidth, maxHeight)
 	end
 
 	doc [======[
@@ -795,7 +797,7 @@ class "Frame"
 	]======]
 	function SetMinResize(self, minWidth, minHeight)
 		self.__UI:SetMinResize(minWidth, minHeight)
-		return self:Fire("OnMinResizeChanged", minWidth, minHeight)
+		return self:Raise("OnMinResizeChanged", minWidth, minHeight)
 	end
 
 	doc [======[
@@ -878,6 +880,46 @@ class "Frame"
 		@name StopMovingOrSizing
 		@type method
 		@desc Ends movement or resizing of the frame initiated with object:StartMoving() or object:StartSizing()
+		@return nil
+	]======]
+
+	doc [======[
+		@name IsEventRegistered
+		@type method
+		@desc Check if the widget object has registered the given name event
+		@param name string, the event's name
+		@return boolean true if the event is registered
+	]======]
+
+	doc [======[
+		@name RegisterEvent
+		@type method
+		@desc Register event for the object
+		@param event string, the event's name
+		@return nil
+	]======]
+	function RegisterEvent(self, event)
+		if type(event) == "string" and event ~= "" then
+			IGAS:GetUI(self):RegisterEvent(event)
+
+			self.OnEvent = self.OnEvent + OnEvent
+		else
+			error(("Usage : Frame:RegisterEvent(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
+		end
+	end
+
+	doc [======[
+		@name UnregisterAllEvents
+		@type method
+		@desc Un-register all events
+		@return nil
+	]======]
+
+	doc [======[
+		@name UnregisterEvent
+		@type method
+		@desc Un-register given name event
+		@param event string, the event's name
 		@return nil
 	]======]
 
@@ -1185,8 +1227,13 @@ class "Frame"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
+	function OnEvent(self, event, ...)
+		if type(self[event]) == "function" then
+			return self[event](self, ...)
+		end
+	end
 
 	------------------------------------------------------
 	-- Dispose

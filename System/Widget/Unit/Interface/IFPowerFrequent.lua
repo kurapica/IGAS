@@ -59,7 +59,7 @@ interface "IFPowerFrequent"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -128,7 +128,7 @@ interface "IFPowerFrequent"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFPowerFrequentUnitList[self] = self.Unit

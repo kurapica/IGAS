@@ -29,13 +29,13 @@ class "ScrollBar"
         TEMPLATE_LIGHT,
     }
 
-	-- Scripts
+	-- Events
 	local function OnEnter(self)
-		self.Parent:Fire("OnEnter")
+		self.Parent:Raise("OnEnter")
 	end
 
 	local function OnLeave(self)
-		self.Parent:Fire("OnLeave")
+		self.Parent:Raise("OnLeave")
 	end
 
     local function OnValueChanged(self, value)
@@ -115,19 +115,19 @@ class "ScrollBar"
 
 		UpdateButton(self:GetParent())
 
-        return self:GetParent():Fire("OnValueChanged", self.__Value)
+        return self:GetParent():Raise("OnValueChanged", self.__Value)
     end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Run when the ScrollBar's or status bar's value changes
 		@param value number, new value of the ScrollBar
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method

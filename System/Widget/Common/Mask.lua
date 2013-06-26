@@ -265,15 +265,15 @@ do
 
 			Sleep(0.1) -- Sleep to keep safe
 			-- Fire Script
-			-- frm:UnBlockScript("OnPositionChanged", "OnSizeChanged")
+			-- frm:UnBlockEvent("OnPositionChanged", "OnSizeChanged")
 
 			mark:ClearAllPoints()
 			mark:SetPoint("BOTTOMLEFT", frm)
 
 			if _ISMoving then
-				mark:Fire("OnMoveFinished")
+				mark:Raise("OnMoveFinished")
 			else
-				mark:Fire("OnResizeFinished")
+				mark:Raise("OnResizeFinished")
 			end
 		end
 	end
@@ -306,7 +306,7 @@ do
 									yOffset = yOffset,}
 		end
 
-		--frm:BlockScript("OnPositionChanged", "OnSizeChanged")
+		--frm:BlockEvent("OnPositionChanged", "OnSizeChanged")
 
 		self:ClearAllPoints()
 		self:SetPoint("BOTTOMLEFT", IGAS.UIParent, "BOTTOMLEFT", frm:GetLeft(), frm:GetBottom())
@@ -316,14 +316,14 @@ do
 		if ret == "" then
 			if self.AsMove then
 				_ISMoving = true
-				self:Fire("OnMoveStarted")
+				self:Raise("OnMoveStarted")
 				self:StartMoving()
 			else
 				return
 			end
 		else
 			_ISMoving = false
-			self:Fire("OnResizeStarted")
+			self:Raise("OnResizeStarted")
 			self:StartSizing(ret)
 		end
 
@@ -367,7 +367,7 @@ do
 
 			if key == "ESCAPE" then
 				self.BindKey = nil
-				return self:Fire("OnKeyClear", oldKey)
+				return self:Raise("OnKeyClear", oldKey)
 			end
 
 			-- Remap mouse key
@@ -391,7 +391,7 @@ do
 
 			self.BindKey = key
 
-			return self:Fire("OnKeySet", key, oldKey)
+			return self:Raise("OnKeySet", key, oldKey)
 		end
 	end
 
@@ -463,52 +463,52 @@ class "Mask"
 	}
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnMoveStarted
-		@type script
+		@type event
 		@desc Fired when start moving
 	]======]
-	script "OnMoveStarted"
+	event "OnMoveStarted"
 
 	doc [======[
 		@name OnMoveFinished
-		@type script
+		@type event
 		@desc Fired when finish moving
 	]======]
-	script "OnMoveFinished"
+	event "OnMoveFinished"
 
 	doc [======[
 		@name OnResizeStarted
-		@type script
+		@type event
 		@desc Fired when start resizing
 	]======]
-	script "OnResizeStarted"
+	event "OnResizeStarted"
 
 	doc [======[
 		@name OnResizeFinished
-		@type script
+		@type event
 		@desc Fired when finish resizing
 	]======]
-	script "OnResizeFinished"
+	event "OnResizeFinished"
 
 	doc [======[
 		@name OnKeySet
-		@type script
+		@type event
 		@desc Fired when binding key is Set
 		@param newkey string, the new binding key
 		@param oldkey string, the old binding key
 	]======]
-	script "OnKeySet"
+	event "OnKeySet"
 
 	doc [======[
 		@name OnKeyClear
-		@type script
+		@type event
 		@desc Fired when binding key is clear
 		@param oldkey string, the old binding key
 	]======]
-	script "OnKeyClear"
+	event "OnKeyClear"
 
 	------------------------------------------------------
 	-- Method
@@ -560,7 +560,7 @@ class "Mask"
 
 	doc [======[
 		@name AsKeyBind
-		@type script
+		@type event
 		@desc The mask is used to bind key
 	]======]
 	property "AsKeyBind" {
@@ -575,7 +575,7 @@ class "Mask"
 
 	doc [======[
 		@name BindKey
-		@type script
+		@type event
 		@desc The binding key
 	]======]
 	property "BindKey" {
@@ -590,7 +590,7 @@ class "Mask"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnShow(self)
 		if not self.Parent then

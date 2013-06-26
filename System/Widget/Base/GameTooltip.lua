@@ -23,79 +23,79 @@ class "GameTooltip"
 	SILVER_PER_GOLD = SILVER_PER_GOLD
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnTooltipAddMoney
-		@type script
+		@type event
 		@desc Run when an amount of money should be added to the tooltip
 		@param amount number, amount of money to be added to the tooltip (in copper)
 		@param maxAmount number, a second amount of money to be added to the tooltip (in copper); if non-nil, the first amount is treated as the minimum and this amount as the maximum of a price range
 	]======]
-	script "OnTooltipAddMoney"
+	event "OnTooltipAddMoney"
 
 	doc [======[
 		@name OnTooltipCleared
-		@type script
+		@type event
 		@desc Run when the tooltip is hidden or its content is cleared
 	]======]
-	script "OnTooltipCleared"
+	event "OnTooltipCleared"
 
 	doc [======[
 		@name OnTooltipSetAchievement
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about an achievement
 	]======]
-	script "OnTooltipSetAchievement"
+	event "OnTooltipSetAchievement"
 
 	doc [======[
 		@name OnTooltipSetDefaultAnchor
-		@type script
+		@type event
 		@desc Run when the tooltip is repositioned to its default anchor location
 	]======]
-	script "OnTooltipSetDefaultAnchor"
+	event "OnTooltipSetDefaultAnchor"
 
 	doc [======[
 		@name OnTooltipSetEquipmentSet
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about an equipment set
 	]======]
-	script "OnTooltipSetEquipmentSet"
+	event "OnTooltipSetEquipmentSet"
 
 	doc [======[
 		@name OnTooltipSetFrameStack
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with a list of frames under the mouse cursor
 	]======]
-	script "OnTooltipSetFrameStack"
+	event "OnTooltipSetFrameStack"
 
 	doc [======[
 		@name OnTooltipSetItem
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about an item
 	]======]
-	script "OnTooltipSetItem"
+	event "OnTooltipSetItem"
 
 	doc [======[
 		@name OnTooltipSetQuest
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about a quest
 	]======]
-	script "OnTooltipSetQuest"
+	event "OnTooltipSetQuest"
 
 	doc [======[
 		@name OnTooltipSetSpell
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about a spell
 	]======]
-	script "OnTooltipSetSpell"
+	event "OnTooltipSetSpell"
 
 	doc [======[
 		@name OnTooltipSetUnit
-		@type script
+		@type event
 		@desc Run when the tooltip is filled with information about a unit
 	]======]
-	script "OnTooltipSetUnit"
+	event "OnTooltipSetUnit"
 
 	------------------------------------------------------
 	-- Method
@@ -871,7 +871,7 @@ class "GameTooltip"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

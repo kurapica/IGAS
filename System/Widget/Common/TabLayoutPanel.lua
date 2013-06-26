@@ -235,7 +235,7 @@ class "TabLayoutPanel"
 					widget.__TabLayoutPanel_Selected = nil
 					otherWidget.__TabLayoutPanel_Selected = true
 
-					self:Fire("OnTabChange", widget, otherWidget)
+					self:Raise("OnTabChange", widget, otherWidget)
 
 					return
 				end
@@ -259,7 +259,7 @@ class "TabLayoutPanel"
 			end
 
 			widget.__TabLayoutPanel_Selected = true
-			self:Fire("OnTabChange", otherWidget, widget)
+			self:Raise("OnTabChange", otherWidget, widget)
 		end
 	end
 
@@ -268,24 +268,24 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnTabChange
-		@type script
+		@type event
 		@desc Run when the an Tab is selected
 		@param oldTab System.Widget.Region, the old tabpage
 		@param newTab System.Widget.Region, the new tabpage
 	]======]
-	script "OnTabChange"
+	event "OnTabChange"
 
 	doc [======[
 		@name OnTabClose
-		@type script
+		@type event
 		@desc Run when an tab is closed
 		@param closeTab System.Widget.Region, the closed tabpage
 	]======]
-	script "OnTabClose"
+	event "OnTabClose"
 
 	------------------------------------------------------
 	-- Method
@@ -532,7 +532,7 @@ class "TabLayoutPanel"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnClick_Close(self)
 		local pass = true
@@ -545,7 +545,7 @@ class "TabLayoutPanel"
 		end
 
 		if pass then
-			self.Parent:Fire("OnTabClose", widget)
+			self.Parent:Raise("OnTabClose", widget)
 			-- Delete
 			RemoveWidget(self.Parent, widget)
 		end

@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/22
 -- Change Log  :
 
@@ -73,7 +73,7 @@ class "PriestPowerBar"
 		}
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function AnimIn_OnPlay(self)
 			self.Parent.Parent.Orb.Alpha = 0.5
@@ -228,7 +228,7 @@ class "PriestPowerBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function ShowAnim_OnFinished(self)
 		self.Parent.Alpha = 1

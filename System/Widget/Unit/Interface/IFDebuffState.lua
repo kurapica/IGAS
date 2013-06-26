@@ -85,7 +85,7 @@ function UpdateAuraState(unit)
 
 	if changed then
 		for ele in _IFDebuffStateUnitList(unit) do
-			Object.Fire(ele, "OnStateChanged")
+			Object.Raise(ele, "OnStateChanged")
 		end
 	end
 end
@@ -104,14 +104,14 @@ interface "IFDebuffState"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnStateChanged
-		@type script
+		@type event
 		@desc Fired when the unit's debuff state is changed
 	]======]
-	script "OnStateChanged"
+	event "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -133,7 +133,7 @@ interface "IFDebuffState"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFDebuffStateUnitList[self] = self.Unit

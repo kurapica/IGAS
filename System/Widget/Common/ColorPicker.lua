@@ -72,29 +72,29 @@ class "ColorPicker"
 	local function Slider_OnValueChanged(self)
 		self.Text.Text = format("%.2f", 1 - self.Value)
 		if self.Visible and self.Enabled then
-			return self.Parent:Fire("OnColorPicked", self.Parent:GetColor())
+			return self.Parent:Raise("OnColorPicked", self.Parent:GetColor())
 		end
 	end
 
 	local function OnColorSelect(self)
 		self.ColorSwatch:SetTexture(self:GetColorRGB())
-		return self:Fire("OnColorPicked", self:GetColor())
+		return self:Raise("OnColorPicked", self:GetColor())
 	end
 
 	local function Okay_OnClick(self)
 		local parent = self.Parent
-		parent:Fire("OnColorPicked", parent:GetColor())
+		parent:Raise("OnColorPicked", parent:GetColor())
 		parent.Visible = false
 	end
 
 	local function Cancel_OnClick(self)
 		local parent = self.Parent
-		parent:Fire("OnColorPicked", parent.__DefaultValue.r, parent.__DefaultValue.g, parent.__DefaultValue.b, parent.__DefaultValue.a)
+		parent:Raise("OnColorPicked", parent.__DefaultValue.r, parent.__DefaultValue.g, parent.__DefaultValue.b, parent.__DefaultValue.a)
 		parent.Visible = false
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnColorPicked
@@ -106,7 +106,7 @@ class "ColorPicker"
 		@param a number, [0-1] the alpha parent
 		@return nil
 	]======]
-	script "OnColorPicked"
+	event "OnColorPicked"
 
 	------------------------------------------------------
 	-- Method

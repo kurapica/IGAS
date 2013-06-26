@@ -25,7 +25,7 @@ interface "IFAura"
 		@desc IFAura is used to handle the unit's aura updating
 	]======]
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -37,7 +37,7 @@ interface "IFAura"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFAuraUnitList[self] = self.Unit

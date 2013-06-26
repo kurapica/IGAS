@@ -18,7 +18,6 @@ class "CheckBox"
 		@desc CheckBox is a widget type using for boolean selection with a label
 	]======]
 
-	-- Script
     GameTooltip = IGAS.GameTooltip
 
 	_OnGameTooltip = nil
@@ -56,7 +55,7 @@ class "CheckBox"
         self:GetChild("ChkBtn").Checked = not self:GetChild("ChkBtn").Checked
 		UpdateText(self)
 
-        return self:Fire("OnValueChanged", self:GetChild("ChkBtn").Checked)
+        return self:Raise("OnValueChanged", self:GetChild("ChkBtn").Checked)
     end
 
     local function OnEnter(self)
@@ -72,7 +71,7 @@ class "CheckBox"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(self.__Tooltip)
-			self:Fire("OnGameTooltipShow", GameTooltip)
+			self:Raise("OnGameTooltipShow", GameTooltip)
 			GameTooltip:Show()
 		end
         self:GetHighlightTexture():Show()
@@ -86,23 +85,23 @@ class "CheckBox"
     end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Run when the checkbox's checking state is changed
 		@param checked boolean, true if the checkbox is checked
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	doc [======[
 		@name OnGameTooltipShow
-		@type script
+		@type event
 		@desc Run when the mouse is over an item, and the tooltip is setted
 		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
 	]======]
-	script "OnGameTooltipShow"
+	event "OnGameTooltipShow"
 
 	------------------------------------------------------
 	-- Method
@@ -267,7 +266,7 @@ class "CheckBox"
 					GameTooltip:ClearAllPoints()
 					GameTooltip:SetPoint(from, self, to, 0, 0)
 					GameTooltip:SetText(self.__Tooltip)
-					self:Fire("OnGameTooltipShow", GameTooltip)
+					self:Raise("OnGameTooltipShow", GameTooltip)
 					GameTooltip:Show()
 				end
 			end

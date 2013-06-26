@@ -19,18 +19,18 @@ class "ColorSelect"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnColorSelect
-		@type script
+		@type event
 		@desc Run when the color select frame's color selection changes
 		@param r number, red component of the selected color (0.0 - 1.0)
 		@param g number, green component of the selected color (0.0 - 1.0)
 		@param b number, blue component of the selected color (0.0 - 1.0)
 		@param a number, alpha component of the selected color (0.0 - 1.0)
 	]======]
-	script "OnColorSelect"
+	event "OnColorSelect"
 
 	------------------------------------------------------
 	-- Method
@@ -165,7 +165,7 @@ class "ColorSelect"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

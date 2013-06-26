@@ -29,12 +29,12 @@ class "Array"
 	doc [======[
 		@name Array
 		@type class
-		@desc Array object is used to control a group objects with same class, script handlers can be assign to all objects with one definition.
+		@desc Array object is used to control a group objects with same class, event handlers can be assign to all objects with one definition.
 		@param class|struct the array's element's type
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -221,12 +221,12 @@ class "Array"
 
 			if _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self].Type then
 				if Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
-					for _, sc in ipairs(Reflector.GetScripts(_ArrayInfo[self].Type)) do
+					for _, sc in ipairs(Reflector.GetEvents(_ArrayInfo[self].Type)) do
 						if _ArrayInfo[self]["_ArrayActive_" .. sc] then
 							Reflector.ActiveThread(value, sc)
 						end
 						if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
-							Reflector.BlockScript(value, sc)
+							Reflector.BlockEvent(value, sc)
 						end
 
 						if _ArrayInfo[self][sc] then
@@ -248,12 +248,12 @@ class "Array"
 
 			if _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self].Type then
 				if Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
-					for _, sc in ipairs(Reflector.GetScripts(_ArrayInfo[self].Type)) do
+					for _, sc in ipairs(Reflector.GetEvents(_ArrayInfo[self].Type)) do
 						if _ArrayInfo[self]["_ArrayActive_" .. sc] then
 							Reflector.ActiveThread(value, sc)
 						end
 						if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
-							Reflector.BlockScript(value, sc)
+							Reflector.BlockEvent(value, sc)
 						end
 
 						if _ArrayInfo[self][sc] then
@@ -302,12 +302,12 @@ class "Array"
 		local value = self[index]
 
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self].Type and Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
-			for _, sc in ipairs(Reflector.GetScripts(_ArrayInfo[self].Type)) do
+			for _, sc in ipairs(Reflector.GetEvents(_ArrayInfo[self].Type)) do
 				if _ArrayInfo[self]["_ArrayActive_" .. sc] then
 					Reflector.InactiveThread(value, sc)
 				end
 				if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
-					Reflector.UnBlockScript(value, sc)
+					Reflector.UnBlockEvent(value, sc)
 				end
 
 				if _ArrayInfo[self][sc] then
@@ -320,23 +320,23 @@ class "Array"
 	end
 
 	doc [======[
-		@name HasScript
+		@name HasEvent
 		@type method
-		@desc Check if the script type is supported by the array's element type
-		@param script the script's name
-		@return boolean true if the array's element's type has the script
+		@desc Check if the event type is supported by the array's element type
+		@param event string, the event's name
+		@return boolean true if the array's element's type has the event
 	]======]
-	function HasScript(self, key)
-		return type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasScript(_ArrayInfo[self].Type, key)
+	function HasEvent(self, key)
+		return type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasEvent(_ArrayInfo[self].Type, key)
 	end
 
 	doc [======[
 		@name ActiveThread
 		@type method
-		@desc Active the thread mode for special script
-		@format script[, ...]
-		@param script the script name
-		@param ... other script's name list
+		@desc Active the thread mode for special event
+		@format event[, ...]
+		@param event the event name
+		@param ... other event's name list
 		@return nil
 	]======]
 	function ActiveThread(self, ...)
@@ -348,7 +348,7 @@ class "Array"
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if Reflector.HasScript(cls, name) then
+					if Reflector.HasEvent(cls, name) then
 						_ArrayInfo[self]["_ArrayActive_" .. name] = true
 
 						for _, obj in ipairs(self) do
@@ -365,9 +365,9 @@ class "Array"
 	doc [======[
 		@name IsThreadActivated
 		@type method
-		@desc Check if the thread mode is actived for the script
-		@param script the script's name
-		@return boolean true if the script is in thread mode
+		@desc Check if the thread mode is actived for the event
+		@param event the event's name
+		@return boolean true if the event is in thread mode
 	]======]
 	function IsThreadActivated(self, sc)
 		return type(sc) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self]["_ArrayActive_" .. sc] or false
@@ -377,9 +377,9 @@ class "Array"
 		@name InactiveThread
 		@type method
 		@desc Turn off the thread mode for the scipts
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
 	function InactiveThread(self, ...)
@@ -391,7 +391,7 @@ class "Array"
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if Reflector.HasScript(cls, name) then
+					if Reflector.HasEvent(cls, name) then
 						_ArrayInfo[self]["_ArrayActive_" .. name] = nil
 
 						for _, obj in ipairs(self) do
@@ -406,15 +406,15 @@ class "Array"
 	end
 
 	doc [======[
-		@name BlockScript
+		@name BlockEvent
 		@type method
-		@desc Block some script for the object
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@desc Block some event for the object
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
-	function BlockScript(self, ...)
+	function BlockEvent(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
 			local name
@@ -423,12 +423,12 @@ class "Array"
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if Reflector.HasScript(cls, name) then
+					if Reflector.HasEvent(cls, name) then
 						_ArrayInfo[self]["_ArrayBlock_" .. name] = true
 
 						for _, obj in ipairs(self) do
 							if Reflector.ObjectIsClass(obj, cls) then
-								Reflector.BlockScript(obj, name)
+								Reflector.BlockEvent(obj, name)
 							end
 						end
 					end
@@ -438,26 +438,26 @@ class "Array"
 	end
 
 	doc [======[
-		@name IsScriptBlocked
+		@name IsEventBlocked
 		@type method
-		@desc Check if the script is blocked for the object
-		@param script the script's name
-		@return boolean true if th script is blocked
+		@desc Check if the event is blocked for the object
+		@param event the event's name
+		@return boolean true if th event is blocked
 	]======]
-	function IsScriptBlocked(self, sc)
+	function IsEventBlocked(self, sc)
 		return type(sc) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self]["_ArrayBlock_" .. sc] or false
 	end
 
 	doc [======[
-		@name UnBlockScript
+		@name UnBlockEvent
 		@type method
-		@desc Un-Block some scripts for the object
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@desc Un-Block some events for the object
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
-	function UnBlockScript(self, ...)
+	function UnBlockEvent(self, ...)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass then
 			local cls = _ArrayInfo[self].Type
 			local name
@@ -466,12 +466,12 @@ class "Array"
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if Reflector.HasScript(cls, name) then
+					if Reflector.HasEvent(cls, name) then
 						_ArrayInfo[self]["_ArrayBlock_" .. name] = nil
 
 						for _, obj in ipairs(self) do
 							if Reflector.ObjectIsClass(obj, cls) then
-								Reflector.UnBlockScript(obj, name)
+								Reflector.UnBlockEvent(obj, name)
 							end
 						end
 					end
@@ -617,8 +617,8 @@ class "Array"
 	-- __index for class instance
 	------------------------------------------------------
 	function __index(self, key)
-		if type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasScript(_ArrayInfo[self].Type, key) then
-			return _ArrayInfo[self]["_ArrayScript_"..key]
+		if type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasEvent(_ArrayInfo[self].Type, key) then
+			return _ArrayInfo[self]["_ArrayEvent_"..key]
 		end
 	end
 
@@ -626,9 +626,9 @@ class "Array"
 	-- __newindex for class instance
 	------------------------------------------------------
 	function __newindex(self, key, value)
-		if type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasScript(_ArrayInfo[self].Type, key) then
+		if type(key) == "string" and _ArrayInfo[self] and _ArrayInfo[self].IsClass and Reflector.HasEvent(_ArrayInfo[self].Type, key) then
 			if value == nil or type(value) == "function" then
-				_ArrayInfo[self]["_ArrayScript_"..key] = value
+				_ArrayInfo[self]["_ArrayEvent_"..key] = value
 
 				_ArrayInfo[self][key] = value and function(obj, ...)
 					for i = 1, #self do
@@ -644,7 +644,7 @@ class "Array"
 					end
 				end
 			else
-				error(("The %s is the script name of this Array's elements, it's value must be nil or a function."):format(key), 2)
+				error(("The %s is the event name of this Array's elements, it's value must be nil or a function."):format(key), 2)
 			end
 		elseif type(key) == "number" then
 			error("Use Array:Insert(index, obj) | Array:Remove(index) to modify this array.", 2)

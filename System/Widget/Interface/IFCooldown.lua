@@ -16,14 +16,14 @@ interface "IFCooldown"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnCooldownUpdate
-		@type script
+		@type event
 		@desc Fired when the object's cooldown need update
 		@param start number, the start time of the cooldown
 		@param duration number, the duration of the cooldown
 	]======]
-	script "OnCooldownUpdate"
+	event "OnCooldownUpdate"
 endinterface "IFCooldown"

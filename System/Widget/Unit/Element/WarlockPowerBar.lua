@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/22
 -- Change Log  :
 
@@ -85,7 +85,7 @@ class "WarlockPowerBar"
 		}
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function AnimIn_OnPlay(self)
 			local parent = self.Parent.Parent
@@ -280,7 +280,7 @@ class "WarlockPowerBar"
 		}
 
 		------------------------------------------------------
-		-- Script Hanlder
+		-- Event Hanlder
 		------------------------------------------------------
 		local function AnimIn_OnFinished(self)
 			self.Parent.Parent.Glow.Alpha = 0
@@ -580,7 +580,7 @@ class "WarlockPowerBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function ShowAnim_OnFinished(self)
 		self.Parent.Alpha = 1

@@ -24,7 +24,7 @@ class "UnitFrame"
 	end
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUpdate(self, elapsed)
 		self.__OnUpdateTimer = (self.__OnUpdateTimer or 0) + elapsed
@@ -42,7 +42,7 @@ class "UnitFrame"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -289,7 +289,7 @@ class "UnitFrame"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	_GameTooltip = _G.GameTooltip
 

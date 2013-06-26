@@ -33,7 +33,7 @@ do
 	_DropDownColorPicker.OkayButtonText = L"Okay"
 	_DropDownColorPicker.CancelButtonText = L"Cancel"
 	
-	-- Scripts
+	-- Show the dialog
 	local function ShowDialog(callback, red, green, blue, alpha)
 		frmColorPicker.__CallBack = callback
 		

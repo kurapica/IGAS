@@ -56,21 +56,21 @@ do
 	end
 
 	function Mask_OnMoveStarted(self)
-		self.Parent:BlockScript("OnPositionChanged", "OnSizeChanged")
+		self.Parent:BlockEvent("OnPositionChanged", "OnSizeChanged")
 	end
 
 	function Mask_OnResizeStarted(self)
-		self.Parent:BlockScript("OnPositionChanged", "OnSizeChanged")
+		self.Parent:BlockEvent("OnPositionChanged", "OnSizeChanged")
 	end
 
 	function Mask_OnMoveFinished(self)
-		self.Parent:UnBlockScript("OnPositionChanged", "OnSizeChanged")
-		self.Parent:Fire("OnPositionChanged")
+		self.Parent:UnBlockEvent("OnPositionChanged", "OnSizeChanged")
+		self.Parent:Raise("OnPositionChanged")
 	end
 
 	function Mask_OnResizeFinished(self)
-		self.Parent:UnBlockScript("OnPositionChanged", "OnSizeChanged")
-		self.Parent:Fire("OnSizeChanged")
+		self.Parent:UnBlockEvent("OnPositionChanged", "OnSizeChanged")
+		self.Parent:Raise("OnSizeChanged")
 	end
 
 	function _MaskOn(IF, group)
@@ -187,14 +187,14 @@ interface "IFMovable"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnPositionChanged
-		@type script
+		@type event
 		@desc Fired when the object is moved by cursor
 	]======]
-	script "OnPositionChanged"
+	event "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -316,14 +316,14 @@ interface "IFResizable"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnSizeChanged
-		@type script
+		@type event
 		@desc Fired when a frame's size changes
 	]======]
-	script "OnSizeChanged"
+	event "OnSizeChanged"
 
 	------------------------------------------------------
 	-- Method

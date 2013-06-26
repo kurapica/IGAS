@@ -54,14 +54,14 @@ interface "IFConnect"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnStateChanged
-		@type script
+		@type event
 		@desc Fired when the unit's connecting state is changed
 	]======]
-	script "OnStateChanged"
+	event "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -83,7 +83,7 @@ interface "IFConnect"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFConnectUnitList[self] = self.Unit

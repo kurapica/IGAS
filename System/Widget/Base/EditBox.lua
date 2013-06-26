@@ -23,91 +23,91 @@ class "EditBox"
 	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnCharComposition
-		@type script
+		@type event
 		@desc Run when the edit box's input composition mode changes
 		@param text string, The text entered
 	]======]
-	script "OnCharComposition"
+	event "OnCharComposition"
 
 	doc [======[
 		@name OnCursorChanged
-		@type script
+		@type event
 		@desc Run when the position of the text insertion cursor in the edit box changes
 		@param x number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
 		@param y number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)
 		@param width number, width of the cursor graphic (in pixels)
 		@param height number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
 	]======]
-	script "OnCursorChanged"
+	event "OnCursorChanged"
 
 	doc [======[
 		@name OnEditFocusGained
-		@type script
+		@type event
 		@desc Run when the edit box becomes focused for keyboard input
 	]======]
-	script "OnEditFocusGained"
+	event "OnEditFocusGained"
 
 	doc [======[
 		@name OnEditFocusLost
-		@type script
+		@type event
 		@desc Run when the edit box loses keyboard input focus
 	]======]
-	script "OnEditFocusLost"
+	event "OnEditFocusLost"
 
 	doc [======[
 		@name OnEnterPressed
-		@type script
+		@type event
 		@desc Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnEnterPressed"
+	event "OnEnterPressed"
 
 	doc [======[
 		@name OnEscapePressed
-		@type script
+		@type event
 		@desc Run when the Escape key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnEscapePressed"
+	event "OnEscapePressed"
 
 	doc [======[
 		@name OnInputLanguageChanged
-		@type script
+		@type event
 		@desc Run when the edit box's language input mode changes
 		@param language string, name of the new input language
 	]======]
-	script "OnInputLanguageChanged"
+	event "OnInputLanguageChanged"
 
 	doc [======[
 		@name OnSpacePressed
-		@type script
+		@type event
 		@desc Run when the space bar is pressed while the edit box has keyboard focus
 	]======]
-	script "OnSpacePressed"
+	event "OnSpacePressed"
 
 	doc [======[
 		@name OnTabPressed
-		@type script
+		@type event
 		@desc Run when the Tab key is pressed while the edit box has keyboard focus
 	]======]
-	script "OnTabPressed"
+	event "OnTabPressed"
 
 	doc [======[
 		@name OnTextChanged
-		@type script
+		@type event
 		@desc Run when the edit box's text is changed
 		@param isUserInput boolean
 	]======]
-	script "OnTextChanged"
+	event "OnTextChanged"
 
 	doc [======[
 		@name OnTextSet
-		@type script
+		@type event
 		@desc Run when the edit box's text is set programmatically
 	]======]
-	script "OnTextSet"
+	event "OnTextSet"
 
 	------------------------------------------------------
 	-- Method
@@ -679,7 +679,7 @@ class "EditBox"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

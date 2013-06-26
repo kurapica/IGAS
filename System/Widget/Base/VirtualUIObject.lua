@@ -3,7 +3,7 @@
 --				2011/03/07	Recode as class
 
 -- Check Version
-local version = 11
+local version = 12
 
 if not IGAS:NewAddon("IGAS.Widget.VirtualUIObject", version) then
 	return
@@ -22,16 +22,7 @@ class "VirtualUIObject"
 	]======]
 
 	------------------------------------------------------
-	-- Script Handler
-	------------------------------------------------------
-	local function OnEvent(self, event, ...)
-		if type(self[event]) == "function" then
-			return self[event](self, ...)
-		end
-	end
-
-	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -258,117 +249,28 @@ class "VirtualUIObject"
 	doc [======[
 		@name GetScript
 		@type method
-		@desc Return the script handler of the given name
+		@desc Return the script handler of the given name (discarded)
 		@param name string, the script's name
 		@return function the script handler if existed
 	]======]
 	function GetScript(self, name)
-		if type(name) ~= "string" then
-			error(("Usage : VirtualUIObject:GetScript(name) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-
-		return type(self.__Scripts) == "table" and rawget(self.__Scripts, name) and rawget(rawget(self.__Scripts, name), 0)
+		error(("Usage : func = object.%s"):format(tostring(name)), 2)
 	end
 
 	doc [======[
 		@name SetScript
 		@type method
-		@desc Set the script hanlder of the given name
+		@desc Set the script hanlder of the given name (discarded)
 		@param name string, the script's name
 		@param handler function, the script handler
 		@return nil
 	]======]
 	function SetScript(self, name, func)
-		if type(name) ~= "string" then
-			error(("Usage : VirtualUIObject:SetScript(name, func) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-		if func ~= nil and type(func) ~= "function" then
-			error(("Usage : VirtualUIObject:SetScript(name, func) : 'func' - function or nil expected, got %s."):format(type(func)), 2)
-		end
-
-		if not self:HasScript(name) then
-			error(("%s is not a supported script."):format(name), 2)
-		end
-
-		self[name] = func
+		error(("Usage : object.%s = func"):format(tostring(name)), 2)
 	end
 
-	doc [======[
-		@name IsEventRegistered
-		@type method
-		@desc Check if the widget object has registered the given name event
-		@param name string, the event's name
-		@return boolean true if the event is registered
-	]======]
-	function IsEventRegistered(self, event)
-		if self.InDesignMode then
-			self.__RegisterEventList = self.__RegisterEventList or {}
-			return self.__RegisterEventList[event] or false
-		end
-		if type(event) == "string" and event ~= "" then
-			return Object.IsEventRegistered(self, event)
-		else
-			error(("Usage : UIObject:IsRegistered(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
-	end
-
-	doc [======[
-		@name RegisterEvent
-		@type method
-		@desc Register event for the object
-		@param event string, the event's name
-		@return nil
-	]======]
-	function RegisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			if self.InDesignMode then
-				self.__RegisterEventList = self.__RegisterEventList or {}
-				self.__RegisterEventList[event] = true
-				return
-			end
-
-			Object.RegisterEvent(self, event)
-
-			self.OnEvent = self.OnEvent + OnEvent
-		else
-			error(("Usage : UIObject:RegisterEvent(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
-	end
-
-	doc [======[
-		@name UnregisterAllEvents
-		@type method
-		@desc Un-register all events
-		@return nil
-	]======]
-	function UnregisterAllEvents(self)
-		if self.InDesignMode then
-			self.__RegisterEventList = self.__RegisterEventList or {}
-			wipe(self.__RegisterEventList)
-			return
-		end
-		Object.UnregisterAllEvents(self)
-	end
-
-	doc [======[
-		@name UnregisterEvent
-		@type method
-		@desc Un-register given name event
-		@param event string, the event's name
-		@return nil
-	]======]
-	function UnregisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			if self.InDesignMode then
-				self.__RegisterEventList = self.__RegisterEventList or {}
-				self.__RegisterEventList[event] = nil
-				return
-			end
-
-			Object.UnregisterEvent(self, event)
-		else
-			error(("Usage : UIObject:Unregister(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
+	function HookScript(self, name, func)
+		error(("Usage : object.%s = object.%s + func"):format(tostring(name), tostring(name)), 2)
 	end
 
 	------------------------------------------------------

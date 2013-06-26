@@ -19,32 +19,32 @@ class "ScrollFrame"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnHorizontalScroll
-		@type script
+		@type event
 		@desc Run when the scroll frame's horizontal scroll position changes
 		@param offset number, new horizontal scroll position (in pixels, measured from the leftmost scroll position)
 	]======]
-	script "OnHorizontalScroll"
+	event "OnHorizontalScroll"
 
 	doc [======[
 		@name OnScrollRangeChanged
-		@type script
+		@type event
 		@desc Run when the scroll frame's scroll position is changed
 		@param xOffset number, new horizontal scroll range (in pixels, measured from the leftmost scroll position)
 		@param yOffset number, new vertical scroll range (in pixels, measured from the topmost scroll position)
 	]======]
-	script "OnScrollRangeChanged"
+	event "OnScrollRangeChanged"
 
 	doc [======[
 		@name OnVerticalScroll
-		@type script
+		@type event
 		@desc Run when the scroll frame's vertical scroll position changes
 		@param offset number, new vertical scroll position (in pixels, measured from the topmost scroll position)
 	]======]
-	script "OnVerticalScroll"
+	event "OnVerticalScroll"
 
 	------------------------------------------------------
 	-- Method
@@ -149,7 +149,7 @@ class "ScrollFrame"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

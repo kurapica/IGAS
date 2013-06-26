@@ -31,7 +31,6 @@ class "DataGrid"
 		"Advance",
 	}
 
-	-- Scripts
 	_blKey = {true, false}
 	_blItem = {"True", "False"}
 
@@ -67,7 +66,7 @@ class "DataGrid"
 	local function DropdownBtn_OnClick(self)
 		local cell = self.Parent.__Cell
 
-		cell.Parent:Fire("OnAdvance", cell.RowIndex, cell.ColumnIndex)
+		cell.Parent:Raise("OnAdvance", cell.RowIndex, cell.ColumnIndex)
 
 		-- return true to block onclick
 		return true
@@ -126,7 +125,7 @@ class "DataGrid"
 			@desc Column object using in the DataGrid
 		]======]
 
-		-- Script
+		-- Event
 		--[[
 		local function OnClick(self)
 			if not self.Parent.__CanSort then
@@ -136,7 +135,7 @@ class "DataGrid"
 			if self == self.Parent.__SortColumn then
 				self.SortReversed = not self.SortReversed
 
-				return self:Fire("OnSortChanged")
+				return self:Raise("OnSortChanged")
 			end
 
 			if self.Parent.__SortColumn then
@@ -146,7 +145,7 @@ class "DataGrid"
 			self.Parent.__SortColumn = self
 			self.SortReversed = false
 
-			return self:Fire("OnSortChanged")
+			return self:Raise("OnSortChanged")
 		end--]]
 
 		local function RefreshColumn(self, index, clear)
@@ -173,9 +172,9 @@ class "DataGrid"
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
-		--script "OnSortChanged"
+		--event "OnSortChanged"
 
 		------------------------------------------------------
 		-- Method
@@ -410,7 +409,7 @@ class "DataGrid"
 		]======]
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 
 		------------------------------------------------------
@@ -627,7 +626,7 @@ class "DataGrid"
 			@desc Cell object in the DataGrid
 		]======]
 
-		-- Script
+		-- Event
 		local function Refresh(self)
 			if self.RowIndex >= self.Parent.TopRow and self.RowIndex < self.Parent.TopRow + self.Parent.Panel.__MaxRow then
 				RefreshCell(self.Parent, self.Parent.Panel:GetChild("DisplayCell_"..(self.RowIndex - self.Parent.TopRow + 1).."_"..self.ColumnIndex), self)
@@ -635,7 +634,7 @@ class "DataGrid"
 		end
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 
 		------------------------------------------------------
@@ -708,8 +707,8 @@ class "DataGrid"
 					end
 				end
 
-				self.Parent:Fire("OnCellValueChanged", self.RowIndex, self.ColumnIndex, self.__Value)
-				self.Parent:Fire("OnCellTextChanged",  self.RowIndex, self.ColumnIndex, self.__Text)
+				self.Parent:Raise("OnCellValueChanged", self.RowIndex, self.ColumnIndex, self.__Value)
+				self.Parent:Raise("OnCellTextChanged",  self.RowIndex, self.ColumnIndex, self.__Text)
 
 				return Refresh(self)
 			end,
@@ -767,8 +766,8 @@ class "DataGrid"
 					self.__Text = text
 				end
 
-				self.Parent:Fire("OnCellValueChanged", self.RowIndex, self.ColumnIndex, self.__Value)
-				self.Parent:Fire("OnCellTextChanged",  self.RowIndex, self.ColumnIndex, self.__Text)
+				self.Parent:Raise("OnCellValueChanged", self.RowIndex, self.ColumnIndex, self.__Value)
+				self.Parent:Raise("OnCellTextChanged",  self.RowIndex, self.ColumnIndex, self.__Text)
 
 				return Refresh(self)
 			end,
@@ -898,7 +897,7 @@ class "DataGrid"
 		]======]
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 
 		------------------------------------------------------
@@ -1112,7 +1111,7 @@ class "DataGrid"
 		end
 	endclass "Cells"
 
-	-- Script
+	-- Event
 	local function Column_OnSortChanged(self)
 
 	end
@@ -1142,25 +1141,25 @@ class "DataGrid"
 
 	local function DisplayCellText_OnEnter(self)
 		if self.Parent.__Cell then
-			self.Parent.__Cell.Parent:Fire("OnCellEnter", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
+			self.Parent.__Cell.Parent:Raise("OnCellEnter", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
 		end
 	end
 
 	local function DisplayCellText_OnLeave(self)
 		if self.Parent.__Cell then
-			self.Parent.__Cell.Parent:Fire("OnCellLeave", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
+			self.Parent.__Cell.Parent:Raise("OnCellLeave", self.Parent.__Cell.RowIndex, self.Parent.__Cell.ColumnIndex)
 		end
 	end
 
 	local function DisplayCell_OnEnter(self)
 		if not self.Editable and self.__Cell then
-			self.__Cell.Parent:Fire("OnCellEnter", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
+			self.__Cell.Parent:Raise("OnCellEnter", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
 		end
 	end
 
 	local function DisplayCell_OnLeave(self)
 		if not self.Editable and self.__Cell then
-			self.__Cell.Parent:Fire("OnCellLeave", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
+			self.__Cell.Parent:Raise("OnCellLeave", self.__Cell.RowIndex, self.__Cell.ColumnIndex)
 		end
 	end
 
@@ -1278,7 +1277,7 @@ class "DataGrid"
 			scrollbar.Value = 1
 		end
 
-		scrollbar:Fire("OnValueChanged")
+		scrollbar:Raise("OnValueChanged")
 	end
 
 	local function OnSizeChanged(self)
@@ -1350,54 +1349,54 @@ class "DataGrid"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnCellValueChanged
-		@type script
+		@type event
 		@desc Fired when a cell's value is changed
 		@param row number, the cell's row index
 		@param column number, the cell's column index
 		@param value any
 	]======]
-	script "OnCellValueChanged"
+	event "OnCellValueChanged"
 
 	doc [======[
 		@name OnCellTextChanged
-		@type script
+		@type event
 		@desc Fired when a cells's text is changed
 		@param row number, the cell's row index
 		@param column number, the cell's column index
 		@param text string
 	]======]
-	script "OnCellTextChanged"
+	event "OnCellTextChanged"
 
 	doc [======[
 		@name OnAdvance
-		@type script
+		@type event
 		@desc Fired when click the cell's dropdownbutton and this cell's celltype is 'advance'
 		@param row number, the cell's row index
 		@param column number, the cell's column index
 	]======]
-	script "OnAdvance"
+	event "OnAdvance"
 
 	doc [======[
 		@name OnCellEnter
-		@type script
+		@type event
 		@desc Fired when cursor move into the cell
 		@param row number, the cell's row index
 		@param column number, the cell's column index
 	]======]
-	script "OnCellEnter"
+	event "OnCellEnter"
 
 	doc [======[
 		@name OnCellLeave
-		@type script
+		@type event
 		@desc Fired when the cursor move out the cell
 		@param row number, the cell's row index
 		@param column number, the cell's column index
 	]======]
-	script "OnCellLeave"
+	event "OnCellLeave"
 
 	------------------------------------------------------
 	-- Method
@@ -2000,7 +1999,7 @@ class "DataGrid"
 		Panel:SetPoint("BOTTOM", self, "BOTTOM")
 		Panel:SetPoint("RIGHT", scrollBar, "LEFT")
 
-		-- Event Handle
+		-- Event Handler
 		scrollBar.OnValueChanged = OnValueChanged
 		Panel.OnSizeChanged = OnSizeChanged
 		Panel.OnMouseWheel = OnMouseWheel

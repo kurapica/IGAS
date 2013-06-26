@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/06/25
 -- Change Log  :
 
@@ -21,7 +21,7 @@ class "ClassIcon"
 	CLASS_ICON_TCOORDS = CopyTable(_G.CLASS_ICON_TCOORDS)
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

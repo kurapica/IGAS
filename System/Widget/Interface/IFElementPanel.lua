@@ -72,7 +72,7 @@ interface "IFElementPanel"
 
 			for i = self.Count, index + 1, -1 do
 				ele = self:GetChild(self.ElementPrefix .. i)
-				self:Fire("OnElementRemove", ele)
+				self:Raise("OnElementRemove", ele)
 				ele:Dispose()
 
 				self.__ElementPanel_Count = i - 1
@@ -92,7 +92,7 @@ interface "IFElementPanel"
 
 				AdjustElement(ele, self)
 
-				self:Fire("OnElementAdd", ele)
+				self:Raise("OnElementAdd", ele)
 
 				self.__ElementPanel_Count = i
 			end
@@ -145,23 +145,23 @@ interface "IFElementPanel"
 	endclass "Element"
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnElementAdd
-		@type script
+		@type event
 		@desc Fired when an element is added
 		@param element System.Widget.Region, the new element that added to the panel
 	]======]
-	script "OnElementAdd"
+	event "OnElementAdd"
 
 	doc [======[
 		@name OnElementRemove
-		@type script
+		@type event
 		@desc Fired when an element is removed
 		@param element System.Widget.Region, the new element that removed from the panel
 	]======]
-	script "OnElementRemove"
+	event "OnElementRemove"
 
 	------------------------------------------------------
 	-- Method

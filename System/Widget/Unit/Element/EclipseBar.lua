@@ -30,7 +30,7 @@ class "EclipseBar"
 	ECLIPSE_BAR_TRAVEL = 38
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -140,7 +140,7 @@ class "EclipseBar"
 		Type = System.Number,
 	}
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnEnter(self)
 		self.PowerText.Visible = true
@@ -413,7 +413,7 @@ class "EclipseBar"
 		alpha.Duration = 0.6
 		alpha.Change = -1
 
-		-- Script Handler
+		-- Event Handler
 		self.OnEnter = self.OnEnter + OnEnter
 		self.OnLeave = self.OnLeave + OnLeave
 	end

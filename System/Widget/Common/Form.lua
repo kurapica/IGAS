@@ -136,7 +136,7 @@ class "Form"
 		end
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function OnEnter(self)
 			if not InCombatLockdown() then
@@ -235,7 +235,7 @@ class "Form"
 
 	local function frameOnMouseUp(self)
 		self.Parent:StopMovingOrSizing()
-		self.Parent:Fire("OnPositionChanged")
+		self.Parent:Raise("OnPositionChanged")
 	end
 
 	local function sizerseOnMouseDown(self)
@@ -249,14 +249,14 @@ class "Form"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnPositionChanged
-		@type script
+		@type event
 		@desc Run when the form is moved by cursor
 	]======]
-	script "OnPositionChanged"
+	event "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -492,7 +492,7 @@ class "Form"
 		Set = function(self, pos)
 			self:ClearAllPoints()
 			self:SetPoint("TOPLEFT", self.Parent, "BOTTOMLEFT", pos.x, pos.y)
-			self:Fire("OnPositionChanged")
+			self:Raise("OnPositionChanged")
 		end,
 		Get = function(self)
 			return Point(self:GetLeft(), self:GetTop())

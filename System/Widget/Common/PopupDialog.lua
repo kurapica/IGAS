@@ -21,7 +21,7 @@ class "PopupDialog"
 	-- Only need one table to help set button's pos.
 	_CheckBtn = {}
 
-	-- Script
+	-- Backdrop settings
 	_FrameBackdrop = {
 		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
 		edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -54,31 +54,31 @@ class "PopupDialog"
 	end
 
 	local function Okay_OnClick(self)
-		self.Parent:Fire("OnOkay")
+		self.Parent:Raise("OnOkay")
 		self.Parent:Hide()
 	end
 
 	local function No_OnClick(self)
-		self.Parent:Fire("OnNo")
+		self.Parent:Raise("OnNo")
 		self.Parent:Hide()
 	end
 
 	local function Cancel_OnClick(self)
-		self.Parent:Fire("OnCancel")
+		self.Parent:Raise("OnCancel")
 		self.Parent:Hide()
 	end
 
 	local function OnTextChanged(self)
-		self.Parent:Fire("OnTextChanged")
+		self.Parent:Raise("OnTextChanged")
 	end
 
 	local function OnEnterPressed(self)
-		self.Parent:Fire("OnOkay")
+		self.Parent:Raise("OnOkay")
 		self.Parent:Hide()
 	end
 
 	local function OnEscapePressed(self)
-		self.Parent:Fire("OnCancel")
+		self.Parent:Raise("OnCancel")
 		self.Parent:Hide()
 	end
 
@@ -104,13 +104,13 @@ class "PopupDialog"
 
 	local function OnShow(self)
 		if (UnitIsDeadOrGhost("player") and not self.ShowWhileDead ) then
-			self:Fire("OnCancel")
+			self:Raise("OnCancel")
 			self:Hide()
 			return
 		end
 
 		if (InCinematic() and not self.ShowWhileCinematic ) then
-			self:Fire("OnCancel")
+			self:Raise("OnCancel")
 			self:Hide()
 			return
 		end
@@ -171,35 +171,35 @@ class "PopupDialog"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnCancel
-		@type script
+		@type event
 		@desc Run when the popupdialog's cancel button is clicked
 	]======]
-	script "OnCancel"
+	event "OnCancel"
 
 	doc [======[
 		@name OnNo
-		@type script
+		@type event
 		@desc Run when the popupdialog's no button is clicked
 	]======]
-	script "OnNo"
+	event "OnNo"
 
 	doc [======[
 		@name OnOkay
-		@type script
+		@type event
 		@desc Run when the popupdialog's okay button is clicked
 	]======]
-	script "OnOkay"
+	event "OnOkay"
 
 	doc [======[
 		@name OnTextChanged
-		@type script
+		@type event
 		@desc Run when the popupdialog's inputbox's text is changed
 	]======]
-	script "OnTextChanged"
+	event "OnTextChanged"
 
 	------------------------------------------------------
 	-- Method

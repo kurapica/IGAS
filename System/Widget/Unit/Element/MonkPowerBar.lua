@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/22
 -- Change Log  :
 
@@ -60,7 +60,7 @@ class "MonkPowerBar"
 		}
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function Active_OnFinished(self)
 			self.Parent.Alpha = 1
@@ -164,7 +164,7 @@ class "MonkPowerBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

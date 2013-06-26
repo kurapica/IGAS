@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/22
 -- Change Log  :
 
@@ -59,7 +59,7 @@ class "ComboBar"
 		}
 
 		------------------------------------------------------
-		-- Script Handler
+		-- Event Handler
 		------------------------------------------------------
 		local function Active_OnFinished(self)
 			self.Parent.Alpha = 1
@@ -130,7 +130,7 @@ class "ComboBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

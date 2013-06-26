@@ -18,14 +18,14 @@ class "SpellActivationAlert"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnFinished
-		@type script
+		@type event
 		@desc Fired when the animation finished
 	]======]
-	script "OnFinished"
+	event "OnFinished"
 
 	------------------------------------------------------
 	-- Method
@@ -101,7 +101,7 @@ class "SpellActivationAlert"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUpdate(self, elapsed)
 		-- well, just use blz global method
@@ -113,7 +113,7 @@ class "SpellActivationAlert"
 			self.OuterGlowOver.AnimOut.Playing = false
 			self.OuterGlow.AnimOut.Playing = false
 			self.Ants.AnimOut.Playing = false
-			self:Fire("OnFinished")
+			self:Raise("OnFinished")
 		end
 	end
 
@@ -147,7 +147,7 @@ class "SpellActivationAlert"
 	end
 
 	local function AnimOut_OnFinished(self)
-		self.Parent.Parent:Fire("OnFinished")
+		self.Parent.Parent:Raise("OnFinished")
 	end
 
 	------------------------------------------------------

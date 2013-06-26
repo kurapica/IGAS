@@ -22,7 +22,6 @@ class "OptionSlider"
 
 	GameTooltip = IGAS.GameTooltip
 
-    -- Script
 	_FrameBackdrop = {
         bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
         edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
@@ -30,6 +29,7 @@ class "OptionSlider"
         insets = { left = 3, right = 3, top = 6, bottom = 6 }
     }
 
+    -- Event Handler
 	local function OnEnter(self)
 		if self.Enabled then
 			if self.__TooltipText and self.__TooltipText ~= "" then
@@ -46,32 +46,32 @@ class "OptionSlider"
 
 	local function OnValueChanged(self)
 		self.Parent:GetChild("Text").Text = strformat(self.__Format or "%.0f", self.Value)
-		return self.Parent:Fire("OnValueChanged")
+		return self.Parent:Raise("OnValueChanged")
 	end
 
 	local function OnMinMaxChanged(self)
-		return self.Parent:Fire("OnMinMaxChanged")
+		return self.Parent:Raise("OnMinMaxChanged")
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnMinMaxChanged
-		@type script
+		@type event
 		@desc Run when the option slider's minimum and maximum values change
 		@param min number, minimum value of the option slider
 		@param max number, maximum value of the option slider
 	]======]
-	script "OnMinMaxChanged"
+	event "OnMinMaxChanged"
 
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Run when the option slider's value changes
 		@param value number, value of the option slider
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method

@@ -250,7 +250,7 @@ class "CodeEditor"
 		[_Byte.VERTICAL] = -1,
 	}
 
-    -- Scripts
+    -- Help functions
 	local function ReplaceBlock(str, startp, endp, replace)
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
@@ -1942,7 +1942,7 @@ class "CodeEditor"
 	}
 
 	------------------------------------------------------
-	-- Script Handlers
+	-- Event Handlers
 	------------------------------------------------------
 	local function OnEnterPressed(self)
 		local cursorPos = self.CursorPosition
@@ -2051,7 +2051,7 @@ class "CodeEditor"
 	-- Constructor
 	------------------------------------------------------
     function CodeEditor(self, name, parent)
-		-- Script Handlers
+		-- Event Handlers
 		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed
 		--self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
 		self.OnChar = self.OnChar + OnChar

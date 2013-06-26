@@ -55,7 +55,7 @@ class "ComboBox"
 		_List.FrameStrata = "TOOLTIP"
 		_List.Visible = false
 
-		-- Scripts
+		-- Events
         function _List:OnShow()
             if _ComboBoxListContainer.__ShowList and _ComboBoxListContainer.__ShowList ~= self then
                 _ComboBoxListContainer.__ShowList.Visible = false
@@ -99,8 +99,8 @@ class "ComboBox"
 					parent:GetChild("Icon").Width = 1
 				end
 
-				parent:Fire("OnValueChanged", key)
-				parent:Fire("OnTextChanged", text)
+				parent:Raise("OnValueChanged", key)
+				parent:Raise("OnTextChanged", text)
 			end
 			self.Visible = false
 		end
@@ -122,7 +122,6 @@ class "ComboBox"
 		TEMPLATE_LIGHT,
     }
 
-	-- Script
 	_FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -211,14 +210,14 @@ class "ComboBox"
 						if _List.Visible and _List.__ComboBox == parent then
 							_List:SelectItemByIndex(i)
 						end
-	                    parent:Fire("OnValueChanged", value)
-	                    parent:Fire("OnTextChanged", text)
+	                    parent:Raise("OnValueChanged", value)
+	                    parent:Raise("OnTextChanged", text)
 	                end
 	            else
 	                parent.__Value = nil
 					parent:GetChild("Icon"):SetTexture(nil)
 					parent:GetChild("Icon").Width = 1
-	                parent:Fire("OnTextChanged", text)
+	                parent:Raise("OnTextChanged", text)
 	            end
 				return;
 			end
@@ -233,82 +232,82 @@ class "ComboBox"
 
 	local function OnEditFocusGained(self)
         self:HighlightText()
-		self.Parent:Fire("OnEditFocusGained")
+		self.Parent:Raise("OnEditFocusGained")
 	end
 
 	local function OnEditFocusLost(self)
         self:HighlightText(0, 0)
-		self.Parent:Fire("OnEditFocusLost")
+		self.Parent:Raise("OnEditFocusLost")
 	end
 
 	local function OnEnterPressed(self)
 		self:ClearFocus()
-		self.Parent:Fire("OnEnterPressed")
+		self.Parent:Raise("OnEnterPressed")
 	end
 
 	local function OnTabPressed(self)
 		self:ClearFocus()
-		self.Parent:Fire("OnTabPressed")
+		self.Parent:Raise("OnTabPressed")
 	end
 
 	local function OnEscapePressed(self)
 		self:ClearFocus()
-		self.Parent:Fire("OnEscapePressed")
+		self.Parent:Raise("OnEscapePressed")
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Run when the choosed item is changed
 		@param value any, the choosed item's value
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	doc [======[
 		@name OnTextChanged
-		@type script
+		@type event
 		@desc Run when the comboBox's text is changed
 		@param text the text displayed on the combobox
 	]======]
-	script "OnTextChanged"
+	event "OnTextChanged"
 
 	doc [======[
 		@name OnEditFocusGained
-		@type script
+		@type event
 		@desc Run when the comboBox becomes focused for keyboard input
 	]======]
-	script "OnEditFocusGained"
+	event "OnEditFocusGained"
 
 	doc [======[
 		@name OnEditFocusLost
-		@type script
+		@type event
 		@desc Run when the comboBox loses keyboard input focus
 	]======]
-	script "OnEditFocusLost"
+	event "OnEditFocusLost"
 
 	doc [======[
 		@name OnEnterPressed
-		@type script
+		@type event
 		@desc Run when the Enter (or Return) key is pressed while the comboBox has keyboard focus
 	]======]
-	script "OnEnterPressed"
+	event "OnEnterPressed"
 
 	doc [======[
 		@name OnEscapePressed
-		@type script
+		@type event
 		@desc Run when the Escape key is pressed while the comboBox has keyboard focus
 	]======]
-	script "OnEscapePressed"
+	event "OnEscapePressed"
 
 	doc [======[
 		@name OnTabPressed
-		@type script
+		@type event
 		@desc Run when the Tab key is pressed while the comboBox has keyboard focus
 	]======]
-	script "OnTabPressed"
+	event "OnTabPressed"
 
 	------------------------------------------------------
 	-- Method
@@ -665,8 +664,8 @@ class "ComboBox"
 					self:GetChild("Icon").Width = 1
 				end
 
-				self:Fire("OnValueChanged", value)
-				self:Fire("OnTextChanged", text)
+				self:Raise("OnValueChanged", value)
+				self:Raise("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(self.__Value)
 				end
@@ -677,8 +676,8 @@ class "ComboBox"
 			self:GetChild("Icon"):SetTexture(nil)
 			self:GetChild("Icon").Width = 1
 
-			self:Fire("OnValueChanged", nil)
-			self:Fire("OnTextChanged", "")
+			self:Raise("OnValueChanged", nil)
+			self:Raise("OnTextChanged", "")
 			if _List.Visible and _List.__ComboBox == self then
 				_List:SelectItemByValue(nil)
 			end
@@ -723,8 +722,8 @@ class "ComboBox"
 					self:GetChild("Icon").Width = 1
 				end
 
-				self:Fire("OnValueChanged", value)
-				self:Fire("OnTextChanged", text)
+				self:Raise("OnValueChanged", value)
+				self:Raise("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(self.__Value)
 				end
@@ -735,9 +734,9 @@ class "ComboBox"
 
 				if self.__Value ~= nil then
 					self.__Value = nil
-					self:Fire("OnValueChanged", nil)
+					self:Raise("OnValueChanged", nil)
 				end
-				self:Fire("OnTextChanged", text)
+				self:Raise("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(nil)
 				end
@@ -1143,7 +1142,7 @@ class "ComboBox"
 		edit.MouseEnabled = false
         edit.AutoFocus = false
 
-        -- Event Handle
+        -- Event Handler
         btnDropdown.OnClick = OnClick
 
         edit.OnTabPressed = OnTabPressed

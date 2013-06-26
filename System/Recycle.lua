@@ -29,31 +29,31 @@ class "Recycle"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnPush
-		@type script
+		@type event
 		@desc Fired when an no-used object is put in
 		@param object no-used object
 	]======]
-	script "OnPush"
+	event "OnPush"
 
 	doc [======[
 		@name OnPop
-		@type script
+		@type event
 		@desc Fired when an un-used object is send out
 		@param object send-out object
 	]======]
-	script "OnPop"
+	event "OnPop"
 
 	doc [======[
 		@name OnInit
-		@type script
+		@type event
 		@desc Fired when a new object is created
 		@param object the new object
 	]======]
-	script "OnInit"
+	event "OnInit"
 
 	_Args = {}
 	local function parseArgs(self)
@@ -92,7 +92,7 @@ class "Recycle"
 			-- Won't check obj because using cache means want quick-using.
 			tinsert(self, obj)
 			if _RecycleInfo[self] then
-				return self:Fire("OnPush", obj)
+				return self:Raise("OnPush", obj)
 			end
 		end
 	end
@@ -107,7 +107,7 @@ class "Recycle"
 		-- give out item
 		if #self > 0 then
 			if _RecycleInfo[self] then
-				self:Fire("OnPop", self[#self])
+				self:Raise("OnPop", self[#self])
 			end
 			return tremove(self, #self)
 		end
@@ -118,9 +118,9 @@ class "Recycle"
 		else
 			local obj = _RecycleInfo[self].Type(parseArgs(self))
 
-			self:Fire("OnInit", obj)
+			self:Raise("OnInit", obj)
 
-			self:Fire("OnPop", obj)
+			self:Raise("OnPop", obj)
 
 			return obj
 		end

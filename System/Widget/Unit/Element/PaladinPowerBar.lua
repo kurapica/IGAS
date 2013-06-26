@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/22
 -- Change Log  :
 
@@ -40,7 +40,7 @@ class "PaladinPowerBar"
 	end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -111,7 +111,7 @@ class "PaladinPowerBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function ShowAnim_OnFinished(self)
 		self.Parent.Alpha = 1

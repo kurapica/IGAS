@@ -19,24 +19,24 @@ class "StatusBar"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	-----------------------------------------------------
 	doc [======[
 		@name OnMinMaxChanged
-		@type script
+		@type event
 		@desc Fired when the status bar's minimum and maximum values change
 		@param min new minimun value of the status bar
 		@param max new maximum value of the status bar
 	]======]
-	script "OnMinMaxChanged"
+	event "OnMinMaxChanged"
 
 	doc [======[
 		@name OnValueChanged
-		@type script
+		@type event
 		@desc Fired when the status bar's value changes
 		@param value new value of the status bar
 	]======]
-	script "OnValueChanged"
+	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -273,7 +273,7 @@ class "StatusBar"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

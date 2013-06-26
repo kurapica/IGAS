@@ -29,7 +29,7 @@ class "SingleTextBox"
 		TEMPLATE_LIGHT,
     }
 
-    -- Scripts
+    -- Events
     local _FrameBackdropLight = {
         bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -50,7 +50,7 @@ class "SingleTextBox"
     end
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

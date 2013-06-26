@@ -23,7 +23,7 @@ class "Timer"
 	WorldFrame = IGAS.WorldFrame
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
     _Timer = _Timer or CreateFrame("Frame", nil, WorldFrame)
 
@@ -51,7 +51,7 @@ class "Timer"
 		-- Consider people will disable timer when a onTimer event triggered, and enable it when all is done, so, I don't use one container to control the enabled timers, another for disabled timers.
 		for timer, delay in pairs(_Container) do
 			if delay > 0 and delay < soon then
-				timer:Fire("OnTimer")
+				timer:Raise("OnTimer")
 
 				-- set next time
 				if timer.__Interval then
@@ -77,14 +77,14 @@ class "Timer"
 	end)
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnTimer
-		@type script
+		@type event
 		@desc Run when the timer is at the right time
 	]======]
-	script "OnTimer"
+	event "OnTimer"
 
 	------------------------------------------------------
 	-- Property

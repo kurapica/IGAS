@@ -49,7 +49,7 @@ class "ScrollForm"
 
 
 		------------------------------------------------------
-		-- Script
+		-- Event
 		------------------------------------------------------
 
 		------------------------------------------------------
@@ -74,7 +74,7 @@ class "ScrollForm"
 		------------------------------------------------------
 	endclass "Container"
 
-    -- Scripts
+	-- Back drop setting
     _FrameBackdrop = {
         bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
         edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -83,7 +83,7 @@ class "ScrollForm"
     }
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -196,7 +196,7 @@ class "ScrollForm"
 	}
 
 	------------------------------------------------------
-	-- Script handler
+	-- Event handler
 	------------------------------------------------------
 	local function OnScrollRangeChanged(self, xrange, yrange)
 		if ( not yrange ) then

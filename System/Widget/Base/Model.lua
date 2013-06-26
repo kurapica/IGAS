@@ -19,21 +19,21 @@ class "Model"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnAnimFinished
-		@type script
+		@type event
 		@desc Run when the model's animation finishes
 	]======]
-	script "OnAnimFinished"
+	event "OnAnimFinished"
 
 	doc [======[
 		@name OnUpdateModel
-		@type script
+		@type event
 		@desc Run when a model changes or animates
 	]======]
-	script "OnUpdateModel"
+	event "OnUpdateModel"
 
 	------------------------------------------------------
 	-- Method
@@ -363,7 +363,7 @@ class "Model"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

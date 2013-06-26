@@ -5,12 +5,14 @@
 --               2011/04/24	LocaleString added
 --               2011/05/11 ActiveThread method added to Object
 --               2011/10/30 ConvertClass method added to Object
---               2011/10/30 HasScript method added to Object
+--               2011/10/30 HasEvent method added to Object
 --               2011/10/31 InactiveThread method added to Object
 --               2012/06/12 IsInterface method added to Object
 --               2012/07/18 ThreadCall method added to Object
 --               2012/07/18 PositiveNumber added to System
 --               2013/04/26 Remove assert to reduce cost
+--               2013/06/27 Remove the custom event system
+--               2013/06/27 Object's method Fire renamed to Raise
 
 ------------------------------------------------------------------------
 -- The base struct types is defined here
@@ -29,7 +31,7 @@
 --
 --	Object
 ------------------------------------------------------------------------
-local version = 15
+local version = 16
 
 ------------------------------------------------------
 -- Version Check & Environment
@@ -66,7 +68,7 @@ do
 
 	setfenv(1, _Meta._System_ENV)
 
-	-- Scripts
+	-- Common Functions
 	strtrim = strtrim or function(s)
 	  return (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -235,32 +237,24 @@ class "Object"
 	local status = coroutine.status
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnEvent
-		@type interface
-		@desc Fired when registered event is happened.
-		@param event the trigger event name
-		@param ... the event's arguments
-	]======]
-	script "OnEvent"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
-		@name HasScript
+		@name HasEvent
 		@type method
-		@desc Check if the script type is supported by the object
-		@param name the script's name
-		@return boolean true if the object has that script type
+		@desc Check if the event type is supported by the object
+		@param name the event's name
+		@return boolean true if the object has that event type
 	]======]
-	function HasScript(self, name)
+	function HasEvent(self, name)
 		if type(name) ~= "string" then
-			error(("Usage : object:HasScript(name) : 'name' - string expected, got %s."):format(type(name)), 2)
+			error(("Usage : object:HasEvent(name) : 'name' - string expected, got %s."):format(type(name)), 2)
 		end
-		return Reflector.HasScript(Reflector.GetObjectClass(self), name) or false
+		return Reflector.HasEvent(Reflector.GetObjectClass(self), name) or false
 	end
 
 	doc [======[
@@ -295,107 +289,21 @@ class "Object"
 		return Reflector.ObjectIsInterface(self, IF)
 	end
 
-	------------------------------------------------------
-	-- Event System
-	------------------------------------------------------
-	_EventDistrbt = _EventDistrbt or {}
-	_EventSource = _EventSource or {}
-
-	-- Weak Table
-	_MetaWeak = _MetaWeak or {__mode = "k"}
-
 	doc [======[
-		@name RegisterEvent
+		@name Raise
 		@type method
-		@desc Register an event
-		@param event the event's name
-		@return nil
-	]======]
-	function RegisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			_EventDistrbt[event] = _EventDistrbt[event] or setmetatable({}, _MetaWeak)
-
-			_EventDistrbt[event][self] = true
-		else
-			error(("Usage Object: Object:RegisterEvent(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
-	end
-
-	doc [======[
-		@name IsEventRegistered
-		@type method
-		@desc Check if the object has registered the event
-		@param event the event's name
-		@return boolean true if the object has registered the event
-	]======]
-	function IsEventRegistered(self, event)
-		return _EventDistrbt[event] and _EventDistrbt[event][self] or false
-	end
-
-	doc [======[
-		@name UnregisterAllEvents
-		@type method
-		@desc Remove all registered events
-	]======]
-	function UnregisterAllEvents(self)
-		for _, s in pairs(_EventDistrbt) do
-			s[self] = nil
-		end
-	end
-
-	doc [======[
-		@name UnregisterEvent
-		@type method
-		@desc Un-register a event for the object
-		@param event the event's name
-		@return nil
-	]======]
-	function UnregisterEvent(self, event)
-		if _EventDistrbt[event] then
-			_EventDistrbt[event][self] = nil
-		end
-	end
-
-	doc [======[
-		@name FireEvent
-		@type method
-		@desc Fire an event and with it's arguments
-		@param event the event's name
+		@desc Raise an object's event, to trigger the object's event handlers
+		@param event the event name
 		@param ... the event's arguments
 		@return nil
 	]======]
-	function FireEvent(self, event, ...)
-		if not _EventDistrbt[event] or _EventSource[event] then
-			-- On time one event can only have one source,
-			return
-		end
-
-		-- Set the event's source
-		_EventSource[event] = self
-
-		for obj in pairs(_EventDistrbt[event]) do
-			obj:Fire("OnEvent", event, ...)
-		end
-
-		-- Finish, clear the event's source
-		_EventSource[event] = nil
-	end
-
-	doc [======[
-		@name Fire
-		@type method
-		@desc Fire an object's script, to trigger the object's script handlers
-		@param script the script name
-		@param ... the scipt's arguments
-		@return nil
-	]======]
-	function Fire(self, sc, ...)
+	function Raise(self, sc, ...)
 		if type(sc) ~= "string" then
-			error(("Usage : Object:Fire(script [, args, ...]) : 'script' - string exepected, got %s."):format(type(sc)), 2)
+			error(("Usage : Object:Raise(event [, args, ...]) : 'event' - string exepected, got %s."):format(type(sc)), 2)
 		end
 
-		if rawget(self, "__Scripts") and rawget(self.__Scripts, sc) then
-			return rawget(self.__Scripts, sc)(self, ...)
+		if rawget(self, "__Events") and rawget(self.__Events, sc) then
+			return rawget(self.__Events, sc)(self, ...)
 		elseif rawget(self, sc) and type(rawget(self, sc)) == "function" then
 			return rawget(self, sc)(self, ...)
 		end
@@ -404,10 +312,10 @@ class "Object"
 	doc [======[
 		@name ActiveThread
 		@type method
-		@desc Active the thread mode for special script
-		@format script[, ...]
-		@param script the script name
-		@param ... other script's name list
+		@desc Active the thread mode for special events
+		@format event[, ...]
+		@param event the event name
+		@param ... other event's name list
 		@return nil
 	]======]
 	function ActiveThread(self, ...)
@@ -417,9 +325,9 @@ class "Object"
 	doc [======[
 		@name IsThreadActivated
 		@type method
-		@desc Check if the thread mode is actived for the script
-		@param script the script's name
-		@return boolean true if the script is in thread mode
+		@desc Check if the thread mode is actived for the event
+		@param event the event's name
+		@return boolean true if the event is in thread mode
 	]======]
 	function IsThreadActivated(self, sc)
 		return Reflector.IsThreadActivated(self, sc)
@@ -428,10 +336,10 @@ class "Object"
 	doc [======[
 		@name InactiveThread
 		@type method
-		@desc Turn off the thread mode for the scipts
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@desc Turn off the thread mode for the events
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
 	function InactiveThread(self, ...)
@@ -439,40 +347,40 @@ class "Object"
 	end
 
 	doc [======[
-		@name BlockScript
+		@name BlockEvent
 		@type method
-		@desc Block some script for the object
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@desc Block some events for the object
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
-	function BlockScript(self, ...)
-		return Reflector.BlockScript(self, ...)
+	function BlockEvent(self, ...)
+		return Reflector.BlockEvent(self, ...)
 	end
 
 	doc [======[
-		@name IsScriptBlocked
+		@name IsEventBlocked
 		@type method
-		@desc Check if the script is blocked for the object
-		@param script the script's name
-		@return boolean true if th script is blocked
+		@desc Check if the event is blocked for the object
+		@param event the event's name
+		@return boolean true if th event is blocked
 	]======]
-	function IsScriptBlocked(self, sc)
-		return Reflector.IsScriptBlocked(self, sc)
+	function IsEventBlocked(self, sc)
+		return Reflector.IsEventBlocked(self, sc)
 	end
 
 	doc [======[
-		@name UnBlockScript
+		@name UnBlockEvent
 		@type method
-		@desc Un-Block some scripts for the object
-		@format script[, ...]
-		@param script the script's name
-		@param ... other script's name list
+		@desc Un-Block some events for the object
+		@format event[, ...]
+		@param event the event's name
+		@param ... other event's name list
 		@return nil
 	]======]
-	function UnBlockScript(self, ...)
-		return Reflector.UnBlockScript(self, ...)
+	function UnBlockEvent(self, ...)
+		return Reflector.UnBlockEvent(self, ...)
 	end
 
 	doc [======[
@@ -497,7 +405,4 @@ class "Object"
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
-	function Dispose(self)
-		UnregisterAllEvents(self)
-	end
 endclass "Object"

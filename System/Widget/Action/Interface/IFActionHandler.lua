@@ -61,7 +61,7 @@ do
 	end
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	function OnLoad(self)
 		-- DB
@@ -1364,7 +1364,7 @@ do
 	end
 
 	function UpdateCooldown(self)
-		self:Fire("OnCooldownUpdate", _GetActionCooldown(self))
+		self:Raise("OnCooldownUpdate", _GetActionCooldown(self))
 	end
 
 	function UpdateFlash (self)
@@ -1979,7 +1979,7 @@ interface "IFActionHandler"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

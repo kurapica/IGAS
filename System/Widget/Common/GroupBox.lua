@@ -30,7 +30,6 @@ class "GroupBox"
 		TEMPLATE_INLINE
 	}
 
-    -- Script
     _FrameBackdrop = {
         bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
         edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
@@ -39,7 +38,7 @@ class "GroupBox"
     }
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------

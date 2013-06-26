@@ -21,7 +21,7 @@ interface "IFCooldownStatus"
 	_MinMax = MinMax(0, 100)
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -80,7 +80,7 @@ interface "IFCooldownStatus"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnCooldownUpdate(self, start, duration)
 		local status = self:GetChild("CooldownStatus")

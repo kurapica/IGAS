@@ -21,28 +21,28 @@ class "Region"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 	doc [======[
 		@name OnShow
-		@type script
+		@type event
 		@desc Run when the Region becomes visible
 	]======]
-	script "OnShow"
+	event "OnShow"
 
 	doc [======[
 		@name OnHide
-		@type script
+		@type event
 		@desc Run when the Region's visbility changes to hidden
 	]======]
-	script "OnHide"
+	event "OnHide"
 
 	doc [======[
 		@name OnVisibleChanged
-		@type script
+		@type event
 		@desc Run when the Region's visible state is changed
 	]======]
-	script "OnVisibleChanged"
+	event "OnVisibleChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -67,10 +67,10 @@ class "Region"
 
 		if flag then
 			if self:IsClass(LayeredRegion) then
-				self:Fire("OnHide")
+				self:Raise("OnHide")
 			end
 
-			self:Fire("OnVisibleChanged")
+			self:Raise("OnVisibleChanged")
 		end
 
 		return self.__ShowDialogThread and self.__ShowDialogThread()
@@ -111,10 +111,10 @@ class "Region"
 
 		if not flag then
 			if self:IsClass(LayeredRegion) then
-				self:Fire("OnShow")
+				self:Raise("OnShow")
 			end
 
-			self:Fire("OnVisibleChanged")
+			self:Raise("OnVisibleChanged")
 		end
 	end
 
@@ -132,10 +132,10 @@ class "Region"
 
 		if not flag then
 			if self:IsClass(LayeredRegion) then
-				self:Fire("OnShow")
+				self:Raise("OnShow")
 			end
 
-			self:Fire("OnVisibleChanged")
+			self:Raise("OnVisibleChanged")
 		end
 
 		return self.__ShowDialogThread:Yield()
@@ -489,7 +489,7 @@ class "Region"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 
 	------------------------------------------------------

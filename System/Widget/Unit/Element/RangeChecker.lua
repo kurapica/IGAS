@@ -1,4 +1,4 @@
-﻿-- Author      : Kurapica
+-- Author      : Kurapica
 -- Create Date : 2012/07/18
 -- Change Log  :
 
@@ -22,7 +22,7 @@ class "RangeChecker"
 	atan = math.atan
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -82,7 +82,7 @@ class "RangeChecker"
 	}
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnUpdate(self, elapsed)
 		local unit = self.Unit

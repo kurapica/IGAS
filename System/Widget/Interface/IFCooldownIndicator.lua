@@ -18,7 +18,7 @@ interface "IFCooldownIndicator"
 	]======]
 
 	------------------------------------------------------
-	-- Script
+	-- Event
 	------------------------------------------------------
 
 	------------------------------------------------------
@@ -40,7 +40,7 @@ interface "IFCooldownIndicator"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Script Handler
+	-- Event Handler
 	------------------------------------------------------
 	local function OnCooldownUpdate(self, start, duration)
 		if start and start > 0 and duration and duration > 0 then
