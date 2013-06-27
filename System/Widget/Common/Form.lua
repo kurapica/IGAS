@@ -235,7 +235,7 @@ class "Form"
 
 	local function frameOnMouseUp(self)
 		self.Parent:StopMovingOrSizing()
-		self.Parent:Raise("OnPositionChanged")
+		self.Parent:Fire("OnPositionChanged")
 	end
 
 	local function sizerseOnMouseDown(self)
@@ -492,7 +492,7 @@ class "Form"
 		Set = function(self, pos)
 			self:ClearAllPoints()
 			self:SetPoint("TOPLEFT", self.Parent, "BOTTOMLEFT", pos.x, pos.y)
-			self:Raise("OnPositionChanged")
+			self:Fire("OnPositionChanged")
 		end,
 		Get = function(self)
 			return Point(self:GetLeft(), self:GetTop())

@@ -1364,7 +1364,7 @@ do
 	end
 
 	function UpdateCooldown(self)
-		self:Raise("OnCooldownUpdate", _GetActionCooldown(self))
+		self:Fire("OnCooldownUpdate", _GetActionCooldown(self))
 	end
 
 	function UpdateFlash (self)

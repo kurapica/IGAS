@@ -100,7 +100,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --			end,
 --			Set = function(self, value)	-- the set method for property "Name"
 --				self._Name = value
---				self:OnNameChanged(value)	-- raise the "OnNameChanged" event to trigger it's handler functions.
+--				self:OnNameChanged(value)	-- fire the "OnNameChanged" event to trigger it's handler functions.
 --			end,
 --			Type = String,				-- the property "Name"'s type, so when you assign a value to Name, it should be checked.
 --		}

@@ -84,7 +84,7 @@ class "MinimapIcon"
         from, to = getAnchors(self)
 
 		if not self.__Tooltip or strtrim(self.__Tooltip) == "" then
-			self.__Mask:Raise("OnEnter", ...)
+			self.__Mask:Fire("OnEnter", ...)
 			return
 		end
 
@@ -92,15 +92,15 @@ class "MinimapIcon"
         GameTooltip:ClearAllPoints()
         GameTooltip:SetPoint(from, self, to, 0, 0)
 		GameTooltip:SetText(self.__Tooltip)
-        self.__Mask:Raise("OnGameTooltipShow", GameTooltip)
+        self.__Mask:Fire("OnGameTooltipShow", GameTooltip)
         GameTooltip:Show()
 
-		self.__Mask:Raise("OnEnter", ...)
+		self.__Mask:Fire("OnEnter", ...)
     end
 
     local function OnLeave(self, ...)
         GameTooltip:Hide()
-		self.__Mask:Raise("OnLeave", ...)
+		self.__Mask:Fire("OnLeave", ...)
     end
 
     local function OnMouseDown(self, ...)
@@ -125,7 +125,7 @@ class "MinimapIcon"
         self:GetChild("Icon"):SetTexCoord(0, 1, 0, 1)
         self.OnUpdate = OnUpdate
         GameTooltip:Hide()
-		self.__Mask:Raise("OnDragStart", ...)
+		self.__Mask:Fire("OnDragStart", ...)
     end
 
     local function OnDragStop(self, ...)
@@ -133,8 +133,8 @@ class "MinimapIcon"
         self:GetChild("Icon"):SetTexCoord(0.05, 0.95, 0.05, 0.95)
         self:UnlockHighlight()
 
-		self.__Mask:Raise("OnDragStop", ...)
-        self.__Mask:Raise("OnPositionChanged")
+		self.__Mask:Fire("OnDragStop", ...)
+        self.__Mask:Fire("OnPositionChanged")
     end
 
 	local function OnClick(self, button, down)
@@ -148,7 +148,7 @@ class "MinimapIcon"
 			return
 		end
 
-		self.__Mask:Raise("OnClick", button, down)
+		self.__Mask:Fire("OnClick", button, down)
 	end
 
 	------------------------------------------------------

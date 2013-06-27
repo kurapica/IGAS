@@ -1024,7 +1024,7 @@ class "MultiLineTextBox"
 		self.__OperationStartOnLine = nil
 		self.__OperationEndOnLine = nil
 
-		return self:Raise("OnOperationListChanged")
+		return self:Fire("OnOperationListChanged")
 	end
 
 	local function NewOperation(self, oper)
@@ -1376,7 +1376,7 @@ class "MultiLineTextBox"
 			end
 		end
 
-		self:Raise("OnDeleteFinished")
+		self:Fire("OnDeleteFinished")
 	end
 
 	local function Thread_BACKSPACE(self)
@@ -1643,7 +1643,7 @@ class "MultiLineTextBox"
 
 		ApplyAutoComplete(self)
 
-		self:Raise("OnBackspaceFinished")
+		self:Fire("OnBackspaceFinished")
 	end
 
 	------------------------------------------------------
@@ -2514,7 +2514,7 @@ class "MultiLineTextBox"
 
 			self.__OperationIndex = self.__OperationIndex - 1
 
-			return self:Raise("OnOperationListChanged", startp, endp)
+			return self:Fire("OnOperationListChanged", startp, endp)
 		end
 	end
 
@@ -2551,7 +2551,7 @@ class "MultiLineTextBox"
 
 			self.__OperationIndex = self.__OperationIndex + 1
 
-			return self:Raise("OnOperationListChanged", startp, endp)
+			return self:Fire("OnOperationListChanged", startp, endp)
 		end
 	end
 
@@ -3258,7 +3258,7 @@ class "MultiLineTextBox"
 			local startp, endp = self.__HighlightTextStart, cursorPos
 			self:HighlightText(cursorPos, cursorPos)
 
-			return self:Raise("OnPasting", startp, endp)
+			return self:Fire("OnPasting", startp, endp)
 		elseif self.__DBLCLKSELTEXT then
 			local str = self.__Text.Text
 			local startp, endp = GetWord(str, cursorPos)
@@ -3320,11 +3320,11 @@ class "MultiLineTextBox"
 		end
 
 		if self.__OperationOnLine == _Operation.CUT then
-			self:Raise("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
+			self:Fire("OnCut", self.__OperationStartOnLine, self.__OperationEndOnLine, self.__OperationBackUpOnLine:sub(self.__OperationStartOnLine, self.__OperationEndOnLine))
 			SaveOperation(self)
 		end
 
-		return self:Raise("OnCursorChanged", x, y, w, h)
+		return self:Fire("OnCursorChanged", x, y, w, h)
     end
 
 	local function OnMouseDown(self, ...)
@@ -3350,7 +3350,7 @@ class "MultiLineTextBox"
 			end
 		end
 
-		return self:Raise("OnMouseDown", ...)
+		return self:Fire("OnMouseDown", ...)
 	end
 
 	local function OnMouseUp(self, ...)
@@ -3365,7 +3365,7 @@ class "MultiLineTextBox"
 			self.__MouseDownTime = nil
 		end
 
-		return self:Raise("OnMouseUp", ...)
+		return self:Fire("OnMouseUp", ...)
 	end
 
     local function OnEscapePressed(self, ...)
@@ -3377,13 +3377,13 @@ class "MultiLineTextBox"
 
         self:ClearFocus()
 		self = self.__Container
-		return self:Raise("OnEscapePressed", ...)
+		return self:Fire("OnEscapePressed", ...)
     end
 
     local function OnTextChanged(self, ...)
 		self = self.__Container
 
-		return self:Raise("OnTextChanged", ...)
+		return self:Fire("OnTextChanged", ...)
 	end
 
 	local function OnSizeChanged(self)
@@ -3404,7 +3404,7 @@ class "MultiLineTextBox"
 
 		IFNoCombatTaskHandler._RegisterNoCombatTask(BlockShortKey)
 
-		return self:Raise("OnEditFocusGained", ...)
+		return self:Fire("OnEditFocusGained", ...)
 	end
 
     local function OnEditFocusLost(self, ...)
@@ -3420,7 +3420,7 @@ class "MultiLineTextBox"
 			IFNoCombatTaskHandler._RegisterNoCombatTask(UnblockShortKey)
 		end
 
-		return self:Raise("OnEditFocusLost", ...)
+		return self:Fire("OnEditFocusLost", ...)
 	end
 
     local function OnEnterPressed(self, ...)
@@ -3428,17 +3428,17 @@ class "MultiLineTextBox"
 
 		self = self.__Container
 
-		return self:Raise("OnEnterPressed", ...)
+		return self:Fire("OnEnterPressed", ...)
 	end
 
     local function OnInputLanguageChanged(self, ...)
 		self = self.__Container
-		return self:Raise("OnInputLanguageChanged", ...)
+		return self:Fire("OnInputLanguageChanged", ...)
 	end
 
     local function OnSpacePressed(self, ...)
 		self = self.__Container
-		return self:Raise("OnSpacePressed", ...)
+		return self:Fire("OnSpacePressed", ...)
 	end
 
     local function OnTabPressed(self, ...)
@@ -3474,7 +3474,7 @@ class "MultiLineTextBox"
 
 				AdjustCursorPosition(self, startp + str:len() - 1)
 
-				return self:Raise("OnPasting", startp, startp + str:len() - 1)
+				return self:Fire("OnPasting", startp, startp + str:len() - 1)
 			else
 				_List.Visible = false
 				_List:Clear()
@@ -3498,7 +3498,7 @@ class "MultiLineTextBox"
 
 					AdjustCursorPosition(self, startp + str:len() - 1)
 
-					return self:Raise("OnPasting", startp, startp + str:len() - 1)
+					return self:Fire("OnPasting", startp, startp + str:len() - 1)
 				else
 					wipe(_BackAutoCache)
 				end
@@ -3587,12 +3587,12 @@ class "MultiLineTextBox"
 			end
 		end
 
-		return self:Raise("OnTabPressed", ...)
+		return self:Fire("OnTabPressed", ...)
 	end
 
     local function OnTextSet(self, ...)
 		self = self.__Container
-		return self:Raise("OnTextSet", ...)
+		return self:Fire("OnTextSet", ...)
 	end
 
 	local function OnChar(self, ...)
@@ -3697,7 +3697,7 @@ class "MultiLineTextBox"
 
 		self.__InCharComposition = nil
 
-		return self:Raise("OnChar", ...)
+		return self:Fire("OnChar", ...)
 	end
 
 	local function OnCharComposition(self, ...)
@@ -3705,7 +3705,7 @@ class "MultiLineTextBox"
 
 		self.__InCharComposition = true
 
-		return self:Raise("OnCharComposition", ...)
+		return self:Fire("OnCharComposition", ...)
 	end
 
 	function _KeyScan:OnKeyDown(key)
@@ -3953,7 +3953,7 @@ class "MultiLineTextBox"
 					return
 				end
 
-				return editor:Raise("OnFunctionKey", key)
+				return editor:Fire("OnFunctionKey", key)
 			end
 
 			-- Don't consider multi-modified keys
@@ -3988,7 +3988,7 @@ class "MultiLineTextBox"
 					_Thread.Thread = Thread_GoLine
 					return _Thread(editor)
 				elseif editor.__RegisterControl and editor.__RegisterControl[key] then
-					return editor:Raise("OnControlKey", key)
+					return editor:Fire("OnControlKey", key)
 				else
 					return
 				end
@@ -4042,7 +4042,7 @@ class "MultiLineTextBox"
 
 			AdjustCursorPosition(editor, startp + key:len() - 1)
 
-			return editor:Raise("OnPasting", startp, startp + key:len() - 1)
+			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
 		else
 			_List.Visible = false
 			_List:Clear()

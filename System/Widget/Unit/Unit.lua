@@ -263,7 +263,7 @@ class "UnitList"
 			end
 		end
 
-		Object.Raise(self, "OnUnitListChanged")
+		Object.Fire(self, "OnUnitListChanged")
 	end
 
 	function __call(self, unit)

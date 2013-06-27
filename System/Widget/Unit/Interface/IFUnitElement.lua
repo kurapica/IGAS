@@ -161,7 +161,7 @@ interface "IFUnitElement"
 				self.__IFUnitElement_Deactivated = unit or true
 			elseif self.__IFUnitElement_Unit ~= unit then
 				self.__IFUnitElement_Unit = unit
-				self:Raise("OnUnitChanged")
+				self:Fire("OnUnitChanged")
 				self:Refresh()
 			end
 		end,

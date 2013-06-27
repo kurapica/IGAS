@@ -838,7 +838,7 @@ interface "IFSpellHandler"
 						self.__AccessWith,
 						self.__AccessHarmful)
 
-					self.__GroupHandler:Raise("OnSettingUpdate")
+					self.__GroupHandler:Fire("OnSettingUpdate")
 				end,
 				Type = System.String,
 			}
@@ -971,7 +971,7 @@ interface "IFSpellHandler"
 		]======]
 		function Clear(self, key)
 			if ClearBindingDB4Key(self.Group, key) then
-				self:Raise("OnSettingUpdate")
+				self:Fire("OnSettingUpdate")
 			end
 		end
 
@@ -997,7 +997,7 @@ interface "IFSpellHandler"
 				self:UnBlockEvent("OnSettingUpdate")
 
 				if not CompareData(_DBChar[self.Group], self.__BackUp) then
-					self:Raise("OnSettingUpdate")
+					self:Fire("OnSettingUpdate")
 				end
 
 				self.__BackUp = nil
@@ -1062,7 +1062,7 @@ interface "IFSpellHandler"
 				end
 
 				_DBChar[self.Group] = CopyData(result)
-				self:Raise("OnSettingUpdate")
+				self:Fire("OnSettingUpdate")
 			else
 				self:Clear()
 			end

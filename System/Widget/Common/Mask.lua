@@ -271,9 +271,9 @@ do
 			mark:SetPoint("BOTTOMLEFT", frm)
 
 			if _ISMoving then
-				mark:Raise("OnMoveFinished")
+				mark:Fire("OnMoveFinished")
 			else
-				mark:Raise("OnResizeFinished")
+				mark:Fire("OnResizeFinished")
 			end
 		end
 	end
@@ -316,14 +316,14 @@ do
 		if ret == "" then
 			if self.AsMove then
 				_ISMoving = true
-				self:Raise("OnMoveStarted")
+				self:Fire("OnMoveStarted")
 				self:StartMoving()
 			else
 				return
 			end
 		else
 			_ISMoving = false
-			self:Raise("OnResizeStarted")
+			self:Fire("OnResizeStarted")
 			self:StartSizing(ret)
 		end
 
@@ -367,7 +367,7 @@ do
 
 			if key == "ESCAPE" then
 				self.BindKey = nil
-				return self:Raise("OnKeyClear", oldKey)
+				return self:Fire("OnKeyClear", oldKey)
 			end
 
 			-- Remap mouse key
@@ -391,7 +391,7 @@ do
 
 			self.BindKey = key
 
-			return self:Raise("OnKeySet", key, oldKey)
+			return self:Fire("OnKeySet", key, oldKey)
 		end
 	end
 

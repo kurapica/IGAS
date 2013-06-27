@@ -99,8 +99,8 @@ class "ComboBox"
 					parent:GetChild("Icon").Width = 1
 				end
 
-				parent:Raise("OnValueChanged", key)
-				parent:Raise("OnTextChanged", text)
+				parent:Fire("OnValueChanged", key)
+				parent:Fire("OnTextChanged", text)
 			end
 			self.Visible = false
 		end
@@ -210,14 +210,14 @@ class "ComboBox"
 						if _List.Visible and _List.__ComboBox == parent then
 							_List:SelectItemByIndex(i)
 						end
-	                    parent:Raise("OnValueChanged", value)
-	                    parent:Raise("OnTextChanged", text)
+	                    parent:Fire("OnValueChanged", value)
+	                    parent:Fire("OnTextChanged", text)
 	                end
 	            else
 	                parent.__Value = nil
 					parent:GetChild("Icon"):SetTexture(nil)
 					parent:GetChild("Icon").Width = 1
-	                parent:Raise("OnTextChanged", text)
+	                parent:Fire("OnTextChanged", text)
 	            end
 				return;
 			end
@@ -232,27 +232,27 @@ class "ComboBox"
 
 	local function OnEditFocusGained(self)
         self:HighlightText()
-		self.Parent:Raise("OnEditFocusGained")
+		self.Parent:Fire("OnEditFocusGained")
 	end
 
 	local function OnEditFocusLost(self)
         self:HighlightText(0, 0)
-		self.Parent:Raise("OnEditFocusLost")
+		self.Parent:Fire("OnEditFocusLost")
 	end
 
 	local function OnEnterPressed(self)
 		self:ClearFocus()
-		self.Parent:Raise("OnEnterPressed")
+		self.Parent:Fire("OnEnterPressed")
 	end
 
 	local function OnTabPressed(self)
 		self:ClearFocus()
-		self.Parent:Raise("OnTabPressed")
+		self.Parent:Fire("OnTabPressed")
 	end
 
 	local function OnEscapePressed(self)
 		self:ClearFocus()
-		self.Parent:Raise("OnEscapePressed")
+		self.Parent:Fire("OnEscapePressed")
 	end
 
 	------------------------------------------------------
@@ -664,8 +664,8 @@ class "ComboBox"
 					self:GetChild("Icon").Width = 1
 				end
 
-				self:Raise("OnValueChanged", value)
-				self:Raise("OnTextChanged", text)
+				self:Fire("OnValueChanged", value)
+				self:Fire("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(self.__Value)
 				end
@@ -676,8 +676,8 @@ class "ComboBox"
 			self:GetChild("Icon"):SetTexture(nil)
 			self:GetChild("Icon").Width = 1
 
-			self:Raise("OnValueChanged", nil)
-			self:Raise("OnTextChanged", "")
+			self:Fire("OnValueChanged", nil)
+			self:Fire("OnTextChanged", "")
 			if _List.Visible and _List.__ComboBox == self then
 				_List:SelectItemByValue(nil)
 			end
@@ -722,8 +722,8 @@ class "ComboBox"
 					self:GetChild("Icon").Width = 1
 				end
 
-				self:Raise("OnValueChanged", value)
-				self:Raise("OnTextChanged", text)
+				self:Fire("OnValueChanged", value)
+				self:Fire("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(self.__Value)
 				end
@@ -734,9 +734,9 @@ class "ComboBox"
 
 				if self.__Value ~= nil then
 					self.__Value = nil
-					self:Raise("OnValueChanged", nil)
+					self:Fire("OnValueChanged", nil)
 				end
-				self:Raise("OnTextChanged", text)
+				self:Fire("OnTextChanged", text)
 				if _List.Visible and _List.__ComboBox == self then
 					_List:SelectItemByValue(nil)
 				end

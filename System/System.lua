@@ -12,7 +12,6 @@
 --               2012/07/18 PositiveNumber added to System
 --               2013/04/26 Remove assert to reduce cost
 --               2013/06/27 Remove the custom event system
---               2013/06/27 Object's method Fire renamed to Raise
 
 ------------------------------------------------------------------------
 -- The base struct types is defined here
@@ -290,22 +289,20 @@ class "Object"
 	end
 
 	doc [======[
-		@name Raise
+		@name Fire
 		@type method
-		@desc Raise an object's event, to trigger the object's event handlers
+		@desc Fire an object's event, to trigger the object's event handlers
 		@param event the event name
 		@param ... the event's arguments
 		@return nil
 	]======]
-	function Raise(self, sc, ...)
+	function Fire(self, sc, ...)
 		if type(sc) ~= "string" then
-			error(("Usage : Object:Raise(event [, args, ...]) : 'event' - string exepected, got %s."):format(type(sc)), 2)
+			error(("Usage : Object:Fire(event [, args, ...]) : 'event' - string exepected, got %s."):format(type(sc)), 2)
 		end
 
 		if rawget(self, "__Events") and rawget(self.__Events, sc) then
 			return rawget(self.__Events, sc)(self, ...)
-		elseif rawget(self, sc) and type(rawget(self, sc)) == "function" then
-			return rawget(self, sc)(self, ...)
 		end
 	end
 

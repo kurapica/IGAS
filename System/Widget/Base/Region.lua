@@ -67,10 +67,10 @@ class "Region"
 
 		if flag then
 			if self:IsClass(LayeredRegion) then
-				self:Raise("OnHide")
+				self:Fire("OnHide")
 			end
 
-			self:Raise("OnVisibleChanged")
+			self:Fire("OnVisibleChanged")
 		end
 
 		return self.__ShowDialogThread and self.__ShowDialogThread()
@@ -111,10 +111,10 @@ class "Region"
 
 		if not flag then
 			if self:IsClass(LayeredRegion) then
-				self:Raise("OnShow")
+				self:Fire("OnShow")
 			end
 
-			self:Raise("OnVisibleChanged")
+			self:Fire("OnVisibleChanged")
 		end
 	end
 
@@ -132,10 +132,10 @@ class "Region"
 
 		if not flag then
 			if self:IsClass(LayeredRegion) then
-				self:Raise("OnShow")
+				self:Fire("OnShow")
 			end
 
-			self:Raise("OnVisibleChanged")
+			self:Fire("OnVisibleChanged")
 		end
 
 		return self.__ShowDialogThread:Yield()

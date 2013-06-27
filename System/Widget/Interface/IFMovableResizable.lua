@@ -65,12 +65,12 @@ do
 
 	function Mask_OnMoveFinished(self)
 		self.Parent:UnBlockEvent("OnPositionChanged", "OnSizeChanged")
-		self.Parent:Raise("OnPositionChanged")
+		self.Parent:Fire("OnPositionChanged")
 	end
 
 	function Mask_OnResizeFinished(self)
 		self.Parent:UnBlockEvent("OnPositionChanged", "OnSizeChanged")
-		self.Parent:Raise("OnSizeChanged")
+		self.Parent:Fire("OnSizeChanged")
 	end
 
 	function _MaskOn(IF, group)

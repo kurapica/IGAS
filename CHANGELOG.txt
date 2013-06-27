@@ -1,0 +1,4 @@
+2013/06/27: IGAS v39
+    1. Delete the custom event system from System.Object.
+    2. Keyword 'script' is renamed to 'event'.
+    3. Update all files with those changes.

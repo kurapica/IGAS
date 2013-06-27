@@ -784,7 +784,7 @@ class "Frame"
 	]======]
 	function SetMaxResize(self, maxWidth, maxHeight)
 		self.__UI:SetMaxResize(maxWidth, maxHeight)
-		return self:Raise("OnMaxResizeChanged", maxWidth, maxHeight)
+		return self:Fire("OnMaxResizeChanged", maxWidth, maxHeight)
 	end
 
 	doc [======[
@@ -797,7 +797,7 @@ class "Frame"
 	]======]
 	function SetMinResize(self, minWidth, minHeight)
 		self.__UI:SetMinResize(minWidth, minHeight)
-		return self:Raise("OnMinResizeChanged", minWidth, minHeight)
+		return self:Fire("OnMinResizeChanged", minWidth, minHeight)
 	end
 
 	doc [======[

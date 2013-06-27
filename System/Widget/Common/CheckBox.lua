@@ -55,7 +55,7 @@ class "CheckBox"
         self:GetChild("ChkBtn").Checked = not self:GetChild("ChkBtn").Checked
 		UpdateText(self)
 
-        return self:Raise("OnValueChanged", self:GetChild("ChkBtn").Checked)
+        return self:Fire("OnValueChanged", self:GetChild("ChkBtn").Checked)
     end
 
     local function OnEnter(self)
@@ -71,7 +71,7 @@ class "CheckBox"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(self.__Tooltip)
-			self:Raise("OnGameTooltipShow", GameTooltip)
+			self:Fire("OnGameTooltipShow", GameTooltip)
 			GameTooltip:Show()
 		end
         self:GetHighlightTexture():Show()
@@ -266,7 +266,7 @@ class "CheckBox"
 					GameTooltip:ClearAllPoints()
 					GameTooltip:SetPoint(from, self, to, 0, 0)
 					GameTooltip:SetText(self.__Tooltip)
-					self:Raise("OnGameTooltipShow", GameTooltip)
+					self:Fire("OnGameTooltipShow", GameTooltip)
 					GameTooltip:Show()
 				end
 			end

@@ -17,7 +17,7 @@ class "Timer"
 	doc [======[
 		@name Timer
 		@type class
-		@desc Timer is used to raise an event on a specified interval
+		@desc Timer is used to fire an event on a specified interval
 	]======]
 
 	WorldFrame = IGAS.WorldFrame
@@ -51,7 +51,7 @@ class "Timer"
 		-- Consider people will disable timer when a onTimer event triggered, and enable it when all is done, so, I don't use one container to control the enabled timers, another for disabled timers.
 		for timer, delay in pairs(_Container) do
 			if delay > 0 and delay < soon then
-				timer:Raise("OnTimer")
+				timer:Fire("OnTimer")
 
 				-- set next time
 				if timer.__Interval then
@@ -92,7 +92,7 @@ class "Timer"
 	doc [======[
 		@name Interval
 		@type property
-		@desc Gets or sets the interval at which to raise the Elapsed event
+		@desc Gets or sets the interval at which to fire the Elapsed event
 	]======]
 	property "Interval" {
 		Get = function(self)

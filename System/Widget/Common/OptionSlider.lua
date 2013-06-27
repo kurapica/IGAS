@@ -46,11 +46,11 @@ class "OptionSlider"
 
 	local function OnValueChanged(self)
 		self.Parent:GetChild("Text").Text = strformat(self.__Format or "%.0f", self.Value)
-		return self.Parent:Raise("OnValueChanged")
+		return self.Parent:Fire("OnValueChanged")
 	end
 
 	local function OnMinMaxChanged(self)
-		return self.Parent:Raise("OnMinMaxChanged")
+		return self.Parent:Fire("OnMinMaxChanged")
 	end
 
 	------------------------------------------------------

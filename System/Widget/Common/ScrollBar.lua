@@ -31,11 +31,11 @@ class "ScrollBar"
 
 	-- Events
 	local function OnEnter(self)
-		self.Parent:Raise("OnEnter")
+		self.Parent:Fire("OnEnter")
 	end
 
 	local function OnLeave(self)
-		self.Parent:Raise("OnLeave")
+		self.Parent:Fire("OnLeave")
 	end
 
     local function OnValueChanged(self, value)
@@ -115,7 +115,7 @@ class "ScrollBar"
 
 		UpdateButton(self:GetParent())
 
-        return self:GetParent():Raise("OnValueChanged", self.__Value)
+        return self:GetParent():Fire("OnValueChanged", self.__Value)
     end
 
 	------------------------------------------------------

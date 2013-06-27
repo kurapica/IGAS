@@ -54,31 +54,31 @@ class "PopupDialog"
 	end
 
 	local function Okay_OnClick(self)
-		self.Parent:Raise("OnOkay")
+		self.Parent:Fire("OnOkay")
 		self.Parent:Hide()
 	end
 
 	local function No_OnClick(self)
-		self.Parent:Raise("OnNo")
+		self.Parent:Fire("OnNo")
 		self.Parent:Hide()
 	end
 
 	local function Cancel_OnClick(self)
-		self.Parent:Raise("OnCancel")
+		self.Parent:Fire("OnCancel")
 		self.Parent:Hide()
 	end
 
 	local function OnTextChanged(self)
-		self.Parent:Raise("OnTextChanged")
+		self.Parent:Fire("OnTextChanged")
 	end
 
 	local function OnEnterPressed(self)
-		self.Parent:Raise("OnOkay")
+		self.Parent:Fire("OnOkay")
 		self.Parent:Hide()
 	end
 
 	local function OnEscapePressed(self)
-		self.Parent:Raise("OnCancel")
+		self.Parent:Fire("OnCancel")
 		self.Parent:Hide()
 	end
 
@@ -104,13 +104,13 @@ class "PopupDialog"
 
 	local function OnShow(self)
 		if (UnitIsDeadOrGhost("player") and not self.ShowWhileDead ) then
-			self:Raise("OnCancel")
+			self:Fire("OnCancel")
 			self:Hide()
 			return
 		end
 
 		if (InCinematic() and not self.ShowWhileCinematic ) then
-			self:Raise("OnCancel")
+			self:Fire("OnCancel")
 			self:Hide()
 			return
 		end

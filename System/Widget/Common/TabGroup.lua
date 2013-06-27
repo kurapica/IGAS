@@ -161,7 +161,7 @@ class "TabGroup"
 				end
 			end
 
-			self:Raise("OnTabSelect")
+			self:Fire("OnTabSelect")
 		end
 
 		------------------------------------
@@ -410,7 +410,7 @@ class "TabGroup"
 		if self.Parent.InDesignMode then
 			return
 		end
-		self.Parent:Raise("OnTabClose")
+		self.Parent:Fire("OnTabClose")
         if self.Parent.__HeaderContainer.__SelectTab then
             self.Parent.__HeaderContainer.__SelectTab:Dispose()
         end
@@ -458,7 +458,7 @@ class "TabGroup"
         local parent = self.Parent
 
         if parent.__SelectTab ~= self then
-            parent.__Root:Raise("OnTabChange", parent.__SelectTab, self)
+            parent.__Root:Fire("OnTabChange", parent.__SelectTab, self)
             parent.__SelectTab = self
         end
     end

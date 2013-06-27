@@ -235,7 +235,7 @@ class "TabLayoutPanel"
 					widget.__TabLayoutPanel_Selected = nil
 					otherWidget.__TabLayoutPanel_Selected = true
 
-					self:Raise("OnTabChange", widget, otherWidget)
+					self:Fire("OnTabChange", widget, otherWidget)
 
 					return
 				end
@@ -259,7 +259,7 @@ class "TabLayoutPanel"
 			end
 
 			widget.__TabLayoutPanel_Selected = true
-			self:Raise("OnTabChange", otherWidget, widget)
+			self:Fire("OnTabChange", otherWidget, widget)
 		end
 	end
 
@@ -545,7 +545,7 @@ class "TabLayoutPanel"
 		end
 
 		if pass then
-			self.Parent:Raise("OnTabClose", widget)
+			self.Parent:Fire("OnTabClose", widget)
 			-- Delete
 			RemoveWidget(self.Parent, widget)
 		end

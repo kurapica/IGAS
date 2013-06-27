@@ -27,19 +27,15 @@ class "UIObject"
 	-- Event Handler
 	------------------------------------------------------
 	-- OnEventHandlerChanged
-	_ScriptHandler = _ScriptHandler or {}
+	_ScriptHandler = _ScriptHandler or setmetatable({}, {
+		__index = function(self, handler)
+			rawset(self, handler, function(self, ...)
+				return self.__Wrapper and self.__Wrapper:Fire(handler, ...)
+			end)
 
-	local function GetEventHandler(handler)
-		if type(handler) ~= "string" then
-			error("The handler must be a string", 2)
-		end
-		if not _ScriptHandler[handler] then
-			_ScriptHandler[handler] = function(self, ...)
-				return self.__Wrapper and self.__Wrapper:Raise(handler, ...)
-			end
-		end
-		return _ScriptHandler[handler]
-	end
+			return rawget(self, handler)
+		end,
+	})
 
 	local function OnEventHandlerChanged(self, scriptName)
 		local _UI = rawget(self, "__UI")
@@ -50,20 +46,19 @@ class "UIObject"
 
 		if self[scriptName]:IsEmpty() then
 			-- UnRegister
-			if _UI:GetScript(scriptName) == GetEventHandler(scriptName) then
+			if _UI:GetScript(scriptName) == _ScriptHandler[scriptName] then
 				_UI:SetScript(scriptName, nil)
 			end
 		else
 			-- Register
 			if not _UI:GetScript(scriptName) then
-				_UI:SetScript(scriptName, GetEventHandler(scriptName))
-			elseif _UI:GetScript(scriptName) ~= GetEventHandler(scriptName) then
+				_UI:SetScript(scriptName, _ScriptHandler[scriptName])
+			elseif _UI:GetScript(scriptName) ~= _ScriptHandler[scriptName] then
 				if type(self.__HookedScript) ~= "table" or not self.__HookedScript[scriptName] then
-					_UI:HookScript(scriptName, GetEventHandler(scriptName))
+					_UI:HookScript(scriptName, _ScriptHandler[scriptName])
 					self.__HookedScript = self.__HookedScript or {}
 					self.__HookedScript[scriptName] = true
 				end
-				--error(("%s already has a handler for '%s'.Using UIObject:SetScript(name, func) if you really want to override it."):format(self.Name or _UI:GetName(), scriptName))
 			end
 		end
 	end

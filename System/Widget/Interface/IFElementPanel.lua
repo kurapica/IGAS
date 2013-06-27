@@ -72,7 +72,7 @@ interface "IFElementPanel"
 
 			for i = self.Count, index + 1, -1 do
 				ele = self:GetChild(self.ElementPrefix .. i)
-				self:Raise("OnElementRemove", ele)
+				self:Fire("OnElementRemove", ele)
 				ele:Dispose()
 
 				self.__ElementPanel_Count = i - 1
@@ -92,7 +92,7 @@ interface "IFElementPanel"
 
 				AdjustElement(ele, self)
 
-				self:Raise("OnElementAdd", ele)
+				self:Fire("OnElementAdd", ele)
 
 				self.__ElementPanel_Count = i
 			end

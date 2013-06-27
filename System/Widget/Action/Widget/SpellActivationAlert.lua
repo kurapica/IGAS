@@ -113,7 +113,7 @@ class "SpellActivationAlert"
 			self.OuterGlowOver.AnimOut.Playing = false
 			self.OuterGlow.AnimOut.Playing = false
 			self.Ants.AnimOut.Playing = false
-			self:Raise("OnFinished")
+			self:Fire("OnFinished")
 		end
 	end
 
@@ -147,7 +147,7 @@ class "SpellActivationAlert"
 	end
 
 	local function AnimOut_OnFinished(self)
-		self.Parent.Parent:Raise("OnFinished")
+		self.Parent.Parent:Fire("OnFinished")
 	end
 
 	------------------------------------------------------

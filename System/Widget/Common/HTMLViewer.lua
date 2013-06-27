@@ -489,15 +489,15 @@ class "HTMLViewer"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnHyperlinkClick(self, linkData, link, button)
-		return self.Parent:Raise("OnHyperlinkClick", linkData, link, button)
+		return self.Parent:Fire("OnHyperlinkClick", linkData, link, button)
 	end
 
 	local function OnHyperlinkEnter(self, linkData, link)
-		return self.Parent:Raise("OnHyperlinkEnter", linkData, link)
+		return self.Parent:Fire("OnHyperlinkEnter", linkData, link)
 	end
 
 	local function OnHyperlinkLeave(self, linkData, link)
-		return self.Parent:Raise("OnHyperlinkLeave", linkData, link)
+		return self.Parent:Fire("OnHyperlinkLeave", linkData, link)
 	end
 
 	------------------------------------------------------

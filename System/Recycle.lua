@@ -92,7 +92,7 @@ class "Recycle"
 			-- Won't check obj because using cache means want quick-using.
 			tinsert(self, obj)
 			if _RecycleInfo[self] then
-				return self:Raise("OnPush", obj)
+				return self:Fire("OnPush", obj)
 			end
 		end
 	end
@@ -107,7 +107,7 @@ class "Recycle"
 		-- give out item
 		if #self > 0 then
 			if _RecycleInfo[self] then
-				self:Raise("OnPop", self[#self])
+				self:Fire("OnPop", self[#self])
 			end
 			return tremove(self, #self)
 		end
@@ -118,9 +118,9 @@ class "Recycle"
 		else
 			local obj = _RecycleInfo[self].Type(parseArgs(self))
 
-			self:Raise("OnInit", obj)
+			self:Fire("OnInit", obj)
 
-			self:Raise("OnPop", obj)
+			self:Fire("OnPop", obj)
 
 			return obj
 		end

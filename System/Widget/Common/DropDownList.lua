@@ -43,7 +43,7 @@ class "DropDownList"
 	function _DropDownColorPicker:OnColorPicked(red, green, blue, alpha)
 		if self._DropDownButton then
 			self._DropDownButton.ColorSwatch.NormalTexture:SetVertexColor(red, green, blue, alpha)
-			self._DropDownButton:Raise("OnColorPicked", red, green, blue, alpha)
+			self._DropDownButton:Fire("OnColorPicked", red, green, blue, alpha)
 		end
 	end
 
@@ -67,19 +67,19 @@ class "DropDownList"
         -- Events
         --- colorBack
         local function colorsWatch_OnClick(self)
-            self.Parent:Raise("OnClick")
+            self.Parent:Fire("OnClick")
 			_DropDownColorPicker._DropDownButton = self.Parent
 			_DropDownColorPicker.Visible = true
         end
 
         local function colorsWatch_OnEnter(self)
             self:GetChild("SwatchBg"):SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
-			self.Parent:Raise("OnEnter")
+			self.Parent:Fire("OnEnter")
         end
 
         local function colorsWatch_OnLeave(self)
             self:GetChild("SwatchBg"):SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-			self.Parent:Raise("OnLeave")
+			self.Parent:Fire("OnLeave")
         end
 
         local function hideDropList(self)
@@ -156,23 +156,23 @@ class "DropDownList"
 
         local function expandArrow_OnEnter(self)
             showDropDownList(self.Parent)
-			self.Parent.Parent:Raise("OnEnter")
+			self.Parent.Parent:Fire("OnEnter")
         end
 
         local function expandArrow_OnLeave(self)
-            self.Parent.Parent:Raise("OnLeave")
+            self.Parent.Parent:Fire("OnLeave")
         end
 
         -- Item
         local function item_OnEnter(self)
             showDropDownList(self)
             self:GetChild("HighLight"):Show()
-            self.Parent:Raise("OnEnter")
+            self.Parent:Fire("OnEnter")
         end
 
         local function item_OnLeave(self)
             self:GetChild("HighLight"):Hide()
-            self.Parent:Raise("OnLeave")
+            self.Parent:Fire("OnLeave")
         end
 
         local function updateWidth(self)
@@ -231,13 +231,13 @@ class "DropDownList"
 
 		local function Frame_OnEnter(self)
 			if self.__MenuBase then
-				return self.__MenuBase:Raise("OnEnter")
+				return self.__MenuBase:Fire("OnEnter")
 			end
 		end
 
 		local function Frame_OnLeave(self)
 			if self.__MenuBase then
-				return self.__MenuBase:Raise("OnLeave")
+				return self.__MenuBase:Fire("OnLeave")
 			end
 		end
 
@@ -690,7 +690,7 @@ class "DropDownList"
 		property "Checked" {
 			Set = function(self, flag)
 				self:GetChild("Check").Visible = flag
-				self:Raise("OnCheckChanged")
+				self:Fire("OnCheckChanged")
 			end,
 
 			Get = function(self)
@@ -880,10 +880,10 @@ class "DropDownList"
 		self:GetChild("DropDownList_Timer").Interval = 0
 
         if self.__MenuBase then
-            self.__MenuBase:Raise("OnEnter")
+            self.__MenuBase:Fire("OnEnter")
         end
 
-		return self.__Mask:Raise("OnEnter")
+		return self.__Mask:Fire("OnEnter")
 	end
 
 	local function OnLeave(self)
@@ -891,10 +891,10 @@ class "DropDownList"
 			self:GetChild("DropDownList_Timer").Interval = 2
 		end
         if self.__MenuBase then
-            self.__MenuBase:Raise("OnLeave")
+            self.__MenuBase:Fire("OnLeave")
         end
 
-		return self.__Mask:Raise("OnLeave")
+		return self.__Mask:Fire("OnLeave")
 	end
 
     local function OnShow(self, ...)
@@ -917,7 +917,7 @@ class "DropDownList"
 		self:SetScale(uiScale)
 
         if self.__MenuLevel > 1 then
-            return self.__Mask:Raise("OnShow")
+            return self.__Mask:Fire("OnShow")
         end
 
 		if not self.__Mask.InDesignMode then
@@ -967,7 +967,7 @@ class "DropDownList"
             end
         end
 
-		return self.__Mask:Raise("OnShow")
+		return self.__Mask:Fire("OnShow")
     end
 
     local function OnHide(self, ...)
@@ -976,14 +976,14 @@ class "DropDownList"
 		hideDropList(self)
 
         if self.__MenuLevel > 1 then
-            return self.__Mask:Raise("OnHide")
+            return self.__Mask:Fire("OnHide")
         end
 
         if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList == self then
             _DropDownListContainer.__ShowList = nil
         end
 
-		return self.__Mask:Raise("OnHide")
+		return self.__Mask:Fire("OnHide")
     end
 
 	------------------------------------------------------

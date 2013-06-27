@@ -354,10 +354,10 @@ class "TreeView"
 				Refresh(self)
 			end
 
-			Object.Raise(self, "OnSelected")
+			Object.Fire(self, "OnSelected")
 
 			if Object.IsClass(self, TreeNode) then
-				return Object.Raise(root, "OnNodeSelected", self)
+				return Object.Fire(root, "OnNodeSelected", self)
 			end
 		end
 
@@ -403,10 +403,10 @@ class "TreeView"
 
 			Refresh(self)
 
-			Object.Raise(self, "OnToggle")
+			Object.Fire(self, "OnToggle")
 
 			if Object.IsClass(self, TreeNode) then
-				return Object.Raise(self.__Root, "OnNodeToggle", self)
+				return Object.Fire(self.__Root, "OnNodeToggle", self)
 			end
 		end
 
@@ -528,8 +528,8 @@ class "TreeView"
 							parent.MetaData[i + 1] = node.MetaData
 						end
 
-						Object.Raise(node, "OnIndexChanged")
-						Object.Raise(node.__Root, "OnNodeIndexChanged", node)
+						Object.Fire(node, "OnIndexChanged")
+						Object.Fire(node.__Root, "OnNodeIndexChanged", node)
 					end
 				else
 					for i = self.__NodeIndex + 1, index, 1 do
@@ -544,8 +544,8 @@ class "TreeView"
 							parent.MetaData[i - 1] = node.MetaData
 						end
 
-						Object.Raise(node, "OnIndexChanged")
-						Object.Raise(node.__Root, "OnNodeIndexChanged", node)
+						Object.Fire(node, "OnIndexChanged")
+						Object.Fire(node.__Root, "OnNodeIndexChanged", node)
 					end
 				end
 
@@ -558,8 +558,8 @@ class "TreeView"
 					parent.MetaData[index] = self.MetaData
 				end
 
-				Object.Raise(self, "OnIndexChanged")
-				Object.Raise(self.__Root, "OnNodeIndexChanged", self)
+				Object.Fire(self, "OnIndexChanged")
+				Object.Fire(self.__Root, "OnNodeIndexChanged", self)
 
 				return Refresh(self)
 			end,
@@ -856,11 +856,11 @@ class "TreeView"
 	end
 
 	local function ScrollBar_OnEnter(self)
-		return self.Parent:Raise("OnEnter")
+		return self.Parent:Fire("OnEnter")
 	end
 
 	local function ScrollBar_OnLeave(self)
-		return self.Parent:Raise("OnLeave")
+		return self.Parent:Fire("OnLeave")
 	end
 
 	local function ScrollBar_OnValueChanged(self)
@@ -906,10 +906,10 @@ class "TreeView"
 
 		local node = self.__TreeNode
 
-		Object.Raise(node, "OnDoubleClick", button)
+		Object.Fire(node, "OnDoubleClick", button)
 
 		if Object.IsClass(node, TreeNode) then
-			return Object.Raise(node.__Root, "OnDoubleClick", node, button)
+			return Object.Fire(node.__Root, "OnDoubleClick", node, button)
 		end
 	end
 
@@ -924,8 +924,8 @@ class "TreeView"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(self.__TreeNode.Text)
-			self.__TreeNode:Raise("OnGameTooltipShow", GameTooltip)
-			self.Parent:Raise("OnNodeGameTooltipShow", GameTooltip, self.__TreeNode)
+			self.__TreeNode:Fire("OnGameTooltipShow", GameTooltip)
+			self.Parent:Fire("OnNodeGameTooltipShow", GameTooltip, self.__TreeNode)
 			GameTooltip:Show()
 		end
 
@@ -935,14 +935,14 @@ class "TreeView"
 		RefreshOrderButton(self)
 		RefreshFunctionButton(self)
 
-		return-- self.Parent:Raise("OnEnter")
+		return-- self.Parent:Fire("OnEnter")
 	end
 
 	local function TreeNode_OnLeave(self)
 		GameTooltip:ClearLines()
 		GameTooltip:Hide()
 
-		return-- self.Parent:Raise("OnLeave")
+		return-- self.Parent:Fire("OnLeave")
 	end
 
 	local function ToggleBtn_OnClick(self)
@@ -953,10 +953,10 @@ class "TreeView"
 
 	local function FuncButton_OnClick(self)
 		if self.Owner then
-			Object.Raise(self.Owner, "OnFunctionClick", self.Text)
+			Object.Fire(self.Owner, "OnFunctionClick", self.Text)
 
 			if Object.IsClass(self.Owner, TreeNode) then
-				return Object.Raise(self.Parent, "OnNodeFunctionClick", self.Text, self.Owner)
+				return Object.Fire(self.Parent, "OnNodeFunctionClick", self.Text, self.Owner)
 			end
 		end
 	end

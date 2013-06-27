@@ -95,17 +95,17 @@ class "List"
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
 			GameTooltip:SetText(parent.Items[self.ID])
-			parent:Raise("OnGameTooltipShow", GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+			parent:Fire("OnGameTooltipShow", GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 			GameTooltip:Show()
 		end
-		self.Parent:Raise("OnEnter")
+		self.Parent:Fire("OnEnter")
 	end
 
 	local function Item_OnLeave(self)
 		_OnGameTooltip = nil
 		GameTooltip:ClearLines()
         GameTooltip:Hide()
-		self.Parent:Raise("OnLeave")
+		self.Parent:Fire("OnLeave")
 	end
 
 	local function Item_OnClick(self)
@@ -115,20 +115,20 @@ class "List"
 			parent:GetChild("ListBtn_"..i).HighlightLocked = false
 		end
 		self.HighlightLocked = true
-		return parent:Raise("OnItemChoosed", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+		return parent:Fire("OnItemChoosed", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 	end
 
 	local function Item_OnDoubleClick(self)
 		local parent = self.Parent
-		return parent:Raise("OnItemDoubleClick", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+		return parent:Fire("OnItemDoubleClick", parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
 	end
 
 	local function ScrollBar_OnEnter(self)
-		return self.Parent:Raise("OnEnter")
+		return self.Parent:Fire("OnEnter")
 	end
 
 	local function ScrollBar_OnLeave(self)
-		return self.Parent:Raise("OnLeave")
+		return self.Parent:Fire("OnLeave")
 	end
 
 	local function RefreshItem(self, btnIdx, itemIdx)
@@ -193,7 +193,7 @@ class "List"
 				GameTooltip:ClearAllPoints()
 				GameTooltip:SetPoint(from, btn, to, 0, 0)
 				GameTooltip:SetText(self.Items[btn.ID])
-				self:Raise("OnGameTooltipShow", GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
+				self:Fire("OnGameTooltipShow", GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
 				GameTooltip:Show()
 			end
 		end
@@ -492,7 +492,7 @@ class "List"
 
 		if self.__ChooseItem ~= index then
 			self.__ChooseItem = index
-			--self:Raise("OnItemChoosed", self.Keys[self.__ChooseItem], self.Items[self.__ChooseItem], self.Icons[self.__ChooseItem], self.Frames[self.__ChooseItem])
+			--self:Fire("OnItemChoosed", self.Keys[self.__ChooseItem], self.Items[self.__ChooseItem], self.Icons[self.__ChooseItem], self.Frames[self.__ChooseItem])
 		end
 	end
 

@@ -210,7 +210,7 @@ interface "IFModule"
 					if _EventDistribution[event] then
 						for obj in pairs(_EventDistribution[event]) do
 							if not _Info[obj].Disabled then
-								Object.Raise(obj, "OnEvent", event, ...)
+								Object.Fire(obj, "OnEvent", event, ...)
 							end
 						end
 					end
@@ -218,7 +218,7 @@ interface "IFModule"
 
 				-- Loading
 				local function loading(self)
-					Object.Raise(self, "OnLoad")
+					Object.Fire(self, "OnLoad")
 
 					if _Info[self].Module then
 						for _, mdl in pairs(_Info[self].Module) do
@@ -230,7 +230,7 @@ interface "IFModule"
 				-- Enabling
 				local function enabling(self)
 					if not _Info[self].Disabled then
-						Object.Raise(self, "OnEnable")
+						Object.Fire(self, "OnEnable")
 
 						if _Info[self].Module then
 							for _, mdl in pairs(_Info[self].Module) do
@@ -342,9 +342,9 @@ interface "IFModule"
 						for mdl, func in pairs(_store) do
 							if mdl ~= 0 and not _Info[mdl].Disabled then
 								if func == true then
-									Object.Raise(mdl, "OnHook", targetFunc, ...)
+									Object.Fire(mdl, "OnHook", targetFunc, ...)
 								else
-									Object.Raise(mdl, "OnHook", func, ...)
+									Object.Fire(mdl, "OnHook", func, ...)
 								end
 							end
 						end
@@ -401,9 +401,9 @@ interface "IFModule"
 							for mdl, func in pairs(_store) do
 								if mdl ~= 0 and not _Info[mdl].Disabled then
 									if func == true then
-										Object.Raise(mdl, "OnHook", targetFunc, ...)
+										Object.Fire(mdl, "OnHook", targetFunc, ...)
 									else
-										Object.Raise(mdl, "OnHook", func, ...)
+										Object.Fire(mdl, "OnHook", func, ...)
 									end
 								end
 							end
@@ -481,7 +481,7 @@ interface "IFModule"
 				_SlashFuncs[name] = _SlashFuncs[name] or function(msg, input)
 					local mdl = IGAS:GetAddon(name)
 					if mdl then
-						return Object.Raise(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
+						return Object.Fire(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
 					end
 				end
 				return _SlashFuncs[name]
@@ -746,7 +746,7 @@ interface "IFModule"
 			_Info[self].Disabled = nil
 			_Info[self].DefaultState = nil
 
-			if _Logined then Object.Raise(self, "OnEnable") end
+			if _Logined then Object.Fire(self, "OnEnable") end
 
 			if not _Info[self].Module then return end
 
@@ -768,7 +768,7 @@ interface "IFModule"
 		if not _Info[self].Disabled then
 			_Info[self].Disabled = true
 
-			if _Logined then Object.Raise(self, "OnDisable") end
+			if _Logined then Object.Fire(self, "OnDisable") end
 
 			if not _Info[self].Module then return end
 
@@ -1108,7 +1108,7 @@ interface "IFModule"
 		local info = _Info[self]
 		local chk, ret
 
-		Object.Raise(self, "OnDispose")
+		Object.Fire(self, "OnDispose")
 
 		if self.UnregisterAllEvents then
 			self:UnregisterAllEvents()

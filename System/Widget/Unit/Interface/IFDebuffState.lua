@@ -85,7 +85,7 @@ function UpdateAuraState(unit)
 
 	if changed then
 		for ele in _IFDebuffStateUnitList(unit) do
-			Object.Raise(ele, "OnStateChanged")
+			Object.Fire(ele, "OnStateChanged")
 		end
 	end
 end
