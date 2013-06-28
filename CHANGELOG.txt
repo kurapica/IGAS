@@ -1,3 +1,6 @@
+2013/06/28
+    1. Improve the System.Widget.Unit.IFResurrect, make sure its objects will be hidden when the resurrect is over
+
 2013/06/27: IGAS v39
     1. Delete the custom event system from System.Object.
     2. Keyword 'script' is renamed to 'event'.

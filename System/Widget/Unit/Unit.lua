@@ -4,7 +4,7 @@
 -- ChangeLog
 
 ------------------------------------------------------
-local version = 6
+local version = 7
 
 if not IGAS:NewAddon("IGAS.Widget.Unit", version) then
 	return
@@ -58,7 +58,14 @@ class "UnitList"
 	------------------------------------------------------
 	-- Event Manager
 	------------------------------------------------------
-	_UnitListEventDistribution = _UnitListEventDistribution or {}
+	_UnitListEventDistribution = _UnitListEventDistribution or setmetatable({}, {
+		__index = function (self, key)
+			if type(key) == "string" then
+				rawset(self, key, {})
+			end
+			return rawget(self, key)
+		end
+	})
 	_UnitListEventManager = _UnitListEventManager or CreateFrame("Frame")
 	_UnitListEventManager:Hide()
 	_UnitListEventManager:SetScript("OnEvent", function(self, event, ...)
@@ -66,6 +73,25 @@ class "UnitList"
 			lst:ParseEvent(event, ...)
 		end
 	end)
+
+	------------------------------------------------------
+	-- Iterator
+	------------------------------------------------------
+	_UnitList_Info = _UnitList_Info or {}
+	_UnitList_Prev = _UnitList_Prev or {}
+	_UnitList_Next = _UnitList_Next or {}
+	_UnitList_Traverse = _UnitList_Traverse or {}
+
+	local function traversalUnit(self, key)
+		local k, v = next(self, key)
+
+		while k do
+			if type(k) == "string" and not k:match("^_") and type(v) == "table" then
+				return k, k
+			end
+			k, v = next(self, k)
+		end
+	end
 
 	------------------------------------------------------
 	-- Event
@@ -103,7 +129,7 @@ class "UnitList"
 	]======]
 	function RegisterEvent(self, event)
 		_UnitListEventManager:RegisterEvent(event)
-		_UnitListEventDistribution[event] = _UnitListEventDistribution[event] or {}
+
 		for i, lst in ipairs(_UnitListEventDistribution[event]) do
 			if lst == self then
 				return
@@ -120,8 +146,6 @@ class "UnitList"
 		@return nil
 	]======]
 	function UnregisterEvent(self, event)
-		_UnitListEventDistribution[event] = _UnitListEventDistribution[event] or {}
-
 		for i, lst in ipairs(_UnitListEventDistribution[event]) do
 			if lst == self then
 				tremove(_UnitListEventDistribution[event], i)
@@ -134,7 +158,11 @@ class "UnitList"
 	end
 
 	function Next(self, key)
-		return _UnitList_Traverse[self], self, type(key) == "string" and key:lower() or nil
+		if type(key) == "string" then
+			return _UnitList_Traverse[self], self, key:lower()
+		else
+			return traversalUnit, self, nil
+		end
 	end
 
 	doc [======[
@@ -153,11 +181,6 @@ class "UnitList"
 			return false
 		end
 	end
-
-	_UnitList_Info = _UnitList_Info or {}
-	_UnitList_Prev = _UnitList_Prev or {}
-	_UnitList_Next = _UnitList_Next or {}
-	_UnitList_Traverse = _UnitList_Traverse or {}
 
 	------------------------------------------------------
 	-- Constructor
@@ -267,6 +290,6 @@ class "UnitList"
 	end
 
 	function __call(self, unit)
-		return _UnitList_Traverse[self], self, type(unit) == "string" and unit:lower() or nil
+		return Next(self, unit)
 	end
 endclass "UnitList"
