@@ -1,9 +1,10 @@
 ﻿-- Author      : Kurapica
 -- Create Date : 2012/06/25
 -- Change Log  :
+--               2013/06/28 Refresh when the LevelFormat is changed
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.LevelLabel", version) then
 	return
 end
@@ -32,6 +33,8 @@ class "LevelLabel"
 		end,
 		Set = function(self, value)
 			self.__LevelFormat = value
+
+			self:Refresh()
 		end,
 		Type = System.String,
 	}
