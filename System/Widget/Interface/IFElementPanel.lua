@@ -517,6 +517,7 @@ interface "IFElementPanel"
 			self.__ElementPanel_Element = self.__ElementPanel_Element or Element(self)
 			return self.__ElementPanel_Element
 		end,
+		Type = Element,
 	}
 
 	doc [======[

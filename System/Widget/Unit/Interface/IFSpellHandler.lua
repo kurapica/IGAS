@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFSpellHandler", version) then
 	return
 end
@@ -1082,6 +1082,22 @@ interface "IFSpellHandler"
 			end,
 		}
 
+		-- Generate propeties based on the action types
+		for key in pairs(_IFSPellHandler_ActionType) do
+			doc (([======[
+				@name %s
+				@type property
+				@desc Get the data accessor of the '%s' action type
+			]======]):format(key, key))
+			property (key) {
+				Get = function(self)
+					self.__Accessor.Type = key
+					return self.__Accessor
+				end,
+				Type = DataAccessor,
+			}
+		end
+
 		------------------------------------------------------
 		-- Event Handler
 		------------------------------------------------------
@@ -1113,6 +1129,7 @@ interface "IFSpellHandler"
 			return _IFSpellHandler_SpellHandlerGroup[group]
 		end
 
+		--[[
 		function __index(self, key)
 			if _IFSPellHandler_ActionType[key] then
 				self.__Accessor.Type = key
@@ -1126,7 +1143,7 @@ interface "IFSpellHandler"
 			end
 
 			rawset(self, key, value)
-		end
+		end--]]
 	endclass "SpellHandlerGroup"
 
 	------------------------------------------------------

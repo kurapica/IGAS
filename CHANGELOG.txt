@@ -1,3 +1,6 @@
+2013/06/30:
+	1. Remove the __index and __newindex settings in the System.Widget.Unit.IFSpellHandler.SpellHandlerGroup, use properties to reduce cost and better for browsing.
+
 2013/06/28: IGAS v40
     1. Improve the System.Widget.Unit.IFResurrect, make sure its objects will be hidden when the resurrection is over
     2. Fix the System.Widget.Unit.LevelLabel, refresh when the LevelFormat is changed
