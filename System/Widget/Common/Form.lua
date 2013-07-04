@@ -4,9 +4,10 @@
 --				2011/03/13	Recode as class
 --              2012.05.13  Property Panel is added
 --              2012.06.11  Super class changed
+--              2013.07.14  HideForCombat property added
 
 -- Check Version
-local version = 11
+local version = 12
 if not IGAS:NewAddon("IGAS.Widget.Form", version) then
 	return
 end
@@ -139,7 +140,7 @@ class "Form"
 		-- Event Handler
 		------------------------------------------------------
 		local function OnEnter(self)
-			if not InCombatLockdown() then
+			if not self.Form.HideForCombat or not InCombatLockdown() then
 				self.Form.Visible = true
 			end
 		end
@@ -517,6 +518,21 @@ class "Form"
 					self.__DockHeader:Dispose()
 				end
 			end
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name HideForCombat
+		@type property
+		@desc true if the form should not be shown in combat with DockMode on
+	]======]
+	property "HideForCombat" {
+		Get = function(self)
+			return self.__HideForCombat
+		end,
+		Set = function(self, value)
+			self.__HideForCombat = value
 		end,
 		Type = System.Boolean,
 	}

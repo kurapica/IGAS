@@ -2,9 +2,10 @@
 -- Create Date : 2012/06/24
 -- Change Log  :
 --               2013/05/25 Reduce memory cost
+--               2013/07/04 UnitFrame can handle the change of attribute "unit"
 
 -- Check Version
-local version = 4
+local version = 5
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -18,10 +19,6 @@ class "UnitFrame"
 		@type class
 		@desc UnitFrame is used to display information about an unit, and can be used to do the common actions on the unit
 	]======]
-
-	local function UpdateUnit(self, unit)
-		self:Each("Unit", unit)
-	end
 
 	------------------------------------------------------
 	-- Event Handler
@@ -62,7 +59,7 @@ class "UnitFrame"
 	function AddElement(self, ...)
 		IFContainer.AddWidget(self, ...)
 
-		UpdateUnit(self, self.Unit)
+		self:Each("Unit", self.Unit)
 	end
 
 	doc [======[
@@ -80,7 +77,7 @@ class "UnitFrame"
 	function InsertElement(self, ...)
 		IFContainer.InsertWidget(self, ...)
 
-		UpdateUnit(self, self.Unit)
+		self:Each("Unit", self.Unit)
 	end
 
 	doc [======[
@@ -118,68 +115,16 @@ class "UnitFrame"
 		@return nil
 	]======]
 	function SetUnit(self, unit)
-		if type(unit) == "string" and not self.__Deactivated then
-			unit = unit:lower()
+		if type(unit) == "string" then
+			unit = strlower(unit)
 		else
 			unit = nil
 		end
 
-		local guid = unit and UnitGUID(unit) or nil
-
-		if unit ~= self:GetAttribute("unit") or guid ~= self.__UnitGuid then
+		if unit ~= self:GetAttribute("unit") then
 			self:SetAttribute("unit", unit)
-			self.__UnitGuid = guid
-
-			UpdateUnit(self, unit)
-
-			if unit == "player" then
-				self:UnregisterUnitWatch()
-				self.Visible = true
-			elseif unit then
-				self:RegisterUnitWatch()
-			else
-				self:UnregisterUnitWatch()
-				self.Visible = false
-			end
-
-			if unit == "target" then
-				self:RegisterEvent("PLAYER_TARGET_CHANGED")
-				self.PLAYER_TARGET_CHANGED = UpdateElements
-			else
-				self:UnregisterEvent("PLAYER_TARGET_CHANGED")
-				self.PLAYER_TARGET_CHANGED = nil
-			end
-
-			if unit == "mouseover" then
-				self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
-				self.UPDATE_MOUSEOVER_UNIT = UpdateElements
-			else
-				self:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-				self.UPDATE_MOUSEOVER_UNIT = nil
-			end
-
-			if unit == "focus" then
-				self:RegisterEvent("PLAYER_FOCUS_CHANGED")
-				self.PLAYER_FOCUS_CHANGED = UpdateElements
-			else
-				self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
-				self.PLAYER_FOCUS_CHANGED = nil
-			end
-
-			if unit and (unit:match("^party%d") or unit:match("^raid%d")) then
-				self:RegisterEvent("UNIT_NAME_UPDATE")
-				self.UNIT_NAME_UPDATE = UNIT_NAME_UPDATE
-			else
-				self:UnregisterEvent("UNIT_NAME_UPDATE")
-				self.UNIT_NAME_UPDATE = nil
-			end
-
-			--if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then
-			if unit and (unit:match("%w+target")) then
-				self.OnUpdate = OnUpdate
-			else
-				self.OnUpdate = nil
-			end
+		else
+			self:Each("Unit", unit)
 		end
 	end
 
@@ -215,6 +160,8 @@ class "UnitFrame"
 
 			self.__Deactivated = nil
 
+			self:SetAttribute("deactivated", nil)
+
 			self:SetUnit(unitId)
 		end
 	end
@@ -228,6 +175,9 @@ class "UnitFrame"
 	function Deactivate(self)
 		if not self.__Deactivated then
 			self.__Deactivated = self:GetUnit() or true
+
+			self:SetAttribute("deactivated", true)
+
 			SetUnit(self, nil)
 		end
 	end
@@ -319,11 +269,82 @@ class "UnitFrame"
 		self:UpdateElements()
 	end
 
+	local function UpdateUnitFrame(self, unit)
+		self = IGAS:GetWrapper(self)
+
+		self:Each("Unit", unit)
+
+		if unit == "target" then
+			self:RegisterEvent("PLAYER_TARGET_CHANGED")
+			self.PLAYER_TARGET_CHANGED = UpdateElements
+		else
+			self:UnregisterEvent("PLAYER_TARGET_CHANGED")
+			self.PLAYER_TARGET_CHANGED = nil
+		end
+
+		if unit == "mouseover" then
+			self:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
+			self.UPDATE_MOUSEOVER_UNIT = UpdateElements
+		else
+			self:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+			self.UPDATE_MOUSEOVER_UNIT = nil
+		end
+
+		if unit == "focus" then
+			self:RegisterEvent("PLAYER_FOCUS_CHANGED")
+			self.PLAYER_FOCUS_CHANGED = UpdateElements
+		else
+			self:UnregisterEvent("PLAYER_FOCUS_CHANGED")
+			self.PLAYER_FOCUS_CHANGED = nil
+		end
+
+		if unit and (unit:match("^party%d") or unit:match("^raid%d")) then
+			self:RegisterEvent("UNIT_NAME_UPDATE")
+			self.UNIT_NAME_UPDATE = UNIT_NAME_UPDATE
+		else
+			self:UnregisterEvent("UNIT_NAME_UPDATE")
+			self.UNIT_NAME_UPDATE = nil
+		end
+
+		--if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then
+		if unit and (unit:match("%w+target")) then
+			self.OnUpdate = OnUpdate
+		else
+			self.OnUpdate = nil
+		end
+	end
+
+	_onattributechanged = [[
+		if name == "unit" then
+			if self:GetAttribute("deactivated") and value then
+				return self:SetAttribute("unit", nil)
+			end
+
+			if type(value) == "string" then
+				value = strlower(value)
+			else
+				value = nil
+			end
+
+			if value == "player" then
+				UnregisterUnitWatch(self)
+				self:Show()
+			elseif value then
+				RegisterUnitWatch(self)
+			else
+				UnregisterUnitWatch(self)
+				self:Hide()
+			end
+
+			self:CallMethod("UnitFrame_UpdateUnitFrame", value)
+		end
+	]]
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function Constructor(self, name, parent)
-		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate")
+		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate, SecureHandlerAttributeTemplate")
 	end
 
     function UnitFrame(self, name, parent)
@@ -339,6 +360,10 @@ class "UnitFrame"
 		self.OnEnter = self.OnEnter + OnEnter
 		self.OnLeave = self.OnLeave + OnLeave
 		self.OnShow = self.OnShow + OnShow
+
+		-- Prepare for secure handler
+		self:SetAttribute("_onattributechanged", _onattributechanged)
+		IGAS:GetUI(self).UnitFrame_UpdateUnitFrame = UpdateUnitFrame
 
 		self.__Interval = 0.5
     end

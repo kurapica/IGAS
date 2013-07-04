@@ -26,71 +26,101 @@ function RefreshAll()
 	_IFGroupUnitList:EachK(_All, "Refresh")
 end
 
-function GetGroupType(chkMax)
-	local kind, start, stop
+-------------------------------------
+-- Init manager
+-- Used to handle refresh in the beginning of the game with combat
+-- too bad to do this
+-------------------------------------
+do
+	-- Manager Frame
+	_IFGroup_ManagerFrame = _IFGroup_ManagerFrame or SecureFrame("IGAS_IFGroup_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
+	_IFGroup_ManagerFrame.Visible = true
 
-	local nRaid = GetNumGroupMembers()
-	local nParty = GetNumSubgroupMembers()
+	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		_IFGroup_ManagerFrame:Execute[[
+			Manager = self
 
-	if IsInRaid() then
-		kind = "RAID"
-	elseif IsInGroup() then
-		kind = "PARTY"
-	else
-		kind = "SOLO"
-	end
+			IFGroup_Panels = newtable()
+		]]
 
-	if kind == "RAID" then
-		start = 1
-		stop = nRaid
+		_IFGroup_ManagerFrame:SetAttribute("_onstate-group", [=[
 
-		if chkMax then
-			local _, instanceType = IsInInstance()
+		]=])
 
-			if instanceType == "raid" then
-				local _, _, _, _, max_players = GetInstanceInfo()
-				stop = max_players or stop
-			else
-				local raidMax = 0
-
-				local raid_difficulty = GetRaidDifficultyID()
-				if raid_difficulty == 1 or raid_difficulty == 3 then
-					raidMax = 10
-				elseif raid_difficulty == 2 or raid_difficulty == 4 then
-					raidMax = 25
-				end
-
-				if stop > raidMax then
-					if stop	> 25 then
-						stop = 40
-					elseif stop > 10 then
-						stop = 25
-					else
-						stop = 10
-					end
-				else
-					stop = raidMax
-				end
-			end
-		end
-	else
-		start = 0
-		stop = nParty
-
-		if chkMax and kind == "PARTY" then stop = 4 end
-	end
-
-	return kind, start, stop
+		_IFGroup_ManagerFrame:RegisterStateDriver("group", "")
+	end)
 end
 
-function GetGroupRosterUnit(kind, index)
-	if ( kind == "RAID" ) then
-		return "raid"..index
-	else
-		if ( index > 0 ) then
-			return "party"..index
+-------------------------------------
+-- Helper functions
+-------------------------------------
+do
+	function GetGroupType(chkMax)
+		local kind, start, stop
+
+		local nRaid = GetNumGroupMembers()
+		local nParty = GetNumSubgroupMembers()
+
+		if IsInRaid() then
+			kind = "RAID"
+		elseif IsInGroup() then
+			kind = "PARTY"
 		else
-			return "player"
+			kind = "SOLO"
+		end
+
+		if kind == "RAID" then
+			start = 1
+			stop = nRaid
+
+			if chkMax then
+				local _, instanceType = IsInInstance()
+
+				if instanceType == "raid" then
+					local _, _, _, _, max_players = GetInstanceInfo()
+					stop = max_players or stop
+				else
+					local raidMax = 0
+
+					local raid_difficulty = GetRaidDifficultyID()
+					if raid_difficulty == 1 or raid_difficulty == 3 then
+						raidMax = 10
+					elseif raid_difficulty == 2 or raid_difficulty == 4 then
+						raidMax = 25
+					end
+
+					if stop > raidMax then
+						if stop	> 25 then
+							stop = 40
+						elseif stop > 10 then
+							stop = 25
+						else
+							stop = 10
+						end
+					else
+						stop = raidMax
+					end
+				end
+			end
+		else
+			start = 0
+			stop = nParty
+
+			if chkMax and kind == "PARTY" then stop = 4 end
+		end
+
+		return kind, start, stop
+	end
+
+	function GetGroupRosterUnit(kind, index)
+		if ( kind == "RAID" ) then
+			return "raid"..index
+		else
+			if ( index > 0 ) then
+				return "party"..index
+			else
+				return "player"
+			end
 		end
 	end
 end
