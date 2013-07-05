@@ -1,6 +1,7 @@
 -- Author      : Kurapica
 -- Create Date : 2012/07/12
 -- Change Log  :
+--               2013/07/05 IFGroup now extend from IFElementPanel
 
 -- Check Version
 local version = 1
@@ -49,6 +50,73 @@ do
 
 		_IFGroup_ManagerFrame:RegisterStateDriver("group", "")
 	end)
+
+	-------------------------------
+	-- UnitPanel and UnitFrame cache
+	-------------------------------
+	_IFGroup_RegisterPanel = [=[
+		local panel = Manager:GetFrameRef("GroupPanel")
+
+		if panel then
+			IFGroup_Panels[panel] = IFGroup_Panels[panel] or newtable()
+		end
+	]=]
+
+	_IFGroup_UnregisterPanel = [=[
+		local panel = Manager:GetFrameRef("GroupPanel")
+
+		if panel then
+			IFGroup_Panels[panel] = nil
+		end
+	]=]
+
+	_IFGroup_RegisterFrame = [=[
+		local panel = Manager:GetFrameRef("GroupPanel")
+		local frame = Manager:GetFrameRef("UnitFrame")
+
+		if panel and frame then
+			IFGroup_Panels[panel] = IFGroup_Panels[panel] or newtable()
+			tinsert(IFGroup_Panels[panel], frame)
+		end
+	]=]
+
+	_IFGroup_UnregisterFrame = [=[
+		local panel = Manager:GetFrameRef("GroupPanel")
+		local frame = Manager:GetFrameRef("UnitFrame")
+
+		if panel and frame then
+			IFGroup_Panels[panel] = IFGroup_Panels[panel] or newtable()
+
+			for k, v in ipairs(IFGroup_Panels[panel]) do
+				if v == frame then
+					return tremove(IFGroup_Panels[panel], k)
+				end
+			end
+		end
+	]=]
+
+
+	function RegisterPanel(self)
+		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
+		_IFGroup_ManagerFrame:Execute(_IFGroup_RegisterPanel)
+	end
+
+	function UnregisterPanel(self)
+		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
+		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterPanel)
+	end
+
+	function RegisterFrame(self, frame)
+		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
+		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
+		_IFGroup_ManagerFrame:Execute(_IFGroup_RegisterFrame)
+	end
+
+	function UnregisterFrame(self, frame)
+		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
+		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
+		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterFrame)
+	end
 end
 
 -------------------------------------
@@ -126,6 +194,7 @@ do
 end
 
 interface "IFGroup"
+	extend "IFElementPanel"
 
 	doc [======[
 		@name IFGroup
@@ -211,6 +280,66 @@ interface "IFGroup"
 	-- Property
 	------------------------------------------------------
 	doc [======[
+		@name ShowRaid
+		@type property
+		@desc Whether the panel should be shown while in a raid
+	]======]
+	property "ShowRaid" {
+		Get = function(self)
+			return self:GetAttribute("showRaid") or false
+		end,
+		Set = function(self, value)
+			self:SetAttribute("showRaid", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowParty
+		@type property
+		@desc Whether the panel should be shown while in a party and not in a raid
+	]======]
+	property "ShowParty" {
+		Get = function(self)
+			return self:GetAttribute("showParty") or false
+		end,
+		Set = function(self, value)
+			self:SetAttribute("showParty", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowPlayer
+		@type property
+		@desc Whether the panel should show the player while not in a raid
+	]======]
+	property "ShowPlayer" {
+		Get = function(self)
+			return self:GetAttribute("showPlayer") or false
+		end,
+		Set = function(self, value)
+			self:SetAttribute("showPlayer", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowSolo
+		@type property
+		@desc Whether the panel should be shown while not in a group
+	]======]
+	property "ShowSolo" {
+		Get = function(self)
+			return self:GetAttribute("showSolo") or false
+		end,
+		Set = function(self, value)
+			self:SetAttribute("showSolo", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
 		@name KeepMaxPlayer
 		@type property
 		@desc Whether the element panel should contains the max count elements
@@ -263,10 +392,23 @@ interface "IFGroup"
 	}
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnElementAdd(self, element)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(RegisterFrame, self, element)
+	end
+
+	local function OnElementRemove(self, element)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterFrame, self, IGAS:GetUI(element))
+	end
+
+	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
 		_IFGroupUnitList[self] = nil
+
+		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterPanel, self)
 	end
 
 	------------------------------------------------------
@@ -274,5 +416,10 @@ interface "IFGroup"
 	------------------------------------------------------
 	function IFGroup(self)
 		_IFGroupUnitList[self] = _All
+
+		IFNoCombatTaskHandler._RegisterNoCombatTask(RegisterPanel, self)
+
+		self.OnElementAdd = self.OnElementAdd + OnElementAdd
+		self.OnElementRemove = self.OnElementRemove + OnElementRemove
 	end
 endinterface "IFGroup"

@@ -3,9 +3,10 @@
 -- Change Log  :
 --               2013/05/25 Reduce memory cost
 --               2013/07/04 UnitFrame can handle the change of attribute "unit"
+--               2013/07/05 Use attribute "deactivated" instead of "__Deactivated"
 
 -- Check Version
-local version = 5
+local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -155,10 +156,8 @@ class "UnitFrame"
 		@return nil
 	]======]
 	function Activate(self)
-		if self.__Deactivated then
-			local unitId = type(self.__Deactivated) == "string" and self.__Deactivated or nil
-
-			self.__Deactivated = nil
+		if self:GetAttribute("deactivated") then
+			local unitId = type(self:GetAttribute("deactivated")) == "string" and self:GetAttribute("deactivated") or nil
 
 			self:SetAttribute("deactivated", nil)
 
@@ -173,10 +172,8 @@ class "UnitFrame"
 		@return nil
 	]======]
 	function Deactivate(self)
-		if not self.__Deactivated then
-			self.__Deactivated = self:GetUnit() or true
-
-			self:SetAttribute("deactivated", true)
+		if not self:GetAttribute("deactivated") then
+			self:SetAttribute("deactivated", self:GetUnit() or true)
 
 			SetUnit(self, nil)
 		end
@@ -226,7 +223,7 @@ class "UnitFrame"
 	]======]
 	property "Activated" {
 		Get = function(self)
-			return not self.__Deactivated
+			return not self:GetAttribute("deactivated")
 		end,
 		Set = function(self, value)
 			if value then

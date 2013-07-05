@@ -3,14 +3,14 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitPanel", version) then
 	return
 end
 
 class "UnitPanel"
 	inherit "SecureFrame"
-	extend "IFElementPanel" "IFGroup"
+	extend "IFGroup"
 
 	doc [======[
 		@name UnitPanel

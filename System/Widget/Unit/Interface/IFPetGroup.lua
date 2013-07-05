@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPetGroup", version) then
 	return
 end
@@ -107,6 +107,7 @@ function GetPetUnit(kind, index)
 end
 
 interface "IFPetGroup"
+	extend "IFElementPanel"
 
 	doc [======[
 		@name IFPetGroup
