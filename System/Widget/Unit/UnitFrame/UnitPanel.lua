@@ -118,5 +118,11 @@ class "UnitPanel"
 		self.MarginBottom = 0
 		self.MarginLeft = 0
 		self.MarginRight = 0
+
+		-- Init for IFGroup
+		self.ShowRaid = true
+		self.ShowParty = true
+		self.ShowSolo = true
+		self.ShowPlayer = true
     end
 endclass "UnitPanel"

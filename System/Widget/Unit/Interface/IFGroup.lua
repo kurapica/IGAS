@@ -123,58 +123,66 @@ end
 -- Helper functions
 -------------------------------------
 do
-	function GetGroupType(chkMax)
+	function GetGroupType(self)
 		local kind, start, stop
 
 		local nRaid = GetNumGroupMembers()
 		local nParty = GetNumSubgroupMembers()
 
-		if IsInRaid() then
+		if IsInRaid() and self.ShowRaid then
 			kind = "RAID"
-		elseif IsInGroup() then
+		elseif IsInGroup() and self.ShowParty then
 			kind = "PARTY"
-		else
+		elseif self.ShowSolo then
 			kind = "SOLO"
 		end
 
-		if kind == "RAID" then
-			start = 1
-			stop = nRaid
+		if kind then
+			if kind == "RAID" then
+				start = 1
+				stop = nRaid
 
-			if chkMax then
-				local _, instanceType = IsInInstance()
+				if self.KeepMaxPlayer then
+					local _, instanceType = IsInInstance()
 
-				if instanceType == "raid" then
-					local _, _, _, _, max_players = GetInstanceInfo()
-					stop = max_players or stop
-				else
-					local raidMax = 0
-
-					local raid_difficulty = GetRaidDifficultyID()
-					if raid_difficulty == 1 or raid_difficulty == 3 then
-						raidMax = 10
-					elseif raid_difficulty == 2 or raid_difficulty == 4 then
-						raidMax = 25
-					end
-
-					if stop > raidMax then
-						if stop	> 25 then
-							stop = 40
-						elseif stop > 10 then
-							stop = 25
-						else
-							stop = 10
-						end
+					if instanceType == "raid" then
+						local _, _, _, _, max_players = GetInstanceInfo()
+						stop = max_players or stop
 					else
-						stop = raidMax
+						local raidMax = 0
+
+						local raid_difficulty = GetRaidDifficultyID()
+						if raid_difficulty == 1 or raid_difficulty == 3 then
+							raidMax = 10
+						elseif raid_difficulty == 2 or raid_difficulty == 4 then
+							raidMax = 25
+						end
+
+						if stop > raidMax then
+							if stop	> 25 then
+								stop = 40
+							elseif stop > 10 then
+								stop = 25
+							else
+								stop = 10
+							end
+						else
+							stop = raidMax
+						end
 					end
 				end
-			end
-		else
-			start = 0
-			stop = nParty
+			else
+				if kind	== "SOLO" or self.ShowPlayer then
+					start = 0
+				else
+					start = 1
+				end
+				stop = nParty
 
-			if chkMax and kind == "PARTY" then stop = 4 end
+				if self.KeepMaxPlayer and kind == "PARTY" then
+					stop = 4
+				end
+			end
 		end
 
 		return kind, start, stop
@@ -223,7 +231,7 @@ interface "IFGroup"
 	]======]
 	function Refresh(self)
 		if self:IsInterface(IFElementPanel) then
-			local kind, start, stop	 = GetGroupType(self.KeepMaxPlayer)
+			local kind, start, stop	 = GetGroupType(self)
 			local index = 1
 			local unit
 
@@ -260,7 +268,7 @@ interface "IFGroup"
 
 					index = index + 1
 				end
-			else
+			elseif start and stop then
 				for i = start, stop do
 					self.Element[index].Unit = GetGroupRosterUnit(kind, i)
 
@@ -340,16 +348,31 @@ interface "IFGroup"
 	}
 
 	doc [======[
+		@name GroupFilter
+		@type property
+		@desc A comma seperated list of raid group numbers and/or uppercase class names and/or uppercase roles
+	]======]
+	property "GroupFilter" {
+		Get = function(self)
+			return self:GetAttribute("groupFilter")
+		end,
+		Set = function(self, value)
+			self.:SetAttribute("groupFilter", value)
+		end,
+		Type = System.String + nil,
+	}
+
+	doc [======[
 		@name KeepMaxPlayer
 		@type property
 		@desc Whether the element panel should contains the max count elements
 	]======]
 	property "KeepMaxPlayer" {
 		Get = function(self)
-			return self.__KeepMaxPlayer or false
+			return self:GetAttribute("keepMaxPlayer") or false
 		end,
 		Set = function(self, value)
-			self.__KeepMaxPlayer = value
+			self:SetAttribute("keepMaxPlayer", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -361,10 +384,10 @@ interface "IFGroup"
 	]======]
 	property "SortByRole" {
 		Get = function(self)
-			return self.__SortByRole
+			return self:GetAttribute("sortByRole") or false
 		end,
 		Set = function(self, value)
-			self.__SortByRole = value
+			self:SetAttribute("sortByRole", value)
 			if value then
 				self.__SortRoleCache = self.__SortRoleCache or {}
 			else
