@@ -213,7 +213,28 @@ interface "IFGroup"
 	_DefaultRole = {
 		'TANK',
 		'HEALER',
-		'DAMAGER',
+		'DAMAGER'
+	}
+
+	enum "GroupType" {
+		"GROUP",
+		"CLASS",
+		"ROLE",
+		"ASSIGNEDROLE"
+	}
+
+	enum "SortType" {
+		"INDEX",
+		"NAME"
+	}
+
+	enum "RoleType" {
+		"MAINTANK",
+		"MAINASSIST",
+		"TANK",
+		"HEALER",
+		"DAMAGER",
+		"NONE"
 	}
 
 	------------------------------------------------------
@@ -360,6 +381,52 @@ interface "IFGroup"
 			self.:SetAttribute("groupFilter", value)
 		end,
 		Type = System.String + nil,
+	}
+
+	doc [======[
+		@name RoleFilter
+		@type property
+		@desc A comma seperated list of MT/MA/Tank/Healer/DPS role strings
+	]======]
+	property "RoleFilter" {
+		Get = function(self)
+			return self:GetAttribute("roleFilter")
+		end,
+		Set = function(self, value)
+			self:SetAttribute("roleFilter", value)
+		end,
+		Type = System.String + nil,
+	}
+
+	doc [======[
+		@name GroupBy
+		@type property
+		@desc Specifies a "grouping" type to apply before regular sorting (Default: nil)
+	]======]
+	property "GroupBy" {
+		Get = function(self)
+			return self:GetAttribute("groupBy")
+		end,
+		Set = function(self, value)
+			self:SetAttribute("groupBy", value)
+		end,
+		Type = GroupType + nil,
+	}
+
+
+	doc [======[
+		@name SortBy
+		@type property
+		@desc Defines how the group is sorted (Default: "INDEX")
+	]======]
+	property "SortBy" {
+		Get = function(self)
+			return self:GetAttribute("sortBy")
+		end,
+		Set = function(self, value)
+			self:SetAttribute("sortBy", value)
+		end,
+		Type = System.SortType + nil,
 	}
 
 	doc [======[
