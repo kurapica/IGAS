@@ -199,6 +199,37 @@ do
 			end
 		end
 	end
+
+	function GetGroupRosterInfo(kind, index)
+	    local _, unit, name, subgroup, className, role, server, assignedRole
+	    if ( kind == "RAID" ) then
+	        unit = "raid"..index
+	        name, _, subgroup, _, _, className, _, _, _, role = GetRaidRosterInfo(index)
+	    	
+	    	assignedRole = UnitGroupRolesAssigned(unit)
+	    else
+	        if ( index > 0 ) then
+	            unit = "party"..index
+	        else
+	            unit = "player"
+	        end
+	        if ( UnitExists(unit) ) then
+	            name, server = UnitName(unit)
+	            if (server and server ~= "") then
+	                name = name.."-"..server
+	            end
+	            _, className = UnitClass(unit)
+	            if ( GetPartyAssignment("MAINTANK", unit) ) then
+	                role = "MAINTANK"
+	            elseif ( GetPartyAssignment("MAINASSIST", unit) ) then
+	                role = "MAINASSIST"
+	            end
+	            assignedRole = UnitGroupRolesAssigned(unit)
+	        end
+	        subgroup = 1
+	    end
+	    return unit, name, subgroup, className, role, assignedRole
+	end
 end
 
 interface "IFGroup"
