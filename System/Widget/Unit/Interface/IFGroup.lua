@@ -123,6 +123,29 @@ end
 -- Helper functions
 -------------------------------------
 do
+	-- Recycle the cache table
+	_IFGroup_CacheTable = _IFGroup_CacheTable or setmetatable({}, {
+		__call = function(self, key)
+			if key then
+				if type(key) == "table" and self[key] then
+					wipe(key)
+					tinsert(self, key)
+				end
+			else
+				if #self > 0 then
+					return tremove(self, #self)
+				else
+					local ret = {}
+
+					-- Mark it as recycle table
+					self[ret] = true
+
+					return ret
+				end
+			end
+		end,
+	})
+
 	function GetGroupType(self)
 		local kind, start, stop
 
@@ -202,6 +225,7 @@ do
 
 	function GetGroupRosterInfo(kind, index)
 	    local _, unit, name, subgroup, className, role, server, assignedRole
+	    
 	    if ( kind == "RAID" ) then
 	        unit = "raid"..index
 	        name, _, subgroup, _, _, className, _, _, _, role = GetRaidRosterInfo(index)
@@ -229,6 +253,71 @@ do
 	        subgroup = 1
 	    end
 	    return unit, name, subgroup, className, role, assignedRole
+	end
+
+	function GetUnitList(self)
+		local kind, start, stop	 = GetGroupType(self)
+		local unit
+
+		local lst = _IFGroup_CacheTable()
+
+		if kind == "RAID" then
+			self.__SortRoleCache = self.__SortRoleCache or {}
+
+			-- Build up cache
+			for _, role in ipairs(self.SortRole) do
+				self.__SortRoleCache[role] = self.__SortRoleCache[role] or {}
+				wipe(self.__SortRoleCache[role])
+			end
+			self.__SortRoleCache["ELSE"] = self.__SortRoleCache["ELSE"] or {}
+			wipe(self.__SortRoleCache["ELSE"])
+
+			-- Sort
+			local cache
+			for i = start, stop do
+				unit = GetGroupRosterUnit(kind, i)
+				cache = self.__SortRoleCache[UnitGroupRolesAssigned(unit)] or self.__SortRoleCache["ELSE"]
+				tinsert(cache, unit)
+			end
+
+			for _, role in ipairs(self.SortRole) do
+				cache = self.__SortRoleCache[role]
+				for _, unit in ipairs(cache) do
+					self.Element[index].Unit = unit
+
+					index = index + 1
+				end
+			end
+			cache = self.__SortRoleCache["ELSE"]
+			for _, unit in ipairs(cache) do
+				tinsert(lst, unit)
+			end
+		elseif start and stop then
+			for i = start, stop do
+				tinsert(lst, GetGroupRosterUnit(kind, i))
+			end
+		end
+
+		return lst
+	end
+
+	function RefreshElementPanel(self)
+		local lst = GetUnitList(self)
+		local index = 1
+
+		for _, unit in ipairs(lst) do
+			self.Element[index].Unit = unit
+
+			index = index + 1
+		end
+
+		_IFGroup_CacheTable(lst)
+
+		for i = index, self.Count do
+			self.Element[i].Unit = nil
+		end
+
+		self:UpdatePanelSize()
 	end
 end
 
@@ -486,11 +575,6 @@ interface "IFGroup"
 		end,
 		Set = function(self, value)
 			self:SetAttribute("sortByRole", value)
-			if value then
-				self.__SortRoleCache = self.__SortRoleCache or {}
-			else
-				self.__SortRoleCache = nil
-			end
 		end,
 		Type = System.Boolean,
 	}
@@ -506,8 +590,6 @@ interface "IFGroup"
 		end,
 		Set = function(self, value)
 			self.__SortRole = value
-			self.__SortRoleCache = self.__SortRoleCache or {}
-			wipe(self.__SortRoleCache)
 		end,
 		Type = System.Table + nil,
 	}
