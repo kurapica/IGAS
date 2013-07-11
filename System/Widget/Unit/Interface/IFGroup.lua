@@ -12,6 +12,8 @@ end
 _All = "all"
 _IFGroupUnitList = _IFGroupUnitList or UnitList(_Name)
 
+_IFGroup_Need_Secure_Refresh = true
+
 function _IFGroupUnitList:OnUnitListChanged()
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -28,7 +30,7 @@ function RefreshAll()
 end
 
 -------------------------------------
--- Init manager
+-- Init secure manager
 -- Used to handle refresh in the beginning of the game with combat
 -- too bad to do this
 -------------------------------------
@@ -37,19 +39,105 @@ do
 	_IFGroup_ManagerFrame = _IFGroup_ManagerFrame or SecureFrame("IGAS_IFGroup_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
 	_IFGroup_ManagerFrame.Visible = true
 
-	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-		_IFGroup_ManagerFrame:Execute[[
-			Manager = self
+	_IFGroup_ManagerFrame:Execute[[
+		Manager = self
 
-			IFGroup_Panels = newtable()
-		]]
+		IFGroup_Panels = newtable()
 
-		_IFGroup_ManagerFrame:SetAttribute("_onstate-group", [=[
+		IFGroup_UnitList = newtable()
 
-		]=])
+		RefreshPanel = [=[
+			local kind, start, stop = ...
+			local unit
 
-		_IFGroup_ManagerFrame:RegisterStateDriver("group", "")
-	end)
+			-- Skip special filter panel
+			if self:GetAttribute("groupFilter") or self:GetAttribute("classFilter") or self:GetAttribute("roleFilter") then
+				return
+			end
+
+			-- Generate unit list
+			wipe(IFGroup_UnitList)
+
+			if kind == "raid" and self:GetAttribute("showRaid") then
+				for i = start, stop do
+					unit = "raid" .. i
+
+					tinsert(IFGroup_UnitList, unit)
+					IFGroup_UnitList[unit] = true
+				end
+			elseif kind == "party" and self:GetAttribute("showParty") then
+				if self:GetAttribute("ShowPlayer") then
+					tinsert(IFGroup_UnitList, "player")
+					IFGroup_UnitList["player"] = true
+				end
+
+				for i = 1, 4 do
+					unit = "party" .. i
+
+					tinsert(IFGroup_UnitList, unit)
+					IFGroup_UnitList[unit] = true
+				end
+			elseif self:GetAttribute("ShowSolo") then
+				tinsert(IFGroup_UnitList, "player")
+				IFGroup_UnitList["player"] = true
+			end
+
+			-- Scan the elements of the panel
+			local elements = IFGroup_Panels[self]
+
+			for _, ele in ipairs(elements) do
+				unit = ele:GetAttribute("unit")
+
+				if unit and IFGroup_UnitList[unit] then
+					IFGroup_UnitList[unit] = false
+				end
+			end
+
+			-- Refresh the elements
+			local index = 0
+
+			for _, ele in ipairs(elements) do
+				unit = ele:GetAttribute("unit")
+
+				if not unit or IFGroup_UnitList[unit] == nil then
+					while true do
+						index = index + 1
+						unit = IFGroup_UnitList[index]
+
+						if not unit or IFGroup_UnitList[unit] then
+							ele:SetAttribute("unit", unit)
+
+							break
+						end
+					end
+				end
+			end
+
+			wipe(IFGroup_UnitList)
+		]=]
+	]]
+
+	_IFGroup_ManagerFrame:SetAttribute("_onstate-group", [=[
+		local kind, start, stop
+
+		if newstate == "raid40" then
+			kind, start, stop = "raid", 1, 40
+		elseif newstate == "raid25" then
+			kind, start, stop = "raid", 1, 25
+		elseif newstate == "raid10" then
+			kind, start, stop = "raid", 1, 10
+		elseif newstate == "party" then
+			kind, start, stop = "party", 0, 4
+		else
+			kind, start, stop = "solo", 0, 0
+		end
+
+		for panel in pairs(IFGroup_Panels) do
+			Manager:RunFor(panel, RefreshPanel, kind, start, stop)
+		end
+	]=])
+
+	_IFGroup_ManagerFrame:RegisterStateDriver("group", "[@raid26,exists]raid40;[@raid11,exists]raid25;[raid]raid10;[party]party;solo")
 
 	-------------------------------
 	-- UnitPanel and UnitFrame cache
@@ -95,27 +183,61 @@ do
 		end
 	]=]
 
-
 	function RegisterPanel(self)
+		if not _IFGroup_Need_Secure_Refresh then return end
+
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_RegisterPanel)
 	end
 
 	function UnregisterPanel(self)
+		if not _IFGroup_Need_Secure_Refresh then return end
+		
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterPanel)
 	end
 
 	function RegisterFrame(self, frame)
+		if not _IFGroup_Need_Secure_Refresh then return end
+		
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_RegisterFrame)
 	end
 
 	function UnregisterFrame(self, frame)
+		if not _IFGroup_Need_Secure_Refresh then return end
+		
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterFrame)
+	end
+
+	-------------------------------------
+	-- Module Event Handler
+	-------------------------------------
+	function OnEnable(self)
+		self:ThreadCall(function()
+			-- Keep safe
+			System.Threading.Sleep(3)
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				-- Clear all
+				_IFGroup_ManagerFrame:UnregisterStateDriver("group")
+
+				_IFGroup_ManagerFrame:SetAttribute("_onstate-group", nil)
+
+				_IFGroup_ManagerFrame:Execute[[
+					for _, tbl in pairs(IFGroup_Panels) do
+						wipe(tbl)
+					end
+
+					wipe(IFGroup_Panels)
+				]]
+			end)
+
+			_IFGroup_Need_Secure_Refresh = false
+		end)
 	end
 end
 
@@ -255,50 +377,75 @@ do
 	    return unit, name, subgroup, className, role, assignedRole
 	end
 
+	function GetFilterCache(filter)
+		if filter then
+			local ret = _IFGroup_CacheTable()
+
+			for i, v in ipairs(filter) do
+				v = tostring(v)
+
+				ret[v] = i
+				ret[i] = v
+			end
+
+			return ret
+		end
+	end
+
 	function GetUnitList(self)
 		local kind, start, stop	 = GetGroupType(self)
-		local unit
+		local unit, name, subgroup, className, role, assignedRole
 
-		local lst = _IFGroup_CacheTable()
+		local unitlist = _IFGroup_CacheTable()
+		local namelist = _IFGroup_CacheTable()
+		local classlist = _IFGroup_CacheTable()
+		local rolelist = _IFGroup_CacheTable()
 
-		if kind == "RAID" then
-			self.__SortRoleCache = self.__SortRoleCache or {}
+		local groupFilter, classFilter, roleFilter
+		local passed
 
-			-- Build up cache
-			for _, role in ipairs(self.SortRole) do
-				self.__SortRoleCache[role] = self.__SortRoleCache[role] or {}
-				wipe(self.__SortRoleCache[role])
-			end
-			self.__SortRoleCache["ELSE"] = self.__SortRoleCache["ELSE"] or {}
-			wipe(self.__SortRoleCache["ELSE"])
+		-- Fill the filters
+		groupFilter = GetFilterCache(self.GroupFilter)
+		classFilter = GetFilterCache(self.ClassFilter)
+		roleFilter = GetFilterCache(self.RoleFilter)
 
-			-- Sort
-			local cache
+		-- Generate the unit list
+		if kind and start and stop then
+			-- Scan the units
 			for i = start, stop do
-				unit = GetGroupRosterUnit(kind, i)
-				cache = self.__SortRoleCache[UnitGroupRolesAssigned(unit)] or self.__SortRoleCache["ELSE"]
-				tinsert(cache, unit)
-			end
+				unit, name, subgroup, className, role, assignedRole = GetRaidRosterInfo(kind, i)
 
-			for _, role in ipairs(self.SortRole) do
-				cache = self.__SortRoleCache[role]
-				for _, unit in ipairs(cache) do
-					self.Element[index].Unit = unit
+				passed = true
 
-					index = index + 1
+				-- Check group & class & role
+				if passed and groupFilter and not groupFilter[tostring(subgroup)] then passed = false end
+				if passed and classFilter and not classFilter[className] then passed = false end
+				if passed and roleFilter and not classFilter[role] and not classFilter[assignedRole] then passed = false end
+
+				-- Add to list
+				if passed then 
+					tinsert(unitlist, unit)
+					unitlist[unit] = #unitlist
+					namelist[unit] = name
+					classlist[unit] = className
+					rolelist[unit] = role or assignedRole
 				end
 			end
-			cache = self.__SortRoleCache["ELSE"]
-			for _, unit in ipairs(cache) do
-				tinsert(lst, unit)
-			end
-		elseif start and stop then
-			for i = start, stop do
-				tinsert(lst, GetGroupRosterUnit(kind, i))
-			end
+
+			-- Group & sort
+
 		end
 
-		return lst
+		-- Recycle the tables
+		if groupFilter then _IFGroup_CacheTable(groupFilter) end
+		if classFilter then _IFGroup_CacheTable(classFilter) end
+		if roleFilter then _IFGroup_CacheTable(roleFilter) end
+
+		_IFGroup_CacheTable(namelist)
+		_IFGroup_CacheTable(classlist)
+		_IFGroup_CacheTable(rolelist)
+
+		return unitlist
 	end
 
 	function RefreshElementPanel(self)
@@ -340,7 +487,7 @@ interface "IFGroup"
 		"GROUP",
 		"CLASS",
 		"ROLE",
-		"ASSIGNEDROLE"
+		--"ASSIGNEDROLE"
 	}
 
 	enum "SortType" {
@@ -356,6 +503,38 @@ interface "IFGroup"
 		"DAMAGER",
 		"NONE"
 	}
+
+	enum "PlayerClass" {
+		"WARRIOR",
+		"PALADIN",
+		"HUNTER",
+		"ROGUE",
+		"PRIEST",
+		"DEATHKNIGHT",
+		"SHAMAN",
+		"MAGE",
+		"WARLOCK",
+		"MONK",
+		"DRUID",
+	}
+
+	struct "GroupFilter"
+		structtype "Array"
+
+		element = System.Number
+	endstruct "GroupFilter"
+
+	struct "ClassFilter"
+		structtype "Array"
+
+		element = PlayerClass
+	endstruct "ClassFilter"
+
+	struct "RoleFilter"
+		structtype "Array"
+
+		element = RoleType
+	endstruct "RoleFilter"
 
 	------------------------------------------------------
 	-- Event
@@ -491,31 +670,61 @@ interface "IFGroup"
 	doc [======[
 		@name GroupFilter
 		@type property
-		@desc A comma seperated list of raid group numbers and/or uppercase class names and/or uppercase roles
+		@desc A list of raid group numbers
 	]======]
 	property "GroupFilter" {
 		Get = function(self)
-			return self:GetAttribute("groupFilter")
+			return self.__GroupFilter
 		end,
 		Set = function(self, value)
-			self.:SetAttribute("groupFilter", value)
+			self.__GroupFilter = value
+			if value then
+				self:SetAttribute("groupFilter", true)
+			else
+				self:SetAttribute("groupFilter", false)
+			end
 		end,
-		Type = System.String + nil,
+		Type = GroupFilter + nil,
+	}
+
+	doc [======[
+		@name ClassFilter
+		@type property
+		@desc A list of uppercase class names
+	]======]
+	property "ClassFilter" {
+		Get = function(self)
+			return self.__ClassFilter
+		end,
+		Set = function(self, value)
+			self.__ClassFilter = value
+			if value then
+				self:SetAttribute("classFilter", true)
+			else
+				self:SetAttribute("classFilter", false)
+			end
+		end,
+		Type = ClassFilter + nil,
 	}
 
 	doc [======[
 		@name RoleFilter
 		@type property
-		@desc A comma seperated list of MT/MA/Tank/Healer/DPS role strings
+		@desc A list of uppercase role names
 	]======]
 	property "RoleFilter" {
 		Get = function(self)
-			return self:GetAttribute("roleFilter")
+			return self.__RoleFilter
 		end,
 		Set = function(self, value)
-			self:SetAttribute("roleFilter", value)
+			self.__RoleFilter = value
+			if value then
+				self:SetAttribute("roleFilter", true)
+			else
+				self:SetAttribute("roleFilter", false)
+			end
 		end,
-		Type = System.String + nil,
+		Type = RoleFilter + nil,
 	}
 
 	doc [======[
@@ -532,7 +741,6 @@ interface "IFGroup"
 		end,
 		Type = GroupType + nil,
 	}
-
 
 	doc [======[
 		@name SortBy
@@ -562,36 +770,6 @@ interface "IFGroup"
 			self:SetAttribute("keepMaxPlayer", value)
 		end,
 		Type = System.Boolean,
-	}
-
-	doc [======[
-		@name SortByRole
-		@type property
-		@desc Whether the players should be sorted by rules
-	]======]
-	property "SortByRole" {
-		Get = function(self)
-			return self:GetAttribute("sortByRole") or false
-		end,
-		Set = function(self, value)
-			self:SetAttribute("sortByRole", value)
-		end,
-		Type = System.Boolean,
-	}
-
-	doc [======[
-		@name SortRole
-		@type property
-		@desc The sort rule
-	]======]
-	property "SortRole" {
-		Get = function(self)
-			return self.__SortRole or _DefaultRole
-		end,
-		Set = function(self, value)
-			self.__SortRole = value
-		end,
-		Type = System.Table + nil,
 	}
 
 	------------------------------------------------------
