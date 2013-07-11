@@ -268,6 +268,34 @@ do
 		end,
 	})
 
+	_NameList = nil
+
+	-- Default order settings
+	_DefaultGroupOrder = {1,2,3,4,5,6,7,8,}
+
+	_DefaultClassOrder = {
+		"DEATHKNIGHT",
+		"DRUID",
+		"HUNTER",
+		"MAGE",
+		"MONK",
+		"PALADIN",
+		"PRIEST",
+		"ROGUE",
+		"SHAMAN",
+		"WARLOCK",
+		"WARRIOR",
+	}
+
+	_DefaultRoleOrder = {
+		"MAINTANK",
+		"MAINASSIST",
+		"TANK",
+		"HEALER",
+		"DAMAGER",
+		"NONE",
+	}
+
 	function GetGroupType(self)
 		local kind, start, stop
 
@@ -382,14 +410,24 @@ do
 			local ret = _IFGroup_CacheTable()
 
 			for i, v in ipairs(filter) do
-				v = tostring(v)
-
 				ret[v] = i
-				ret[i] = v
 			end
 
 			return ret
 		end
+	end
+
+	function ConcatList(self, src)
+		for _, unit in ipairs(src) do
+			tinsert(self, unit)
+		end
+	end
+
+	function CompareByName(a, b)
+		local na = _NameList[a] or a
+		local nb = _NameList[b] or b
+
+		return a < b
 	end
 
 	function GetUnitList(self)
@@ -398,16 +436,33 @@ do
 
 		local unitlist = _IFGroup_CacheTable()
 		local namelist = _IFGroup_CacheTable()
-		local classlist = _IFGroup_CacheTable()
-		local rolelist = _IFGroup_CacheTable()
+		local grouplist = _IFGroup_CacheTable()
 
 		local groupFilter, classFilter, roleFilter
 		local passed
+		local orderlist
 
 		-- Fill the filters
 		groupFilter = GetFilterCache(self.GroupFilter)
 		classFilter = GetFilterCache(self.ClassFilter)
 		roleFilter = GetFilterCache(self.RoleFilter)
+
+		-- Init the group
+		grouplist["ELSE"] = _IFGroup_CacheTable()
+		
+		if self.GroupBy == "GROUP" then
+			orderlist = self.GroupFilter or _DefaultGroupOrder
+		elseif self.GroupBy == "CLASS" then
+			orderlist = self.ClassFilter or _DefaultClassOrder
+		elseif self.GroupBy == "ROLE" then
+			orderlist = self.RoleFilter or _DefaultRoleOrder
+		end
+
+		if orderlist then
+			for k, v in ipairs(orderlist) do
+				grouplist[v] = _IFGroup_CacheTable()
+			end
+		end
 
 		-- Generate the unit list
 		if kind and start and stop then
@@ -418,22 +473,49 @@ do
 				passed = true
 
 				-- Check group & class & role
-				if passed and groupFilter and not groupFilter[tostring(subgroup)] then passed = false end
+				if passed and groupFilter and not groupFilter[subgroup] then passed = false end
 				if passed and classFilter and not classFilter[className] then passed = false end
 				if passed and roleFilter and not classFilter[role] and not classFilter[assignedRole] then passed = false end
 
 				-- Add to list
-				if passed then 
-					tinsert(unitlist, unit)
-					unitlist[unit] = #unitlist
+				if passed then
 					namelist[unit] = name
-					classlist[unit] = className
-					rolelist[unit] = role or assignedRole
+
+					if self.GroupBy == "GROUP" then
+						tinsert(grouplist[subgroup], unit)
+					elseif self.GroupBy == "CLASS" then
+						tinsert(grouplist[className], unit)
+					elseif self.GroupBy == "ROLE" then
+						if role and classFilter[role] then
+							tinsert(grouplist[className], unit)
+						else
+							tinsert(grouplist[assignedRole], unit)
+						end
+					else
+						tinsert(grouplist["ELSE"], unit)
+					end
 				end
 			end
 
-			-- Group & sort
+			-- Sorting
+			if self.SortBy == "NAME" then
+				_NameList = namelist
 
+				for k, v in pairs(grouplist) do
+					Array.Sort(v, CompareByName)
+				end
+
+				_NameList = nil
+			end
+
+			-- Generate unit list
+			if orderlist then
+				for k, v in ipairs(orderlist) do
+					ConcatList(unitlist, grouplist[v])
+				end
+			end
+
+			ConcatList(unitlist, grouplist["ELSE"])
 		end
 
 		-- Recycle the tables
@@ -441,9 +523,12 @@ do
 		if classFilter then _IFGroup_CacheTable(classFilter) end
 		if roleFilter then _IFGroup_CacheTable(roleFilter) end
 
+		for k, v in pairs(grouplist) do
+			_IFGroup_CacheTable(v)
+		end
+
 		_IFGroup_CacheTable(namelist)
-		_IFGroup_CacheTable(classlist)
-		_IFGroup_CacheTable(rolelist)
+		_IFGroup_CacheTable(grouplist)
 
 		return unitlist
 	end
@@ -476,12 +561,6 @@ interface "IFGroup"
 		@type interface
 		@desc IFGroup is used to handle the group's updating
 	]======]
-
-	_DefaultRole = {
-		'TANK',
-		'HEALER',
-		'DAMAGER'
-	}
 
 	enum "GroupType" {
 		"GROUP",
@@ -550,58 +629,7 @@ interface "IFGroup"
 		@return nil
 	]======]
 	function Refresh(self)
-		if self:IsInterface(IFElementPanel) then
-			local kind, start, stop	 = GetGroupType(self)
-			local index = 1
-			local unit
-
-			if kind == "RAID" and self.SortByRole then
-				self.__SortRoleCache = self.__SortRoleCache or {}
-
-				-- Build up cache
-				for _, role in ipairs(self.SortRole) do
-					self.__SortRoleCache[role] = self.__SortRoleCache[role] or {}
-					wipe(self.__SortRoleCache[role])
-				end
-				self.__SortRoleCache["ELSE"] = self.__SortRoleCache["ELSE"] or {}
-				wipe(self.__SortRoleCache["ELSE"])
-
-				-- Sort
-				local cache
-				for i = start, stop do
-					unit = GetGroupRosterUnit(kind, i)
-					cache = self.__SortRoleCache[UnitGroupRolesAssigned(unit)] or self.__SortRoleCache["ELSE"]
-					tinsert(cache, unit)
-				end
-
-				for _, role in ipairs(self.SortRole) do
-					cache = self.__SortRoleCache[role]
-					for _, unit in ipairs(cache) do
-						self.Element[index].Unit = unit
-
-						index = index + 1
-					end
-				end
-				cache = self.__SortRoleCache["ELSE"]
-				for _, unit in ipairs(cache) do
-					self.Element[index].Unit = unit
-
-					index = index + 1
-				end
-			elseif start and stop then
-				for i = start, stop do
-					self.Element[index].Unit = GetGroupRosterUnit(kind, i)
-
-					index = index + 1
-				end
-			end
-
-			for i = index, self.Count do
-				self.Element[i].Unit = nil
-			end
-
-			self:UpdatePanelSize()
-		end
+		RefreshElementPanel(self)
 	end
 
 	------------------------------------------------------
@@ -670,7 +698,7 @@ interface "IFGroup"
 	doc [======[
 		@name GroupFilter
 		@type property
-		@desc A list of raid group numbers
+		@desc A list of raid group numbers, used as the filter settings and order settings(if GroupBy is "GROUP")
 	]======]
 	property "GroupFilter" {
 		Get = function(self)
@@ -690,7 +718,7 @@ interface "IFGroup"
 	doc [======[
 		@name ClassFilter
 		@type property
-		@desc A list of uppercase class names
+		@desc A list of uppercase class names, used as the filter settings and order settings(if GroupBy is "CLASS")
 	]======]
 	property "ClassFilter" {
 		Get = function(self)
@@ -710,7 +738,7 @@ interface "IFGroup"
 	doc [======[
 		@name RoleFilter
 		@type property
-		@desc A list of uppercase role names
+		@desc A list of uppercase role names, used as the filter settings and order settings(if GroupBy is "ROLE")
 	]======]
 	property "RoleFilter" {
 		Get = function(self)
