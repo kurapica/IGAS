@@ -37,21 +37,20 @@ end
 do
 	-- Manager Frame
 	_IFGroup_ManagerFrame = _IFGroup_ManagerFrame or SecureFrame("IGAS_IFGroup_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
-	_IFGroup_ManagerFrame.Visible = true
+	_IFGroup_ManagerFrame.Visible = false
 
 	_IFGroup_ManagerFrame:Execute[[
 		Manager = self
 
 		IFGroup_Panels = newtable()
-
 		IFGroup_UnitList = newtable()
 
 		RefreshPanel = [=[
 			local kind, start, stop = ...
 			local unit
 
-			-- Skip special filter panel
-			if self:GetAttribute("groupFilter") or self:GetAttribute("classFilter") or self:GetAttribute("roleFilter") then
+			-- Skip panel has limit
+			if self:GetAttribute("hasGroupLimit") or self:GetAttribute("hasClassLimit") or self:GetAttribute("hasRoleLimit") then
 				return
 			end
 
@@ -192,14 +191,14 @@ do
 
 	function UnregisterPanel(self)
 		if not _IFGroup_Need_Secure_Refresh then return end
-		
+
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterPanel)
 	end
 
 	function RegisterFrame(self, frame)
 		if not _IFGroup_Need_Secure_Refresh then return end
-		
+
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_RegisterFrame)
@@ -207,7 +206,7 @@ do
 
 	function UnregisterFrame(self, frame)
 		if not _IFGroup_Need_Secure_Refresh then return end
-		
+
 		_IFGroup_ManagerFrame:SetFrameRef("GroupPanel", self)
 		_IFGroup_ManagerFrame:SetFrameRef("UnitFrame", frame)
 		_IFGroup_ManagerFrame:Execute(_IFGroup_UnregisterFrame)
@@ -220,6 +219,8 @@ do
 		self:ThreadCall(function()
 			-- Keep safe
 			System.Threading.Sleep(3)
+
+			_IFGroup_Need_Secure_Refresh = false
 
 			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 				-- Clear all
@@ -236,7 +237,6 @@ do
 				]]
 			end)
 
-			_IFGroup_Need_Secure_Refresh = false
 		end)
 	end
 end
@@ -271,7 +271,7 @@ do
 	_NameList = nil
 
 	-- Default order settings
-	_DefaultGroupOrder = {1,2,3,4,5,6,7,8,}
+	_DefaultGroupOrder = {1, 2, 3, 4, 5, 6, 7, 8,}
 
 	_DefaultClassOrder = {
 		"DEATHKNIGHT",
@@ -375,11 +375,11 @@ do
 
 	function GetGroupRosterInfo(kind, index)
 	    local _, unit, name, subgroup, className, role, server, assignedRole
-	    
+
 	    if ( kind == "RAID" ) then
 	        unit = "raid"..index
 	        name, _, subgroup, _, _, className, _, _, _, role = GetRaidRosterInfo(index)
-	    	
+
 	    	assignedRole = UnitGroupRolesAssigned(unit)
 	    else
 	        if ( index > 0 ) then
@@ -417,17 +417,14 @@ do
 		end
 	end
 
-	function ConcatList(self, src)
+	function ConcatList(tar, src)
 		for _, unit in ipairs(src) do
-			tinsert(self, unit)
+			tinsert(tar, unit)
 		end
 	end
 
 	function CompareByName(a, b)
-		local na = _NameList[a] or a
-		local nb = _NameList[b] or b
-
-		return a < b
+		return (_NameList[a] or a or "") < (_NameList[b] or b or "")
 	end
 
 	function GetUnitList(self)
@@ -449,7 +446,7 @@ do
 
 		-- Init the group
 		grouplist["ELSE"] = _IFGroup_CacheTable()
-		
+
 		if self.GroupBy == "GROUP" then
 			orderlist = self.GroupFilter or _DefaultGroupOrder
 		elseif self.GroupBy == "CLASS" then
@@ -481,13 +478,13 @@ do
 				if passed then
 					namelist[unit] = name
 
-					if self.GroupBy == "GROUP" then
+					if self.GroupBy == "GROUP" and grouplist[subgroup] then
 						tinsert(grouplist[subgroup], unit)
-					elseif self.GroupBy == "CLASS" then
+					elseif self.GroupBy == "CLASS" and grouplist[className] then
 						tinsert(grouplist[className], unit)
-					elseif self.GroupBy == "ROLE" then
-						if role and classFilter[role] then
-							tinsert(grouplist[className], unit)
+					elseif self.GroupBy == "ROLE" and (grouplist[role] or grouplist[assignedRole]) then
+						if role and grouplist[role] then
+							tinsert(grouplist[role], unit)
 						else
 							tinsert(grouplist[assignedRole], unit)
 						end
@@ -501,7 +498,7 @@ do
 			if self.SortBy == "NAME" then
 				_NameList = namelist
 
-				for k, v in pairs(grouplist) do
+				for _, v in pairs(grouplist) do
 					Array.Sort(v, CompareByName)
 				end
 
@@ -616,6 +613,13 @@ interface "IFGroup"
 	endstruct "RoleFilter"
 
 	------------------------------------------------------
+	-- Helper functions
+	------------------------------------------------------
+	local function SecureSetAttribute(self, attr, value)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(self.SetAttribute, self, attr, value)
+	end
+
+	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
 
@@ -645,7 +649,7 @@ interface "IFGroup"
 			return self:GetAttribute("showRaid") or false
 		end,
 		Set = function(self, value)
-			self:SetAttribute("showRaid", value)
+			SecureSetAttribute(self, "showRaid", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -660,7 +664,7 @@ interface "IFGroup"
 			return self:GetAttribute("showParty") or false
 		end,
 		Set = function(self, value)
-			self:SetAttribute("showParty", value)
+			SecureSetAttribute(self, "showParty", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -675,7 +679,7 @@ interface "IFGroup"
 			return self:GetAttribute("showPlayer") or false
 		end,
 		Set = function(self, value)
-			self:SetAttribute("showPlayer", value)
+			SecureSetAttribute(self, "showPlayer", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -690,7 +694,7 @@ interface "IFGroup"
 			return self:GetAttribute("showSolo") or false
 		end,
 		Set = function(self, value)
-			self:SetAttribute("showSolo", value)
+			SecureSetAttribute(self, "showSolo", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -707,9 +711,26 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.__GroupFilter = value
 			if value then
-				self:SetAttribute("groupFilter", true)
+				-- Check if full group
+				local chk = _IFGroup_CacheTable()
+
+				for _, v in ipairs(_DefaultGroupOrder) do
+					chk[v] = true
+				end
+
+				for _, v in ipairs(value) do
+					chk[v] = nil
+				end
+
+				if next(chk) then
+					SecureSetAttribute(self, "hasGroupLimit", true)
+				else
+					SecureSetAttribute(self, "hasGroupLimit", nil)
+				end
+
+				_IFGroup_CacheTable(chk)
 			else
-				self:SetAttribute("groupFilter", false)
+				SecureSetAttribute(self, "hasGroupLimit", nil)
 			end
 		end,
 		Type = GroupFilter + nil,
@@ -727,9 +748,26 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.__ClassFilter = value
 			if value then
-				self:SetAttribute("classFilter", true)
+				-- Check if full class
+				local chk = _IFGroup_CacheTable()
+
+				for k, v in ipairs(_DefaultClassOrder) do
+					chk[v] = true
+				end
+
+				for k, v in ipairs(value) do
+					chk[v] = nil
+				end
+
+				if next(chk) then
+					SecureSetAttribute(self, "hasClassLimit", true)
+				else
+					SecureSetAttribute(self, "hasClassLimit", nil)
+				end
+
+				_IFGroup_CacheTable(chk)
 			else
-				self:SetAttribute("classFilter", false)
+				SecureSetAttribute(self, "hasClassLimit", nil)
 			end
 		end,
 		Type = ClassFilter + nil,
@@ -747,9 +785,39 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.__RoleFilter = value
 			if value then
-				self:SetAttribute("roleFilter", true)
+				-- Check if full role
+				local chk = _IFGroup_CacheTable()
+
+				for k, v in ipairs(_DefaultRoleOrder) do
+					chk[v] = true
+				end
+
+				for k, v in ipairs(value) do
+					chk[v] = nil
+				end
+
+				if next(chk) then
+					if (chk.TANK and not chk.MAINTANK and not chk.MAINASSIST) or (not chk.TANK) then
+						chk.TANK = nil
+						chk.MAINTANK = nil
+						chk.MAINASSIST = nil
+						chk.NONE = nil
+
+						if next(chk) then
+							SecureSetAttribute(self, "hasRoleLimit", true)
+						else
+							SecureSetAttribute(self, "hasRoleLimit", nil)
+						end
+					else
+						SecureSetAttribute(self, "hasRoleLimit", true)
+					end
+				else
+					SecureSetAttribute(self, "hasRoleLimit", nil)
+				end
+
+				_IFGroup_CacheTable(chk)
 			else
-				self:SetAttribute("roleFilter", false)
+				SecureSetAttribute(self, "hasRoleLimit", nil)
 			end
 		end,
 		Type = RoleFilter + nil,
@@ -765,7 +833,7 @@ interface "IFGroup"
 			return self:GetAttribute("groupBy")
 		end,
 		Set = function(self, value)
-			self:SetAttribute("groupBy", value)
+			SecureSetAttribute(self, "groupBy", value)
 		end,
 		Type = GroupType + nil,
 	}
@@ -780,7 +848,7 @@ interface "IFGroup"
 			return self:GetAttribute("sortBy")
 		end,
 		Set = function(self, value)
-			self:SetAttribute("sortBy", value)
+			SecureSetAttribute(self, "sortBy", value)
 		end,
 		Type = System.SortType + nil,
 	}
@@ -795,7 +863,7 @@ interface "IFGroup"
 			return self:GetAttribute("keepMaxPlayer") or false
 		end,
 		Set = function(self, value)
-			self:SetAttribute("keepMaxPlayer", value)
+			SecureSetAttribute(self, "keepMaxPlayer", value)
 		end,
 		Type = System.Boolean,
 	}

@@ -6,7 +6,7 @@
 --               2012/12/19 Move all OnClick handler to macro, fix for action done after postclick and equipset error.
 
 -- Check Version
-local version = 16
+local version = 17
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -243,7 +243,7 @@ do
 
 	-- Manager Frame
 	_IFActionHandler_ManagerFrame = _IFActionHandler_ManagerFrame or SecureFrame("IGAS_IFActionHandler_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
-	_IFActionHandler_ManagerFrame.Visible = true
+	_IFActionHandler_ManagerFrame.Visible = false
 
 	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target)
 		if not InCombatLockdown() then
