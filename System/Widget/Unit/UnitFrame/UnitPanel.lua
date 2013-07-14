@@ -30,7 +30,7 @@ class "UnitPanel"
 	-- Method
 	------------------------------------------------------
 	doc [======[
-		@name InitWithNumber
+		@name InitWithCount
 		@type method
 		@desc Init the unit panel with a unit count
 		@param count number, the units count
