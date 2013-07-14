@@ -1,3 +1,6 @@
+2013/07/14: IGAS v41
+	1. Improve the System.Widget.Unit.IFGroup and IFPetGroup, now the raid panel can be show when entering the game in combat mode.More settings added to these interfaces.
+
 2013/07/04:
     1. System.Widget.Unit.UnitFrame can handle the change of attribute "unit"
 

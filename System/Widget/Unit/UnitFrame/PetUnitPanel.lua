@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.PetUnitPanel", version) then
 	return
 end
@@ -29,74 +29,10 @@ class "PetUnitPanel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc Refresh the unit panel
-		@return nil
-	]======]
-	function Refresh(self)
-		if not self.__Deactivated then
-			return IFPetGroup.Refresh(self)
-		end
-	end
-
-	doc [======[
-		@name Activate
-		@type method
-		@desc Activate the unit panel
-		@return nil
-	]======]
-	function Activate(self)
-		if self.__Deactivated then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
-				self.__Deactivated = nil
-				return self:Refresh()
-			end)
-		end
-	end
-
-	doc [======[
-		@name Deactivate
-		@type method
-		@desc Deactivate the unit panel
-		@return nil
-	]======]
-	function Deactivate(self)
-		if not self.__Deactivated then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
-				self.__Deactivated = true
-
-				for i = 1, self.Count do
-					self.Element[i].Unit = nil
-				end
-
-				self:UpdatePanelSize()
-			end)
-		end
-	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Activated
-		@type property
-		@desc Whether the unit panel is activated
-	]======]
-	property "Activated" {
-		Get = function(self)
-			return not self.__Deactivated
-		end,
-		Set = function(self, value)
-			if value then
-				self:Activate()
-			else
-				self:Deactivate()
-			end
-		end,
-		Type = Boolean,
-	}
 
 	------------------------------------------------------
 	-- Constructor
@@ -118,5 +54,11 @@ class "PetUnitPanel"
 		self.MarginBottom = 0
 		self.MarginLeft = 0
 		self.MarginRight = 0
+
+		-- Init for IFPetGroup
+		self.ShowRaid = false
+		self.ShowParty = true
+		self.ShowSolo = true
+		self.ShowPlayer = true
     end
 endclass "PetUnitPanel"

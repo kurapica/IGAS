@@ -11,6 +11,8 @@ end
 _All = "all"
 _IFPetGroupUnitList = _IFPetGroupUnitList or UnitList(_Name)
 
+_IFPetGroup_Deactivated = _IFPetGroup_Deactivated or {}
+
 function _IFPetGroupUnitList:OnUnitListChanged()
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
 	self:RegisterEvent("UNIT_PET")
@@ -24,85 +26,61 @@ function _IFPetGroupUnitList:ParseEvent(event)
 end
 
 function RefreshAll()
-	_IFPetGroupUnitList:EachK(_All, "Refresh")
+	for _, panel in _IFPetGroupUnitList(_All) do
+		if not _IFPetGroup_Deactivated[panel] then
+			panel:Refresh()
+		end
+	end
 end
 
-function GetGroupType(chkMax)
-	local kind, start, stop
+-------------------------------------
+-- Helper functions
+-------------------------------------
+do
+	function GetGroupType(self)
+		local kind, start, stop
 
-	local nRaid = GetNumGroupMembers()
-	local nParty = GetNumSubgroupMembers()
+		local nRaid = GetNumGroupMembers()
+		local nParty = GetNumSubgroupMembers()
 
-	if IsInRaid() then
-		kind = "RAID"
-	elseif IsInGroup() then
-		kind = "PARTY"
-	else
-		kind = "SOLO"
-	end
+		if IsInRaid() and self.ShowRaid then
+			kind = "RAID"
+		elseif IsInGroup() and self.ShowParty then
+			kind = "PARTY"
+		elseif nRaid == 0 and nParty == 0 and self.ShowSolo then
+			kind = "SOLO"
+		end
 
-	if kind == "RAID" then
-		start = 1
-		stop = nRaid
-
-		if chkMax then
-			local _, instanceType = IsInInstance()
-
-			if instanceType == "raid" then
-				local _, _, _, _, max_players = GetInstanceInfo()
-				stop = max_players or stop
+		if kind then
+			if kind == "RAID" then
+				start = 1
+				stop = nRaid
 			else
-				local raidMax = 0
-
-				local raid_difficulty = GetRaidDifficultyID()
-				if raid_difficulty == 1 or raid_difficulty == 3 then
-					raidMax = 10
-				elseif raid_difficulty == 2 or raid_difficulty == 4 then
-					raidMax = 25
-				end
-
-				if stop > raidMax then
-					if stop	> 25 then
-						stop = 40
-					elseif stop > 10 then
-						stop = 25
-					else
-						stop = 10
-					end
+				if kind	== "SOLO" or self.ShowPlayer then
+					start = 0
 				else
-					stop = raidMax
+					start = 1
 				end
+				if kind == "PARTY" then
+					stop = nParty
+				else
+					stop = 0
+				end
+
 			end
 		end
-	else
-		start = 0
-		stop = nParty
 
-		if chkMax and kind == "PARTY" then stop = 4 end
+		return kind, start, stop
 	end
 
-	return kind, start, stop
-end
-
-function GetGroupRosterUnit(kind, index)
-	if ( kind == "RAID" ) then
-		return "raid"..index
-	else
-		if ( index > 0 ) then
-			return "party"..index
+	function GetPetUnit(kind, index)
+		if ( kind == "RAID" ) then
+			return "raidpet"..index
+		elseif ( index > 0 ) then
+			return "partypet"..index
 		else
-			return "player"
+			return "pet"
 		end
-	end
-end
-
-function GetPetUnit(kind, index)
-	if ( kind == "RAID" ) then
-		return "raidpet"..index
-	elseif ( index > 0 ) then
-		return "partypet"..index
-	else
-		return "pet"
 	end
 end
 
@@ -114,6 +92,13 @@ interface "IFPetGroup"
 		@type interface
 		@desc IFPetGroup is used to handle the pet group's updating
 	]======]
+
+	------------------------------------------------------
+	-- Helper functions
+	------------------------------------------------------
+	local function SecureSetAttribute(self, attr, value)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(self.SetAttribute, self, attr, value)
+	end
 
 	------------------------------------------------------
 	-- Event
@@ -129,28 +114,62 @@ interface "IFPetGroup"
 		@return nil
 	]======]
 	function Refresh(self)
-		if self:IsInterface(IFElementPanel) then
-			local kind, start, stop	 = GetGroupType()
-			local index = 1
-			local unit
+		local kind, start, stop	 = GetGroupType(self)
+		local index = 1
+		local unit
 
-			if kind ~= "RAID" or not self.DeactivateInRaid then
-				for i = start, stop do
-					unit = GetPetUnit(kind, i)
+		if kind and start and stop then
+			for i = start, stop do
+				unit = GetPetUnit(kind, i)
 
-					if UnitExists(unit) then
-						self.Element[index].Unit = unit
+				if UnitExists(unit) then
+					self.Element[index].Unit = unit
 
-						index = index + 1
-					end
+					index = index + 1
 				end
 			end
+		end
 
-			for i = index, self.Count do
-				self.Element[i].Unit = nil
-			end
+		for i = index, self.Count do
+			self.Element[i].Unit = nil
+		end
 
-			self:UpdatePanelSize()
+		self:UpdatePanelSize()
+	end
+
+	doc [======[
+		@name Activate
+		@type method
+		@desc Activate the unit panel
+		@return nil
+	]======]
+	function Activate(self)
+		if _IFPetGroup_Deactivated[self] then
+			_IFPetGroup_Deactivated[self] = nil
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				return self:Refresh()
+			end)
+		end
+	end
+
+	doc [======[
+		@name Deactivate
+		@type method
+		@desc Deactivate the unit panel
+		@return nil
+	]======]
+	function Deactivate(self)
+		if not _IFPetGroup_Deactivated[self] then
+			_IFPetGroup_Deactivated[self] = true
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				for i = 1, self.Count do
+					self.Element[i].Unit = nil
+				end
+
+				self:UpdatePanelSize()
+			end)
 		end
 	end
 
@@ -158,16 +177,80 @@ interface "IFPetGroup"
 	-- Property
 	------------------------------------------------------
 	doc [======[
-		@name DeactivateInRaid
+		@name Activated
 		@type property
-		@desc Whether should deactivate in the raid if using the defalut Refresh method
+		@desc Whether the unit panel is activated
 	]======]
-	property "DeactivateInRaid" {
+	property "Activated" {
 		Get = function(self)
-			return self.__DeactivateInRaid or false
+			return not _IFPetGroup_Deactivated[self]
 		end,
 		Set = function(self, value)
-			self.__DeactivateInRaid = value
+			if value then
+				self:Activate()
+			else
+				self:Deactivate()
+			end
+		end,
+		Type = Boolean,
+	}
+
+	doc [======[
+		@name ShowRaid
+		@type property
+		@desc Whether the panel should be shown while in a raid
+	]======]
+	property "ShowRaid" {
+		Get = function(self)
+			return self:GetAttribute("showRaid") or false
+		end,
+		Set = function(self, value)
+			SecureSetAttribute(self, "showRaid", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowParty
+		@type property
+		@desc Whether the panel should be shown while in a party and not in a raid
+	]======]
+	property "ShowParty" {
+		Get = function(self)
+			return self:GetAttribute("showParty") or false
+		end,
+		Set = function(self, value)
+			SecureSetAttribute(self, "showParty", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowPlayer
+		@type property
+		@desc Whether the panel should show the player while not in a raid
+	]======]
+	property "ShowPlayer" {
+		Get = function(self)
+			return self:GetAttribute("showPlayer") or false
+		end,
+		Set = function(self, value)
+			SecureSetAttribute(self, "showPlayer", value)
+		end,
+		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name ShowSolo
+		@type property
+		@desc Whether the panel should be shown while not in a group
+	]======]
+	property "ShowSolo" {
+		Get = function(self)
+			return self:GetAttribute("showSolo") or false
+		end,
+		Set = function(self, value)
+			SecureSetAttribute(self, "showSolo", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -177,6 +260,7 @@ interface "IFPetGroup"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFPetGroupUnitList[self] = nil
+		_IFPetGroup_Deactivated[self] = nil
 	end
 
 	------------------------------------------------------

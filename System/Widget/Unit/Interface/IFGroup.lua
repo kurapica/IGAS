@@ -13,6 +13,7 @@ _All = "all"
 _IFGroupUnitList = _IFGroupUnitList or UnitList(_Name)
 
 _IFGroup_Need_Secure_Refresh = true
+_IFGroup_Deactivated = _IFGroup_Deactivated or {}
 
 function _IFGroupUnitList:OnUnitListChanged()
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -26,7 +27,11 @@ function _IFGroupUnitList:ParseEvent(event)
 end
 
 function RefreshAll()
-	_IFGroupUnitList:EachK(_All, "Refresh")
+	for _, panel in _IFGroupUnitList(_All) do
+		if not _IFGroup_Deactivated[panel] then
+			panel:Refresh()
+		end
+	end
 end
 
 -------------------------------------
@@ -306,7 +311,7 @@ do
 			kind = "RAID"
 		elseif IsInGroup() and self.ShowParty then
 			kind = "PARTY"
-		elseif self.ShowSolo then
+		elseif nRaid == 0 and nParty == 0 and self.ShowSolo then
 			kind = "SOLO"
 		end
 
@@ -350,11 +355,16 @@ do
 				else
 					start = 1
 				end
-				stop = nParty
-
-				if self.KeepMaxPlayer and kind == "PARTY" then
-					stop = 4
+				if kind == "PARTY" then
+					if self.KeepMaxPlayer then
+						stop = 4
+					else
+						stop = nParty
+					end
+				else
+					stop = 0
 				end
+
 			end
 		end
 
@@ -374,10 +384,13 @@ do
 	end
 
 	function GetGroupRosterInfo(kind, index)
-	    local _, unit, name, subgroup, className, role, server, assignedRole
+	    local _, unit, name, subgroup, className, role, assignedRole
 
 	    if ( kind == "RAID" ) then
 	        unit = "raid"..index
+
+	        if not UnitExists(unit) then return unit end
+
 	        name, _, subgroup, _, _, className, _, _, _, role = GetRaidRosterInfo(index)
 
 	    	assignedRole = UnitGroupRolesAssigned(unit)
@@ -387,15 +400,13 @@ do
 	        else
 	            unit = "player"
 	        end
-	        if ( UnitExists(unit) ) then
-	            name, server = UnitName(unit)
-	            if (server and server ~= "") then
-	                name = name.."-"..server
-	            end
+
+	        if UnitExists(unit) then
+	            name = UnitName(unit)
 	            _, className = UnitClass(unit)
-	            if ( GetPartyAssignment("MAINTANK", unit) ) then
+	            if GetPartyAssignment("MAINTANK", unit) then
 	                role = "MAINTANK"
-	            elseif ( GetPartyAssignment("MAINASSIST", unit) ) then
+	            elseif GetPartyAssignment("MAINASSIST", unit) then
 	                role = "MAINASSIST"
 	            end
 	            assignedRole = UnitGroupRolesAssigned(unit)
@@ -438,6 +449,7 @@ do
 		local groupFilter, classFilter, roleFilter
 		local passed
 		local orderlist
+		local groupBy = self.GroupBy
 
 		-- Fill the filters
 		groupFilter = GetFilterCache(self.GroupFilter)
@@ -447,11 +459,11 @@ do
 		-- Init the group
 		grouplist["ELSE"] = _IFGroup_CacheTable()
 
-		if self.GroupBy == "GROUP" then
+		if groupBy == "GROUP" then
 			orderlist = self.GroupFilter or _DefaultGroupOrder
-		elseif self.GroupBy == "CLASS" then
+		elseif groupBy == "CLASS" then
 			orderlist = self.ClassFilter or _DefaultClassOrder
-		elseif self.GroupBy == "ROLE" then
+		elseif groupBy == "ROLE" then
 			orderlist = self.RoleFilter or _DefaultRoleOrder
 		end
 
@@ -465,24 +477,24 @@ do
 		if kind and start and stop then
 			-- Scan the units
 			for i = start, stop do
-				unit, name, subgroup, className, role, assignedRole = GetRaidRosterInfo(kind, i)
+				unit, name, subgroup, className, role, assignedRole = GetGroupRosterInfo(kind, i)
 
 				passed = true
 
 				-- Check group & class & role
 				if passed and groupFilter and not groupFilter[subgroup] then passed = false end
 				if passed and classFilter and not classFilter[className] then passed = false end
-				if passed and roleFilter and not classFilter[role] and not classFilter[assignedRole] then passed = false end
+				if passed and roleFilter and not roleFilter[role] and not roleFilter[assignedRole] then passed = false end
 
 				-- Add to list
 				if passed then
 					namelist[unit] = name
 
-					if self.GroupBy == "GROUP" and grouplist[subgroup] then
+					if groupBy == "GROUP" and grouplist[subgroup] then
 						tinsert(grouplist[subgroup], unit)
-					elseif self.GroupBy == "CLASS" and grouplist[className] then
+					elseif groupBy == "CLASS" and grouplist[className] then
 						tinsert(grouplist[className], unit)
-					elseif self.GroupBy == "ROLE" and (grouplist[role] or grouplist[assignedRole]) then
+					elseif groupBy == "ROLE" and (grouplist[role] or grouplist[assignedRole]) then
 						if role and grouplist[role] then
 							tinsert(grouplist[role], unit)
 						else
@@ -560,6 +572,7 @@ interface "IFGroup"
 	]======]
 
 	enum "GroupType" {
+		"NONE",
 		"GROUP",
 		"CLASS",
 		"ROLE",
@@ -633,12 +646,69 @@ interface "IFGroup"
 		@return nil
 	]======]
 	function Refresh(self)
-		RefreshElementPanel(self)
+		if not _IFGroup_Deactivated[self] then
+			RefreshElementPanel(self)
+		end
+	end
+
+	doc [======[
+		@name Activate
+		@type method
+		@desc Activate the unit panel
+		@return nil
+	]======]
+	function Activate(self)
+		if _IFGroup_Deactivated[self] then
+			_IFGroup_Deactivated[self] = nil
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				return self:Refresh()
+			end)
+		end
+	end
+
+	doc [======[
+		@name Deactivate
+		@type method
+		@desc Deactivate the unit panel
+		@return nil
+	]======]
+	function Deactivate(self)
+		if not _IFGroup_Deactivated[self] then
+			_IFGroup_Deactivated[self] = true
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				for i = 1, self.Count do
+					self.Element[i].Unit = nil
+				end
+
+				self:UpdatePanelSize()
+			end)
+		end
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Activated
+		@type property
+		@desc Whether the unit panel is activated
+	]======]
+	property "Activated" {
+		Get = function(self)
+			return not _IFGroup_Deactivated[self]
+		end,
+		Set = function(self, value)
+			if value then
+				self:Activate()
+			else
+				self:Deactivate()
+			end
+		end,
+		Type = Boolean,
+	}
+
 	doc [======[
 		@name ShowRaid
 		@type property
@@ -709,6 +779,8 @@ interface "IFGroup"
 			return self.__GroupFilter
 		end,
 		Set = function(self, value)
+			if value and not next(value) then value = nil end
+
 			self.__GroupFilter = value
 			if value then
 				-- Check if full group
@@ -746,6 +818,8 @@ interface "IFGroup"
 			return self.__ClassFilter
 		end,
 		Set = function(self, value)
+			if value and not next(value) then value = nil end
+
 			self.__ClassFilter = value
 			if value then
 				-- Check if full class
@@ -783,6 +857,8 @@ interface "IFGroup"
 			return self.__RoleFilter
 		end,
 		Set = function(self, value)
+			if value and not next(value) then value = nil end
+
 			self.__RoleFilter = value
 			if value then
 				-- Check if full role
@@ -830,12 +906,12 @@ interface "IFGroup"
 	]======]
 	property "GroupBy" {
 		Get = function(self)
-			return self:GetAttribute("groupBy")
+			return self:GetAttribute("groupBy") or "NONE"
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self, "groupBy", value)
 		end,
-		Type = GroupType + nil,
+		Type = GroupType,
 	}
 
 	doc [======[
@@ -845,12 +921,12 @@ interface "IFGroup"
 	]======]
 	property "SortBy" {
 		Get = function(self)
-			return self:GetAttribute("sortBy")
+			return self:GetAttribute("sortBy") or "INDEX"
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self, "sortBy", value)
 		end,
-		Type = System.SortType + nil,
+		Type = SortType,
 	}
 
 	doc [======[
@@ -884,6 +960,7 @@ interface "IFGroup"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFGroupUnitList[self] = nil
+		_IFGroup_Deactivated[self] = nil
 
 		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterPanel, self)
 	end
