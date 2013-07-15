@@ -8,7 +8,7 @@
 --              2013/02/04 Recode
 
 -- Check Version
-local version = 8
+local version = 9
 if not IGAS:NewAddon("IGAS.Widget.ScrollForm", version) then
 	return
 end
@@ -134,6 +134,7 @@ class "ScrollForm"
 	function GetScrollChild(self)
 		if not self.__ScrollChild then
 			local container = Container("Container", self)
+			container.Height = 1 -- Default height to make sure the container will be positioned
 			self:SetScrollChild(container)
 		end
 		return self.__ScrollChild
