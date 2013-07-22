@@ -37,9 +37,8 @@ class "UnitPanel"
 		@return nil
 	]======]
 	function InitWithCount(self, count)
-		for i = 1, count do
-			self.Element[i]:Hide()
-		end
+		self.Count = count
+		self:Each("Hide")
 	end
 
 	------------------------------------------------------

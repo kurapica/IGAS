@@ -1,3 +1,6 @@
+2013/07/22:
+	1. Re design the System.Widget.Unit.IFGroup, the unit panel should be worked based on the blizzard's SecureGroupHeader.
+
 2013/07/16:
 	1. Give the ScrollForm's default ScrollChild a default height, so the ScrollChild:GetTop() will return a not-nil value.
 

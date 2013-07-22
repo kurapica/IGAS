@@ -1,9 +1,10 @@
 -- Author      : Kurapica
 -- Create Date : 2012/08/27
 -- Change Log  :
+--               2013/07/22 Using Set/GetAttribute to store the properties, for secure using
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.IFElementPanel", version) then
 	return
 end
@@ -75,7 +76,7 @@ interface "IFElementPanel"
 				self:Fire("OnElementRemove", ele)
 				ele:Dispose()
 
-				self.__ElementPanel_Count = i - 1
+				self:SetAttribute("ElementPanel_Count", i - 1)
 			end
 
 			AdjustPanel(self)
@@ -94,7 +95,7 @@ interface "IFElementPanel"
 
 				self:Fire("OnElementAdd", ele)
 
-				self.__ElementPanel_Count = i
+				self:SetAttribute("ElementPanel_Count", i)
 			end
 
 			AdjustPanel(self)
@@ -205,7 +206,7 @@ interface "IFElementPanel"
 	]======]
 	property "ColumnCount" {
 		Get = function(self)
-			return self.__ElementPanel_ColumnCount or 99
+			return self:GetAttribute("ElementPanel_ColumnCount") or 99
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -215,7 +216,7 @@ interface "IFElementPanel"
 			end
 
 			if cnt ~= self.ColumnCount then
-				self.__ElementPanel_ColumnCount = cnt
+				self:SetAttribute("ElementPanel_ColumnCount", cnt)
 
 				Reduce(self)
 				self:Each(AdjustElement, self)
@@ -231,7 +232,7 @@ interface "IFElementPanel"
 	]======]
 	property "RowCount" {
 		Get = function(self)
-			return self.__ElementPanel_RowCount or 99
+			return self:GetAttribute("ElementPanel_RowCount") or 99
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -241,7 +242,7 @@ interface "IFElementPanel"
 			end
 
 			if cnt ~= self.RowCount then
-				self.__ElementPanel_RowCount = cnt
+				self:SetAttribute("ElementPanel_RowCount", cnt)
 
 				Reduce(self)
 				self:Each(AdjustElement, self)
@@ -257,7 +258,7 @@ interface "IFElementPanel"
 	]======]
 	property "MaxCount" {
 		Get = function(self)
-			return self.__ElementPanel_ColumnCount * self.__ElementPanel_RowCount
+			return self:GetAttribute("ElementPanel_ColumnCount") * self:GetAttribute("ElementPanel_RowCount")
 		end,
 	}
 
@@ -268,7 +269,7 @@ interface "IFElementPanel"
 	]======]
 	property "ElementWidth" {
 		Get = function(self)
-			return self.__ElementPanel_Width or 16
+			return self:GetAttribute("ElementPanel_Width") or 16
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -278,7 +279,7 @@ interface "IFElementPanel"
 			end
 
 			if cnt ~= self.ElementWidth then
-				self.__ElementPanel_Width = cnt
+				self:SetAttribute("ElementPanel_Width", cnt)
 
 				self:Each(AdjustElement, self)
 			end
@@ -293,7 +294,7 @@ interface "IFElementPanel"
 	]======]
 	property "ElementHeight" {
 		Get = function(self)
-			return self.__ElementPanel_Height or 16
+			return self:GetAttribute("ElementPanel_Height") or 16
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -303,7 +304,7 @@ interface "IFElementPanel"
 			end
 
 			if cnt ~= self.ElementHeight then
-				self.__ElementPanel_Height = cnt
+				self:SetAttribute("ElementPanel_Height", cnt)
 
 				self:Each(AdjustElement, self)
 			end
@@ -318,7 +319,7 @@ interface "IFElementPanel"
 	]======]
 	property "Count" {
 		Get = function(self)
-			return self.__ElementPanel_Count or 0
+			return self:GetAttribute("ElementPanel_Count") or 0
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -349,11 +350,11 @@ interface "IFElementPanel"
 	]======]
 	property "Orientation" {
 		Get = function(self)
-			return self.__ElementPanel_Orientation or Orientation.HORIZONTAL
+			return self:GetAttribute("ElementPanel_Orientation") or Orientation.HORIZONTAL
 		end,
 		Set = function(self, orientation)
 			if orientation ~= self.Orientation then
-				self.__ElementPanel_Orientation = orientation
+				self:SetAttribute("ElementPanel_Orientation", orientation)
 
 				self:Each(AdjustElement, self)
 			end
@@ -385,12 +386,12 @@ interface "IFElementPanel"
 	]======]
 	property "HSpacing" {
 		Get = function(self)
-			return self.__ElementPanel_HSpacing or 0
+			return self:GetAttribute("ElementPanel_HSpacing") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_HSpacing == spacing then return end
+			if self:GetAttribute("ElementPanel_HSpacing") == spacing then return end
 
-			self.__ElementPanel_HSpacing = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_HSpacing", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -404,12 +405,12 @@ interface "IFElementPanel"
 	]======]
 	property "VSpacing" {
 		Get = function(self)
-			return self.__ElementPanel_VSpacing or 0
+			return self:GetAttribute("ElementPanel_VSpacing") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_VSpacing == spacing then return end
+			if self:GetAttribute("ElementPanel_VSpacing") == spacing then return end
 
-			self.__ElementPanel_VSpacing = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_VSpacing", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -423,10 +424,10 @@ interface "IFElementPanel"
 	]======]
 	property "AutoSize" {
 		Get = function(self)
-			return self.__ElementPanel_AutoSize and true or false
+			return self:GetAttribute("ElementPanel_AutoSize") and true or false
 		end,
 		Set = function(self, flag)
-			self.__ElementPanel_AutoSize = flag
+			self:SetAttribute("ElementPanel_AutoSize", flag)
 		end,
 		Type = Boolean,
 	}
@@ -438,12 +439,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginTop" {
 		Get = function(self)
-			return self.__ElementPanel_MarginTop or 0
+			return self:GetAttribute("ElementPanel_MarginTop") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginTop == spacing then return end
+			if self:GetAttribute("ElementPanel_MarginTop") == spacing then return end
 
-			self.__ElementPanel_MarginTop = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_MarginTop", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -457,12 +458,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginBottom" {
 		Get = function(self)
-			return self.__ElementPanel_MarginBottom or 0
+			return self:GetAttribute("ElementPanel_MarginBottom") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginBottom == spacing then return end
+			if self:GetAttribute("ElementPanel_MarginBottom") == spacing then return end
 
-			self.__ElementPanel_MarginBottom = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_MarginBottom", spacing > 0 and floor(spacing) or 0)
 
 			AdjustPanel(self)
 		end,
@@ -476,12 +477,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginLeft" {
 		Get = function(self)
-			return self.__ElementPanel_MarginLeft or 0
+			return self:GetAttribute("ElementPanel_MarginLeft") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginLeft == spacing then return end
+			if self:GetAttribute("ElementPanel_MarginLeft") == spacing then return end
 
-			self.__ElementPanel_MarginLeft = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_MarginLeft", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -495,12 +496,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginRight" {
 		Get = function(self)
-			return self.__ElementPanel_MarginRight or 0
+			return self:GetAttribute("ElementPanel_MarginRight") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginRight == spacing then return end
+			if self:GetAttribute("ElementPanel_MarginRight") == spacing then return end
 
-			self.__ElementPanel_MarginRight = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("ElementPanel_MarginRight", spacing > 0 and floor(spacing) or 0)
 
 			AdjustPanel(self)
 		end,
@@ -542,10 +543,10 @@ interface "IFElementPanel"
 	]======]
 	property "KeepMaxSize" {
 		Get = function(self)
-			return self.__KeepMaxSize or false
+			return self:GetAttribute("KeepMaxSize") or false
 		end,
 		Set = function(self, value)
-			self.__KeepMaxSize = value
+			self:SetAttribute("KeepMaxSize", value)
 			return AdjustPanel(self)
 		end,
 		Type = System.Boolean,
