@@ -1,20 +1,188 @@
 -- Author      : Kurapica
--- Create Date : 2012/08/27
+-- Create Date : 2013/07/22
 -- Change Log  :
 
 -- Check Version
 local version = 1
-if not IGAS:NewAddon("IGAS.Widget.IFElementPanel", version) then
+if not IGAS:NewAddon("IGAS.Widget.IFSecurePanel", version) then
 	return
 end
 
-interface "IFElementPanel"
+-------------------------------------
+-- Secure Manager
+-------------------------------------
+do
+	-- Manager Frame
+	_IFSecurePanel_ManagerFrame = SecureFrame("IGAS_IFSecurePanel_Manager", IGAS.UIParent)
+	_IFSecurePanel_ManagerFrame.Visible = false
+
+	_IFSecurePanel_ManagerFrame:Execute[[
+		Manager = self
+
+		IFSecurePanel_Panels = newtable()
+		IFSecurePanel_Cache = newtable()
+		IFSecurePanel_Map = newtable()
+
+		UpdatePanelSize = [=[
+			local panel = IFSecurePanel_Map[self]
+			local elements = panel and IFSecurePanel_Cache[panel]
+			local count = 0
+
+			if elements then
+				for i = #elements, 1, -1 do
+					if elements[i]:IsShown() then
+						count = i
+						break
+					end
+				end
+
+				if i ~= IFSecurePanel_Cache[panel] then
+					IFSecurePanel_Cache[panel] = i
+
+					local row
+					local column
+					local columnCount = panel:GetAttribute("ElementPanel_ColumnCount") or 99
+					local rowCount = panel:GetAttribute("ElementPanel_RowCount") or 99
+					local elementWidth = panel:GetAttribute("ElementPanel_Width") or 16
+					local elementHeight = panel:GetAttribute("ElementPanel_Height") or 16
+					local hSpacing = panel:GetAttribute("ElementPanel_HSpacing") or 0
+					local vSpacing = panel:GetAttribute("ElementPanel_VSpacing") or 0
+					local marginTop = panel:GetAttribute("ElementPanel_MarginTop") or 0
+					local marginBottom = panel:GetAttribute("ElementPanel_MarginBottom") or 0
+					local marginLeft = panel:GetAttribute("ElementPanel_MarginLeft") or 0
+					local marginRight = panel:GetAttribute("ElementPanel_MarginRight") or 0
+
+					if panel:GetAttribute("ElementPanel_Orientation") == "HORIZONTAL" then
+						row = ceil(i / columnCount)
+						column = row == 1 and i or columnCount
+					else
+						column = ceil(i / rowCount)
+						row = column == 1 and i or rowCount
+					end
+
+					panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
+					panel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
+				end
+			end
+		]=]
+	]]
+
+	_IFSecurePanel_RegisterPanel = [=[
+		local panel = Manager:GetFrameRef("SecurePanel")
+
+		if panel and not IFSecurePanel_Panels[panel] then
+			IFSecurePanel_Panels[panel] = newtable()
+		end
+	]=]
+
+	_IFSecurePanel_UnregisterPanel = [=[
+		local panel = Manager:GetFrameRef("SecurePanel")
+
+		if panel then
+			IFSecurePanel_Panels[panel] = nil
+			IFSecurePanel_Cache[panel] = nil
+		end
+	]=]
+
+	_IFSecurePanel_RegisterFrame = [=[
+		local panel = Manager:GetFrameRef("SecurePanel")
+		local frame = Manager:GetFrameRef("SecureElement")
+
+		if panel and frame then
+			IFSecurePanel_Panels[panel] = IFSecurePanel_Panels[panel] or newtable()
+			tinsert(IFSecurePanel_Panels[panel], frame)
+
+			IFSecurePanel_Map[frame] = panel
+		end
+	]=]
+
+	_IFSecurePanel_UnregisterFrame = [=[
+		local panel = Manager:GetFrameRef("SecurePanel")
+		local frame = Manager:GetFrameRef("SecureElement")
+
+		IFSecurePanel_Map[frame] = nil
+
+		if panel and frame and IFSecurePanel_Panels[panel] then
+			for k, v in ipairs(IFSecurePanel_Panels[panel]) do
+				if v == frame then
+					return tremove(IFSecurePanel_Panels[panel], k)
+				end
+			end
+		end
+	]=]
+
+	_IFSecurePanel_WrapShow = [[
+		Manager:RunFor(self, UpdatePanelSize)
+	]]
+
+	_IFSecurePanel_WrapHide = [[
+		Manager:RunFor(self, UpdatePanelSize)
+	]]
+
+	function RegisterPanel(self)
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecurePanel", self)
+		_IFSecurePanel_ManagerFrame:Execute(_IFSecurePanel_RegisterPanel)
+	end
+
+	function UnregisterPanel(self)
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecurePanel", self)
+		_IFSecurePanel_ManagerFrame:Execute(_IFSecurePanel_UnregisterPanel)
+	end
+
+	function RegisterFrame(self, frame)
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecurePanel", self)
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecureElement", frame)
+		_IFSecurePanel_ManagerFrame:Execute(_IFSecurePanel_RegisterFrame)
+
+		_IFSecurePanel_ManagerFrame:WrapScript(frame, "OnShow", _IFSecurePanel_WrapShow)
+		_IFSecurePanel_ManagerFrame:WrapScript(frame, "OnHide", _IFSecurePanel_WrapHide)
+	end
+
+	function UnregisterFrame(self, frame)
+		_IFSecurePanel_ManagerFrame:UnwrapScript(frame, "OnShow")
+    	_IFSecurePanel_ManagerFrame:UnwrapScript(frame, "OnHide")
+
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecurePanel", self)
+		_IFSecurePanel_ManagerFrame:SetFrameRef("SecureElement", frame)
+		_IFSecurePanel_ManagerFrame:Execute(_IFSecurePanel_UnregisterFrame)
+	end
+
+	-------------------------------------
+	-- Module Event Handler
+	-------------------------------------
+	function OnEnable(self)
+		self:ThreadCall(function()
+			-- Keep safe
+			System.Threading.Sleep(3)
+
+			_IFSecurePanel_Need_Secure_Refresh = false
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				-- Clear all
+				_IFSecurePanel_ManagerFrame:UnregisterStateDriver("group")
+
+				_IFSecurePanel_ManagerFrame:SetAttribute("_onstate-group", nil)
+
+				_IFSecurePanel_ManagerFrame:Execute[[
+					for _, tbl in pairs(IFSecurePanel_Panels) do
+						wipe(tbl)
+					end
+
+					wipe(IFSecurePanel_Panels)
+				]]
+			end)
+
+		end)
+	end
+end
+
+interface "IFSecurePanel"
 	extend "IFIterator"
 
 	doc [======[
-		@name IFElementPanel
+		@name IFSecurePanel
 		@type interface
-		@desc IFElementPanel provides features to build an panel to contain elements of same class in a grid, the elements are generated by the IFElementPanel
+		@desc IFSecurePanel provides features to build an panel to contain elements of same class in a grid, the elements are generated by the IFSecurePanel
 	]======]
 
 	local function AdjustElement(element, self)
@@ -75,7 +243,7 @@ interface "IFElementPanel"
 				self:Fire("OnElementRemove", ele)
 				ele:Dispose()
 
-				self.__ElementPanel_Count = i - 1
+				self:SetAttribute("IFSecurePanel_Count", i - 1)
 			end
 
 			AdjustPanel(self)
@@ -94,7 +262,7 @@ interface "IFElementPanel"
 
 				self:Fire("OnElementAdd", ele)
 
-				self.__ElementPanel_Count = i
+				self:SetAttribute("IFSecurePanel_Count", i)
 			end
 
 			AdjustPanel(self)
@@ -112,21 +280,21 @@ interface "IFElementPanel"
 		doc [======[
 			@name Element
 			@type class
-			@desc Element is an accessor to the IFElementPanel's elements, used like object.Element[i].Prop = value
+			@desc Element is an accessor to the IFSecurePanel's elements, used like object.Element[i].Prop = value
 		]======]
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 	    function Element(self, elementPanel)
-			self.__ElementPanel = elementPanel
+			self.__IFSecurePanel = elementPanel
 	    end
 
 		------------------------------------------------------
 		-- __index
 		------------------------------------------------------
 		function __index(self, index)
-			self = self.__ElementPanel
+			self = self.__IFSecurePanel
 
 			if type(index) == "number" and index >= 1 and index <= self.ColumnCount * self.RowCount then
 				index = floor(index)
@@ -205,17 +373,17 @@ interface "IFElementPanel"
 	]======]
 	property "ColumnCount" {
 		Get = function(self)
-			return self.__ElementPanel_ColumnCount or 99
+			return self:GetAttribute("IFSecurePanel_ColumnCount") or 99
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
 			if cnt < 1 then
-				error("ElementPanel.ColumnCount must be greater than 0.", 2)
+				error("IFSecurePanel.ColumnCount must be greater than 0.", 2)
 			end
 
 			if cnt ~= self.ColumnCount then
-				self.__ElementPanel_ColumnCount = cnt
+				self:SetAttribute("IFSecurePanel_ColumnCount", cnt)
 
 				Reduce(self)
 				self:Each(AdjustElement, self)
@@ -231,17 +399,17 @@ interface "IFElementPanel"
 	]======]
 	property "RowCount" {
 		Get = function(self)
-			return self.__ElementPanel_RowCount or 99
+			return self:GetAttribute("IFSecurePanel_RowCount") or 99
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
 			if cnt < 1 then
-				error("ElementPanel.RowCount must be greater than 0.", 2)
+				error("IFSecurePanel.RowCount must be greater than 0.", 2)
 			end
 
 			if cnt ~= self.RowCount then
-				self.__ElementPanel_RowCount = cnt
+				self:SetAttribute("IFSecurePanel_RowCount", cnt)
 
 				Reduce(self)
 				self:Each(AdjustElement, self)
@@ -257,7 +425,7 @@ interface "IFElementPanel"
 	]======]
 	property "MaxCount" {
 		Get = function(self)
-			return self.__ElementPanel_ColumnCount * self.__ElementPanel_RowCount
+			return self:GetAttribute("IFSecurePanel_ColumnCount") * self:GetAttribute("IFSecurePanel_RowCount")
 		end,
 	}
 
@@ -268,17 +436,17 @@ interface "IFElementPanel"
 	]======]
 	property "ElementWidth" {
 		Get = function(self)
-			return self.__ElementPanel_Width or 16
+			return self:GetAttribute("IFSecurePanel_Width") or 16
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
 			if cnt < 1 then
-				error("ElementPanel.ElementWidth must be greater than 0.", 2)
+				error("IFSecurePanel.ElementWidth must be greater than 0.", 2)
 			end
 
 			if cnt ~= self.ElementWidth then
-				self.__ElementPanel_Width = cnt
+				self:SetAttribute("IFSecurePanel_Width", cnt)
 
 				self:Each(AdjustElement, self)
 			end
@@ -293,17 +461,17 @@ interface "IFElementPanel"
 	]======]
 	property "ElementHeight" {
 		Get = function(self)
-			return self.__ElementPanel_Height or 16
+			return self:GetAttribute("IFSecurePanel_Height") or 16
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
 			if cnt < 1 then
-				error("ElementPanel.ElementHeight must be greater than 0.", 2)
+				error("IFSecurePanel.ElementHeight must be greater than 0.", 2)
 			end
 
 			if cnt ~= self.ElementHeight then
-				self.__ElementPanel_Height = cnt
+				self:SetAttribute("IFSecurePanel_Height", cnt)
 
 				self:Each(AdjustElement, self)
 			end
@@ -318,7 +486,7 @@ interface "IFElementPanel"
 	]======]
 	property "Count" {
 		Get = function(self)
-			return self.__ElementPanel_Count or 0
+			return self:GetAttribute("IFSecurePanel_Count") or 0
 		end,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
@@ -349,11 +517,11 @@ interface "IFElementPanel"
 	]======]
 	property "Orientation" {
 		Get = function(self)
-			return self.__ElementPanel_Orientation or Orientation.HORIZONTAL
+			return self:GetAttribute("IFSecurePanel_Orientation") or Orientation.HORIZONTAL
 		end,
 		Set = function(self, orientation)
 			if orientation ~= self.Orientation then
-				self.__ElementPanel_Orientation = orientation
+				self:SetAttribute("IFSecurePanel_Orientation", orientation)
 
 				self:Each(AdjustElement, self)
 			end
@@ -368,11 +536,11 @@ interface "IFElementPanel"
 	]======]
 	property "ElementType" {
 		Get = function(self)
-			return self.__ElementPanel_Type
+			return self.__IFSecurePanel_Type
 		end,
 		Set = function(self, elementType)
-			if elementType ~= self.__ElementPanel_Type then
-				self.__ElementPanel_Type = elementType
+			if elementType ~= self.__IFSecurePanel_Type then
+				self.__IFSecurePanel_Type = elementType
 			end
 		end,
 		Type = -Region,
@@ -385,12 +553,12 @@ interface "IFElementPanel"
 	]======]
 	property "HSpacing" {
 		Get = function(self)
-			return self.__ElementPanel_HSpacing or 0
+			return self:GetAttribute("IFSecurePanel_HSpacing") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_HSpacing == spacing then return end
+			if self:GetAttribute("IFSecurePanel_HSpacing") == spacing then return end
 
-			self.__ElementPanel_HSpacing = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_HSpacing", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -404,12 +572,12 @@ interface "IFElementPanel"
 	]======]
 	property "VSpacing" {
 		Get = function(self)
-			return self.__ElementPanel_VSpacing or 0
+			return self:GetAttribute("IFSecurePanel_VSpacing") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_VSpacing == spacing then return end
+			if self:GetAttribute("IFSecurePanel_VSpacing") == spacing then return end
 
-			self.__ElementPanel_VSpacing = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_VSpacing", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -423,10 +591,10 @@ interface "IFElementPanel"
 	]======]
 	property "AutoSize" {
 		Get = function(self)
-			return self.__ElementPanel_AutoSize and true or false
+			return self:GetAttribute("IFSecurePanel_AutoSize") and true or false
 		end,
 		Set = function(self, flag)
-			self.__ElementPanel_AutoSize = flag
+			self:SetAttribute("IFSecurePanel_AutoSize", flag)
 		end,
 		Type = Boolean,
 	}
@@ -438,12 +606,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginTop" {
 		Get = function(self)
-			return self.__ElementPanel_MarginTop or 0
+			return self:GetAttribute("IFSecurePanel_MarginTop") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginTop == spacing then return end
+			if self:GetAttribute("IFSecurePanel_MarginTop") == spacing then return end
 
-			self.__ElementPanel_MarginTop = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_MarginTop", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -457,12 +625,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginBottom" {
 		Get = function(self)
-			return self.__ElementPanel_MarginBottom or 0
+			return self:GetAttribute("IFSecurePanel_MarginBottom") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginBottom == spacing then return end
+			if self:GetAttribute("IFSecurePanel_MarginBottom") == spacing then return end
 
-			self.__ElementPanel_MarginBottom = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_MarginBottom", spacing > 0 and floor(spacing) or 0)
 
 			AdjustPanel(self)
 		end,
@@ -476,12 +644,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginLeft" {
 		Get = function(self)
-			return self.__ElementPanel_MarginLeft or 0
+			return self:GetAttribute("IFSecurePanel_MarginLeft") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginLeft == spacing then return end
+			if self:GetAttribute("IFSecurePanel_MarginLeft") == spacing then return end
 
-			self.__ElementPanel_MarginLeft = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_MarginLeft", spacing > 0 and floor(spacing) or 0)
 
 			self:Each(AdjustElement, self)
 		end,
@@ -495,12 +663,12 @@ interface "IFElementPanel"
 	]======]
 	property "MarginRight" {
 		Get = function(self)
-			return self.__ElementPanel_MarginRight or 0
+			return self:GetAttribute("IFSecurePanel_MarginRight") or 0
 		end,
 		Set = function(self, spacing)
-			if self.__ElementPanel_MarginRight == spacing then return end
+			if self:GetAttribute("IFSecurePanel_MarginRight") == spacing then return end
 
-			self.__ElementPanel_MarginRight = spacing > 0 and floor(spacing) or 0
+			self:SetAttribute("IFSecurePanel_MarginRight", spacing > 0 and floor(spacing) or 0)
 
 			AdjustPanel(self)
 		end,
@@ -514,8 +682,8 @@ interface "IFElementPanel"
 	]======]
 	property "Element" {
 		Get = function(self)
-			self.__ElementPanel_Element = self.__ElementPanel_Element or Element(self)
-			return self.__ElementPanel_Element
+			self.__IFSecurePanel_Element = self.__IFSecurePanel_Element or Element(self)
+			return self.__IFSecurePanel_Element
 		end,
 		Type = Element,
 	}
@@ -542,16 +710,47 @@ interface "IFElementPanel"
 	]======]
 	property "KeepMaxSize" {
 		Get = function(self)
-			return self.__KeepMaxSize or false
+			return self:GetAttribute("IFSecurePanel_KeepMaxSize") or false
 		end,
 		Set = function(self, value)
-			self.__KeepMaxSize = value
+			self:SetAttribute("IFSecurePanel_KeepMaxSize", value)
 			return AdjustPanel(self)
 		end,
 		Type = System.Boolean,
 	}
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnElementAdd(self, element)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(RegisterFrame, self, element)
+	end
+
+	local function OnElementRemove(self, element)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterFrame, self, IGAS:GetUI(element))
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		self.OnElementAdd = self.OnElementAdd - OnElementAdd
+		self.OnElementRemove = self.OnElementRemove - OnElementRemove
+
+		for i = 1, self.Count do
+			IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterFrame, self, IGAS:GetUI(self.Element[i]))
+		end
+
+		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterPanel, IGAS:GetUI(self))
+	end
+
+	------------------------------------------------------
 	-- Initialize
 	------------------------------------------------------
-endinterface "IFElementPanel"
+	function IFSecurePanel(self)
+		self.OnElementAdd = self.OnElementAdd + OnElementAdd
+		self.OnElementRemove = self.OnElementRemove + OnElementRemove
+
+		RegisterPanel(self)
+	end
+endinterface "IFSecurePanel"

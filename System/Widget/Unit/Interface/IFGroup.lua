@@ -11,7 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroup", version) then
 end
 
 interface "IFGroup"
-	extend "IFElementPanel"
+	extend "IFSecurePanel"
 
 	doc [======[
 		@name IFGroup
@@ -123,22 +123,15 @@ interface "IFGroup"
 					if frame then
 						frame:SetAttribute("unit", value)
 					end
-
-					Manager:RunAttribute("UpdatePanelSize", Index)
 				end
 			]]
 		]=]
 
-		_InitialConfigFunction = [==[
+		_InitialConfigFunction = [=[
 			tinsert(ShadowFrames, self)
 
 			self:SetWidth(0)
 			self:SetHeight(0)
-
-			self:RunFor(Manager, ([[
-				Manager = self
-				Index = %d
-			]]):format(#ShadowFrames))
 
 			-- Binding
 			local frame = UnitFrames[#ShadowFrames]
@@ -150,7 +143,7 @@ interface "IFGroup"
 			self:SetAttribute("_onattributechanged", _onattributechanged)
 
 			self:CallMethod("ShadowGroupHeader_UpdateUnitCount", #ShadowFrames)
-		]==]
+		]=]
 
 		_RegisterUnitFrame = [=[
 			local frame = Manager:GetFrameRef("UnitFrame")
@@ -171,42 +164,6 @@ interface "IFGroup"
 		_ClearAll = [=[
 			for i = 1, #ShadowFrames do
 				ShadowFrames[i]:SetAttribute("unit", nil)
-			end
-		]=]
-
-		_UpdatePanelSize = [=[
-			local index = ...
-
-			if index == #ShadowFrames then
-				for i = #UnitFrames, 1, -1 do
-					if not UnitFrame[i]:IsVisible() then
-						local row
-						local column
-						local columnCount = UnitPanel:GetAttribute("ElementPanel_ColumnCount") or 99
-						local rowCount = UnitPanel:GetAttribute("ElementPanel_RowCount") or 99
-						local elementWidth = UnitPanel:GetAttribute("ElementPanel_Width") or 16
-						local elementHeight = UnitPanel:GetAttribute("ElementPanel_Height") or 16
-						local hSpacing = UnitPanel:GetAttribute("ElementPanel_HSpacing") or 0
-						local vSpacing = UnitPanel:GetAttribute("ElementPanel_VSpacing") or 0
-						local marginTop = UnitPanel:GetAttribute("ElementPanel_MarginTop") or 0
-						local marginBottom = UnitPanel:GetAttribute("ElementPanel_MarginBottom") or 0
-						local marginLeft = UnitPanel:GetAttribute("ElementPanel_MarginLeft") or 0
-						local marginRight = UnitPanel:GetAttribute("ElementPanel_MarginRight") or 0
-
-						if UnitPanel:GetAttribute("ElementPanel_Orientation") == "HORIZONTAL" then
-							row = ceil(i / columnCount)
-							column = row == 1 and i or columnCount
-						else
-							column = ceil(i / rowCount)
-							row = column == 1 and i or rowCount
-						end
-
-						UnitPanel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
-						UnitPanel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
-
-						break
-					end
-				end
 			end
 		]=]
 
@@ -322,7 +279,6 @@ interface "IFGroup"
     		self:SetAttribute("template", "SecureHandlerAttributeTemplate")
     		self:SetAttribute("initialConfigFunction", _InitialConfigFunction)
     		self:SetAttribute("strictFiltering", true)
-    		self:SetAttribute("UpdatePanelSize", _UpdatePanelSize)
 
     		-- Throw out of the screen
     		self:SetPoint("TOPRIGHT", WorldFrame, "TOPLEFT")

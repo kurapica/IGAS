@@ -4,6 +4,7 @@
 	<!-- Interface -->
 	<Script file="Interface\IFUnitElement.lua"/>
 	<Script file="Interface\IFSpellHandler.lua"/>
+	<Script file="Interface\IFSecurePanel.lua"/>
 
 	<Script file="Interface\IFAlternatePower.lua"/>
 	<Script file="Interface\IFAssistant.lua"/>
