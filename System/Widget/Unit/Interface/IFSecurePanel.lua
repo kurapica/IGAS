@@ -54,11 +54,11 @@ do
 					local marginRight = panel:GetAttribute("IFSecurePanel_MarginRight") or 0
 
 					if panel:GetAttribute("IFSecurePanel_Orientation") == "HORIZONTAL" then
-						row = ceil(i / columnCount)
-						column = row == 1 and i or columnCount
+						row = ceil(count / columnCount)
+						column = row == 1 and count or columnCount
 					else
-						column = ceil(i / rowCount)
-						row = column == 1 and i or rowCount
+						column = ceil(count / rowCount)
+						row = column == 1 and count or rowCount
 					end
 
 					panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)

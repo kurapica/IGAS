@@ -32,19 +32,6 @@ interface "IFPetGroup"
 		]======]
 
 		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		doc [======[
-			@name Refresh
-			@type method
-			@desc The default refresh method
-			@return nil
-		]======]
-		function Refresh(self)
-			SecureGroupPetHeader_Update(IGAS:GetUI(self))
-		end
-
-		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 		function Constructor(self, name, parent)
@@ -69,12 +56,23 @@ interface "IFPetGroup"
 	]======]
 	property "FilterOnPet" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("filterOnPet") or false
+			return self.GroupHeader:GetAttribute("filterOnPet") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "filterOnPet", value)
+			SecureSetAttribute(self.GroupHeader, "filterOnPet", value)
 		end,
 		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name GroupHeader
+		@type property
+		@desc The group header based on the blizzard's SecureGroupHeader
+	]======]
+	property "GroupHeader" {
+		Get = function(self)
+			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self)
+		end,
 	}
 
 	------------------------------------------------------

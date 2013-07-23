@@ -112,22 +112,31 @@ interface "IFGroup"
 			UnitFrames = newtable()
 			ShadowFrames = newtable()
 
-			_onattributechanged = [[
-				if name == "unit" then
-					if type(value) == "string" then
-						value = strlower(value)
-					else
-						value = nil
-					end
+			refreshUnitChange = [[
+				local unit = self:GetAttribute("unit")
+				local frame = self:GetAttribute("UnitFrame")
 
-					local frame = self:GetAttribute("UnitFrame")
-
-					if frame then
-						frame:SetAttribute("unit", value)
-					end
+				if frame then
+					frame:SetAttribute("unit", unit)
 				end
 			]]
 		]=]
+
+		_Onattributechanged = [[
+			if name == "unit" then
+				if type(value) == "string" then
+					value = strlower(value)
+				else
+					value = nil
+				end
+
+				local frame = self:GetAttribute("UnitFrame")
+
+				if frame then
+					frame:SetAttribute("unit", value)
+				end
+			end
+		]]
 
 		_InitialConfigFunction = [=[
 			tinsert(ShadowFrames, self)
@@ -142,7 +151,9 @@ interface "IFGroup"
 				self:SetAttribute("UnitFrame", frame)
 			end
 
-			self:SetAttribute("_onattributechanged", _onattributechanged)
+			-- Only for the entering game combat
+			-- refreshUnitChange won't fire when the unit is set to nil
+			self:SetAttribute("refreshUnitChange", refreshUnitChange)
 
 			Manager:CallMethod("ShadowGroupHeader_UpdateUnitCount", #ShadowFrames)
 		]=]
@@ -170,21 +181,41 @@ interface "IFGroup"
 		]=]
 
 		local function GenerateUnitFrames(self, count)
+			-- Init the child
+			local child = self:GetAttribute("child"..count)
+
+			if child then
+				child:SetAttribute("refreshUnitChange", nil)	-- only used for the entering game combat
+				child:SetAttribute("_onattributechanged", _Onattributechanged)
+			end
+
+			-- Init the panel
+			self = IGAS:GetWrapper(self).Parent
+
 			if self and count and self.Count < count then
 				self.Count = count
 
-				for i = 1, self.Count do
+				--[[for i = 1, self.Count do
 					if not self.Element[i]:GetAttribute("unit") then
 						self.Element[i]:Hide()
 					end
-				end
-
+				end--]]
 				return self:UpdatePanelSize()
 			end
 		end
 
+		local function TGenerateUnitFrames(self, count)
+			Threading.Sleep(0.1) -- Wait the SecureGroupHeader finished the init
+
+			IFNoCombatTaskHandler._RegisterNoCombatTask(GenerateUnitFrames, self, count)
+		end
+
 		local function UpdateUnitCount(self, count)
-			IFNoCombatTaskHandler._RegisterNoCombatTask(GenerateUnitFrames, IGAS:GetWrapper(self).Parent, count)
+			if InCombatLockdown() then
+				IFNoCombatTaskHandler._RegisterNoCombatTask(GenerateUnitFrames, self, count)
+			else
+				IGAS:GetWrapper(self):ThreadCall(TGenerateUnitFrames, count)
+			end
 		end
 
 		------------------------------------------------------
@@ -201,7 +232,11 @@ interface "IFGroup"
 			@return nil
 		]======]
 		function Refresh(self)
-			SecureGroupHeader_Update(IGAS:GetUI(self))
+			if self.Visible then
+				-- Well, it's ugly
+				self:Hide()
+				self:Show()
+			end
 		end
 
 		doc [======[
@@ -275,19 +310,24 @@ interface "IFGroup"
 		end
 
 	    function ShadowGroupHeader(self, name, parent)
+			IGAS:GetUI(self).ShadowGroupHeader_UpdateUnitCount = UpdateUnitCount
+
+			self:SetAttribute("_ignore", "ShadowGroupHeader")
+
 			self:SetFrameRef("UnitPanel", parent)
     		self:Execute(_InitHeader)
 
     		self:SetAttribute("template", "SecureHandlerAttributeTemplate")
     		self:SetAttribute("initialConfigFunction", _InitialConfigFunction)
     		self:SetAttribute("strictFiltering", true)
+    		self:SetAttribute("groupingOrder", "")
+
+			self:SetAttribute("_ignore", nil)
 
     		-- Throw out of the screen
     		self:SetPoint("TOPRIGHT", WorldFrame, "TOPLEFT")
     		self.Visible = true
     		self.Alpha = 0
-
-			IGAS:GetUI(self).ShadowGroupHeader_UpdateUnitCount = UpdateUnitCount
 	    end
 	endclass "ShadowGroupHeader"
 
@@ -314,7 +354,7 @@ interface "IFGroup"
 			tinsert(_Cache, v)
 		end
 
-		SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "groupFilter", table.concat(_Cache, ","))
+		SecureSetAttribute(self.GroupHeader, "groupFilter", table.concat(_Cache, ","))
 
 		wipe(_Cache)
 	end
@@ -328,7 +368,7 @@ interface "IFGroup"
 			tinsert(_Cache, v)
 		end
 
-		SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "roleFilter", table.concat(_Cache, ","))
+		SecureSetAttribute(self.GroupHeader, "roleFilter", table.concat(_Cache, ","))
 
 		wipe(_Cache)
 	end
@@ -353,7 +393,7 @@ interface "IFGroup"
 			end
 		end
 
-		SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "groupingOrder", table.concat(_Cache, ","))
+		SecureSetAttribute(self.GroupHeader, "groupingOrder", table.concat(_Cache, ","))
 
 		wipe(_Cache)
 	end
@@ -372,7 +412,9 @@ interface "IFGroup"
 		@return nil
 	]======]
 	function Refresh(self)
-		self:GetChild("ShadowGroupHeader"):Refresh()
+		if InCombatLockdown() then return end
+
+		self.GroupHeader:Refresh()
 
 		return self:UpdatePanelSize()
 	end
@@ -387,7 +429,10 @@ interface "IFGroup"
 	function InitWithCount(self, count)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 			self.Count = count
-			self:Each("Hide")
+
+			self:Each("SetAttribute", "unit", nil)
+
+			self:Refresh()
 		end)
 	end
 
@@ -401,10 +446,10 @@ interface "IFGroup"
 	]======]
 	property "Activated" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader").Activated
+			return self.GroupHeader.Activated
 		end,
 		Set = function(self, value)
-			self:GetChild("ShadowGroupHeader").Activated = value
+			self.GroupHeader.Activated = value
 		end,
 		Type = Boolean,
 	}
@@ -416,10 +461,10 @@ interface "IFGroup"
 	]======]
 	property "ShowRaid" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("showRaid") or false
+			return self.GroupHeader:GetAttribute("showRaid") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "showRaid", value)
+			SecureSetAttribute(self.GroupHeader, "showRaid", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -431,10 +476,10 @@ interface "IFGroup"
 	]======]
 	property "ShowParty" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("showParty") or false
+			return self.GroupHeader:GetAttribute("showParty") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "showParty", value)
+			SecureSetAttribute(self.GroupHeader, "showParty", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -446,10 +491,10 @@ interface "IFGroup"
 	]======]
 	property "ShowPlayer" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("showPlayer") or false
+			return self.GroupHeader:GetAttribute("showPlayer") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "showPlayer", value)
+			SecureSetAttribute(self.GroupHeader, "showPlayer", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -461,10 +506,10 @@ interface "IFGroup"
 	]======]
 	property "ShowSolo" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("showSolo") or false
+			return self.GroupHeader:GetAttribute("showSolo") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "showSolo", value)
+			SecureSetAttribute(self.GroupHeader, "showSolo", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -550,7 +595,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.__GroupBy = value
 
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "groupBy", value)
+			SecureSetAttribute(self.GroupHeader, "groupBy", value)
 
 			SetupGroupingOrder(self)
 		end,
@@ -564,19 +609,30 @@ interface "IFGroup"
 	]======]
 	property "SortBy" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader"):GetAttribute("sortMethod") or "INDEX"
+			return self.GroupHeader:GetAttribute("sortMethod") or "INDEX"
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self:GetChild("ShadowGroupHeader"), "sortMethod", value)
+			SecureSetAttribute(self.GroupHeader, "sortMethod", value)
 		end,
 		Type = SortType,
+	}
+
+	doc [======[
+		@name GroupHeader
+		@type property
+		@desc The group header based on the blizzard's SecureGroupHeader
+	]======]
+	property "GroupHeader" {
+		Get = function(self)
+			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self)
+		end,
 	}
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnElementAdd(self, element)
-		self:GetChild("ShadowGroupHeader"):RegisterUnitFrame(element)
+		self.GroupHeader:RegisterUnitFrame(element)
 	end
 
 	------------------------------------------------------
@@ -584,5 +640,7 @@ interface "IFGroup"
 	------------------------------------------------------
 	function IFGroup(self)
 		self.OnElementAdd = self.OnElementAdd + OnElementAdd
+
+		SetupGroupFilter(self)
 	end
 endinterface "IFGroup"
