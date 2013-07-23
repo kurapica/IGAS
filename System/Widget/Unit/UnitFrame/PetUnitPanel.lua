@@ -48,7 +48,7 @@ class "PetUnitPanel"
 		self.Orientation = Orientation.VERTICAL
 		self.HSpacing = 2
 		self.VSpacing = 2
-		self.AutoSize = false		-- Since can't resize in combat, do it manually
+		self.AutoSize = true
 
 		self.MarginTop = 0
 		self.MarginBottom = 0

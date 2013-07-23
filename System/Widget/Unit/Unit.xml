@@ -4,7 +4,11 @@
 	<!-- Interface -->
 	<Script file="Interface\IFUnitElement.lua"/>
 	<Script file="Interface\IFSpellHandler.lua"/>
+
 	<Script file="Interface\IFSecurePanel.lua"/>
+	<Script file="Interface\IFGroup.lua"/>
+	<Script file="Interface\IFUnitGroup.lua"/>
+	<Script file="Interface\IFPetGroup.lua"/>
 
 	<Script file="Interface\IFAlternatePower.lua"/>
 	<Script file="Interface\IFAssistant.lua"/>
@@ -18,7 +22,6 @@
 	<Script file="Interface\IFDebuffState.lua"/>
 	<Script file="Interface\IFEclipse.lua"/>
 	<Script file="Interface\IFFaction.lua"/>
-	<Script file="Interface\IFGroup.lua"/>
 	<Script file="Interface\IFGroupLoot.lua"/>
 	<Script file="Interface\IFGroupRole.lua"/>
 	<Script file="Interface\IFHealPrediction.lua"/>
@@ -26,7 +29,6 @@
 	<Script file="Interface\IFHealthFrequent.lua"/>
 	<Script file="Interface\IFLeader.lua"/>
 	<Script file="Interface\IFMana.lua"/>
-	<Script file="Interface\IFPetGroup.lua"/>
 	<Script file="Interface\IFPhase.lua"/>
 	<Script file="Interface\IFPortrait.lua"/>
 	<Script file="Interface\IFPower.lua"/>
