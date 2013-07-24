@@ -629,7 +629,5 @@ interface "IFGroup"
 		self.OnElementAdd = self.OnElementAdd + OnElementAdd
 
 		SetupGroupFilter(self)
-
-		self.GroupHeader.Visible = true
 	end
 endinterface "IFGroup"
