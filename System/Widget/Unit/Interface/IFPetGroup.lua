@@ -18,34 +18,6 @@ interface "IFPetGroup"
 		@desc IFPetGroup is used to handle the pet group's updating
 	]======]
 
-	-------------------------------------
-	-- Shadow SecureGroupHeader
-	-- A shadow refresh system based on the SecureGroupPetHeaderTemplate
-	-------------------------------------
-	class "ShadowGroupHeader"
-		inherit "IFGroup.ShadowGroupHeader"
-
-		doc [======[
-			@name ShadowGroupHeader
-			@type class
-			@desc Used to handle the refresh in shadow
-		]======]
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function Constructor(self, name, parent)
-			return CreateFrame("Frame", nil, parent, "SecureGroupPetHeaderTemplate")
-		end
-	endclass "ShadowGroupHeader"
-
-	------------------------------------------------------
-	-- Helper functions
-	------------------------------------------------------
-	local function SecureSetAttribute(self, attr, value)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(self.SetAttribute, self, attr, value)
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -59,7 +31,7 @@ interface "IFPetGroup"
 			return self.GroupHeader:GetAttribute("filterOnPet") or false
 		end,
 		Set = function(self, value)
-			SecureSetAttribute(self.GroupHeader, "filterOnPet", value)
+			IFNoCombatTaskHandler._RegisterNoCombatTask(self.GroupHeader.SetAttribute, self.GroupHeader, "filterOnPet", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -71,14 +43,7 @@ interface "IFPetGroup"
 	]======]
 	property "GroupHeader" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self)
+			return self:GetChild("ShadowGroupHeader") or IFGroup.ShadowGroupHeader("ShadowGroupHeader", self, "SecureGroupPetHeaderTemplate")
 		end,
 	}
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function IFPetGroup(self)
-		ShadowGroupHeader("ShadowGroupHeader", self)
-	end
 endinterface "IFPetGroup"

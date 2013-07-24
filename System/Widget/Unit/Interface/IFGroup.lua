@@ -4,7 +4,6 @@
 --               2013/07/05 IFGroup now extend from IFElementPanel
 --               2013/07/22 ShadowGroupHeader added to refresh the unit panel
 --               2013/07/23 IFSecurePanel instead of IFElementPanel to do the resize job
---                          IFGroup is now a prototype interface
 
 -- Check Version
 local version = 2
@@ -184,10 +183,8 @@ interface "IFGroup"
 			-- Init the child
 			local child = self:GetAttribute("child"..count)
 
-			if child then
-				child:SetAttribute("refreshUnitChange", nil)	-- only used for the entering game combat
-				child:SetAttribute("_onattributechanged", _Onattributechanged)
-			end
+			child:SetAttribute("refreshUnitChange", nil)	-- only used for the entering game combat
+			child:SetAttribute("_onattributechanged", _Onattributechanged)
 
 			-- Init the panel
 			self = IGAS:GetWrapper(self).Parent
@@ -195,11 +192,6 @@ interface "IFGroup"
 			if self and count and self.Count < count then
 				self.Count = count
 
-				--[[for i = 1, self.Count do
-					if not self.Element[i]:GetAttribute("unit") then
-						self.Element[i]:Hide()
-					end
-				end--]]
 				return self:UpdatePanelSize()
 			end
 		end
@@ -305,14 +297,10 @@ interface "IFGroup"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Constructor(self, name, parent)
-			return CreateFrame("Frame", nil, parent, "SecureGroupHeaderTemplate")
-		end
-
 	    function ShadowGroupHeader(self, name, parent)
 			IGAS:GetUI(self).ShadowGroupHeader_UpdateUnitCount = UpdateUnitCount
 
-			self:SetAttribute("_ignore", "ShadowGroupHeader")
+			self.Visible = false
 
 			self:SetFrameRef("UnitPanel", parent)
     		self:Execute(_InitHeader)
@@ -322,11 +310,8 @@ interface "IFGroup"
     		self:SetAttribute("strictFiltering", true)
     		self:SetAttribute("groupingOrder", "")
 
-			self:SetAttribute("_ignore", nil)
-
     		-- Throw out of the screen
     		self:SetPoint("TOPRIGHT", WorldFrame, "TOPLEFT")
-    		self.Visible = true
     		self.Alpha = 0
 	    end
 	endclass "ShadowGroupHeader"
@@ -377,11 +362,11 @@ interface "IFGroup"
 		local groupBy = self.GroupBy
 		local filter
 
-		if grouBy == "GROUP" then
+		if groupBy == "GROUP" then
 			filter = self.GroupFilter or DEFAULT_GROUP_SORT_ORDER
-		elseif grouBy == "CLASS" then
+		elseif groupBy == "CLASS" then
 			filter = self.ClassFilter or DEFAULT_CLASS_SORT_ORDER
-		elseif grouBy == "ROLE" or grouBy == "ASSIGNEDROLE" then
+		elseif groupBy == "ROLE" or groupBy == "ASSIGNEDROLE" then
 			filter = self.RoleFilter or DEFAULT_ROLE_SORT_ORDER
 		end
 
@@ -595,6 +580,8 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.__GroupBy = value
 
+			if value == "NONE" then value = nil end
+
 			SecureSetAttribute(self.GroupHeader, "groupBy", value)
 
 			SetupGroupingOrder(self)
@@ -624,7 +611,7 @@ interface "IFGroup"
 	]======]
 	property "GroupHeader" {
 		Get = function(self)
-			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self)
+			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self, "SecureGroupHeaderTemplate")
 		end,
 	}
 
@@ -642,5 +629,7 @@ interface "IFGroup"
 		self.OnElementAdd = self.OnElementAdd + OnElementAdd
 
 		SetupGroupFilter(self)
+
+		self.GroupHeader.Visible = true
 	end
 endinterface "IFGroup"

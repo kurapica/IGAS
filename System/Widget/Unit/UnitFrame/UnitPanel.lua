@@ -10,7 +10,7 @@ end
 
 class "UnitPanel"
 	inherit "SecureFrame"
-	extend "IFUnitGroup"
+	extend "IFGroup"
 
 	doc [======[
 		@name UnitPanel
