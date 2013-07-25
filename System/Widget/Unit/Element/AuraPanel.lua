@@ -57,9 +57,6 @@ class "AuraPanel"
 			@desc The icon to display buff or debuff
 		]======]
 
-		_DebuffTypeColor = CopyTable(_G.DebuffTypeColor)
-
-		RAID_CLASS_COLORS = CopyTable(_G.RAID_CLASS_COLORS)
 		_BorderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 		_BackDrop = {
 		    edgeFile = "Interface\\Buttons\\WHITE8x8",
@@ -105,7 +102,7 @@ class "AuraPanel"
 
 				-- Debuff
 				if filter and not filter:find("HELPFUL") then
-					self.Overlay.VertexColor = _DebuffTypeColor[dtype] or _DebuffTypeColor.none
+					self.Overlay.VertexColor = DebuffTypeColor[dtype] or DebuffTypeColor.none
 					self.Overlay.Visible = true
 				else
 					self.Overlay.Visible = false

@@ -33,7 +33,7 @@ function _IFPowerUnitList:ParseEvent(event, unit, type)
 		_IFPowerUnitPowerType[unit] = powerType
 		self:EachK(unit, "Refresh")
 	elseif event == "UNIT_POWER" then
-		if powerType and _ClassPowerMap[powerType] ~= type then return end
+		if powerType and ClassPowerMap[powerType] ~= type then return end
 
 		self:EachK(unit, "Value", UnitPower(unit, powerType))
 	elseif event == "UNIT_MAXPOWER" then

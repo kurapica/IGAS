@@ -18,8 +18,6 @@ class "ClassIcon"
 		@desc The unit's class icon
 	]======]
 
-	CLASS_ICON_TCOORDS = CopyTable(_G.CLASS_ICON_TCOORDS)
-
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------

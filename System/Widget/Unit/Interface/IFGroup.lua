@@ -74,7 +74,7 @@ interface "IFGroup"
 		element = RoleType
 	endstruct "RoleFilter"
 
-	DEFAULT_CLASS_SORT_ORDER = _G.CLASS_SORT_ORDER or {
+	DEFAULT_CLASS_SORT_ORDER = {
 		"WARRIOR",
 		"DEATHKNIGHT",
 		"PALADIN",

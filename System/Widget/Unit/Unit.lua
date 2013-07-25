@@ -18,7 +18,10 @@ import "System.Widget"
 
 namespace "System.Widget.Unit"
 
-_ClassPowerMap = {
+------------------------------------------------------
+-- Constants
+------------------------------------------------------
+ClassPowerMap = {
 	[0] = "MANA",
 	[1] = "RAGE",
 	[2] = "FOCUS",
@@ -37,15 +40,92 @@ _ClassPowerMap = {
 	[15] = "DEMONIC_FURY",
 }
 
-for i, v in ipairs(_ClassPowerMap) do
-	_ClassPowerMap[v] = i
+for i, v in ipairs(ClassPowerMap) do
+	ClassPowerMap[v] = i
 end
 
-PowerBarColor = CopyTable(_G.PowerBarColor)
+CLASS_ICON_TCOORDS = {
+    ["WARRIOR"]     = {0, 0.25, 0, 0.25},
+    ["MAGE"]        = {0.25, 0.49609375, 0, 0.25},
+    ["ROGUE"]       = {0.49609375, 0.7421875, 0, 0.25},
+    ["DRUID"]       = {0.7421875, 0.98828125, 0, 0.25},
+    ["HUNTER"]      = {0, 0.25, 0.25, 0.5},
+    ["SHAMAN"]      = {0.25, 0.49609375, 0.25, 0.5},
+    ["PRIEST"]      = {0.49609375, 0.7421875, 0.25, 0.5},
+    ["WARLOCK"]     = {0.7421875, 0.98828125, 0.25, 0.5},
+    ["PALADIN"]     = {0, 0.25, 0.5, 0.75},
+    ["DEATHKNIGHT"] = {0.25, .5, 0.5, .75},
+    ["MONK"]    = {0.5, 0.73828125, 0.5, .75},
+}
 
-PowerBarColor["MANA"] = ColorType(0.0, 0.6, 1)
-PowerBarColor[_G.SPELL_POWER_MANA] = ColorType(0.0, 0.6, 1)
+RAID_CLASS_COLORS = {
+    ["HUNTER"] = { r = 0.67, g = 0.83, b = 0.45, colorStr = "ffabd473" },
+    ["WARLOCK"] = { r = 0.58, g = 0.51, b = 0.79, colorStr = "ff9482c9" },
+    ["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0, colorStr = "ffffffff" },
+    ["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73, colorStr = "fff58cba" },
+    ["MAGE"] = { r = 0.41, g = 0.8, b = 0.94, colorStr = "ff69ccf0" },
+    ["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41, colorStr = "fffff569" },
+    ["DRUID"] = { r = 1.0, g = 0.49, b = 0.04, colorStr = "ffff7d0a" },
+    ["SHAMAN"] = { r = 0.0, g = 0.44, b = 0.87, colorStr = "ff0070de" },
+    ["WARRIOR"] = { r = 0.78, g = 0.61, b = 0.43, colorStr = "ffc79c6e" },
+    ["DEATHKNIGHT"] = { r = 0.77, g = 0.12 , b = 0.23, colorStr = "ffc41f3b" },
+    ["MONK"] = { r = 0.0, g = 1.00 , b = 0.59, colorStr = "ff00ff96" },
+}
 
+FIRE_TOTEM_SLOT = 1
+EARTH_TOTEM_SLOT = 2
+WATER_TOTEM_SLOT = 3
+AIR_TOTEM_SLOT = 4
+
+STANDARD_TOTEM_PRIORITIES = {1, 2, 3, 4}
+
+SHAMAN_TOTEM_PRIORITIES = {
+    EARTH_TOTEM_SLOT,
+    FIRE_TOTEM_SLOT,
+    WATER_TOTEM_SLOT,
+    AIR_TOTEM_SLOT,
+}
+
+PowerBarColor = {}
+PowerBarColor["MANA"] = { r = 0.00, g = 0.60, b = 1.00 }
+PowerBarColor["RAGE"] = { r = 1.00, g = 0.00, b = 0.00 }
+PowerBarColor["FOCUS"] = { r = 1.00, g = 0.50, b = 0.25 }
+PowerBarColor["ENERGY"] = { r = 1.00, g = 1.00, b = 0.00 }
+PowerBarColor["CHI"] = { r = 0.71, g = 1.0, b = 0.92 }
+PowerBarColor["RUNES"] = { r = 0.50, g = 0.50, b = 0.50 }
+PowerBarColor["RUNIC_POWER"] = { r = 0.00, g = 0.82, b = 1.00 }
+PowerBarColor["SOUL_SHARDS"] = { r = 0.50, g = 0.32, b = 0.55 }
+PowerBarColor["ECLIPSE"] = { negative = { r = 0.30, g = 0.52, b = 0.90 },  positive = { r = 0.80, g = 0.82, b = 0.60 }}
+PowerBarColor["HOLY_POWER"] = { r = 0.95, g = 0.90, b = 0.60 }
+-- vehicle colors
+PowerBarColor["AMMOSLOT"] = { r = 0.80, g = 0.60, b = 0.00 }
+PowerBarColor["FUEL"] = { r = 0.0, g = 0.55, b = 0.5 }
+PowerBarColor["STAGGER"] = { {r = 0.52, g = 1.0, b = 0.52}, {r = 1.0, g = 0.98, b = 0.72}, {r = 1.0, g = 0.42, b = 0.42},}
+
+-- these are mostly needed for a fallback case (in case the code tries to index a power token that is missing from the table,
+-- it will try to index by power type instead)
+PowerBarColor[0] = PowerBarColor["MANA"]
+PowerBarColor[1] = PowerBarColor["RAGE"]
+PowerBarColor[2] = PowerBarColor["FOCUS"]
+PowerBarColor[3] = PowerBarColor["ENERGY"]
+PowerBarColor[4] = PowerBarColor["CHI"]
+PowerBarColor[5] = PowerBarColor["RUNES"]
+PowerBarColor[6] = PowerBarColor["RUNIC_POWER"]
+PowerBarColor[7] = PowerBarColor["SOUL_SHARDS"]
+PowerBarColor[8] = PowerBarColor["ECLIPSE"]
+PowerBarColor[9] = PowerBarColor["HOLY_POWER"]
+
+DebuffTypeColor = {}
+DebuffTypeColor["none"] = { r = 0.80, g = 0, b = 0 }
+DebuffTypeColor["Magic"]    = { r = 0.20, g = 0.60, b = 1.00 }
+DebuffTypeColor["Curse"]    = { r = 0.60, g = 0.00, b = 1.00 }
+DebuffTypeColor["Disease"]  = { r = 0.60, g = 0.40, b = 0 }
+DebuffTypeColor["Poison"]   = { r = 0.00, g = 0.60, b = 0 }
+DebuffTypeColor[""] = DebuffTypeColor["none"]
+
+------------------------------------------------------
+-- UnitList Definition
+------------------------------------------------------
 class "UnitList"
 	extend "IFIterator"
 

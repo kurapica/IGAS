@@ -88,7 +88,7 @@ class "TotemBar"
 			icon:SetPoint("BOTTOMRIGHT", -1, 1)
 
 			self.Backdrop = _Border
-			self.BackdropBorderColor = _G.RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+			self.BackdropBorderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 
 			self.OnEnter = self.OnEnter + OnEnter
 			self.OnLeave = self.OnLeave + OnLeave

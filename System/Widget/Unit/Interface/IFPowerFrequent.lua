@@ -33,7 +33,7 @@ function _IFPowerFrequentUnitList:ParseEvent(event, unit, type)
 		_IFPowerFrequentUnitPowerType[unit] = powerType
 		self:EachK(unit, "Refresh")
 	elseif event == "UNIT_POWER_FREQUENT" then
-		if powerType and _ClassPowerMap[powerType] ~= type then return end
+		if powerType and ClassPowerMap[powerType] ~= type then return end
 
 		self:EachK(unit, "Value", UnitPower(unit, powerType))
 	elseif event == "UNIT_MAXPOWER" then

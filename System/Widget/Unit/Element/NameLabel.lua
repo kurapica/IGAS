@@ -18,7 +18,6 @@ class "NameLabel"
 		@desc The unit name label with faction color settings
 	]======]
 
-	_RAID_CLASS_COLORS = _G.RAID_CLASS_COLORS
 	_DefaultColor = ColorType(1, 1, 1)
 
 	------------------------------------------------------
@@ -38,7 +37,7 @@ class "NameLabel"
 			if self.UseSelectionColor and not UnitIsPlayer(self.Unit) then
 				self:SetTextColor(UnitSelectionColor(self.Unit))
 			elseif self.UseClassColor then
-				self.TextColor = _RAID_CLASS_COLORS[select(2, UnitClass(self.Unit))] or _DefaultColor
+				self.TextColor = RAID_CLASS_COLORS[select(2, UnitClass(self.Unit))] or _DefaultColor
 			end
 		end
 	end
