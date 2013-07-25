@@ -1,3 +1,6 @@
+2013/07/25: IGAS v42
+    1. New group system for IFGroup, bases on the blizzard's SecureGroupHeader, all works smooth during combat.
+
 2013/07/22:
 	1. Re design the System.Widget.Unit.IFGroup, the unit panel should be worked based on the blizzard's SecureGroupHeader.
 

@@ -173,11 +173,11 @@ interface "IFGroup"
 			end
 		]=]
 
-		_ClearAll = [=[
+		_Hide = [[
 			for i = 1, #ShadowFrames do
 				ShadowFrames[i]:SetAttribute("unit", nil)
 			end
-		]=]
+		]]
 
 		local function GenerateUnitFrames(self, count)
 			-- Init the child
@@ -266,8 +266,6 @@ interface "IFGroup"
 			if self.Visible then
 				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 					self.Visible = false
-
-					self:Execute(_ClearAll)
 				end)
 			end
 		end
@@ -309,6 +307,8 @@ interface "IFGroup"
     		self:SetAttribute("initialConfigFunction", _InitialConfigFunction)
     		self:SetAttribute("strictFiltering", true)
     		self:SetAttribute("groupingOrder", "")
+
+    		self:WrapScript(self, "OnHide", _Hide)
 
     		-- Throw out of the screen
     		self:SetPoint("TOPRIGHT", WorldFrame, "TOPLEFT")
@@ -421,6 +421,26 @@ interface "IFGroup"
 		end)
 	end
 
+	doc [======[
+		@name Activate
+		@type method
+		@desc Activate the unit panel
+		@return nil
+	]======]
+	function Activate(self)
+		self.GroupHeader:Activate()
+	end
+
+	doc [======[
+		@name Deactivate
+		@type method
+		@desc Deactivate the unit panel
+		@return nil
+	]======]
+	function Deactivate(self)
+		self.GroupHeader:Deactivate()
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -434,7 +454,11 @@ interface "IFGroup"
 			return self.GroupHeader.Activated
 		end,
 		Set = function(self, value)
-			self.GroupHeader.Activated = value
+			if value then
+				self:Activate()
+			else
+				self:Deactivate()
+			end
 		end,
 		Type = Boolean,
 	}
