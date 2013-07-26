@@ -1,3 +1,7 @@
+2013/07/26: IGAS v42
+    1. Taint with Blizzard_RaidUI fixed.
+    2. Imrpove the action button system.
+
 2013/07/25: IGAS v42
     1. New group system for IFGroup, bases on the blizzard's SecureGroupHeader, all works smooth during combat.
 

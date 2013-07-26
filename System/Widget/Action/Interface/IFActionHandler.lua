@@ -6,7 +6,7 @@
 --               2012/12/19 Move all OnClick handler to macro, fix for action done after postclick and equipset error.
 
 -- Check Version
-local version = 17
+local version = 19
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -1533,6 +1533,8 @@ do
 			"PLAYER_EQUIPMENT_CHANGED",
 			"PLAYER_LEAVE_COMBAT",
 			"PLAYER_TARGET_CHANGED",
+			"PLAYER_REGEN_ENABLED",
+			"PLAYER_REGEN_DISABLED",
 			"SPELL_ACTIVATION_OVERLAY_GLOW_SHOW",
 			"SPELL_ACTIVATION_OVERLAY_GLOW_HIDE",
 			"SPELL_UPDATE_CHARGES",
@@ -1808,6 +1810,15 @@ do
 
 	function _IFActionHandler_ManagerFrame:PLAYER_TARGET_CHANGED()
 		_IFActionHandler_UpdateRangeTimer:OnTimer()
+	end
+
+	function _IFActionHandler_ManagerFrame:PLAYER_REGEN_ENABLED()
+		_IFActionHandler_Buttons:EachK("item", UpdateCount)
+		_IFActionHandler_Buttons:EachK("item", UpdateUsable)
+	end
+
+	function _IFActionHandler_ManagerFrame:PLAYER_REGEN_DISABLED()
+		_IFActionHandler_Buttons:EachK("item", UpdateUsable)
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_ACTIVATION_OVERLAY_GLOW_SHOW(spellId)
