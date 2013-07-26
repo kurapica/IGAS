@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFReadyCheck", version) then
 	return
 end
@@ -25,7 +25,7 @@ end
 
 function RefreshCheck(self, event)
 	local unit = self.Unit
-	if not unit or not UnitExists(unit) then
+	if not unit or not UnitExists(unit) or not UnitIsPlayer(unit) then
 		self.ReadyCheckStatus = nil
 		self.Visible = false
 		return
