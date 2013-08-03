@@ -1,3 +1,6 @@
+2013/08/03: IGAS v43
+    1. Reduce cpu and memory cost for pet panel system.
+
 2013/07/26: IGAS v42
     1. Taint with Blizzard_RaidUI fixed.
     2. Imrpove the action button system.

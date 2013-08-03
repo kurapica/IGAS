@@ -4,9 +4,10 @@
 --               2013/05/25 Reduce memory cost
 --               2013/07/04 UnitFrame can handle the change of attribute "unit"
 --               2013/07/05 Use attribute "deactivated" instead of "__Deactivated"
+--               2013/08/03 Add same unit check, reduce cost
 
 -- Check Version
-local version = 6
+local version = 7
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -321,6 +322,12 @@ class "UnitFrame"
 				value = strlower(value)
 			else
 				value = nil
+			end
+
+			if self:GetAttribute("oldunit") == (value or "nil") then
+				return
+			else
+				self:SetAttribute("oldunit", value or "nil")
 			end
 
 			if value == "player" then

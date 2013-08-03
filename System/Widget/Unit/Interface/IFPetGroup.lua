@@ -2,11 +2,46 @@
 -- Create Date : 2013/02/03
 -- Change Log  :
 --               2013/07/22 ShadowGroupHeader added to refresh the unit panel
+--               2013/08/03 Remove the state driver to reduce cost
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPetGroup", version) then
 	return
+end
+
+-- Module Event
+do
+	_IFPetGroup_DeactivateInRaid = _IFPetGroup_DeactivateInRaid or {}
+	_IFPetGroup_InRaid = false
+
+	function OnLoad(self)
+		self:RegisterEvent("GROUP_ROSTER_UPDATE")
+	end
+
+	function GROUP_ROSTER_UPDATE(self)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(Update4Raid)
+	end
+
+	function Update4Raid()
+		if IsInRaid() then
+			if not _IFPetGroup_InRaid then
+				_IFPetGroup_InRaid = true
+
+				for obj in pairs(_IFPetGroup_DeactivateInRaid) do
+					obj.GroupHeader.Activated = false
+				end
+			end
+		else
+			if _IFPetGroup_InRaid then
+				_IFPetGroup_InRaid = false
+
+				for obj in pairs(_IFPetGroup_DeactivateInRaid) do
+					obj.GroupHeader.Activated = obj.Activated
+				end
+			end
+		end
+	end
 end
 
 interface "IFPetGroup"
@@ -18,19 +53,11 @@ interface "IFPetGroup"
 		@desc IFPetGroup is used to handle the pet group's updating
 	]======]
 
-	local function UpdateStateDriver(self, flag)
-		if flag then
-			if not self.__DeactivateStateRegistered then
-				self.__DeactivateStateRegistered = true
-				self.GroupHeader:RegisterStateDriver("visibility", "[group:raid]hide;show")
-			end
+	local function UpdateGroupHeader(self)
+		if self.Activated and (not self.DeactivateInRaid or not IsInRaid()) then
+			self.GroupHeader.Activated = true
 		else
-			if self.__DeactivateStateRegistered then
-				self.__DeactivateStateRegistered = false
-				self.GroupHeader:UnregisterStateDriver("visibility")
-
-				self.GroupHeader.Activated = self.Activated
-			end
+			self.GroupHeader.Activated = false
 		end
 	end
 
@@ -47,11 +74,7 @@ interface "IFPetGroup"
 		if not self.Activated then
 			self.__GroupHeaderActivated = true
 
-			if self.DeactivateInRaid then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateStateDriver, self, true)
-			end
-
-			IFGroup.Activate(self)
+			IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
 		end
 	end
 
@@ -65,9 +88,7 @@ interface "IFPetGroup"
 		if self.Activated then
 			self.__GroupHeaderActivated = false
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateStateDriver, self, false)
-
-			IFGroup.Deactivate(self)
+			IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
 		end
 	end
 
@@ -121,9 +142,13 @@ interface "IFPetGroup"
 			if self.DeactivateInRaid ~= value then
 				self.__DeactivateInRaid = value
 
-				if self.Activated then
-					IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateStateDriver, self, value)
+				if value then
+					_IFPetGroup_DeactivateInRaid[self] = true
+				else
+					_IFPetGroup_DeactivateInRaid[self] = nil
 				end
+
+				IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
 			end
 		end,
 		Type = System.Boolean,
@@ -139,4 +164,11 @@ interface "IFPetGroup"
 			return self:GetChild("ShadowGroupHeader") or IFGroup.ShadowGroupHeader("ShadowGroupHeader", self, "SecureGroupPetHeaderTemplate")
 		end,
 	}
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_IFPetGroup_DeactivateInRaid[self] = nil
+	end
 endinterface "IFPetGroup"
