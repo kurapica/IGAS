@@ -1,3 +1,6 @@
+2013/08/04: IGAS v45
+    1. Remove old unit check to make sure the unit frame's refresh should be done well when point to different raid/party member.
+
 2013/08/03: IGAS v44
     1. Fix the pet's updating for warlock.
 

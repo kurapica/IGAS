@@ -7,7 +7,7 @@
 --               2013/08/03 Add same unit check, reduce cost
 
 -- Check Version
-local version = 8
+local version = 9
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -336,12 +336,6 @@ class "UnitFrame"
 				value = strlower(value)
 			else
 				value = nil
-			end
-
-			if self:GetAttribute("oldunit") == (value or "nil") then
-				return
-			else
-				self:SetAttribute("oldunit", value or "nil")
 			end
 
 			if value == "player" then
