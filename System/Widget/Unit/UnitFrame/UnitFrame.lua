@@ -7,7 +7,7 @@
 --               2013/08/03 Add same unit check, reduce cost
 
 -- Check Version
-local version = 7
+local version = 8
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -36,6 +36,12 @@ class "UnitFrame"
 
 	local function UNIT_NAME_UPDATE(self, unit)
 		if self.Unit and UnitIsUnit(self.Unit, unit) then
+			return self:UpdateElements()
+		end
+	end
+
+	local function UNIT_PET(self, unit)
+		if unit and self.Unit and UnitIsUnit(self.Unit, unit .. "pet") then
 			return self:UpdateElements()
 		end
 	end
@@ -302,6 +308,14 @@ class "UnitFrame"
 		else
 			self:UnregisterEvent("UNIT_NAME_UPDATE")
 			self.UNIT_NAME_UPDATE = nil
+		end
+
+		if unit and unit:match("pet") then
+			self:RegisterEvent("UNIT_PET")
+			self.UNIT_PET = UNIT_PET
+		else
+			self:UnregisterEvent("UNIT_PET")
+			self.UNIT_PET = nil
 		end
 
 		--if unit and (unit:match("%w+target") or unit:match("(boss)%d?$")) then
