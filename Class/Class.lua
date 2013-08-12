@@ -78,6 +78,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/04/07 Lower the memory usage
 --               2013/06/24 IGAS:Install([env]) added, used to add keywords into current environment
 --               2013/06/26 keyword script -> event
+--               2013/08/05 Remove version check, seal the definition environment
+--               2013/08/12 System.Module is added to create an environment for oop system
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -123,26 +125,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 --	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
-local version = 68
-
 ------------------------------------------------------
--- Version Check & Class Environment
+-- Object oriented program syntax system environment
 ------------------------------------------------------
 do
-	local _Meta = getmetatable(IGAS)
-
-	-- Version Check
-	if _Meta._IGAS_Class_Version and _Meta._IGAS_Class_Version >= version then
-		return
-	end
-
-	_Meta._IGAS_Class_Version = version
-
-	-- Class Environment
-	_Meta._Class_ENV = _Meta._Class_ENV or {}
-	_Meta._Class_ENV._Class_KeyWords = _Meta._Class_KeyWords
-
-	setmetatable(_Meta._Class_ENV, {
+	-- Local Environment
+	setfenv(1, setmetatable({}, {
 		__index = function(self,  key)
 			if type(key) == "string" and key ~= "_G" and key:find("^_") then
 				return
@@ -153,11 +141,11 @@ do
 				return rawget(self, key)
 			end
 		end,
-	})
 
-	setfenv(1, _Meta._Class_ENV)
+		__metatable = true,
+	}))
 
-	-- Common functions
+	-- Common features
 	strtrim = strtrim or function(s)
 	  return s and (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -172,7 +160,7 @@ do
 	tremove = tremove or table.remove
 	unpack = unpack
 	pcall = pcall
-	sort = sort
+	sort = sort or table.sort
 
 	geterrorhandler = geterrorhandler or function()
 		return print
@@ -181,14 +169,27 @@ do
 	errorhandler = errorhandler or function(err)
 		return pcall(geterrorhandler(), err)
 	end
+end
+
+------------------------------------------------------
+-- Constant Definition
+------------------------------------------------------
+do
+	LUA_OOP_VERSION = 72
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
 	TYPE_STRUCT = "Struct"
 	TYPE_INTERFACE = "Interface"
 
-	TYPE_NAMESPACE = "IGAS.NameSpace"
-	TYPE_TYPE = "IGAS.TYPE"
+	TYPE_NAMESPACE = "NameSpace"
+	TYPE_TYPE = "TYPE"
+
+	-- Disposing method name
+	DISPOSE_METHOD = "Dispose"
+
+	-- Namespace field
+	NAMESPACE_FIELD = "__LOOP_NameSpace"
 end
 
 ------------------------------------------------------
@@ -196,9 +197,6 @@ end
 ------------------------------------------------------
 do
 	_NameSpace = _NameSpace or newproxy(true)
-
-	-- Disposing method name
-	_DisposeMethod = "Dispose"
 
 	_NSInfo = _NSInfo or setmetatable({}, {
 		__index = function(self, key)
@@ -275,13 +273,13 @@ do
 		_MetaNS.__add = function(v1, v2)
 			local ok, _type1, _type2
 
-			ok, _type1 = pcall(_BuildType, v1)
+			ok, _type1 = pcall(BuildType, v1)
 			if not ok then
 				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
 				error(_type1, 2)
 			end
 
-			ok, _type2 = pcall(_BuildType, v2)
+			ok, _type2 = pcall(BuildType, v2)
 			if not ok then
 				_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
 				error(_type2, 2)
@@ -293,13 +291,13 @@ do
 		_MetaNS.__sub = function(v1, v2)
 			local ok, _type1, _type2
 
-			ok, _type1 = pcall(_BuildType, v1)
+			ok, _type1 = pcall(BuildType, v1)
 			if not ok then
 				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
 				error(_type1, 2)
 			end
 
-			ok, _type2 = pcall(_BuildType, v2, nil, true)
+			ok, _type2 = pcall(BuildType, v2, nil, true)
 			if not ok then
 				_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
 				error(_type2, 2)
@@ -311,7 +309,7 @@ do
 		_MetaNS.__unm = function(v1)
 			local ok, _type1
 
-			ok, _type1 = pcall(_BuildType, v1, nil, true)
+			ok, _type1 = pcall(BuildType, v1, nil, true)
 			if not ok then
 				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
 				error(_type1, 2)
@@ -426,20 +424,20 @@ do
 			local ns = BuildNameSpace(GetDefaultNameSpace(), name)
 
 			if ns then
-				rawset(env, "__IGAS_NameSpace", ns)
+				rawset(env, NAMESPACE_FIELD, ns)
 			else
-				rawset(env, "__IGAS_NameSpace", nil)
+				rawset(env, NAMESPACE_FIELD, nil)
 			end
 		elseif IsNameSpace(name) then
-			rawset(env, "__IGAS_NameSpace", name)
+			rawset(env, NAMESPACE_FIELD, name)
 		else
-			rawset(env, "__IGAS_NameSpace", nil)
+			rawset(env, NAMESPACE_FIELD, nil)
 		end
 	end
 
 	-- GetEnvNameSpace
 	function GetNameSpace4Env(env)
-		local ns = type(env) == "table" and env.__IGAS_NameSpace
+		local ns = type(env) == "table" and env[NAMESPACE_FIELD]
 		if IsNameSpace(ns) then
 			return ns
 		end
@@ -491,13 +489,13 @@ do
 		_Meta4Type.__add = function(v1, v2)
 			local ok, _type1, _type2
 
-			ok, _type1 = pcall(_BuildType, v1)
+			ok, _type1 = pcall(BuildType, v1)
 			if not ok then
 				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
 				error(_type1, 2)
 			end
 
-			ok, _type2 = pcall(_BuildType, v2)
+			ok, _type2 = pcall(BuildType, v2)
 			if not ok then
 				_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
 				error(_type2, 2)
@@ -554,7 +552,7 @@ do
 			if IsNameSpace(v2) then
 				local ok, _type2
 
-				ok, _type2 = pcall(_BuildType, v2, nil, true)
+				ok, _type2 = pcall(BuildType, v2, nil, true)
 				if not ok then
 					_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
 					error(_type2, 2)
@@ -674,7 +672,7 @@ do
 							end
 						end
 
-						new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), _GetShortEnumInfo(ns))
+						new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
 					elseif info.Type == TYPE_STRUCT then
 						-- Check if the value is an enumeration value of this structure
 						flag, new = pcall(ValidateStruct, ns, value)
@@ -758,7 +756,7 @@ do
 		return type(tbl) == "table" and getmetatable(tbl) == TYPE_TYPE or false
 	end
 
-	function _BuildType(ns, name, onlyClass)
+	function BuildType(ns, name, onlyClass)
 		local allowNil = false
 
 		if ns == nil then
@@ -841,6 +839,17 @@ do
 		end
 	end
 
+	------------------------------------
+	--- Registe documents
+	-- @name document
+	-- @class function
+	-- @param string the document
+	-- @usage document [[
+	--	@name IFModule
+	--	@type interface
+	--	@desc Common methods for class addon and interface
+	-- ]]
+	------------------------------------
 	function document(documentation)
 		if not _EnableDocument or type(documentation) ~= "string" then return end
 
@@ -979,7 +988,7 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "table" or type(value) == "function" then
+				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 					rawset(self, key, value)
 				end
 
@@ -1003,12 +1012,12 @@ do
 				end
 			end
 
-			if key == _DisposeMethod then
+			if key == DISPOSE_METHOD then
 				if type(value) == "function" then
-					rawset(info, _DisposeMethod, value)
+					rawset(info, DISPOSE_METHOD, value)
 					return
 				else
-					error(("'%s' must be a function as dispose method."):format(_DisposeMethod), 2)
+					error(("'%s' must be a function as dispose method."):format(DISPOSE_METHOD), 2)
 				end
 			end
 
@@ -1243,7 +1252,7 @@ do
 		wipe(info.Import4Env)
 
 		-- Clear dispose method
-		info[_DisposeMethod] = nil
+		info[DISPOSE_METHOD] = nil
 
 		-- Set the environment to interface's environment
 		setfenv(2, info.InterfaceEnv)
@@ -1442,7 +1451,7 @@ do
 		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
 
 		if tempProperty.Type then
-			local ok, _type = pcall(_BuildType, tempProperty.Type, name)
+			local ok, _type = pcall(BuildType, tempProperty.Type, name)
 			if ok then
 				prop.Type = _type
 			else
@@ -1612,7 +1621,7 @@ do
 
 			for i = #(info.Cache4Interface), 1, -1 do
 				IF = info.Cache4Interface[i]
-				disfunc = _NSInfo[IF][_DisposeMethod]
+				disfunc = _NSInfo[IF][DISPOSE_METHOD]
 
 				if disfunc then
 					pcall(disfunc, self)
@@ -1621,7 +1630,7 @@ do
 
 			-- Call Class Dispose
 			while objCls and _NSInfo[objCls] do
-				disfunc = _NSInfo[objCls][_DisposeMethod]
+				disfunc = _NSInfo[objCls][DISPOSE_METHOD]
 
 				if disfunc then
 					pcall(disfunc, self)
@@ -1693,7 +1702,7 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "table" or type(value) == "function" then
+				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 					rawset(self, key, value)
 				end
 
@@ -1717,12 +1726,12 @@ do
 				end
 			end
 
-			if key == _DisposeMethod then
+			if key == DISPOSE_METHOD then
 				if type(value) == "function" then
-					rawset(info, _DisposeMethod, value)
+					rawset(info, DISPOSE_METHOD, value)
 					return
 				else
-					error(("'%s' must be a function as dispose method."):format(_DisposeMethod), 2)
+					error(("'%s' must be a function as dispose method."):format(DISPOSE_METHOD), 2)
 				end
 			end
 
@@ -2123,7 +2132,7 @@ do
 
 		-- Clear dispose method
 		if not asPart then
-			info[_DisposeMethod] = nil
+			info[DISPOSE_METHOD] = nil
 		end
 
 		-- MetaTable
@@ -2163,7 +2172,7 @@ do
 					end
 
 					-- Dispose Method
-					if key == _DisposeMethod then
+					if key == DISPOSE_METHOD then
 						return DisposeObject
 					end
 
@@ -2183,20 +2192,12 @@ do
 				end
 
 				-- Custom index metametods
-				if rawget(MetaTable, "___index") then
-					if type(rawget(MetaTable, "___index")) == "table" then
-						return rawget(MetaTable, "___index")[key]
-					elseif type(rawget(MetaTable, "___index")) == "function" then
-						return rawget(MetaTable, "___index")(self, key)
-						--[[local ok, ret = pcall(rawget(MetaTable, "___index"), self, key)
-
-						if not ok then
-							ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-							error(ret, 2)
-						end
-
-						return ret--]]
+				local ___index = rawget(MetaTable, "___index")
+				if ___index then
+					if type(___index) == "table" then
+						return ___index[key]
+					elseif type(___index) == "function" then
+						return ___index(self, key)
 					end
 				end
 			end
@@ -2250,17 +2251,9 @@ do
 				end
 
 				-- Custom newindex metametods
-				if type(rawget(MetaTable, "___newindex")) == "function" then
-					return rawget(MetaTable, "___newindex")(self, key, value)
-					--[[local ok, ret = pcall(rawget(MetaTable, "___newindex"), self, key, value)
-
-					if not ok then
-						ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-						error(ret, 2)
-					end
-
-					return ret--]]
+				local ___newindex = rawget(MetaTable, "___newindex")
+				if type(___newindex) == "function" then
+					return ___newindex(self, key, value)
 				end
 
 				rawset(self,key,value)			-- Other key can be set as usual
@@ -2573,7 +2566,7 @@ do
 		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
 
 		if tempProperty.Type then
-			local ok, _type = pcall(_BuildType, tempProperty.Type, name)
+			local ok, _type = pcall(BuildType, tempProperty.Type, name)
 			if ok then
 				prop.Type = _type
 			else
@@ -2672,7 +2665,7 @@ end
 -- Enum
 ------------------------------------------------------
 do
-	local function BuildEnum(info, set)
+	function BuildEnum(info, set)
 		if type(set) ~= "table" then
 			error([[Usage: enum "enumName" {
 				"enumValue1",
@@ -2693,7 +2686,7 @@ do
 		end
 	end
 
-	function _GetShortEnumInfo(cls)
+	function GetShortEnumInfo(cls)
 		if _NSInfo[cls] then
 			local str
 
@@ -2836,7 +2829,7 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "table" or type(value) == "function" then
+				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 					rawset(self, key, value)
 				end
 
@@ -2871,7 +2864,7 @@ do
 			end
 
 			if type(key) == "string" and (value == nil or IsType(value) or IsNameSpace(value)) then
-				local ok, ret = pcall(_BuildType, value, key)
+				local ok, ret = pcall(BuildType, value, key)
 
 				if ok then
 					rawset(self, key, ret)
@@ -3211,12 +3204,79 @@ end
 ------------------------------------------------------
 do
 	namespace "System"
-end
 
-------------------------------------------------------
--- System.Reflector
-------------------------------------------------------
-do
+	------------------------------------------------------
+	-- Base structs
+	------------------------------------------------------
+	struct "Boolean"
+		function Validate(value)
+			return value and true or false
+		end
+	endstruct "Boolean"
+
+	struct "String"
+		function Validate(value)
+			if type(value) ~= "string" then
+				error(format("%s must be a string, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "String"
+
+	struct "Number"
+		function Validate(value)
+			if type(value) ~= "number" then
+				error(format("%s must be a number, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "Number"
+
+	struct "Function"
+		function Validate(value)
+			if type(value) ~= "function" then
+				error(format("%s must be a function, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "Function"
+
+	struct "Table"
+		function Validate(value)
+			if type(value) ~= "table" then
+				error(format("%s must be a table, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "Table"
+
+	struct "Userdata"
+		function Validate(value)
+			if type(value) ~= "userdata" then
+				error(format("%s must be a userdata, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "Userdata"
+
+	struct "Thread"
+		function Validate(value)
+			if type(value) ~= "thread" then
+				error(format("%s must be a thread, got %s.", "%s", type(value)))
+			end
+			return value
+		end
+	endstruct "Thread"
+
+	struct "Any"
+		function Validate(value)
+			return value
+		end
+	endstruct "Any"
+
+	------------------------------------------------------
+	-- System.Reflector
+	------------------------------------------------------
 	interface "Reflector"
 
 		doc [======[
@@ -3237,6 +3297,42 @@ do
 		_STRUCT_TYPE_CUSTOM = _STRUCT_TYPE_CUSTOM
 
 		local sort = table.sort
+
+		doc [======[
+			@name FireObjectEvent
+			@type method
+			@desc Fire an object's event, to trigger the object's event handlers
+			@param object the object
+			@param event the event name
+			@param ... the event's arguments
+			@return nil
+		]======]
+		function FireObjectEvent(self, sc, ...)
+			if not GetObjectClass(self) then
+				error("Usage : Reflector.FireObjectEvent(object, event[, ...]) : 'object' - object expected.")
+			end
+
+			if type(sc) ~= "string" then
+				error(("Usage : Reflector.FireObjectEvent(object, event [, args, ...]) : 'event' - string expected, got %s."):format(type(sc)), 2)
+			end
+
+			if rawget(self, "__Events") and rawget(self.__Events, sc) then
+				return rawget(self.__Events, sc)(self, ...)
+			end
+		end
+
+		doc [======[
+			@name GetCurrentNameSpace
+			@type method
+			@desc Get the namespace used by the environment
+			@param env table
+			@return namespace
+		]======]
+		function GetCurrentNameSpace(self, env)
+			env = type(env) == "table" and env or getfenv(2)
+
+			return GetNameSpace4Env(env)
+		end
 
 		doc [======[
 			@name ForName
@@ -4014,7 +4110,7 @@ do
 					if #self > 0 then
 						return tremove(self, #self)
 					else
-						local ret = _BuildType(nil)
+						local ret = BuildType(nil)
 
 						-- Mark it as recycle table
 						self[ret] = true
@@ -4059,7 +4155,7 @@ do
 				types = vtype
 			end
 
-			local ok, _type = pcall(_BuildType, types, name)
+			local ok, _type = pcall(BuildType, types, name)
 
 			if ok then
 				if _type then
@@ -4674,6 +4770,540 @@ do
 			end
 		end
 	endinterface "Reflector"
+
+	------------------------------------------------------
+	-- System.Object
+	------------------------------------------------------
+	class "Object"
+
+		doc [======[
+			@name Object
+			@type class
+			@desc The root class of other classes. Object class contains several methodes for common use.
+		]======]
+
+		local create = coroutine.create
+		local resume = coroutine.resume
+		local status = coroutine.status
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		doc [======[
+			@name HasEvent
+			@type method
+			@desc Check if the event type is supported by the object
+			@param name the event's name
+			@return boolean true if the object has that event type
+		]======]
+		function HasEvent(self, name)
+			if type(name) ~= "string" then
+				error(("Usage : object:HasEvent(name) : 'name' - string expected, got %s."):format(type(name)), 2)
+			end
+			return Reflector.HasEvent(Reflector.GetObjectClass(self), name) or false
+		end
+
+		doc [======[
+			@name GetClass
+			@type method
+			@desc Get the class type of the object
+			@return class the object's class
+		]======]
+		function GetClass(self)
+			return Reflector.GetObjectClass(self)
+		end
+
+		doc [======[
+			@name IsClass
+			@type method
+			@desc Check if the object is an instance of the class
+			@param class
+			@return boolean true if the object is an instance of the class
+		]======]
+		function IsClass(self, cls)
+			return Reflector.ObjectIsClass(self, cls)
+		end
+
+		doc [======[
+			@name IsInterface
+			@type method
+			@desc Check if the object is extend from the interface
+			@param interface
+			@return boolean true if the object is extend from the interface
+		]======]
+		function IsInterface(self, IF)
+			return Reflector.ObjectIsInterface(self, IF)
+		end
+
+		doc [======[
+			@name Fire
+			@type method
+			@desc Fire an object's event, to trigger the object's event handlers
+			@param event the event name
+			@param ... the event's arguments
+			@return nil
+		]======]
+		function Fire(self, sc, ...)
+			if type(sc) ~= "string" then
+				error(("Usage : Object:Fire(event [, args, ...]) : 'event' - string expected, got %s."):format(type(sc)), 2)
+			end
+
+			if rawget(self, "__Events") and rawget(self.__Events, sc) then
+				return rawget(self.__Events, sc)(self, ...)
+			end
+		end
+
+		doc [======[
+			@name ActiveThread
+			@type method
+			@desc Active the thread mode for special events
+			@format event[, ...]
+			@param event the event name
+			@param ... other event's name list
+			@return nil
+		]======]
+		function ActiveThread(self, ...)
+			return Reflector.ActiveThread(self, ...)
+		end
+
+		doc [======[
+			@name IsThreadActivated
+			@type method
+			@desc Check if the thread mode is actived for the event
+			@param event the event's name
+			@return boolean true if the event is in thread mode
+		]======]
+		function IsThreadActivated(self, sc)
+			return Reflector.IsThreadActivated(self, sc)
+		end
+
+		doc [======[
+			@name InactiveThread
+			@type method
+			@desc Turn off the thread mode for the events
+			@format event[, ...]
+			@param event the event's name
+			@param ... other event's name list
+			@return nil
+		]======]
+		function InactiveThread(self, ...)
+			return Reflector.InactiveThread(self, ...)
+		end
+
+		doc [======[
+			@name BlockEvent
+			@type method
+			@desc Block some events for the object
+			@format event[, ...]
+			@param event the event's name
+			@param ... other event's name list
+			@return nil
+		]======]
+		function BlockEvent(self, ...)
+			return Reflector.BlockEvent(self, ...)
+		end
+
+		doc [======[
+			@name IsEventBlocked
+			@type method
+			@desc Check if the event is blocked for the object
+			@param event the event's name
+			@return boolean true if th event is blocked
+		]======]
+		function IsEventBlocked(self, sc)
+			return Reflector.IsEventBlocked(self, sc)
+		end
+
+		doc [======[
+			@name UnBlockEvent
+			@type method
+			@desc Un-Block some events for the object
+			@format event[, ...]
+			@param event the event's name
+			@param ... other event's name list
+			@return nil
+		]======]
+		function UnBlockEvent(self, ...)
+			return Reflector.UnBlockEvent(self, ...)
+		end
+
+		doc [======[
+			@name ThreadCall
+			@type method
+			@desc Call method or function as a thread
+			@param methodname|function
+			@param ... the arguments
+			@return nil
+		]======]
+		function ThreadCall(self, method, ...)
+			if type(method) == "string" then
+				method = self[method]
+			end
+
+			if type(method) == "function" then
+				local thread = create(method)
+				return resume(thread, self, ...)
+			end
+		end
+	endclass "Object"
+
+	------------------------------------------------------
+	-- System.Module
+	------------------------------------------------------
+	class "Module"
+		doc [======[
+			@name Module
+			@type class
+			@desc Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"
+		]======]
+
+		_Module = _Module or {}
+		_ModuleInfo = _ModuleInfo or setmetatable({}, {__mode = "k"})
+
+		_ModuleEnv = _ModuleEnv or {}
+
+		_ModuleEnv.partclass = partclass
+		_ModuleEnv.class = class
+		_ModuleEnv.enum = enum
+		_ModuleEnv.namespace = namespace
+		_ModuleEnv.struct = struct
+		_ModuleEnv.interface = interface
+		_ModuleEnv.import = function(name)
+			local ns = name
+
+			if type(name) == "string" then
+				ns = Reflector.ForName(name)
+
+				if not ns then
+					error(("no namespace is found with name : %s"):format(name), 2)
+				end
+			end
+
+			if not Reflector.IsNameSpace(ns) then
+				error([[Usage: import "namespaceA.namespaceB"]], 2)
+			end
+
+			local env = getfenv(2)
+
+			local info = _ModuleInfo[env]
+
+			if not info then
+				error("can't use import here.", 2)
+			end
+
+			info.Import = info.Import or {}
+
+			for _, v in ipairs(info.Import) do
+				if v == ns then
+					return
+				end
+			end
+
+			tinsert(info.Import, ns)
+		end
+
+		------------------------------------------------------
+		-- Event
+		------------------------------------------------------
+		doc [======[
+			@name OnDispose
+			@type event
+			@desc Fired when the module is disposed
+		]======]
+		event "OnDispose"
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name _M
+			@type property
+			@desc The module itself
+		]======]
+		property "_M" {
+			Get = function(self)
+				return self
+			end,
+		}
+
+		doc [======[
+			@name _Name
+			@type property
+			@desc The module's name
+		]======]
+		property "_Name" {
+			Get = function(self)
+				return _ModuleInfo[self].Name
+			end,
+		}
+
+		doc [======[
+			@name _Parent
+			@type property
+			@desc The module's parent module
+		]======]
+		property "_Parent" {
+			Get = function(self)
+				return _ModuleInfo[self].Parent
+			end,
+		}
+
+		doc [======[
+			@name _Version
+			@type property
+			@desc The module's version
+		]======]
+		property "_Version" {
+			Get = function(self)
+				return _ModuleInfo[self].Version
+			end,
+		}
+
+		------------------------------------------------------
+		-- Dispose
+		------------------------------------------------------
+		function Dispose(self)
+			local info = _ModuleInfo[self]
+
+			if info then
+				-- Clear child modules
+				if info.Modules then
+					for name, mdl in pairs(info.Modules) do
+						mdl:Dispose()
+					end
+
+					wipe(info.Modules)
+
+					info.Modules = nil
+				end
+
+				-- Fire the event
+				Reflector.FireObjectEvent(self, "OnDispose")
+
+				-- Clear from parent
+				if info.Name then
+					if info.Parent then
+						if _ModuleInfo[info.Parent] and _ModuleInfo[info.Parent].Modules then
+							_ModuleInfo[info.Parent].Modules[info.Name] = nil
+						end
+					else
+						_Module[info.Name] = nil
+					end
+				end
+
+				-- Remove info
+				_ModuleInfo[self] = nil
+			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function Module(self, name)
+			local parent
+			local prevName
+			local fullName
+
+			-- Check and create parent modules
+			if type(name) == "string" then
+				for sub in name:gmatch("[_%w]+") do
+					if not prevName then
+						prevName = sub
+					else
+						if not parent then
+							fullName = prevName
+						else
+							fullName = fullName .. "." .. prevName
+						end
+
+						parent = Module(fullName)
+
+						prevName = sub
+					end
+				end
+			end
+
+			-- Save the module's information
+	    	if prevName then
+	    		if parent then
+	    			_ModuleInfo[parent].Modules = _ModuleInfo[parent].Modules or {}
+	    			_ModuleInfo[parent].Modules[prevName] = self
+	    		else
+	    			_Module[prevName] = self
+	    		end
+	    	end
+
+	    	_ModuleInfo[self] = {
+		    	Owner = self,
+		    	Name = prevName,
+		    	Parent = parent,
+		    }
+	    end
+
+		------------------------------------------------------
+		-- metamethod
+		------------------------------------------------------
+		function __exist(name)
+			if type(name) == "string" then
+				local mdl = nil
+
+				for sub in name:gmatch("[_%w]+") do
+					if not mdl then
+						mdl = _Module[sub]
+					elseif _ModuleInfo[mdl] and _ModuleInfo[mdl].Modules then
+						mdl = _ModuleInfo[mdl].Modules[sub]
+					else
+						mdl = nil
+					end
+
+					if not mdl then return end
+				end
+
+				return mdl
+			end
+		end
+
+		function __index(self, key)
+			-- Check keywords
+			if _ModuleEnv[key] then
+				return _ModuleEnv[key]
+			end
+
+			-- Check self's namespace
+			local ns = Reflector.GetCurrentNameSpace(self)
+			if ns and Reflector.GetName(ns) then
+				if key == Reflector.GetName(ns) then
+					rawset(self, key, ns)
+					return rawget(self, key)
+				elseif ns[key] then
+					rawset(self, key, ns[key])
+					return rawget(self, key)
+				end
+			end
+
+			local info = _ModuleInfo[self]
+
+			-- Check imports
+			if info.Import then
+				for _, ns in ipairs(info.Import) do
+					if key == Reflector.GetName(ns) then
+						rawset(self, key, ns)
+						return rawget(self, key)
+					elseif ns[key] then
+						rawset(self, key, ns[key])
+						return rawget(self, key)
+					end
+				end
+			end
+
+			-- Check base namespace
+			if Reflector.ForName(key) then
+				rawset(self, key, Reflector.ForName(key))
+				return rawget(self, key)
+			end
+
+			if info.Parent then
+				local value = info.Parent[key]
+
+				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+					rawset(self, key, value)
+				end
+
+				return value
+			else
+				if key ~= "_G" and type(key) == "string" and key:find("^_") then
+					return
+				end
+
+				local value = _G[key]
+				if value then
+					if type(value) == "userdata" or type(value) == "function" or type(value) == "table" then
+						rawset(self, key, value)
+						return rawget(self, key)
+					end
+
+					return value
+				end
+			end
+		end
+
+		function __newindex(self, key, value)
+			if _ModuleEnv[key] then
+				error(("%s is a keyword."):format(key), 2)
+			end
+
+			rawset(self, key, value)
+		end
+
+		function __call(self, version, depth)
+			depth = type(depth) == "number" and depth > 0 and depth or 1
+
+			local info = _ModuleInfo[self]
+
+			if not info then
+				error("The module is disposed", 2)
+			end
+
+			-- Check version
+			if version then
+				if type(version) == "string" then
+					version = strtrim(version)
+
+					if tonumber(version) then
+						version = tonumber(version)
+					else
+						local pre, number = version:match("^(%a+).-(%d+)$")
+
+						if pre and number then
+							pre = pre:lower()
+							number = tonumber(number)
+
+							if type(info.Version) == "number" then
+								error("The version type is conflicted with the current version of the module.", 2)
+							elseif type(info.Version) == "string" then
+								local opre, onumber = info.Version:match("^(%a+).-(%d+)$")
+
+								if opre	and onumber then
+									opre = opre:lower()
+									onumber = tonumber(onumber)
+
+									if opre < pre or (opre == pre and onumber < number) then
+										info.Version = pre .. tostring(number)
+									else
+										error("The version must be greater than the current version of the module.", 2)
+									end
+								else
+									info.Version = pre .. tostring(number)
+								end
+							else
+								info.Version = pre .. tostring(number)
+							end
+						else
+							error("The version string should be started with alphabet and end with number, like 'v108'.")
+						end
+					end
+				end
+
+				if type(version) == "number" then
+					if type(info.Version) == "string" then
+						error("The version type is conflicted with the current version of the module.", 2)
+					elseif type(info.Version) == "number" then
+						if info.Version >= version then
+							error("The version number must be greater than the current version of the module.", 2)
+						else
+							info.Version = version
+						end
+					end
+				end
+			end
+
+			setfenv(depth + 1, self)
+		end
+	endclass "Module"
 end
 
 ------------------------------------------------------
@@ -4697,31 +5327,31 @@ do
 		end
 	end
 
-	_Class_KeyWords.namespace = namespace
-	_Class_KeyWords.class = class
-	_Class_KeyWords.partclass = partclass
-	_Class_KeyWords.enum = enum
-	_Class_KeyWords.struct = struct
-	_Class_KeyWords.interface = interface
-
-	function IGAS:GetNameSpace(ns)
-		return Reflector.ForName(ns)
+	function Install_OOP(env)
+		if type(env) == "table" then
+			env.partclass = partclass
+			env.class = class
+			env.enum = enum
+			env.namespace = namespace
+			env.struct = struct
+			env.interface = interface
+			env.import = import_install
+			env.Module = Module
+		end
 	end
 
-	function IGAS:Install(env)
-		env = type(env) == "table" and env or getfenv(2)
+	if IGAS then
+		function IGAS:GetNameSpace(ns)
+			return Reflector.ForName(ns)
+		end
 
-		if env then
-			env.partclass = env.partclass or partclass
-			env.class = env.class or class
-			env.enum = env.enum or enum
-			env.namespace = env.namespace or namespace
-			env.struct = env.struct or struct
-			env.interface = env.interface or interface
-			env.import = env.import or import_install
+		function IGAS:Install(env)
+			env = type(env) == "table" and env or getfenv(2)
+
+			return Install_OOP(env)
 		end
 	end
 
 	-- Install to the global environment
-	IGAS:Install(_G)
+	Install_OOP(_G)
 end

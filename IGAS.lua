@@ -4,11 +4,13 @@
 -- Create Date : 2011/03/01
 -- ChangeLog   :
 
-local version = 5
+local version = 6
 
 if not IGAS:NewAddon("IGAS", version) then
 	return
 end
+
+namespace "System"
 
 ----------------------------------------------
 -- Addon Initialize
@@ -115,31 +117,37 @@ function OnSlashCmd(self, option, info)
 	end
 end
 
-local _Copyed = {}
+----------------------------------------------
+-- WOW Special Definitions
+----------------------------------------------
 
-local function CopySubTable(src, dest)
-	dest = dest or {}
-
-	for i, v in pairs(src) do
-		if type(v) == "table" then
-			_Copyed[v] = _Copyed[v] or CopySubTable(v)
-			dest[i] = _Copyed[v]
-		else
-			dest[i] = v
+------------------------------------------------------
+-- LocaleString
+------------------------------------------------------
+struct "LocaleString"
+	function Validate(value)
+		if type(value) ~= "string" then
+			error(format("%s must be a string, got %s.", "%s", type(value)))
 		end
+		return value
 	end
+endstruct "LocaleString"
 
-	return dest
-end
+------------------------------------------------------
+-- PositiveNumber
+------------------------------------------------------
+struct "PositiveNumber"
+	function Validate(value)
+		if type(value) ~= "number" then
+			error(format("%s must be a number, got %s.", "%s", type(value)))
+		end
+		if value <= 0 then
+			error("%s must be greater than zero.")
+		end
+		return value
+	end
+endstruct "PositiveNumber"
 
-function CopyTable(src, dest)
-	wipe(_Copyed)
-	dest = CopySubTable(src, dest)
-	wipe(_Copyed)
-
-	return dest
-end
-
-function IGAS:CopyTable(...)
-	return CopyTable(...)
-end
+----------------------------------------------
+-- IGAS APIS
+----------------------------------------------

@@ -1,47 +1,43 @@
 -- Author		:	Kurapica
 -- Create Date	:	2011/01/21
+-- ChangeLog    :
+--                  2013/08/05 Remove the version check, seal the metatable for IGAS
 
-local version = 2
-
-IGAS = IGAS or setmetatable({}, {})
-
-local _Meta = getmetatable(IGAS)
-
-------------------------------------------------------
--- Version Check
-------------------------------------------------------
-if _Meta._IGAS_Version and _Meta._IGAS_Version >= version then
-	return
-end
-_Meta._IGAS_Version = version
-
-------------------------------------------------------
--- Class System KeyWords
-------------------------------------------------------
-_Meta._Class_KeyWords = _Meta._Class_KeyWords or {}
-
-------------------------------------------------------
--- MetaTable for IGAS
-------------------------------------------------------
-do
+IGAS = setmetatable({}, {
 	-- __call
-	_Meta.__call = function(self, name)
+	-- get the addons that stored in the IGAS's addon system
+	-- like IGAS("IGAS") return the addon object of the igas
+	__call = function(self, name)
 		if rawget(self, "GetAddon") and name and type(name) == "string" and name ~= "" then
 			return self:GetAddon(name)
 		end
-	end
-	
+	end,
+
 	-- __index
-	_Meta.__index = function(self, key)
-		if rawget(self, "GetWrapper") and _G[key] then
+	-- 1. get the wrapper of existed ui elements, like IGAS.UIParent to get the wrapper of UIParent
+	-- 2. get the namespace of the class system, like IGAS.System.Widget.Form return the Form class
+	__index = function(self, key)
+		-- Return the namespace of the given name
+		if rawget(self, "GetNameSpace") and type(key) == "string" then
+			local ns = self:GetNameSpace(key)
+
+			if ns then
+				rawset(self, key, ns)
+				return ns
+			end
+		end
+
+		-- Return the wrapper object of the given ui element's global name
+		if rawget(self, "GetWrapper") and _G[key] and _G[key][0] then
 			local frame = _G[key]
-			
-			if type(frame) == "table" and type(frame[0]) == "userdata" and frame.GetObjectType then
+
+			if type(frame) == "table" and type(frame[0]) == "userdata" then
 				rawset(self, key, self:GetWrapper(frame))
 				return rawget(self, key)
 			end
-		elseif rawget(self, "GetNameSpace") and type(key) == "string" then
-			return self:GetNameSpace(key)
 		end
-	end
-end
+	end,
+
+	-- seal the metatable
+	__metatable = true,
+})

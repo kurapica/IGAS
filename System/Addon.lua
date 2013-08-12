@@ -8,59 +8,17 @@
 --                      2011/08/03  Hook System added.
 --                      2011/10/29  OnHook Script added.
 --                      2011/10/31  New SlashCmd System for addon & module.
-
-----------------------------------------------------------------------------------------------------------------------------------------
---- Addon is an class type for addons in IGAS.The addon class supply some methods, to help authors to manager their addons easily.
--- an addon is also a private scope using to contains it's own functions and variables.
--- addons can access _G's functions and variables, and making an image in itself at the same time.When it access a frame in _G, it'll automatically convert it to an IGAS' frame into the addon' scope.
--- @name Addon
--- @class table
--- @field _Addon the addon self, readonly
--- @field _Name the addon's name, readonly
--- @field _Version the addon's version
--- @field _Enabled whether the addon is enabled or disabled.
--- @field _AutoWrapper whether the addon would auto making wrappers for frames defined in _G when the addon access it.
--- @field _Metadata the addon's metatable
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
---- Module is an class type for module in IGAS.a module is contained in an addon or another module.
--- a module is also a private scope.It can access all resources defined in it's container.
--- @name Module
--- @class table
--- @field _M the module self, readonly
--- @field _Name the module's name, readonly
--- @field _Version the module's version
--- @field _Enabled whether the module is enabled or disabled.
--- @field _Parent the module's parent module(addon)
-----------------------------------------------------------------------------------------------------------------------------------------
+--                      2013/08/05  Remove the version check, seal the definition environment
 
 ------------------------------------------------------
--- Version Check & Environment
+-- Addon system definition environment
 ------------------------------------------------------
 do
-	local version = 15
-
-	local _Meta = getmetatable(IGAS)
-
-	-- Version Check
-	if _Meta._IGAS_Addon_Version and _Meta._IGAS_Addon_Version >= version then
-		return
-	end
-
-	_Meta._IGAS_Addon_Version = version
-
-	-- Class Environment
-	_Meta._Addon_ENV = _Meta._Addon_ENV or {}
-
-	setmetatable(_Meta._Addon_ENV, {
+	-- Local Environment
+	setfenv(1, setmetatable({}, {
 		__index = function(self,  key)
 			if type(key) == "string" and key ~= "_G" and key:find("^_") then
 				return
-			end
-
-			if _Meta._Class_KeyWords[key] then
-				return _Meta._Class_KeyWords[key]
 			end
 
 			if _G[key] then
@@ -68,12 +26,12 @@ do
 				return rawget(self, key)
 			end
 		end,
-	})
 
-	-- Special
-	_Meta._Addon_ENV._Class_KeyWords = _Meta._Class_KeyWords
+		__metatable = true,
+	}))
 
-	setfenv(1, _Meta._Addon_ENV)
+	-- Install now or get oop system keywords from _G
+	if IGAS then IGAS:Install() end
 
 	-- Common functions
 	strtrim = strtrim or function(s)
@@ -108,6 +66,14 @@ _Info = _Info or setmetatable({}, _MetaWK)
 
 _Special_KeyWord = _Special_KeyWord or {}
 
+_Class_KeyWords = _Class_KeyWords or {}
+_Class_KeyWords.partclass = partclass
+_Class_KeyWords.class = class
+_Class_KeyWords.enum = enum
+_Class_KeyWords.namespace = namespace
+_Class_KeyWords.struct = struct
+_Class_KeyWords.interface = interface
+
 _Logined = _Logined or false
 
 issecurevariable = issecurevariable or function() return false end
@@ -122,12 +88,6 @@ interface "IFModule"
 		@type interface
 		@desc Common methods for class addon and interface
 	]======]
-
-	_MetaWK = _MetaWK
-	_MetaWV = _MetaWV
-	_MetaWKV = _MetaWKV
-
-	_Info = _Info
 
 	------------------------------------------------------
 	-- _EventManager
@@ -1195,15 +1155,6 @@ class "Addon"
 		------------------------------------------------------
 		-- Dispose
 		------------------------------------------------------
-		function Dispose(self)
-			if getfenv(2) == self then
-				if _Info[self].Parent then
-					setfenv(2, _Info[self].Parent)
-				else
-					setfenv(2, _G)
-				end
-			end
-		end
 
 		------------------------------------------------------
 		-- Constructor
@@ -1260,11 +1211,11 @@ class "Addon"
 			end
 
 			-- Check namespace
-			local ns = rawget(self, "__IGAS_NameSpace")
+			local ns = Reflector.GetCurrentNameSpace(self)
 			local parent = _Info[self].Parent
 
 			while not ns and parent do
-				ns = rawget(parent, "__IGAS_NameSpace")
+				ns = Reflector.GetCurrentNameSpace(parent)
 				parent = _Info[parent].Parent
 			end
 
@@ -1299,7 +1250,7 @@ class "Addon"
 
 			local value = _Info[self].Parent and _Info[self].Parent[key]
 
-			if type(value) == "table" or type(value) == "function" then
+			if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 				rawset(self, key, value)
 			end
 
@@ -1442,10 +1393,6 @@ class "Addon"
 	------------------------------------------------------
 	function Dispose(self)
 		_Addon[_Info[self].Name] = nil
-
-		if getfenv(2) == self then
-			setfenv(2, _G)
-		end
 	end
 
 	------------------------------------------------------
@@ -1494,7 +1441,7 @@ class "Addon"
 		end
 
 		-- Check namespace
-		local ns = rawget(self, "__IGAS_NameSpace")
+		local ns = Reflector.GetCurrentNameSpace(self)
 		if Reflector.GetName(ns) then
 			if key == Reflector.GetName(ns) then
 				rawset(self, key, ns)
@@ -1528,17 +1475,19 @@ class "Addon"
 			return
 		end
 
-		if _G[key] then
-			if type(_G[key]) == "function" or type(_G[key]) == "table" then
+		local value = _G[key]
+
+		if value ~= nil then
+			if type(value) == "userdata" or type(value) == "function" or type(value) == "table" then
 				if not _Info[self].NoAutoWrapper and IGAS.GetWrapper then
-					rawset(self, key, IGAS:GetWrapper(_G[key]))
+					rawset(self, key, IGAS:GetWrapper(value))
 				else
-					rawset(self, key, _G[key])
+					rawset(self, key, value)
 				end
 				return rawget(self, key)
 			end
 
-			return _G[key]
+			return value
 		end
 	end
 
