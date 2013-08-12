@@ -4,11 +4,7 @@
 --               2011/10/24 can use code like L"XXXX".
 --               2013/01/07 Recode with new class system.
 
-local version = 3
-
-if not IGAS:NewAddon("IGAS.Locale", version) then
-	return
-end
+Module "System.Locale" "v3"
 
 namespace "System"
 
@@ -114,10 +110,6 @@ class "Locale"
 		return self[key]
 	end
 endclass "Locale"
-
-------------------------------------------------------
--- Global Settings
-------------------------------------------------------
 
 ------------------------------------
 --- Create or get a localization file

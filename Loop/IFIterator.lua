@@ -2,11 +2,7 @@
 -- Create Date : 2012/08/10
 -- ChangeLog   :
 
-local version = 2
-
-if not IGAS:NewAddon("IGAS.IFIterator", version) then
-	return
-end
+Module "System.IFIterator" "v1"
 
 namespace "System"
 

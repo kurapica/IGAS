@@ -1,3 +1,7 @@
+2013/08/13: IGAS v46
+    1. The object oriented program system now all moved to Loop folder, separated from the other part for wow.
+    2. Reduce the memory and cpu usage.
+
 2013/08/04: IGAS v45
     1. Remove old unit check to make sure the unit frame's refresh should be done well when point to different raid/party member.
 

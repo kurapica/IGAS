@@ -437,7 +437,7 @@ do
 
 	-- GetEnvNameSpace
 	function GetNameSpace4Env(env)
-		local ns = type(env) == "table" and env[NAMESPACE_FIELD]
+		local ns = type(env) == "table" and rawget(env, NAMESPACE_FIELD)
 		if IsNameSpace(ns) then
 			return ns
 		end
@@ -1161,18 +1161,15 @@ do
 		return false
 	end
 
-	------------------------------------
-	--- Create interface in currect environment's namespace or default namespace
-	-- @name interface
-	-- @class function
-	-- @param name the interface's name
-	-- @usage interface "IFSocket"
-	------------------------------------
-	function interface(name)
+	function BuildInterface(name, asPart)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
-			error([[Usage: interface "interfacename"]], 2)
+			if asPart then
+				error([[Usage: partinterface "interfacename"]], 2)
+			else
+				error([[Usage: interface "interfacename"]], 2)
+			end
 		end
-		local fenv = getfenv(2)
+		local fenv = getfenv(3)
 		local ns = GetNameSpace4Env(fenv)
 
 		-- Create interface or get it
@@ -1218,13 +1215,15 @@ do
 		_IFEnv2Info[info.InterfaceEnv] = info
 
 		-- Clear
-		info.Constructor = nil
-		wipe(info.Property)
-		wipe(info.Event)
-		wipe(info.Method)
-		for i, v in pairs(info.InterfaceEnv) do
-			if type(v) == "function" then
-				info.InterfaceEnv[i] = nil
+		if not asPart then
+			info.Constructor = nil
+			wipe(info.Property)
+			wipe(info.Event)
+			wipe(info.Method)
+			for i, v in pairs(info.InterfaceEnv) do
+				if type(v) == "function" then
+					info.InterfaceEnv[i] = nil
+				end
 			end
 		end
 
@@ -1240,22 +1239,44 @@ do
 		-- ExtendInterface
 		info.ExtendInterface = info.ExtendInterface or {}
 
-		for _, pIF in ipairs(info.ExtendInterface) do
-			if _NSInfo[pIF].ExtendClass then
-				_NSInfo[pIF].ExtendClass[info.Owner] = nil
+		if not asPart then
+			for _, pIF in ipairs(info.ExtendInterface) do
+				if _NSInfo[pIF].ExtendClass then
+					_NSInfo[pIF].ExtendClass[info.Owner] = nil
+				end
 			end
+			wipe(info.ExtendInterface)
 		end
-		wipe(info.ExtendInterface)
 
 		-- Import
 		info.Import4Env = info.Import4Env or {}
-		wipe(info.Import4Env)
+
+		if not asPart then
+			wipe(info.Import4Env)
+		end
 
 		-- Clear dispose method
-		info[DISPOSE_METHOD] = nil
+		if not asPart then
+			info[DISPOSE_METHOD] = nil
+		end
 
 		-- Set the environment to interface's environment
-		setfenv(2, info.InterfaceEnv)
+		setfenv(3, info.InterfaceEnv)
+	end
+
+	------------------------------------
+	--- Create interface in currect environment's namespace or default namespace
+	-- @name interface
+	-- @class function
+	-- @param name the interface's name
+	-- @usage interface "IFSocket"
+	------------------------------------
+	function interface(name)
+		BuildInterface(name)
+	end
+
+	function partinterface(name)
+		BuildInterface(name, true)
 	end
 
 	------------------------------------
@@ -1535,6 +1556,7 @@ do
 	end
 
 	_KeyWord4IFEnv.interface = interface
+	_KeyWord4IFEnv.partinterface = partinterface
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
 	_KeyWord4IFEnv.event = event_IF
@@ -3328,10 +3350,24 @@ do
 			@param env table
 			@return namespace
 		]======]
-		function GetCurrentNameSpace(self, env)
+		function GetCurrentNameSpace(env)
 			env = type(env) == "table" and env or getfenv(2)
 
 			return GetNameSpace4Env(env)
+		end
+
+		doc [======[
+			@name SetCurrentNameSpace
+			@type method
+			@desc set the namespace used by the environment
+			@param ns the namespace that set for the environment
+			@param env table
+			@return nil
+		]======]
+		function SetCurrentNameSpace(ns, env)
+			env = type(env) == "table" and env or getfenv(2)
+
+			return SetNameSpace4Env(env, ns)
 		end
 
 		doc [======[
@@ -4967,6 +5003,7 @@ do
 		_ModuleEnv.enum = enum
 		_ModuleEnv.namespace = namespace
 		_ModuleEnv.struct = struct
+		_ModuleEnv.partinterface = partinterface
 		_ModuleEnv.interface = interface
 		_ModuleEnv.import = function(name)
 			local ns = name
@@ -5132,6 +5169,12 @@ do
 	    		if parent then
 	    			_ModuleInfo[parent].Modules = _ModuleInfo[parent].Modules or {}
 	    			_ModuleInfo[parent].Modules[prevName] = self
+
+	    			-- Set the default namespace from the parent
+	    			local ns = Reflector.GetCurrentNameSpace(parent)
+	    			if ns then
+	    				Reflector.SetCurrentNameSpace(ns, self)
+	    			end
 	    		else
 	    			_Module[prevName] = self
 	    		end
@@ -5253,26 +5296,65 @@ do
 				if type(version) == "string" then
 					version = strtrim(version)
 
+					if version == "" then
+						version = nil
+					end
+
 					if tonumber(version) then
 						version = tonumber(version)
-					else
-						local pre, number = version:match("^(%a+).-(%d+)$")
+					elseif version then
+						local pre, number = version:match("^(%a+).-([%d%.]+)$")
 
 						if pre and number then
 							pre = pre:lower()
-							number = tonumber(number)
 
 							if type(info.Version) == "number" then
 								error("The version type is conflicted with the current version of the module.", 2)
 							elseif type(info.Version) == "string" then
-								local opre, onumber = info.Version:match("^(%a+).-(%d+)$")
+								local opre, onumber = info.Version:match("^(%a+).-([%d%.]+)$")
 
 								if opre	and onumber then
-									opre = opre:lower()
-									onumber = tonumber(onumber)
-
-									if opre < pre or (opre == pre and onumber < number) then
+									if opre < pre then
 										info.Version = pre .. tostring(number)
+									elseif opre == pre then
+										local f1 = onumber:gmatch("%d+")
+										local f2 = number:gmatch("%d+")
+
+										local v1 = f1 and f1()
+										local v2 = f2 and f2()
+
+										local pass = false
+
+										while true do
+											v1 = tonumber(v1)
+											v2 = tonumber(v2)
+
+											if not v1 then
+												if v2 then pass = true end
+												break
+											elseif not v2 then
+												break
+											elseif v1 < v2 then
+												pass = true
+												break
+											elseif v1 > v2 then
+												break
+											end
+
+											v1 = f1 and f1()
+											v2 = f2 and f2()
+										end
+
+										-- Clear
+										while f1 and f1() do end
+										while f2 and f2() do end
+
+										-- Check falg
+										if pass then
+											info.Version = pre .. tostring(number)
+										else
+											error("The version must be greater than the current version of the module.", 2)
+										end
 									else
 										error("The version must be greater than the current version of the module.", 2)
 									end
@@ -5284,6 +5366,10 @@ do
 							end
 						else
 							error("The version string should be started with alphabet and end with number, like 'v108'.")
+						end
+					else
+						if info.Version then
+							error("An available version is need for the module.", 2)
 						end
 					end
 				end
@@ -5329,26 +5415,15 @@ do
 
 	function Install_OOP(env)
 		if type(env) == "table" then
+			env.partinterface = partinterface
 			env.partclass = partclass
+			env.interface = interface
 			env.class = class
 			env.enum = enum
 			env.namespace = namespace
 			env.struct = struct
-			env.interface = interface
 			env.import = import_install
 			env.Module = Module
-		end
-	end
-
-	if IGAS then
-		function IGAS:GetNameSpace(ns)
-			return Reflector.ForName(ns)
-		end
-
-		function IGAS:Install(env)
-			env = type(env) == "table" and env or getfenv(2)
-
-			return Install_OOP(env)
 		end
 	end
 

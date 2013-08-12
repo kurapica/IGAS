@@ -13,44 +13,7 @@
 ------------------------------------------------------
 -- Addon system definition environment
 ------------------------------------------------------
-do
-	-- Local Environment
-	setfenv(1, setmetatable({}, {
-		__index = function(self,  key)
-			if type(key) == "string" and key ~= "_G" and key:find("^_") then
-				return
-			end
-
-			if _G[key] then
-				rawset(self, key, _G[key])
-				return rawget(self, key)
-			end
-		end,
-
-		__metatable = true,
-	}))
-
-	-- Install now or get oop system keywords from _G
-	if IGAS then IGAS:Install() end
-
-	-- Common functions
-	strtrim = strtrim or function(s)
-	  return (s:gsub("^%s*(.-)%s*$", "%1")) or ""
-	end
-
-	wipe = wipe or function(t)
-		for k in pairs(t) do
-			t[k] = nil
-		end
-	end
-
-	errorhandler = errorhandler or function(err)
-		return geterrorhandler and geterrorhandler()(err) or print(err)
-	end
-
-	tinsert = tinsert or table.insert
-	tremove = tremove or table.remove
-end
+Module "System.Addon" "v16"
 
 namespace "System"
 
@@ -62,17 +25,51 @@ _MetaWV = _MetaWV or {__mode = "v"}
 _MetaWKV = _MetaWKV or {__mode = "kv"}
 
 _Addon = _Addon or {}
+
 _Info = _Info or setmetatable({}, _MetaWK)
 
-_Special_KeyWord = _Special_KeyWord or {}
-
 _Class_KeyWords = _Class_KeyWords or {}
+_Class_KeyWords.partinterface = partinterface
 _Class_KeyWords.partclass = partclass
+_Class_KeyWords.interface = interface
 _Class_KeyWords.class = class
 _Class_KeyWords.enum = enum
 _Class_KeyWords.namespace = namespace
 _Class_KeyWords.struct = struct
-_Class_KeyWords.interface = interface
+
+function _Class_KeyWords.import(name)
+	if type(name) ~= "string" then
+		error([[Usage: import "namespaceA.namespaceB"]], 2)
+	end
+
+	if type(name) == "string" and name:find("%.%s*%.") then
+		error("the namespace 's name can't have empty string between dots.", 2)
+	end
+
+	local env = getfenv(2)
+
+	local info = _Info[env]
+
+	if not info then
+		error("can't use import here.", 2)
+	end
+
+	local ns = Reflector.ForName(name)
+
+	if not ns then
+		error(("no namespace is found with name : %s"):format(name), 2)
+	end
+
+	info.Import = info.Import or {}
+
+	for _, v in ipairs(info.Import) do
+		if v == ns then
+			return
+		end
+	end
+
+	tinsert(info.Import, ns)
+end
 
 _Logined = _Logined or false
 
@@ -82,7 +79,6 @@ issecurevariable = issecurevariable or function() return false end
 -- IFModule
 ------------------------------------------------------
 interface "IFModule"
-
 	doc [======[
 		@name IFModule
 		@type interface
@@ -508,52 +504,6 @@ interface "IFModule"
 					_G["SlashCmdList"][AddName] = GetSlashCmd(AddName)
 				end
 			end
-		end
-	end
-
-	------------------------------------------------------
-	-- Special keywords
-	------------------------------------------------------
-	do
-		------------------------------------
-		--- import classes from the given name's namespace to the current Addon
-		-- @name import
-		-- @class function
-		-- @param name the namespace's name list, using "." to split.
-		-- @usage import "System.Widget"
-		------------------------------------
-		function _Special_KeyWord.import(name)
-			if type(name) ~= "string" then
-				error([[Usage: import "namespaceA.namespaceB"]], 2)
-			end
-
-			if type(name) == "string" and name:find("%.%s*%.") then
-				error("the namespace 's name can't have empty string between dots.", 2)
-			end
-
-			local env = getfenv(2)
-
-			local info = _Info[env]
-
-			if not info then
-				error("can't use import here.", 2)
-			end
-
-			local ns = Reflector.ForName(name)
-
-			if not ns then
-				error(("no namespace is found with name : %s"):format(name), 2)
-			end
-
-			info.Import = info.Import or {}
-
-			for _, v in ipairs(info.Import) do
-				if v == ns then
-					return
-				end
-			end
-
-			tinsert(info.Import, ns)
 		end
 	end
 
@@ -1185,6 +1135,12 @@ class "Addon"
 
 			_Info[self].DefaultState = true
 			_Info[self].Disabled = _Info[parent].Disabled
+
+			local ns = Reflector.GetCurrentNameSpace(parent)
+
+			if ns then
+				Reflector.SetCurrentNameSpace(ns, self)
+			end
 		end
 
 		------------------------------------------------------
@@ -1202,10 +1158,6 @@ class "Addon"
 		-- __index for class instance
 		------------------------------------------------------
 		function __index(self, key)
-			if _Special_KeyWord[key] then
-				return _Special_KeyWord[key]
-			end
-
 			if _Class_KeyWords[key] then
 				return _Class_KeyWords[key]
 			end
@@ -1261,7 +1213,7 @@ class "Addon"
 		-- __newindex for class instance
 		------------------------------------------------------
 		function __newindex(self, key, value)
-			if _Special_KeyWord[key] or _Class_KeyWords[key] then
+			if _Class_KeyWords[key] then
 				error(("%s is a keyword."):format(key), 2)
 			end
 
@@ -1432,10 +1384,6 @@ class "Addon"
 	-- __index for class instance
 	------------------------------------------------------
 	function __index(self, key)
-		if _Special_KeyWord[key] then
-			return _Special_KeyWord[key]
-		end
-
 		if _Class_KeyWords[key] then
 			return _Class_KeyWords[key]
 		end
@@ -1495,7 +1443,7 @@ class "Addon"
 	-- __newindex for class instance
 	------------------------------------------------------
 	function __newindex(self, key, value)
-		if _Special_KeyWord[key] or _Class_KeyWords[key] then
+		if _Class_KeyWords[key] then
 			error(("%s is a keyword."):format(key), 2)
 		end
 

@@ -4,7 +4,7 @@
 -- Create Date : 2011/03/01
 -- ChangeLog   :
 
-local version = 6
+local version = 7
 
 if not IGAS:NewAddon("IGAS", version) then
 	return
@@ -24,7 +24,7 @@ System.Reflector.EnableDocumentSystem(true)
 ----------------------------------------------
 -- Looger
 ----------------------------------------------
-Log = IGAS:NewLogger("IGAS")
+Log = System.Logger("IGAS")
 
 Log.TimeFormat = "%X"
 Log:SetPrefix(1, "[IGAS][Trace]")
@@ -85,7 +85,7 @@ date = date or (os and os.date)
 ----------------------------------------------
 -- Localization
 ----------------------------------------------
-L = IGAS:NewLocale("IGAS")
+L = System.Locale("IGAS")
 
 ----------------------------------------------
 -- Event Handler
@@ -148,6 +148,26 @@ struct "PositiveNumber"
 	end
 endstruct "PositiveNumber"
 
-----------------------------------------------
--- IGAS APIS
-----------------------------------------------
+------------------------------------
+--- Create or get the logger for the given log name
+-- @name IGAS:NewLogger
+-- @class function
+-- @param name always be the addon's name, using to manage an addon's message
+-- @return Logger used for the log name
+-- @usage IGAS:NewLogger("IGAS")
+------------------------------------
+function IGAS:NewLogger(name)
+	return System.Logger(name)
+end
+
+------------------------------------
+--- Get the namespace for the given name
+-- @name IGAS:GetNameSpace
+-- @class function
+-- @param name the namespace's full name
+-- @return namespace
+-- @usage IGAS:GetNameSpace("System")
+------------------------------------
+function IGAS:GetNameSpace(ns)
+	return System.Reflector.ForName(ns)
+end
