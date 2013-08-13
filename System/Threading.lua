@@ -2,7 +2,7 @@
 -- Create Date : 2013/08/13
 -- ChangeLog   :
 
-Module "System.Threading" "v10"
+Module "System.Threading" "1.10.0"
 
 namespace "System"
 

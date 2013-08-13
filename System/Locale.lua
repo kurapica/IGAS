@@ -4,7 +4,7 @@
 --               2011/10/24 can use code like L"XXXX".
 --               2013/01/07 Recode with new class system.
 
-Module "System.Locale" "v3"
+Module "System.Locale" "1.3.0"
 
 namespace "System"
 

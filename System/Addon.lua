@@ -13,7 +13,7 @@
 ------------------------------------------------------
 -- Addon system definition environment
 ------------------------------------------------------
-Module "System.Addon" "v16"
+Module "System.Addon" "1.16.0"
 
 namespace "System"
 
