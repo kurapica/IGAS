@@ -1206,7 +1206,7 @@ class "CodeEditor"
 					tinsert(content, word)
 				else
 					tinsert(content, word)
-					
+
 					if not self.__IdentifierCache[word] then
 						self.__IdentifierCache[word] = true
 						self:InsertAutoCompleteWord(word)

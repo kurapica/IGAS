@@ -1,9 +1,6 @@
  -- Author      : Kurapica
--- Create Date : 2011/02/28
+-- Create Date : 2013/08/13
 -- ChangeLog   :
---               2011/10/22 Stop UnregisterEvent when no thread in
---               2012/04/05 Thread:Resume methods would call UnregisterAllEvent to clear it's settings
---               2012/01/17 Fix local error
 
 Module "System.Threading" "v1"
 
@@ -68,7 +65,6 @@ interface "Threading"
 		]======]
 		function Resume(self, ...)
 			if _Threads[self] then
-				UnregisterAllEvent(_Threads[self])
 				return resume(_Threads[self], ...)
 			end
 		end
@@ -96,7 +92,8 @@ interface "Threading"
 			@return boolean true if the thread is running
 		]======]
 		function IsRunning(self)
-			return _Threads[self] and (status(_Threads[self]) == "running" or status(_Threads[self]) == "normal") or false
+			local co = _Threads[self]
+			return co and (status(co) == "running" or status(co) == "normal") or false
 		end
 
 		doc [======[
@@ -126,12 +123,17 @@ interface "Threading"
 			Get = function(self)
 				if _Threads[self] then
 					return status(_Threads[self])
+				else
+					return "dead"
 				end
 			end,
 			Type = ThreadStatus,
 		}
 
 		property "Thread" {
+			Get = function(self)
+				return _Threads[self]
+			end,
 			Set = function(self, th)
 				if type(th) == "function" then
 					_Threads[self] = create(th)
@@ -148,8 +150,6 @@ interface "Threading"
 		-- Constructor
 		------------------------------------------------------
 		function Thread(self, func)
-			assert((func == nil) or type(func) == "function" or type(func) == "thread", "Usage : System.Threading.Thread(func) - 'func' must be a function or thread or nil.")
-
 			if type(func) == "function" then
 				_Threads[self] = create(func)
 			elseif type(func) == "thread" then

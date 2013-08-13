@@ -21,59 +21,17 @@ namespace "System"
 -- Storage Definition
 ------------------------------------------------------
 _MetaWK = _MetaWK or {__mode = "k"}
-_MetaWV = _MetaWV or {__mode = "v"}
-_MetaWKV = _MetaWKV or {__mode = "kv"}
-
-_Addon = _Addon or {}
-
-_Info = _Info or setmetatable({}, _MetaWK)
-
-_Class_KeyWords = _Class_KeyWords or {}
-_Class_KeyWords.partinterface = partinterface
-_Class_KeyWords.partclass = partclass
-_Class_KeyWords.interface = interface
-_Class_KeyWords.class = class
-_Class_KeyWords.enum = enum
-_Class_KeyWords.namespace = namespace
-_Class_KeyWords.struct = struct
-
-function _Class_KeyWords.import(name)
-	if type(name) ~= "string" then
-		error([[Usage: import "namespaceA.namespaceB"]], 2)
-	end
-
-	if type(name) == "string" and name:find("%.%s*%.") then
-		error("the namespace 's name can't have empty string between dots.", 2)
-	end
-
-	local env = getfenv(2)
-
-	local info = _Info[env]
-
-	if not info then
-		error("can't use import here.", 2)
-	end
-
-	local ns = Reflector.ForName(name)
-
-	if not ns then
-		error(("no namespace is found with name : %s"):format(name), 2)
-	end
-
-	info.Import = info.Import or {}
-
-	for _, v in ipairs(info.Import) do
-		if v == ns then
-			return
-		end
-	end
-
-	tinsert(info.Import, ns)
-end
 
 _Logined = _Logined or false
 
-issecurevariable = issecurevariable or function() return false end
+_Addon = _Addon or {}
+
+_Addon_Loaded = _Addon_Loaded or setmetatable({}, _MetaWK)
+_Addon_Disabled = _Addon_Disabled or setmetatable({}, _MetaWK)
+_Addon_DefaultState = _Addon_DefaultState or setmetatable({}, _MetaWK)
+_Addon_SavedVariables = _Addon_SavedVariables or setmetatable({}, _MetaWK)
+_Addon_NoAutoWrapper = _Addon_NoAutoWrapper or setmetatable({}, _MetaWK)
+_Addon_MetaData = _Addon_MetaData or setmetatable({}, _MetaWK)
 
 ------------------------------------------------------
 -- IFModule
@@ -82,7 +40,7 @@ interface "IFModule"
 	doc [======[
 		@name IFModule
 		@type interface
-		@desc Common methods for class addon and interface
+		@desc Common methods for addon objects
 	]======]
 
 	------------------------------------------------------
@@ -94,171 +52,170 @@ interface "IFModule"
 	-- _EventManager:UnregisterAll(obj)
 	------------------------------------------------------
 	do
-		------------------------------------------------------
-		-- For World of Warcraft
-		------------------------------------------------------
-		if CreateFrame then
-			_EventManager = _EventManager or CreateFrame("Frame")
-			_EventDistribution =  _EventDistribution or {}
+		_EventManager = _EventManager or CreateFrame("Frame")
+		_EventDistribution =  _EventDistribution or {}
 
-			_UsedEvent = _UsedEvent or {}
+		_UsedEvent = _UsedEvent or {}
 
-			-- Register
-			function _EventManager:Register(event, obj)
-				if type(event) == "string" and event ~= "" then
-					self:RegisterEvent(event)
+		-- Register
+		function _EventManager:Register(event, obj)
+			if type(event) == "string" and event ~= "" then
+				self:RegisterEvent(event)
 
-					if self:IsEventRegistered(event) then
-						_EventDistribution[event] = _EventDistribution[event] or setmetatable({}, _MetaWK)
+				if self:IsEventRegistered(event) then
+					_EventDistribution[event] = _EventDistribution[event] or setmetatable({}, _MetaWK)
 
-						_EventDistribution[event][obj] = true
-					else
-						error("Usage : IFModule:RegisterEvent(event) : 'event' - not existed.", 3)
-					end
+					_EventDistribution[event][obj] = true
+				else
+					error("Usage : IFModule:RegisterEvent(event) : 'event' - not existed.", 3)
 				end
 			end
+		end
 
-			-- IsRegistered
-			function _EventManager:IsRegistered(event, obj)
+		-- IsRegistered
+		function _EventManager:IsRegistered(event, obj)
+			if _EventDistribution[event] then
+				return _EventDistribution[event][obj] or false
+			end
+		end
+
+		-- Unregister
+		function _EventManager:Unregister(event, obj)
+			if type(event) == "string" and event ~= "" then
 				if _EventDistribution[event] then
-					return _EventDistribution[event][obj] or false
-				end
-			end
+					_EventDistribution[event][obj] = nil
 
-			-- Unregister
-			function _EventManager:Unregister(event, obj)
-				if type(event) == "string" and event ~= "" then
-					if _EventDistribution[event] then
-						_EventDistribution[event][obj] = nil
-
-						if not next(_EventDistribution[event]) and not _UsedEvent[event] then
-							self:UnregisterEvent(event)
-						end
+					if not next(_EventDistribution[event]) and not _UsedEvent[event] then
+						self:UnregisterEvent(event)
 					end
 				end
 			end
+		end
 
-			-- UnregisterAll
-			function _EventManager:UnregisterAll(obj)
-				for event, data in pairs(_EventDistribution) do
-					if data[obj] then
-						data[obj] = nil
+		-- UnregisterAll
+		function _EventManager:UnregisterAll(obj)
+			for event, data in pairs(_EventDistribution) do
+				if data[obj] then
+					data[obj] = nil
 
-						if not next(data) and not _UsedEvent[event] then
-							self:UnregisterEvent(event)
+					if not next(data) and not _UsedEvent[event] then
+						self:UnregisterEvent(event)
+					end
+				end
+			end
+		end
+
+		--  Special Settings for _EventManager
+		do
+			function _EventManager:OnEvent(event, ...)
+				local chk, ret
+
+				if type(self[event]) == "function" then
+					chk, ret = pcall(self[event], self, ...)
+					if not chk then
+						errorhandler(ret)
+					end
+				end
+
+				if _EventDistribution[event] then
+					for obj in pairs(_EventDistribution[event]) do
+						if not _Addon_Disabled[obj] then
+							Object.Fire(obj, "OnEvent", event, ...)
 						end
 					end
 				end
 			end
 
-			--  Special Settings for _EventManager
-			do
-				function _EventManager:OnEvent(event, ...)
-					local chk, ret
+			-- Loading
+			local function loading(self)
+				Object.Fire(self, "OnLoad")
 
-					if type(self[event]) == "function" then
-						chk, ret = pcall(self[event], self, ...)
-						if not chk then
-							errorhandler(ret)
-						end
+				local mdls = self:GetModules()
+
+				if mdls then
+					for _, mdl in ipairs(mdls) do
+						loading(mdl)
 					end
+				end
+			end
 
-					if _EventDistribution[event] then
-						for obj in pairs(_EventDistribution[event]) do
-							if not _Info[obj].Disabled then
-								Object.Fire(obj, "OnEvent", event, ...)
-							end
+			-- Enabling
+			local function enabling(self)
+				if not _Addon_Disabled[self] then
+					Object.Fire(self, "OnEnable")
+
+					local mdls = self:GetModules()
+
+					if mdls then
+						for _, mdl in ipairs(mdls) do
+							enabling(mdl)
 						end
 					end
 				end
+			end
 
-				-- Loading
-				local function loading(self)
-					Object.Fire(self, "OnLoad")
+			function _EventManager:ADDON_LOADED(addonName)
+				local addon = _Addon[addonName]
 
-					if _Info[self].Module then
-						for _, mdl in pairs(_Info[self].Module) do
-							loading(mdl)
-						end
+				if addon and _Addon_SavedVariables[addon] then
+					-- relocate savedvariables
+					for svn in pairs(_Addon_SavedVariables[addon]) do
+						_G[svn] = _G[svn] or {}
+						addon[svn] = _G[svn]
 					end
+
+					_Addon_SavedVariables[addon] = nil
 				end
 
-				-- Enabling
-				local function enabling(self)
-					if not _Info[self].Disabled then
-						Object.Fire(self, "OnEnable")
+				if addon and not _Addon_Loaded[addon] then
+					_Addon_Loaded[addon] = true
 
-						if _Info[self].Module then
-							for _, mdl in pairs(_Info[self].Module) do
-								enabling(mdl)
-							end
-						end
+					-- Fire OnLoad, addon no need register ADDON_LOADED self.
+					loading(addon)
+
+					if _M._Logined then
+						-- enable addon if player was already in game.
+						enabling(addon)
 					end
 				end
+			end
 
-				function _EventManager:ADDON_LOADED(addonName)
-					local addon = _Addon[addonName]
-
-					if addon and _Info[addon].SavedVariables then
+			function _EventManager:PLAYER_LOGIN()
+				for _, addon in pairs(_Addon) do
+					if _Addon_SavedVariables[addon] then
 						-- relocate savedvariables
-						for svn in pairs(_Info[addon].SavedVariables) do
+						for svn in pairs(_Addon_SavedVariables[addon]) do
 							_G[svn] = _G[svn] or {}
 							addon[svn] = _G[svn]
 						end
 
-						_Info[addon].SavedVariables = nil
+						_Addon_SavedVariables[addon] = nil
 					end
 
-					if addon and not _Info[addon].Loaded then
-						_Info[addon].Loaded = true
-
-						-- Fire OnLoad, addon no need register ADDON_LOADED self.
+					if not _Addon_Loaded[addon] then
+						_Addon_Loaded[addon] = true
 						loading(addon)
-
-						if _Logined then
-							-- enable addon if player was already in game.
-							enabling(addon)
-						end
-					end
-				end
-
-				function _EventManager:PLAYER_LOGIN()
-					for _, addon in pairs(_Addon) do
-						if _Info[addon].SavedVariables then
-							-- relocate savedvariables
-							for svn in pairs(_Info[addon].SavedVariables) do
-								_G[svn] = _G[svn] or {}
-								addon[svn] = _G[svn]
-							end
-
-							_Info[addon].SavedVariables = nil
-						end
-
-						if not _Info[addon].Loaded then
-							_Info[addon].Loaded = true
-							loading(addon)
-						end
-
-						-- Enabling addons
-						enabling(addon)
 					end
 
-					_Logined = true
+					-- Enabling addons
+					enabling(addon)
 				end
 
-				_UsedEvent.ADDON_LOADED = true
-				_UsedEvent.PLAYER_LOGIN = true
-
-				_EventManager:Hide()
-				_EventManager:UnregisterAllEvents()
-				for event, flag in pairs(_UsedEvent) do
-					if flag then
-						_EventManager:RegisterEvent(event)
-					end
-				end
-
-				_EventManager:SetScript("OnEvent", _EventManager.OnEvent)
+				_M._Logined = true
 			end
+
+			_UsedEvent.ADDON_LOADED = true
+			_UsedEvent.PLAYER_LOGIN = true
+
+			_EventManager:Hide()
+			_EventManager:UnregisterAllEvents()
+			for event, flag in pairs(_UsedEvent) do
+				if flag then
+					_EventManager:RegisterEvent(event)
+				end
+			end
+
+			_EventManager:SetScript("OnEvent", _EventManager.OnEvent)
 		end
 	end
 
@@ -275,6 +232,8 @@ interface "IFModule"
 	------------------------------------------------------
 	do
 		_HookManager = _HookManager or {}
+
+		-- Normal Hook API
 		_HookDistribution = _HookDistribution or {}
 
 		function _HookManager:Hook(obj, target, targetFunc, handler)
@@ -296,7 +255,7 @@ interface "IFModule"
 
 					_HookDistribution[target][targetFunc][0] = function(...)
 						for mdl, func in pairs(_store) do
-							if mdl ~= 0 and not _Info[mdl].Disabled then
+							if mdl ~= 0 and not _Addon_Disabled[mdl] then
 								if func == true then
 									Object.Fire(mdl, "OnHook", targetFunc, ...)
 								else
@@ -339,60 +298,59 @@ interface "IFModule"
 			end
 		end
 
-		if type(hooksecurefunc) == "function" then
-			_SecureHookDistribution = _SecureHookDistribution or {}
+		-- Secure Hook API
+		_SecureHookDistribution = _SecureHookDistribution or {}
 
-			function _HookManager:SecureHook(obj, target, targetFunc, handler)
-				if type(target[targetFunc]) == "function" or (_SecureHookDistribution[target] and _SecureHookDistribution[target][targetFunc]) then
-					_SecureHookDistribution[target] = _SecureHookDistribution[target] or {}
+		function _HookManager:SecureHook(obj, target, targetFunc, handler)
+			if type(target[targetFunc]) == "function" or (_SecureHookDistribution[target] and _SecureHookDistribution[target][targetFunc]) then
+				_SecureHookDistribution[target] = _SecureHookDistribution[target] or {}
 
-					local _store = _SecureHookDistribution[target][targetFunc]
+				local _store = _SecureHookDistribution[target][targetFunc]
 
-					if not _store then
-						_SecureHookDistribution[target][targetFunc] = setmetatable({}, _MetaWK)
+				if not _store then
+					_SecureHookDistribution[target][targetFunc] = setmetatable({}, _MetaWK)
 
-						_store = _SecureHookDistribution[target][targetFunc]
+					_store = _SecureHookDistribution[target][targetFunc]
 
-						_SecureHookDistribution[target][targetFunc][0] = function(...)
-							for mdl, func in pairs(_store) do
-								if mdl ~= 0 and not _Info[mdl].Disabled then
-									if func == true then
-										Object.Fire(mdl, "OnHook", targetFunc, ...)
-									else
-										Object.Fire(mdl, "OnHook", func, ...)
-									end
+					_SecureHookDistribution[target][targetFunc][0] = function(...)
+						for mdl, func in pairs(_store) do
+							if mdl ~= 0 and not _Addon_Disabled[mdl] then
+								if func == true then
+									Object.Fire(mdl, "OnHook", targetFunc, ...)
+								else
+									Object.Fire(mdl, "OnHook", func, ...)
 								end
 							end
 						end
-
-						hooksecurefunc(target, targetFunc, _SecureHookDistribution[target][targetFunc][0])
 					end
 
-					_store[obj] = (type(handler) == "function" or type(handler) == "string") and handler or true
-				else
-					error(("No method named '%s' can be found."):format(targetFunc), 3)
+					hooksecurefunc(target, targetFunc, _SecureHookDistribution[target][targetFunc][0])
 				end
-			end
 
-			function _HookManager:SecureUnHook(obj, target, targetFunc)
-				if _SecureHookDistribution[target] then
-					if type(targetFunc) == "string" then
-						if _SecureHookDistribution[target][targetFunc] then
-							_SecureHookDistribution[target][targetFunc][obj] = nil
-						end
-					elseif targetFunc == nil then
-						for _, store in pairs(_SecureHookDistribution[target]) do
-							store[obj] = nil
-						end
+				_store[obj] = (type(handler) == "function" or type(handler) == "string") and handler or true
+			else
+				error(("No method named '%s' can be found."):format(targetFunc), 3)
+			end
+		end
+
+		function _HookManager:SecureUnHook(obj, target, targetFunc)
+			if _SecureHookDistribution[target] then
+				if type(targetFunc) == "string" then
+					if _SecureHookDistribution[target][targetFunc] then
+						_SecureHookDistribution[target][targetFunc][obj] = nil
 					end
-				end
-			end
-
-			function _HookManager:SecureUnHookAll(obj)
-				for _, pool in pairs(_SecureHookDistribution) do
-					for _, store in pairs(pool) do
+				elseif targetFunc == nil then
+					for _, store in pairs(_SecureHookDistribution[target]) do
 						store[obj] = nil
 					end
+				end
+			end
+		end
+
+		function _HookManager:SecureUnHookAll(obj)
+			for _, pool in pairs(_SecureHookDistribution) do
+				for _, store in pairs(pool) do
+					store[obj] = nil
 				end
 			end
 		end
@@ -404,105 +362,103 @@ interface "IFModule"
 	-- _SlashCmdManager:AddSlashCmd(obj, cmd, ...)
 	------------------------------------------------------
 	do
-		if _G["SlashCmdList"] then
-			_SlashCmdManager = _SlashCmdManager or {}
-			_SlashFuncs = _SlashFuncs or {}
+		_SlashCmdManager = _SlashCmdManager or {}
+		_SlashFuncs = _SlashFuncs or {}
 
-			-- SlashCmd Operation
-			local function GetSlashCmdArgs(msg, input)
-				local option, info
+		-- SlashCmd Operation
+		local function GetSlashCmdArgs(msg, input)
+			local option, info
 
-				if msg and type(msg) == "string" and msg ~= "" then
-					msg = strtrim(msg)
+			if msg and type(msg) == "string" and msg ~= "" then
+				msg = strtrim(msg)
 
-					if msg:sub(1, 1) == "\"" and msg:find("\"", 2) then
-						option, info = msg:match("\"([^\"]+)\"%s*(.*)")
-					else
-						option, info = msg:match("(%S+)%s*(.*)")
-					end
-
-					if option == "" then option = nil end
-					if info == "" then info = nil end
+				if msg:sub(1, 1) == "\"" and msg:find("\"", 2) then
+					option, info = msg:match("\"([^\"]+)\"%s*(.*)")
+				else
+					option, info = msg:match("(%S+)%s*(.*)")
 				end
 
-				if IGAS.GetWrapper then
-					-- Wrapper the inputbox if IGAS GUI lib is loaded.
-					input = IGAS:GetWrapper(input)
-				end
-
-				return option, info, input
+				if option == "" then option = nil end
+				if info == "" then info = nil end
 			end
 
-			local function GetSlashCmd(name)
-				_SlashFuncs[name] = _SlashFuncs[name] or function(msg, input)
-					local mdl = IGAS:GetAddon(name)
-					if mdl then
-						return Object.Fire(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
-					end
-				end
-				return _SlashFuncs[name]
+			if IGAS.GetWrapper then
+				-- Wrapper the inputbox if IGAS GUI lib is loaded.
+				input = IGAS:GetWrapper(input)
 			end
 
-			------------------------------------
-			--- Add slash commands to an addon
-			-- @name _SlashCmdManager:AddSlashCmd
-			-- @class function
-			-- @param module addon or module
-			-- @param slash1 the slash commands, a string started with "/", if not started with "/", will auto add it.
-			-- @param slash2, ... Optional,other slash commands
-			-- @return nil
-			-- @usage _SlashCmdManager:AddSlashCmd(_Addon, "/hw", hw2")
-			------------------------------------
-			function _SlashCmdManager:AddSlashCmd(obj, ...)
-				if not (obj:IsClass(Addon.Module) or obj:IsClass(Addon)) then
-					return
+			return option, info, input
+		end
+
+		local function GetSlashCmd(name)
+			_SlashFuncs[name] = _SlashFuncs[name] or function(msg, input)
+				local mdl = IGAS:GetAddon(name)
+				if mdl then
+					return Object.Fire(mdl, "OnSlashCmd", GetSlashCmdArgs(msg, input))
 				end
+			end
+			return _SlashFuncs[name]
+		end
 
-				if select('#', ...) == 0 then
-					return nil
-				end
+		------------------------------------
+		--- Add slash commands to an addon
+		-- @name _SlashCmdManager:AddSlashCmd
+		-- @class function
+		-- @param module addon or module
+		-- @param slash1 the slash commands, a string started with "/", if not started with "/", will auto add it.
+		-- @param slash2, ... Optional,other slash commands
+		-- @return nil
+		-- @usage _SlashCmdManager:AddSlashCmd(_Addon, "/hw", hw2")
+		------------------------------------
+		function _SlashCmdManager:AddSlashCmd(obj, ...)
+			if not (obj:IsClass(Addon.Module) or obj:IsClass(Addon)) then
+				return
+			end
 
-				local AddName = _Info[obj].Name
+			if select('#', ...) == 0 then
+				return nil
+			end
 
-				while obj:IsClass(Addon.Module) do
-					obj = _Info[obj].Parent
+			local AddName = obj._Name
 
-					AddName = _Info[obj].Name .. "." .. AddName
-				end
+			while obj:IsClass(Addon.Module) do
+				obj = obj._Parent
 
-				local slash = {}
-				local sl
-				for i = 1, select('#', ...) do
-					sl = select(i, ...)
-					if sl and type(sl) == "string" then
-						if sl:match("^/%S+") then
-							slash[sl:match("^/%S+")] = true
-						elseif sl:match("^%S+") then
-							slash["/"..sl:match("^%S+")] = true
-						end
+				AddName = obj._Name .. "." .. AddName
+			end
+
+			local slash = {}
+			local sl
+			for i = 1, select('#', ...) do
+				sl = select(i, ...)
+				if sl and type(sl) == "string" then
+					if sl:match("^/%S+") then
+						slash[sl:match("^/%S+")] = true
+					elseif sl:match("^%S+") then
+						slash["/"..sl:match("^%S+")] = true
 					end
 				end
+			end
 
-				if not next(slash) then
-					--error("Usage : Addon:AddSlashCmd(slash1 [, slash2, ...]) : no slash commands found.", 3)
-					return
-				end
+			if not next(slash) then
+				--error("Usage : Addon:AddSlashCmd(slash1 [, slash2, ...]) : no slash commands found.", 3)
+				return
+			end
 
-				local index = 1
+			local index = 1
 
-				while _G["SLASH_"..AddName..index] do
-					slash[_G["SLASH_"..AddName..index]] = nil
-					index = index + 1
-				end
+			while _G["SLASH_"..AddName..index] do
+				slash[_G["SLASH_"..AddName..index]] = nil
+				index = index + 1
+			end
 
-				for cmd in pairs(slash) do
-					_G["SLASH_"..AddName..index] = cmd
-					index = index + 1
-				end
+			for cmd in pairs(slash) do
+				_G["SLASH_"..AddName..index] = cmd
+				index = index + 1
+			end
 
-				if not _G["SlashCmdList"][AddName] then
-					_G["SlashCmdList"][AddName] = GetSlashCmd(AddName)
-				end
+			if not _G["SlashCmdList"][AddName] then
+				_G["SlashCmdList"][AddName] = GetSlashCmd(AddName)
 			end
 		end
 	end
@@ -641,234 +597,67 @@ interface "IFModule"
 		end
 	end
 
-	doc [======[
-		@name Enable
-		@type method
-		@desc Enable the addon(module)
-		@return nil
-	]======]
-	function Enable(self)
-		if _Info[self].Disabled then
-			if _Info[self].Parent and _Info[_Info[self].Parent].Disabled then
-				error("The module's parent module(addon) is disabled, can't enable it.", 2)
+	if _HookManager then
+		doc [======[
+			@name Hook
+			@type method
+			@desc Hook a table's function
+			@format [target, ]targetFunction[, handler]
+			@param target table, default _G
+			@param targetFunction string, the hook function name
+			@param handler string|function the hook handler
+			@return nil
+		]======]
+		function Hook(self, target, targetFunc, handler)
+			if type(target) ~= "table" then
+				target, targetFunc, handler = _G, target, targetFunc
 			end
 
-			_Info[self].Disabled = nil
-			_Info[self].DefaultState = nil
-
-			if _Logined then Object.Fire(self, "OnEnable") end
-
-			if not _Info[self].Module then return end
-
-			for _, mdl in pairs(_Info[self].Module) do
-				if _Info[mdl].DefaultState ~= false then
-					Enable(mdl)
-				end
-			end
-		end
-	end
-
-	doc [======[
-		@name Disable
-		@type method
-		@desc Disable the addon(module)
-		@return nil
-	]======]
-	function Disable(self)
-		if not _Info[self].Disabled then
-			_Info[self].Disabled = true
-
-			if _Logined then Object.Fire(self, "OnDisable") end
-
-			if not _Info[self].Module then return end
-
-			for _, mdl in pairs(_Info[self].Module) do
-				_Info[mdl].DefaultState = not _Info[mdl].Disabled
-				if not _Info[mdl].Disabled then
-					Disable(mdl)
-				end
-			end
-		else
-			_Info[self].DefaultState = false
-		end
-	end
-
-	doc [======[
-		@name IsEnabled
-		@type method
-		@desc Check if the addon(module) is enabled
-		@return boolean true if the addon(module) is enabled
-	]======]
-	function IsEnabled(self)
-		return not _Info[self].Disabled
-	end
-
-	doc [======[
-		@name NewModule
-		@type method
-		@desc Create or get a child-module of the the addon(module), and the environment will be changed to the child-module
-		@format name[, version]
-		@param name string, the child-module's name, like 'SubMdl1.SubSubMdl1', useing dot to concat
-		@param version number, used for version control, if there is an existed module with equal or big version number, no module would return
-		@return System.Addon.Module the child-module
-	]======]
-	function NewModule(self, name, version)
-		if type(name) ~= "string" or strtrim(name) == "" then
-			error(("Usage : IFModule:NewModule(name, [version]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
-		end
-
-		if version ~= nil then
-			if type(version) ~= "number" then
-				error(("Usage : IFModule:NewModule(name, [version]) : 'version' - number expected, got %s."):format(type(version)), 2)
-			elseif version < 1 then
-				error("Usage : IFModule:NewModule(name, [version]) : 'version' - must be greater than 0.", 2)
-			end
-		end
-
-		local module = self
-
-		for sub in name:gmatch("[^%.]+") do
-			sub = sub and strtrim(sub)
-			if not sub or sub =="" then return end
-
-			module = Addon.Module(module, sub)
-
-			if not module then return end
-		end
-
-		if not module or module == self then return end
-
-		if version and _Info[module].Version and _Info[module].Version >= version then
-			return
-		elseif version then
-			_Info[module].Version = version
-		end
-
-		setfenv(2, module)
-
-		return module
-	end
-
-	doc [======[
-		@name GetModule
-		@type method
-		@desc Get the child-module with the name
-		@format name[, create]
-		@param name string, the child-module's name
-		@param create if true then create the module if not existed
-		@return System.Addon.Module the child-module
-	]======]
-	function GetModule(self, name, create)
-		if type(name) ~= "string" or strtrim(name) == "" then
-			error(("Usage : IFModule:GetModule(name, [create]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
-		end
-
-		local module = self
-
-		if create then
-			for sub in name:gmatch("[^%.]+") do
-				sub = sub and strtrim(sub)
-				if not sub or sub =="" then return end
-
-				module = Addon.Module(module, sub)
-
-				if not module then return end
-			end
-		else
-			for sub in name:gmatch("[^%.]+") do
-				sub = sub and strtrim(sub)
-				if not sub or sub =="" then return end
-
-				module =  _Info[module].Module and _Info[module].Module[sub]
-
-				if not module then return end
-			end
-		end
-
-		if module == self then return end
-
-		return module
-	end
-
-	doc [======[
-		@name GetModules
-		@type method
-		@desc Get all child-modules of the addon(module)
-		@return table the list of the the child-modules
-	]======]
-	function GetModules(self)
-		if _Info[self].Module then
-			local lst = setmetatable({}, _MetaWV)
-
-			for _, mdl in pairs(_Info[self].Module) do
-				tinsert(lst, mdl)
+			if type(target) ~= "table" then
+				error("Usage: IFModule:Hook([taget,] targetFunc[, handler]) - 'target' must be a table.", 2)
 			end
 
-			return lst
-		end
-	end
+			if type(targetFunc) ~= "string" then
+				error("Usage: IFModule:Hook([taget,] targetFunc[, handler]) - 'targetFunc' must be the name of the method.", 2)
+			end
 
-	doc [======[
-		@name Hook
-		@type method
-		@desc Hook a table's function
-		@format [target, ]targetFunction[, handler]
-		@param target table, default _G
-		@param targetFunction string, the hook function name
-		@param handler string|function the hook handler
-		@return nil
-	]======]
-	function Hook(self, target, targetFunc, handler)
-		if type(target) ~= "table" then
-			target, targetFunc, handler = _G, target, targetFunc
+			_HookManager:Hook(self, target, targetFunc, handler)
 		end
 
-		if type(target) ~= "table" then
-			error("Usage: IFModule:Hook([taget,] targetFunc[, handler]) - 'target' must be a table.", 2)
+		doc [======[
+			@name UnHook
+			@type method
+			@desc Un-hook a table's function
+			@format [target, ]targetFunction
+			@param target table, default _G
+			@param targetFunction taget function name
+			@return nil
+		]======]
+		function UnHook(self, target, targetFunc)
+			if type(target) ~= "table" then
+				target, targetFunc = _G, target
+			end
+
+			if type(target) ~= "table" then
+				error("Usage: IFModule:UnHook([taget,] targetFunc) - 'target' must be a table.", 2)
+			end
+
+			if type(targetFunc) ~= "string" then
+				error("Usage: IFModule:UnHook([taget,] targetFunc) - 'targetFunc' must be the name of the method.", 2)
+			end
+
+			_HookManager:UnHook(self, target, targetFunc)
 		end
 
-		if type(targetFunc) ~= "string" then
-			error("Usage: IFModule:Hook([taget,] targetFunc[, handler]) - 'targetFunc' must be the name of the method.", 2)
+		doc [======[
+			@name UnHookAll
+			@type class
+			@desc Un-hook all functions
+		]======]
+		function UnHookAll(self)
+			_HookManager:UnHookAll(self)
 		end
 
-		_HookManager:Hook(self, target, targetFunc, handler)
-	end
-
-	doc [======[
-		@name UnHook
-		@type method
-		@desc Un-hook a table's function
-		@format [target, ]targetFunction
-		@param target table, default _G
-		@param targetFunction taget function name
-		@return nil
-	]======]
-	function UnHook(self, target, targetFunc)
-		if type(target) ~= "table" then
-			target, targetFunc = _G, target
-		end
-
-		if type(target) ~= "table" then
-			error("Usage: IFModule:UnHook([taget,] targetFunc) - 'target' must be a table.", 2)
-		end
-
-		if type(targetFunc) ~= "string" then
-			error("Usage: IFModule:UnHook([taget,] targetFunc) - 'targetFunc' must be the name of the method.", 2)
-		end
-
-		_HookManager:UnHook(self, target, targetFunc)
-	end
-
-	doc [======[
-		@name UnHookAll
-		@type class
-		@desc Un-hook all functions
-	]======]
-	function UnHookAll(self)
-		_HookManager:UnHookAll(self)
-	end
-
-	if _HookManager.SecureHook then
 		doc [======[
 			@name SecureHook
 			@type method
@@ -931,39 +720,121 @@ interface "IFModule"
 		end
 	end
 
+	doc [======[
+		@name Enable
+		@type method
+		@desc Enable the addon(module)
+		@return nil
+	]======]
+	function Enable(self)
+		if _Addon_Disabled[self] then
+			if self._Parent and _Addon_Disabled[self._Parent] then
+				error("The module's parent module(addon) is disabled, can't enable it.", 2)
+			end
+
+			_Addon_Disabled[self] = nil
+			_Addon_DefaultState[self] = nil
+
+			if _M._Logined then Object.Fire(self, "OnEnable") end
+
+			local mdls = self:GetModules()
+
+			if mdls then
+				for _, mdl in ipairs(mdls) do
+					if _Addon_DefaultState[mdl] ~= false then
+						Enable(mdl)
+					end
+				end
+			end
+		end
+	end
+
+	doc [======[
+		@name Disable
+		@type method
+		@desc Disable the addon(module)
+		@return nil
+	]======]
+	function Disable(self)
+		if not _Addon_Disabled[self] then
+			_Addon_Disabled[self] = true
+
+			if _M._Logined then Object.Fire(self, "OnDisable") end
+
+			local mdls = self:GetModules()
+
+			if mdls then
+				for _, mdl in ipairs(mdls) do
+					_Addon_DefaultState[mdl] = not _Addon_Disabled[mdl]
+
+					if not _Addon_Disabled[mdl] then
+						Disable(mdl)
+					end
+				end
+			end
+		else
+			_Addon_DefaultState[self] = false
+		end
+	end
+
+	doc [======[
+		@name IsEnabled
+		@type method
+		@desc Check if the addon(module) is enabled
+		@return boolean true if the addon(module) is enabled
+	]======]
+	function IsEnabled(self)
+		return not _Addon_Disabled[self]
+	end
+
+	doc [======[
+		@name NewModule
+		@type method
+		@desc Create or get a child-module of the the addon(module), and the environment will be changed to the child-module
+		@format name[, version]
+		@param name string, the child-module's name, like 'SubMdl1.SubSubMdl1', useing dot to concat
+		@param version number, used for version control, if there is an existed module with equal or big version number, no module would return
+		@return System.Addon.Module the child-module
+	]======]
+	function NewModule(self, name, version)
+		if type(name) ~= "string" or strtrim(name) == "" then
+			error(("Usage : Module:NewModule(name[, version]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
+		elseif not name:match("^[%w]+[_%w%.]+$") then
+			error("Usage : Module:NewModule(name[, version]) : 'name' - the name format must be like 'xxx.xxx.xxx'.", 2)
+		end
+
+		if version then
+			if type(version) ~= "number" then
+				error(("Usage : Module:NewModule(name, [version]) : 'version' - number expected, got %s."):format(type(version)), 2)
+			elseif version < 1 then
+				error("Usage : Module:NewModule(name, [version]) : 'version' - must be greater than 0.", 2)
+			end
+		end
+
+		local mdl = self
+
+		for sub in name:gmatch("[_%w]+") do
+			mdl = Addon.Module(mdl, sub)
+		end
+
+		if mdl then
+			-- Validate the version
+			if version and not mdl:ValidateVersion(version) then
+				return false
+			end
+
+			-- the module should modify the environment itself
+			mdl(version, 2)
+
+			return mdl
+		end
+
+		return false
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name _Name
-		@type property
-		@desc The name of the addon(module)
-	]======]
-	property "_Name" {
-		Get = function(self)
-			return _Info[self].Name
-		end,
-	}
-
-	doc [======[
-		@name _Version
-		@type property
-		@desc The version of the addon(module)
-	]======]
-	property "_Version" {
-		Get = function(self)
-			return _Info[self].Version or 0
-		end,
-		Set = function(self, version)
-			if version > (_Info[self].Version or 0) then
-				_Info[self].Version = version
-			else
-				error(("The version must be greater than %d."):format(_Info[self].Version or 0), 2)
-			end
-		end,
-		Type = Number,
-	}
-
 	doc [======[
 		@name _Enabled
 		@type property
@@ -981,17 +852,6 @@ interface "IFModule"
 			end
 		end,
 		Type = Boolean,
-	}
-
-	doc [======[
-		@name _Parent
-		@type property
-		@desc The parent addon(module) of this module
-	]======]
-	property "_Parent" {
-		Get = function(self)
-			return _Info[self].Parent
-		end,
 	}
 
 	------------------------------------------------------
@@ -1015,36 +875,9 @@ interface "IFModule"
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
-		local info = _Info[self]
-		local chk, ret
-
-		Object.Fire(self, "OnDispose")
-
-		if self.UnregisterAllEvents then
-			self:UnregisterAllEvents()
-		end
-
-		if info.Module then
-			for _, mdl in pairs(info.Module) do
-				chk, ret = pcall(mdl.Dispose, mdl)
-
-				if not chk then
-					errorhandler(ret)
-				end
-			end
-		end
-
-		if info.Parent then
-			if _Info[info.Parent].Module then
-				_Info[info.Parent].Module[info.Name] = nil
-			end
-			if info.Parent[info.Name] == self then
-				info.Parent[info.Name] = nil
-			end
-		end
-
-		wipe(info)
-		_Info[self] = nil
+		self:UnregisterAllEvents()
+		self:UnHookAll()
+		self:SecureUnHookAll()
 	end
 
 	------------------------------------------------------
@@ -1060,7 +893,7 @@ endinterface "IFModule"
 -- Addon
 ------------------------------------------------------
 class "Addon"
-	inherit "Object"
+	inherit "System.Module"
 	extend "IFModule"
 
 	doc [======[
@@ -1073,7 +906,7 @@ class "Addon"
 	-- Module
 	------------------------------------------------------
 	class "Module"
-		inherit "Object"
+		inherit "System.Module"
 		extend "IFModule"
 
 		doc [======[
@@ -1085,139 +918,11 @@ class "Addon"
 		]======]
 
 		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-		doc [======[
-			@name _M
-			@type property
-			@desc The module self
-		]======]
-		property "_M" {
-			Get = function(self)
-				return self
-			end,
-		}
-
-		------------------------------------------------------
-		-- Dispose
-		------------------------------------------------------
-
-		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 		function Module(self, parent, name)
-			if not Object.IsClass(parent, Module) and not Object.IsClass(parent, Addon) then
-				error("Usage : Module(mdl, name) : 'mdl' - Addon or Module expected.", 2)
-			end
-
-			if type(name) ~= "string"  then
-				error(("Usage : Module(mdl, name) : 'name' - string expected, got %s."):format(type(name)), 2)
-			end
-
-			name = name:match("[_%w]+")
-
-			if not name or name == "" then return end
-
-			_Info[parent].Module = _Info[parent].Module or {}
-			_Info[parent].Module[name] = self
-
-			rawset(parent, name, self)
-
-			_Info[self] = {
-				Owner = self,
-				Name = name,
-				Parent = parent,
-			}
-
-			_Info[self].DefaultState = true
-			_Info[self].Disabled = _Info[parent].Disabled
-
-			local ns = Reflector.GetCurrentNameSpace(parent)
-
-			if ns then
-				Reflector.SetCurrentNameSpace(ns, self)
-			end
-		end
-
-		------------------------------------------------------
-		-- Exist checking
-		------------------------------------------------------
-		function __exist(parent, name)
-			if (Object.IsClass(parent, Module) or Object.IsClass(parent, Addon)) and type(name) == "string" then
-				name = name:match("[_%w]+")
-
-				return name and _Info[parent].Module and _Info[parent].Module[name]
-			end
-		end
-
-		------------------------------------------------------
-		-- __index for class instance
-		------------------------------------------------------
-		function __index(self, key)
-			if _Class_KeyWords[key] then
-				return _Class_KeyWords[key]
-			end
-
-			-- Check namespace
-			local ns = Reflector.GetCurrentNameSpace(self)
-			local parent = _Info[self].Parent
-
-			while not ns and parent do
-				ns = Reflector.GetCurrentNameSpace(parent)
-				parent = _Info[parent].Parent
-			end
-
-			if Reflector.GetName(ns) then
-				if key == Reflector.GetName(ns) then
-					rawset(self, key, ns)
-					return rawget(self, key)
-				elseif ns[key] then
-					rawset(self, key, ns[key])
-					return rawget(self, key)
-				end
-			end
-
-			-- Check imports
-			if _Info[self].Import then
-				for _, ns in ipairs(_Info[self].Import) do
-					if key == Reflector.GetName(ns) then
-						rawset(self, key, ns)
-						return rawget(self, key)
-					elseif ns[key] then
-						rawset(self, key, ns[key])
-						return rawget(self, key)
-					end
-				end
-			end
-
-			-- Check base namespace
-			if System.Reflector.ForName(key) then
-				rawset(self, key, System.Reflector.ForName(key))
-				return rawget(self, key)
-			end
-
-			local value = _Info[self].Parent and _Info[self].Parent[key]
-
-			if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
-				rawset(self, key, value)
-			end
-
-			return value
-		end
-
-		------------------------------------------------------
-		-- __newindex for class instance
-		------------------------------------------------------
-		function __newindex(self, key, value)
-			if _Class_KeyWords[key] then
-				error(("%s is a keyword."):format(key), 2)
-			end
-
-			rawset(self, key, value)
+			_Addon_DefaultState[self] = true
+			_Addon_Disabled[self] = _Addon_Disabled[parent]
 		end
 	endclass "Module"
 
@@ -1241,9 +946,10 @@ class "Addon"
 		end
 
 		name = strtrim(name)
-		if not _Logined then
-			_Info[self].SavedVariables = _Info[self].SavedVariables or {}
-			_Info[self].SavedVariables[name] = true
+		if not _M._Logined then
+			_Addon_SavedVariables[self] = _Addon_SavedVariables[self] or {}
+
+			_Addon_SavedVariables[self][name] = true
 		end
 
 		_G[name] = _G[name] or {}
@@ -1304,10 +1010,10 @@ class "Addon"
 	]======]
 	property "_AutoWrapper" {
 		Get = function(self)
-			return not _Info[self].NoAutoWrapper
+			return not _Addon_NoAutoWrapper[self]
 		end,
 		Set = function(self, auto)
-			_Info[self].NoAutoWrapper = not auto
+			_Addon_NoAutoWrapper[self] = not auto
 		end,
 		Type = Boolean,
 	}
@@ -1319,9 +1025,9 @@ class "Addon"
 	]======]
 	property "_Metadata" {
 		Get = function(self)
-			_Info[self].MetaData = _Info[self].MetaData or setmetatable({}, {
+			_Addon_MetaData[self] = _Addon_MetaData[self] or setmetatable({}, {
 				__index = function(meta, key)
-					local value = GetAddOnMetadata and GetAddOnMetadata(_Info[self].Name, key)
+					local value = GetAddOnMetadata and GetAddOnMetadata(self._Name, key)
 
 					if value ~= nil then
 						rawset(meta, key, value)
@@ -1336,7 +1042,7 @@ class "Addon"
 				end,
 			})
 
-			return _Info[self].MetaData
+			return _Addon_MetaData[self]
 		end,
 	}
 
@@ -1344,110 +1050,32 @@ class "Addon"
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
-		_Addon[_Info[self].Name] = nil
+		_Addon[self._Name] = nil
 	end
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function Addon(self, name)
-		if type(name) ~= "string" then
-			error(("Usage : Addon(name) : 'name' - string expected, got %s."):format(type(name)), 2)
-		end
-
-		name = name:match("[_%w]+")
-
-		if not name or name == "" then return end
-
 		_Addon[name] = self
-
-		_Info[self] = {
-			Owner = self,
-			Name = name,
-		}
-	end
-
-	------------------------------------------------------
-	-- Exist checking
-	------------------------------------------------------
-	function __exist(name)
-		if type(name) ~= "string" then
-			return
-		end
-
-		name = name:match("[_%w]+")
-
-		return name and _Addon[name]
 	end
 
 	------------------------------------------------------
 	-- __index for class instance
 	------------------------------------------------------
+	local oIndex = System.Module.__index
+
 	function __index(self, key)
-		if _Class_KeyWords[key] then
-			return _Class_KeyWords[key]
-		end
+		local value = oIndex(self, key)
 
-		-- Check namespace
-		local ns = Reflector.GetCurrentNameSpace(self)
-		if Reflector.GetName(ns) then
-			if key == Reflector.GetName(ns) then
-				rawset(self, key, ns)
-				return rawget(self, key)
-			elseif ns[key] then
-				rawset(self, key, ns[key])
-				return rawget(self, key)
+		if not _Addon_NoAutoWrapper[self] then
+			if type(value) == "table" and type(value[0]) == "userdata" and rawget(self, key) == value then
+				value = IGAS:GetWrapper(value)
+				rawset(self, key, value)
 			end
 		end
 
-		-- Check imports
-		if _Info[self].Import then
-			for _, ns in ipairs(_Info[self].Import) do
-				if key == Reflector.GetName(ns) then
-					rawset(self, key, ns)
-					return rawget(self, key)
-				elseif ns[key] then
-					rawset(self, key, ns[key])
-					return rawget(self, key)
-				end
-			end
-		end
-
-		-- Check base namespace
-		if System.Reflector.ForName(key) then
-			rawset(self, key, System.Reflector.ForName(key))
-			return rawget(self, key)
-		end
-
-		if key ~= "_G" and type(key) == "string" and key:find("^_") then
-			return
-		end
-
-		local value = _G[key]
-
-		if value ~= nil then
-			if type(value) == "userdata" or type(value) == "function" or type(value) == "table" then
-				if not _Info[self].NoAutoWrapper and IGAS.GetWrapper then
-					rawset(self, key, IGAS:GetWrapper(value))
-				else
-					rawset(self, key, value)
-				end
-				return rawget(self, key)
-			end
-
-			return value
-		end
-	end
-
-	------------------------------------------------------
-	-- __newindex for class instance
-	------------------------------------------------------
-	function __newindex(self, key, value)
-		if _Class_KeyWords[key] then
-			error(("%s is a keyword."):format(key), 2)
-		end
-
-		rawset(self, key, value)
+		return value
 	end
 endclass "Addon"
 
@@ -1468,7 +1096,9 @@ do
 	------------------------------------
 	function IGAS:NewAddon(name, version, info)
 		if type(name) ~= "string" or strtrim(name) == "" then
-			error(("Usage : IGAS:NewAddon(name, [version]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
+			error(("Usage : IGAS:NewAddon(name[, version]) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
+		elseif not name:match("^[%w]+[_%w%.]+$") then
+			error("Usage : IGAS:NewAddon(name[, version]) : 'name' - the name format must be like 'xxx.xxx.xxx'.", 2)
 		end
 
 		if version then
@@ -1479,43 +1109,40 @@ do
 			end
 		end
 
-		local module = _Addon
+		local mdl
 		local addon
 
-		for sub in name:gmatch("[^%.]+") do
-			sub = sub and strtrim(sub)
-			if not sub or sub =="" then return end
-
-			if module == _Addon then
-				module = Addon(sub)
-				addon = module
+		for sub in name:gmatch("[_%w]+") do
+			if not mdl then
+				mdl = Addon(sub)
+				addon = mdl
 			else
-				module = Addon.Module(module, sub)
+				mdl = Addon.Module(mdl, sub)
 			end
-
-			if not module then return end
 		end
 
-		if not module or module == _Addon then return end
-
-		if version and module._Version >= version then
-			return
-		elseif version then
-			module._Version = version
-		end
-
-		-- MetaData
-		if type(info) == "table" and next(info) then
-			for field, v in pairs(info) do
-				if type(field) == "string" and strtrim(field) ~= "" then
-					addon._Metadata[field] = v
+		if mdl then
+			-- MetaData
+			if type(info) == "table" and next(info) then
+				for field, v in pairs(info) do
+					if type(field) == "string" and strtrim(field) ~= "" then
+						addon._Metadata[field] = v
+					end
 				end
 			end
+
+			-- Validate the version
+			if version and not mdl:ValidateVersion(version) then
+				return false
+			end
+
+			-- the module should modify the environment itself
+			mdl(version, 2)
+
+			return mdl
 		end
 
-		setfenv(2, module)
-
-		return module
+		return false
 	end
 
 	------------------------------------
@@ -1527,33 +1154,26 @@ do
 	-- @usage local addon = IGAS:GetAddon("HelloWorld")
 	-- @usage IGAS:GetAddon("HelloWorld")
 	------------------------------------
-	function IGAS:GetAddon(name, needCreate)
+	function IGAS:GetAddon(name)
 		if type(name) ~= "string" or strtrim(name) == "" then
 			error(("Usage : IGAS:GetAddon(name) : 'name' - string expected, got %s."):format(type(name) == "string" and "empty string" or type(name)), 2)
 		end
 
-		local module = _Addon
+		local mdl = _Addon
 
-		for sub in name:gmatch("[^%.]+") do
-			sub = sub and strtrim(sub)
-			if not sub or sub =="" then return end
-
-			if module == _Addon then
-				if needCreate then
-					module = _Addon(sub)
-				else
-					module = _Addon[sub]
-				end
+		for sub in name:gmatch("[_%w]+") do
+			if mdl == _Addon then
+				mdl = _Addon[sub]
 			else
-				module = module:GetModule(sub, needCreate)
+				mdl = mdl:GetModule(sub)
 			end
 
-			if not module then return end
+			if not mdl then return end
 		end
 
-		if not module or module == _Addon then return end
+		if not mdl or mdl == _Addon then return end
 
-		return module
+		return mdl
 	end
 
 	------------------------------------

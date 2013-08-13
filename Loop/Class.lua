@@ -436,11 +436,10 @@ do
 	end
 
 	-- GetEnvNameSpace
-	function GetNameSpace4Env(env)
-		local ns = type(env) == "table" and rawget(env, NAMESPACE_FIELD)
-		if IsNameSpace(ns) then
-			return ns
-		end
+	function GetNameSpace4Env(env, rawOnly)
+		local ns = type(env) == "table" and ((rawOnly and rawget(env, NAMESPACE_FIELD)) or (not rawOnly and env[NAMESPACE_FIELD]))
+
+		if IsNameSpace(ns) then return ns end
 	end
 
 	-- GetFullName4NS
@@ -3348,12 +3347,13 @@ do
 			@type method
 			@desc Get the namespace used by the environment
 			@param env table
+			@param rawOnly boolean, rawget data from the env if true
 			@return namespace
 		]======]
-		function GetCurrentNameSpace(env)
+		function GetCurrentNameSpace(env, rawOnly)
 			env = type(env) == "table" and env or getfenv(2)
 
-			return GetNameSpace4Env(env)
+			return GetNameSpace4Env(env, rawOnly)
 		end
 
 		doc [======[
@@ -4987,6 +4987,8 @@ do
 	-- System.Module
 	------------------------------------------------------
 	class "Module"
+		inherit "Object"
+
 		doc [======[
 			@name Module
 			@type class
@@ -5052,6 +5054,148 @@ do
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
+		doc [======[
+			@name ValidateVersion
+			@type method
+			@desc Return true if the version is greater than the current version of the module
+			@param version
+			@return boolean true if the version is a validated version
+		]======]
+		function ValidateVersion(self, version)
+			local info = _ModuleInfo[self]
+
+			if not info then
+				error("The module is disposed", 2)
+			end
+
+			if type(version) == "string" then
+				version = strtrim(version)
+
+				if version == "" then
+					version = nil
+				end
+
+				if tonumber(version) and not version:match("[%.]+") then
+					version = tonumber(version)
+				elseif version then
+					local pre, number = version:match("^(%a+).-([%d%.]+)$")
+
+					if pre and number then
+						pre = pre:lower()
+
+						if type(info.Version) == "number" then
+							return false
+						elseif type(info.Version) == "string" then
+							local opre, onumber = info.Version:match("^(%a+).-([%d%.]+)$")
+
+							if opre	and onumber then
+								if opre < pre then
+									return true
+								elseif opre == pre then
+									local f1 = onumber:gmatch("%d+")
+									local f2 = number:gmatch("%d+")
+
+									local v1 = f1 and f1()
+									local v2 = f2 and f2()
+
+									local pass = false
+
+									while true do
+										v1 = tonumber(v1)
+										v2 = tonumber(v2)
+
+										if not v1 then
+											if v2 then pass = true end
+											break
+										elseif not v2 then
+											break
+										elseif v1 < v2 then
+											pass = true
+											break
+										elseif v1 > v2 then
+											break
+										end
+
+										v1 = f1 and f1()
+										v2 = f2 and f2()
+									end
+
+									-- Clear
+									while f1 and f1() do end
+									while f2 and f2() do end
+
+									-- Check falg
+									return pass
+								else
+									return false
+								end
+							else
+								return true
+							end
+						else
+							return true
+						end
+					else
+						return false
+					end
+				end
+			end
+
+			if type(version) == "number" then
+				if type(info.Version) == "string" then
+					return false
+				elseif type(info.Version) == "number" then
+					return info.Version < version
+				else
+					return true
+				end
+			end
+
+			return false
+		end
+
+		doc [======[
+			@name GetModule
+			@type method
+			@desc Get the child-module with the name
+			@param name string, the child-module's name
+			@return System.Module the child-module
+		]======]
+		function GetModule(self, name)
+			if type(name) ~= "string" or strtrim(name) == "" then
+				return
+			end
+
+			local mdl = self
+
+			for sub in name:gmatch("[_%w]+") do
+				mdl =  _ModuleInfo[mdl] and _ModuleInfo[mdl].Modules and _ModuleInfo[mdl].Modules[sub]
+
+				if not mdl then return end
+			end
+
+			if mdl == self then return end
+
+			return mdl
+		end
+
+		doc [======[
+			@name GetModules
+			@type method
+			@desc Get all child-modules of the module
+			@return table the list of the the child-modules
+		]======]
+		function GetModules(self)
+			if _ModuleInfo[self] and _ModuleInfo[self].Modules then
+				local lst = {}
+
+				for _, mdl in pairs(_ModuleInfo[self].Modules) do
+					tinsert(lst, mdl)
+				end
+
+				return lst
+			end
+		end
 
 		------------------------------------------------------
 		-- Property
@@ -5119,7 +5263,7 @@ do
 				end
 
 				-- Fire the event
-				Reflector.FireObjectEvent(self, "OnDispose")
+				self:Fire("OnDispose")
 
 				-- Clear from parent
 				if info.Name then
@@ -5140,10 +5284,15 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Module(self, name)
-			local parent
+	    function Module(self, parent, name)
 			local prevName
-			local fullName
+
+			-- Check args
+			name = type(parent) == "string" and parent or name
+
+			if not Reflector.ObjectIsClass(parent, Module) then
+				parent = nil
+			end
 
 			-- Check and create parent modules
 			if type(name) == "string" then
@@ -5151,13 +5300,7 @@ do
 					if not prevName then
 						prevName = sub
 					else
-						if not parent then
-							fullName = prevName
-						else
-							fullName = fullName .. "." .. prevName
-						end
-
-						parent = Module(fullName)
+						parent = Module(parent, prevName)
 
 						prevName = sub
 					end
@@ -5169,15 +5312,11 @@ do
 	    		if parent then
 	    			_ModuleInfo[parent].Modules = _ModuleInfo[parent].Modules or {}
 	    			_ModuleInfo[parent].Modules[prevName] = self
-
-	    			-- Set the default namespace from the parent
-	    			local ns = Reflector.GetCurrentNameSpace(parent)
-	    			if ns then
-	    				Reflector.SetCurrentNameSpace(ns, self)
-	    			end
 	    		else
 	    			_Module[prevName] = self
 	    		end
+	    	else
+	    		parent = nil
 	    	end
 
 	    	_ModuleInfo[self] = {
@@ -5190,10 +5329,17 @@ do
 		------------------------------------------------------
 		-- metamethod
 		------------------------------------------------------
-		function __exist(name)
-			if type(name) == "string" then
-				local mdl = nil
+		function __exist(parent, name)
+			local mdl = nil
 
+			-- Check args
+			if Reflector.ObjectIsClass(parent, Module) then
+				mdl = parent
+			end
+
+			name = type(parent) == "string" and parent or name
+
+			if type(name) == "string" then
 				for sub in name:gmatch("[_%w]+") do
 					if not mdl then
 						mdl = _Module[sub]
@@ -5206,6 +5352,8 @@ do
 					if not mdl then return end
 				end
 
+				if mdl == parent then return end
+
 				return mdl
 			end
 		end
@@ -5217,7 +5365,14 @@ do
 			end
 
 			-- Check self's namespace
-			local ns = Reflector.GetCurrentNameSpace(self)
+			local ns = Reflector.GetCurrentNameSpace(self, true)
+			local parent = _ModuleInfo[self].Parent
+
+			while not ns and parent do
+				ns = Reflector.GetCurrentNameSpace(parent, true)
+				parent = _ModuleInfo[parent].Parent
+			end
+
 			if ns and Reflector.GetName(ns) then
 				if key == Reflector.GetName(ns) then
 					rawset(self, key, ns)
