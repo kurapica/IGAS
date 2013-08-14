@@ -14,6 +14,7 @@ local function Load(...)
 end
 
 Load("Loop", "Class.lua")
+Load("Loop", "System.lua")
 Load("Loop", "Error.lua")
 Load("Loop", "IFIterator.lua")
 Load("Loop", "Array.lua")
