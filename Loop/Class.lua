@@ -4860,6 +4860,112 @@ do
 	endinterface "Reflector"
 
 	------------------------------------------------------
+	-- System.Attribute
+	------------------------------------------------------
+	enum "AttributeTargets" {
+		"class",
+		"constructor",
+		"enum",
+		"event",
+		"interface",
+		"method",
+		"parameter",
+		"property",
+		"struct",
+	}
+
+	class "Attribute"
+
+		doc [======[
+			@name Attribute
+			@type class
+			@desc The Attribute class associates predefined system information or user-defined custom information with a target element.
+		]======]
+
+		_PrepareAttributes = {}
+
+
+
+		------------------------------------------------------
+		-- Event
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		doc [======[
+			@name _ClearPrepareAttributes
+			@type method
+			@desc Clear the prepared attributes
+			@return nil
+		]======]
+		function _ClearPrepareAttributes()
+			wipe(_PrepareAttributes)
+		end
+
+		doc [======[
+			@name _SetAttribute
+			@type method
+			@desc Set the attribute for target
+			@format target[, ...]
+			@param target class | event | method | property | struct | interface | enum
+			@param ... Attributes list
+			@return nil
+		]======]
+		function _SetAttributes(target, ...)
+
+		end
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function Attribute(self)
+			tinsert(_PrepareAttribute, self)
+		end
+
+		------------------------------------------------------
+		-- Meta-Method
+		------------------------------------------------------
+	endclass "Attribute"
+
+	class "AttributeUsageAttribute"
+		inherit "Attribute"
+
+		doc [======[
+			@name AttributeUsageAttribute
+			@type class
+			@desc Specifies the usage of another attribute class.
+		]======]
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Usage
+			@type property
+			@desc The attribute target type
+		]======]
+		property "Usage" {
+			Get = function(self)
+				return self.__Usage
+			end,
+		}
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function AttributeUsageAttribute(self, target)
+			target = Reflector.Validate(AttributeTargets, target, "target", "Usage : AttributeUsageAttribute(target) - ")
+
+			self.__Usage = target
+	    end
+	endclass "AttributeUsageAttribute"
+
+	------------------------------------------------------
 	-- System.Object
 	------------------------------------------------------
 	class "Object"
