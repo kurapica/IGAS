@@ -81,6 +81,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/08/05 Remove version check, seal the definition environment
 --               2013/08/12 System.Module is added to create an environment for oop system
 --               2013/08/27 System.Object's method ThreadCall will use the running thread instead of create new one
+--               2013/08/28 Now init table can be used to init the objects, like : o = System.Object{Name = "Obj", Type = "Object"}
+--               2013/08/28 partinterface is removed
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -163,8 +165,16 @@ do
 	pcall = pcall
 	sort = sort or table.sort
 
+	local errorHndler = print
+
+	seterrorhandler = seterrorhandler or function(handler)
+		if type(handler) == "function" then
+			errorHndler = handler
+		end
+	end
+
 	geterrorhandler = geterrorhandler or function()
-		return print
+		return errorHndler
 	end
 
 	errorhandler = errorhandler or function(err)
@@ -1275,9 +1285,9 @@ do
 		BuildInterface(name)
 	end
 
-	function partinterface(name)
-		BuildInterface(name, true)
-	end
+	--function partinterface(name)
+	--	BuildInterface(name, true)
+	--end
 
 	------------------------------------
 	--- Set the current interface' extended interface
@@ -1556,7 +1566,7 @@ do
 	end
 
 	_KeyWord4IFEnv.interface = interface
-	_KeyWord4IFEnv.partinterface = partinterface
+	--_KeyWord4IFEnv.partinterface = partinterface
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
 	_KeyWord4IFEnv.event = event_IF
@@ -2018,6 +2028,10 @@ do
 		end
 	end
 
+	function TrySetProperty(self, name, value)
+		self[name] = value
+	end
+
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
 		local obj
@@ -2039,9 +2053,27 @@ do
 
 		-- Create new object
 		obj = setmetatable({}, info.MetaTable)
-		InitObjectWithClass(cls, obj, ...)
 
-		InitObjectWithInterface(cls, obj)
+		if select('#', ...) == 1 and type(select('1', ...)) == "table" and getmetatable(select('1', ...)) == nil then
+			-- With the init table
+			local init = select('1', ...)
+			local ok, msg
+
+			InitObjectWithClass(cls, obj)
+			InitObjectWithInterface(cls, obj)
+
+			-- Try set properties
+			for name, value in pairs(init) do
+				ok, msg = pcall(TrySetProperty, obj, name, value)
+
+				if not ok then
+					errorhandler(msg)
+				end
+			end
+		else
+			InitObjectWithClass(cls, obj, ...)
+			InitObjectWithInterface(cls, obj)
+		end
 
 		return obj
 	end
@@ -3219,6 +3251,25 @@ do
 	_KeyWord4StrtEnv.import = import_STRT
 	_KeyWord4StrtEnv.structtype = structtype
 	_KeyWord4StrtEnv.endstruct = endstruct
+end
+
+------------------------------------------------------
+-- Definition Environment Update
+------------------------------------------------------
+do
+	function Install_KeyWord(env)
+		--env.partinterface = partinterface
+		env.partclass = partclass
+		env.interface = interface
+		env.class = class
+		env.enum = enum
+		env.struct = struct
+	end
+
+	Install_KeyWord(_KeyWord4IFEnv)
+	Install_KeyWord(_KeyWord4ClsEnv)
+	Install_KeyWord(_KeyWord4StrtEnv)
+	Install_KeyWord = nil
 end
 
 ------------------------------------------------------
@@ -5010,7 +5061,7 @@ do
 		_ModuleEnv.enum = enum
 		_ModuleEnv.namespace = namespace
 		_ModuleEnv.struct = struct
-		_ModuleEnv.partinterface = partinterface
+		--_ModuleEnv.partinterface = partinterface
 		_ModuleEnv.interface = interface
 		_ModuleEnv.import = function(name)
 			local ns = name
@@ -5534,7 +5585,7 @@ do
 
 	function Install_OOP(env)
 		if type(env) == "table" then
-			env.partinterface = partinterface
+			--env.partinterface = partinterface
 			env.partclass = partclass
 			env.interface = interface
 			env.class = class
