@@ -161,20 +161,22 @@ do
 
 	tinsert = tinsert or table.insert
 	tremove = tremove or table.remove
-	unpack = unpack
-	pcall = pcall
 	sort = sort or table.sort
 
-	local errorHndler = print
+	create = coroutine.create
+	resume = coroutine.resume
+	status = coroutine.status
+
+	local _ErrorHandler = print
 
 	seterrorhandler = seterrorhandler or function(handler)
 		if type(handler) == "function" then
-			errorHndler = handler
+			_ErrorHandler = handler
 		end
 	end
 
 	geterrorhandler = geterrorhandler or function()
-		return errorHndler
+		return _ErrorHandler
 	end
 
 	errorhandler = errorhandler or function(err)
@@ -1565,8 +1567,6 @@ do
 		end
 	end
 
-	_KeyWord4IFEnv.interface = interface
-	--_KeyWord4IFEnv.partinterface = partinterface
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
 	_KeyWord4IFEnv.event = event_IF
@@ -2078,7 +2078,7 @@ do
 		return obj
 	end
 
-	function BuildClass(name, asPart)
+	function BuildClass(name, asPart, asFinal)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			if asPart then
 				error([[Usage: partclass "classname"]], 3)
@@ -2122,12 +2122,19 @@ do
 
 		-- Build class
 		info = _NSInfo[cls]
+
+		-- Check if the class is final
+		if info.IsFinal then
+			error("The class is a final class, can't be re-define.", 3)
+		end
+
 		info.Type = TYPE_CLASS
 		info.NameSpace = ns
 		info.BaseEnv = info.BaseEnv or fenv
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
+		info.IsFinal = asFinal
 
 		info.ClassEnv = info.ClassEnv or setmetatable({}, _MetaClsEnv)
 		_ClsEnv2Info[info.ClassEnv] = info
@@ -2338,6 +2345,17 @@ do
 	------------------------------------
 	function partclass(name)
 		BuildClass(name, true)
+	end
+
+	------------------------------------
+	--- Final class definition
+	-- @name partclass
+	-- @type function
+	-- @param name the class's name
+	-- @usage partclass "Form"
+	------------------------------------
+	function finalclass(name)
+		BuildClass(name, true, true)
 	end
 
 	------------------------------------
@@ -2703,8 +2721,6 @@ do
 		end
 	end
 
-	_KeyWord4ClsEnv.partclass = partclass
-	_KeyWord4ClsEnv.class = class
 	_KeyWord4ClsEnv.inherit = inherit_Cls
 	_KeyWord4ClsEnv.extend = extend_Cls
 	_KeyWord4ClsEnv.import = import_Cls
@@ -3259,6 +3275,7 @@ end
 do
 	function Install_KeyWord(env)
 		--env.partinterface = partinterface
+		env.finalclass = finalclass
 		env.partclass = partclass
 		env.interface = interface
 		env.class = class
@@ -4860,20 +4877,306 @@ do
 	endinterface "Reflector"
 
 	------------------------------------------------------
+	-- System.Event & EventHandler
+	------------------------------------------------------
+	class "Event"
+		doc [======[
+			@name Event
+			@type class
+			@desc The object event definition
+		]======]
+
+		doc [======[
+			@name Name
+			@type property
+			@desc The event's name
+		]======]
+		property "Name" {
+			Get = function(self)
+				return self.__Name
+			end,
+			Set = function(self, value)
+				self.__Name = value
+			end,
+			Type = System.String,
+		}
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function Event(self, name)
+			self.__Name = type(name) == "string" and name or "anonymous"
+		end
+
+		------------------------------------------------------
+		-- Meta-Method
+		------------------------------------------------------
+		function __call(self)
+			-- Pass
+		end
+	endclass "Event"
+
+	class "EventHandler"
+		doc [======[
+			@name EventHandler
+			@type class
+			@desc The object event handler
+		]======]
+
+		local function FireOnEventHandlerChanged(self)
+			if self.__Owner and self.__Event then
+				Reflector.FireObjectEvent(self.__Owner, "OnEventHandlerChanged", self.__Event.Name)
+			end
+		end
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		doc [======[
+			@name IsEmpty
+			@type method
+			@desc Check if the event handler is empty
+			@return boolean true if the event handler has no functions
+		]======]
+		function IsEmpty(self)
+			return #self == 0 and self[0] == nil
+		end
+
+		doc [======[
+			@name Clear
+			@type method
+			@desc Clear all handlers
+			@return nil
+		]======]
+		function Clear(self)
+			local flag = false
+
+			for i = #self, 0, -1 do
+				flag = true
+				self[i] = nil
+			end
+
+			if flag then
+				FireOnEventHandlerChanged(self)
+			end
+		end
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Owner
+			@type property
+			@desc The owner of the event handler
+		]======]
+		property "Owner" {
+			Get = function(self)
+				return self.__Owner
+			end,
+			Set = function(self, value)
+				self.__Owner = value
+			end,
+			Type = Table,
+		}
+
+		doc [======[
+			@name Event
+			@type property
+			@desc The event type of the handler
+		]======]
+		property "Event" {
+			Get = function(self)
+				return self.__Event
+			end,
+			Type = Event,
+		}
+
+		doc [======[
+			@name Blocked
+			@type property
+			@desc Whether the event handler is blocked
+		]======]
+		property "Blocked" {
+			Get = function(self)
+				return self.__Blocked
+			end,
+			Set = function(self, value)
+				self.__Blocked = value
+			end,
+			Type = Boolean,
+		}
+
+		doc [======[
+			@name ThreadActivated
+			@type property
+			@desc Whether the event handler is thread activated
+		]======]
+		property "ThreadActivated" {
+			Get = function(self)
+				return self.__ThreadActivated
+			end,
+			Set = function(self, value)
+				self.__ThreadActivated = value
+			end,
+			Type = Boolean,
+		}
+
+		doc [======[
+			@name Handler
+			@type property
+			@desc description
+		]======]
+		property "Handler" {
+			Get = function(self)
+				return self[0]
+			end,
+			Set = function(self, value)
+				self[0] = value
+			end,
+			Type = Function + nil,
+		}
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function EventHandler(self, evt)
+	    	if not Reflector.ObjectIsClass(evt, Event) then
+	    		error("Usage : EventHandler(event) - 'event' must be an object of 'System.Event'.")
+	    	end
+
+	    	self.__Event = evt
+
+	    	-- Active the thread status based on the attribute setting
+	    	if Attribute._IsDefined(evt, ThreadActivatedAttribute) then
+	    		self.__ThreadActivated = true
+	    	end
+	    end
+
+		------------------------------------------------------
+		-- Meta-Method
+		------------------------------------------------------
+		function __add(self, func)
+			if type(func) ~= "function" then
+				error("Usage: obj.OnXXXX = obj.OnXXXX + func", 2)
+			end
+
+			for _, f in ipairs(self) do
+				if f == func then
+					return self
+				end
+			end
+
+			tinsert(self, func)
+
+			FireOnEventHandlerChanged(self)
+
+			return self
+		end
+
+		function __sub(self, func)
+			if type(func) ~= "function" then
+				error("Usage: obj.OnXXXX = obj.OnXXXX - func", 2)
+			end
+
+			for i, f in ipairs(self) do
+				if f == func then
+					tremove(self, i)
+					FireOnEventHandlerChanged(self)
+					break
+				end
+			end
+
+			return self
+		end
+
+		function __call(self, obj, ...)
+			-- The event call is so frequent
+			-- keep local for optimization
+			local create = create
+			local resume = resume
+			local status = status
+			local rawget = rawget
+			local pcall = pcall
+			local ipairs = ipairs
+			local errorhandler = errorhandler
+
+			if not rawget(self, "__Owner") or rawget(self, "__Blocked") then return end
+
+			local owner = self.__Owner
+			local asParam, useThread, chk, ret
+
+			asParam = (obj ~= owner)
+
+			useThread = rawget(self, "__ThreadActivated") or false
+
+			-- Call the stacked handlers
+			for _, handler in ipairs(self) do
+				-- Call the handler
+				if useThread then
+					local thread = create(handler)
+
+					if asParam then
+						chk, ret = resume(thread, owner, obj, ...)
+					else
+						chk, ret = resume(thread, obj, ...)
+					end
+
+					if status(thread) ~= "dead" then
+						-- not stop when the thread not dead
+						ret = nil
+					end
+				else
+					if asParam then
+						chk, ret = pcall(handler, owner, obj, ...)
+					else
+						chk, ret = pcall(handler, obj, ...)
+					end
+				end
+
+				-- Stop with any error
+				if not chk then
+					return errorhandler(ret)
+				end
+
+				if not rawget(owner, "__Events") then
+					-- means it's disposed
+					ret = true
+				end
+
+				-- Any handler return true means to stop all
+				if ret then break end
+			end
+
+			-- Call the final handler
+			if not ret and rawget(self, 0) then
+				local handler = self[0]
+
+				if useThread then
+					local thread = create(handler)
+
+					if asParam then
+						chk, ret = resume(thread, owner, obj, ...)
+					else
+						chk, ret = resume(thread, obj, ...)
+					end
+				else
+					if asParam then
+						chk, ret = pcall(handler, owner, obj, ...)
+					else
+						chk, ret = pcall(handler, obj, ...)
+					end
+				end
+
+				if not chk then
+					return errorhandler(ret)
+				end
+			end
+		end
+	endclass "EventHandler"
+
+	------------------------------------------------------
 	-- System.Attribute
 	------------------------------------------------------
-	enum "AttributeTargets" {
-		"class",
-		"constructor",
-		"enum",
-		"event",
-		"interface",
-		"method",
-		"parameter",
-		"property",
-		"struct",
-	}
-
 	class "Attribute"
 
 		doc [======[
@@ -4883,8 +5186,6 @@ do
 		]======]
 
 		_PrepareAttributes = {}
-
-
 
 		------------------------------------------------------
 		-- Event
@@ -4904,15 +5205,43 @@ do
 		end
 
 		doc [======[
-			@name _SetAttribute
+			@name _ConsumePrepareAttributes
 			@type method
-			@desc Set the attribute for target
+			@desc Set the prepared attributes for target
 			@format target[, ...]
 			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
+			@return nil
+		]======]
+		function _ConsumePrepareAttributes(target, targetType)
+			if #_PrepareAttributes > 0 then
+				_SetAttributes(target, targetType, unpack(_PrepareAttributes))
+				_ClearPrepareAttributes()
+			end
+		end
+
+		doc [======[
+			@name _SetAttributes
+			@type method
+			@desc Set attributes for target
+			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
 			@param ... Attributes list
 			@return nil
 		]======]
-		function _SetAttributes(target, ...)
+		function _SetAttributes(target, targetType, ...)
+
+		end
+
+		doc [======[
+			@name _IsDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class | event | method | property | struct | interface | enum
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsDefined(target, type)
 
 		end
 
@@ -4932,11 +5261,52 @@ do
 		------------------------------------------------------
 	endclass "Attribute"
 
-	class "AttributeUsageAttribute"
+	class "FlagsAttribute"
 		inherit "Attribute"
 
 		doc [======[
-			@name AttributeUsageAttribute
+			@name FlagsAttribute
+			@type class
+			@desc Indicates that an enumeration can be treated as a bit field; that is, a set of flags.
+		]======]
+
+		------------------------------------------------------
+		-- Event
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function FlagsAttribute(self, ...)
+
+	    end
+	endclass "FlagsAttribute"
+
+	enum "AttributeTargets" {
+		Class = 1,
+		Constructor = 2,
+		Enum = 4,
+		Event = 8,
+		Interface = 16,
+		Method = 32,
+		Parameter = 64,
+		Property = 128,
+		Struct = 256,
+	}
+
+	class "AttributeUsage"
+		inherit "Attribute"
+
+		doc [======[
+			@name AttributeUsage
 			@type class
 			@desc Specifies the usage of another attribute class.
 		]======]
@@ -4945,25 +5315,63 @@ do
 		-- Property
 		------------------------------------------------------
 		doc [======[
-			@name Usage
+			@name AttributeTarget
 			@type property
 			@desc The attribute target type
 		]======]
-		property "Usage" {
+		property "AttributeTarget" {
 			Get = function(self)
-				return self.__Usage
+				return self.__AttributeTarget
 			end,
+			Set = function(self, value)
+				self.__AttributeTarget = value
+			end,
+			Type = AttributeTargets,
+		}
+
+		doc [======[
+			@name Inherited
+			@type property
+			@desc description
+		]======]
+		property "Inherited" {
+			Get = function(self)
+				return self.__Inherited
+			end,
+			Set = function(self, value)
+				self.__Inherited = value
+			end,
+			Type = Boolean,
+		}
+
+		doc [======[
+			@name AllowMultiple
+			@type property
+			@desc description
+		]======]
+		property "AllowMultiple" {
+			Get = function(self)
+				return self.__AllowMultiple
+			end,
+			Set = function(self, value)
+				self.__AllowMultiple = value
+			end,
+			Type = Boolean,
 		}
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function AttributeUsageAttribute(self, target)
-			target = Reflector.Validate(AttributeTargets, target, "target", "Usage : AttributeUsageAttribute(target) - ")
+	endclass "AttributeUsage"
 
-			self.__Usage = target
-	    end
-	endclass "AttributeUsageAttribute"
+	class "ThreadActivateAttribute"
+		inherit "Attribute"
+		doc [======[
+			@name ThreadActivateAttribute
+			@type class
+			@desc Whether the event is thread activated by defalut
+		]======]
+	endclass "ThreadActivateAttribute"
 
 	------------------------------------------------------
 	-- System.Object
@@ -5162,6 +5570,7 @@ do
 
 		_ModuleEnv = _ModuleEnv or {}
 
+		_ModuleEnv.finalclass = finalclass
 		_ModuleEnv.partclass = partclass
 		_ModuleEnv.class = class
 		_ModuleEnv.enum = enum
@@ -5692,6 +6101,7 @@ do
 	function Install_OOP(env)
 		if type(env) == "table" then
 			--env.partinterface = partinterface
+			env.finalclass = finalclass
 			env.partclass = partclass
 			env.interface = interface
 			env.class = class
