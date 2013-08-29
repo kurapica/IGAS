@@ -1043,10 +1043,6 @@ do
 	end
 
 	do
-		_BaseEvents = _BaseEvents or {
-			OnEventHandlerChanged = true,
-		}
-
 		function CloneWithoutOverride(dest, src)
 			for key, value in pairs(src) do
 				if dest[key] == nil then
@@ -1103,8 +1099,6 @@ do
 
 			-- Cache4Event
 			wipe(info.Cache4Event)
-			--- BaseEvents
-			CloneWithoutOverride(info.Cache4Event, _BaseEvents)
 			--- self event
 			CloneWithoutOverride(info.Cache4Event, info.Event)
 			--- superclass event
@@ -1425,14 +1419,14 @@ do
 	end
 
 	------------------------------------
-	--- Add or remove an event for current interface
+	--- Add an event for current interface
 	-- @name event
 	-- @class function
 	-- @param name the name of the event
 	-- @usage event "OnClick"
 	------------------------------------
 	function event_IF(name)
-		if type(name) ~= "string" or name:find("^_") then
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: event "eventName"]], 2)
 		end
 
@@ -1444,7 +1438,7 @@ do
 			error("can't use event here.", 2)
 		end
 
-		info.Event[name] = true
+		info.Event[name] = info.Event[name] or Event(name)
 	end
 
 	local function SetProperty2IF(info, name, set)
@@ -1787,178 +1781,19 @@ do
 		end
 	end
 
-	-- metatable for EventHandler
-	_MetaEventHandler = _MetaEventHandler or {}
-	do
-		_MetaEventHandler.__index = {
-			Add = function(self, func)
-				if type(func) ~= "function" then
-					error("Usage: obj.OnXXXX:Add(func)", 2)
-				end
-
-				for _, f in ipairs(self) do
-					if f == func then
-						return self
-					end
-				end
-
-				tinsert(self, func)
-
-				if self._Owner and self._Name then
-					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
-				end
-
-				return self
-			end,
-			Remove = function(self, func)
-				local flag = false
-
-				if type(func) ~= "function" then
-					error("Usage: obj.OnXXXX:Remove(func)", 2)
-				end
-
-				for i, f in ipairs(self) do
-					if f == func then
-						tremove(self, i)
-						flag = true
-						break
-					end
-				end
-
-				if flag and self._Owner and self._Name then
-					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
-				end
-
-				return self
-			end,
-			Clear = function(self)
-				local flag = false
-
-				for i = #self, 0, -1 do
-					if not flag and self[i] then
-						flag = true
-					end
-					tremove(self, i)
-				end
-
-				if flag and self._Owner and self._Name then
-					CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
-				end
-
-				return self
-			end,
-			IsEmpty = function(self)
-				return #self == 0 and self[0] == nil
-			end,
-		}
-
-		_MetaEventHandler.__add = function(self, func)
-			if type(func) ~= "function" then
-				error("Usage: obj.OnXXXX = obj.OnXXXX + func", 2)
-			end
-
-			for _, f in ipairs(self) do
-				if f == func then
-					return self
-				end
-			end
-
-			tinsert(self, func)
-
-			if self._Owner and self._Name then
-				CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
-			end
-
-			return self
-		end
-
-		_MetaEventHandler.__sub = function(self, func)
-			local flag = false
-
-			if type(func) ~= "function" then
-				error("Usage: obj.OnXXXX = obj.OnXXXX - func", 2)
-			end
-
-			for i, f in ipairs(self) do
-				if f == func then
-					tremove(self, i)
-					flag = true
-					break
-				end
-			end
-
-			if flag and self._Owner and self._Name then
-				CallEventWithoutCreate(self._Owner, "OnEventHandlerChanged", self._Name)
-			end
-
-			return self
-		end
-
-		local create = coroutine.create
-		local resume = coroutine.resume
-		local status = coroutine.status
-
-		_MetaEventHandler.__call = function(self, obj, ...)
-			if not obj then
-				error("Usage: obj:OnXXXX(...).", 2)
-			end
-
-			if self._Blocked then
-				return
-			end
-
-			local chk = false
-			local ret = false
-
-			for i = 1, #self do
-				if self._ThreadActivated then
-					local thread = create(self[i])
-					chk, ret = resume(thread, obj, ...)
-					if status(thread) ~= "dead" then
-						-- not stop when the thread not dead
-						ret = nil
-					end
-				else
-					chk, ret = pcall(self[i], obj, ...)
-				end
-				if not chk then
-					return errorhandler(ret)
-				end
-
-				if not rawget(obj, "__Events") then
-					-- means it's disposed
-					ret = true
-				end
-				if ret then
-					break
-				end
-			end
-
-			if not ret and self[0] then
-				if self._ThreadActivated then
-					chk, ret = resume(create(self[0]), obj, ...)
-				else
-					chk, ret = pcall(self[0], obj, ...)
-				end
-				if not chk then
-					return errorhandler(ret)
-				end
-			end
-		end
-	end
-
 	_MetaEvents = _MetaEvents or {}
 	do
 		_MetaEvents.__index = function(self, key)
 			-- Check Event
 			local cls = self._Owner and getmetatable(self._Owner)
+			local evt = _NSInfo[cls].Cache4Event[key]
 
-			if _NSInfo[cls].Cache4Event[key] == nil then
+			if not evt then
 				return
 			end
 
 			-- Add Event Handler
-			rawset(self, key, setmetatable({_Owner = self._Owner, _Name = key}, _MetaEventHandler))
+			rawset(self, key, EventHandler(evt, self._Owner))
 			return rawget(self, key)
 		end
 
@@ -2125,7 +1960,7 @@ do
 
 		-- Check if the class is final
 		if info.IsFinal then
-			error("The class is a final class, can't be re-define.", 3)
+			error("The class is a final class, can't be re-defined.", 3)
 		end
 
 		info.Type = TYPE_CLASS
@@ -2217,12 +2052,25 @@ do
 			local Cache4Method = info.Cache4Method
 			local ClassName = info.Name
 
+			local DISPOSE_METHOD = DISPOSE_METHOD
+			local type = type
+			local strfind = string.find
+			local rawget = rawget
+			local getmetatable = getmetatable
+			local setmetatable = setmetatable
+			local CheckProperty = CheckProperty
+
 			MetaTable.__class = cls
 
 			MetaTable.__metatable = cls
 
 			MetaTable.__index = MetaTable.__index or function(self, key)
-				if type(key) == "string" and not key:find("^__") then
+				-- Dispose Method
+				if key == DISPOSE_METHOD then
+					return DisposeObject
+				end
+
+				if type(key) == "string" and not strfind(key, "^__") then
 					-- Property Get
 					if Cache4Property[key] then
 						if Cache4Property[key]["Get"] then
@@ -2232,18 +2080,13 @@ do
 						end
 					end
 
-					-- Dispose Method
-					if key == DISPOSE_METHOD then
-						return DisposeObject
-					end
-
 					-- Method Get
-					if not key:find("^_") and Cache4Method[key] then
+					if not strfind(key, "^_") and Cache4Method[key] then
 						return Cache4Method[key]
 					end
 
 					-- Events
-					if Cache4Event[key] ~= nil then
+					if Cache4Event[key] then
 						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
 							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
 						end
@@ -2264,7 +2107,7 @@ do
 			end
 
 			MetaTable.__newindex = MetaTable.__newindex or function(self, key, value)
-				if type(key) == "string" and not key:find("^__") then
+				if type(key) == "string" and not strfind(key, "^__") then
 					-- Property Set
 					if Cache4Property[key] then
 						if Cache4Property[key]["Set"] then
@@ -2275,36 +2118,21 @@ do
 					end
 
 					-- Events
-					if Cache4Event[key] ~= nil then
+					if Cache4Event[key] then
 						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
 							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
 						end
 
 						if value == nil or type(value) == "function" then
-							if Cache4Event[key] then
-								if self.__Events[key][0] ~= value then
-									rawset(self.__Events[key], 0, value)
-									CallEventWithoutCreate(self, "OnEventHandlerChanged", key)
-								end
+							if value == nil and rawget(self.__Events, key) == nil then
+								-- pass
 							else
-								error(("%s is not supported for class '%s'."):format(tostring(key), ClassName), 2)
+								self.__Events[key].Handler = value
 							end
-						elseif type(value) == "table" and getmetatable(value) == _MetaEventHandler then
-							if value == self.__Events[key] then
-								return
-							end
-
-							for i = #self.__Events[key], 0, -1 do
-								tremove(self.__Events[key], i)
-							end
-
-							for i =0, #value do
-								self.__Events[key][i] = value[i]
-							end
-
-							CallEventWithoutCreate(self, "OnEventHandlerChanged", key)
+						elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
+							self.__Events[key]:Copy(value)
 						else
-							error("can't set this value to a scipt handler.", 2)
+							error("can't set this value to the event handler.", 2)
 						end
 
 						return
@@ -2574,16 +2402,15 @@ do
 	end
 
 	------------------------------------
-	--- Add or remove an event for current class
+	--- Add an event for current class
 	-- @name event
 	-- @class function
-	-- @param name the name of the event, if started with "-" means to remove this event
+	-- @param name the name of the event
 	-- @usage event "OnClick"
-	-- @usage event "-OnClick"
 	------------------------------------
 	function event_Cls(name)
-		if type(name) ~= "string" or name:find("^_") then
-			error([[Usage: event "[-]eventName"]], 2)
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then
+			error([[Usage: event "eventName"]], 2)
 		end
 
 		local env = getfenv(2)
@@ -2594,11 +2421,7 @@ do
 			error("can't use event here.", 2)
 		end
 
-		local flag
-
-		name, flag = name:gsub("^-", "")
-
-		info.Event[name] = (flag == 0)
+		info.Event[name] = info.Event[name] or Event(name)
 	end
 
 	local function SetProperty2Cls(info, name, set)
@@ -4961,6 +4784,33 @@ do
 			end
 		end
 
+		doc [======[
+			@name Copy
+			@type method
+			@desc Copy handlers from the source event handler
+			@param src the event handler source
+			@return nil
+		]======]
+		function Copy(self, src)
+			local flag = false
+
+			if Reflector.ObjectIsClass(src, EventHandler) and self ~= src then
+				for i = #self, 0, -1 do
+					flag = true
+					self[i] = nil
+				end
+
+				for i = #src, 0, -1 do
+					flag = true
+					self[i] = src[i]
+				end
+			end
+
+			if flag then
+				FireOnEventHandlerChanged(self)
+			end
+		end
+
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
@@ -4973,10 +4823,6 @@ do
 			Get = function(self)
 				return self.__Owner
 			end,
-			Set = function(self, value)
-				self.__Owner = value
-			end,
-			Type = Table,
 		}
 
 		doc [======[
@@ -4988,7 +4834,6 @@ do
 			Get = function(self)
 				return self.__Event
 			end,
-			Type = Event,
 		}
 
 		doc [======[
@@ -5031,7 +4876,10 @@ do
 				return self[0]
 			end,
 			Set = function(self, value)
-				self[0] = value
+				if self[0] ~= value then
+					self[0] = value
+					FireOnEventHandlerChanged(self)
+				end
 			end,
 			Type = Function + nil,
 		}
@@ -5039,12 +4887,17 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function EventHandler(self, evt)
+	    function EventHandler(self, evt, owner)
 	    	if not Reflector.ObjectIsClass(evt, Event) then
-	    		error("Usage : EventHandler(event) - 'event' must be an object of 'System.Event'.")
+	    		error("Usage : EventHandler(event, owner) - 'event' must be an object of 'System.Event'.")
+	    	end
+
+	    	if not Reflector.GetObjectClass(owner) then
+	    		error("Usage : EventHandler(event, owner) - 'owner' must be an object.")
 	    	end
 
 	    	self.__Event = evt
+	    	self.__Owner = owner
 
 	    	-- Active the thread status based on the attribute setting
 	    	if Attribute._IsDefined(evt, ThreadActivatedAttribute) then
@@ -5384,10 +5237,16 @@ do
 			@desc The root class of other classes. Object class contains several methodes for common use.
 		]======]
 
-		local create = coroutine.create
-		local resume = coroutine.resume
-		local status = coroutine.status
-		local running = coroutine.running
+		------------------------------------------------------
+		-- Event
+		------------------------------------------------------
+		doc [======[
+			@name OnEventHandlerChanged
+			@type event
+			@desc Fired when the event handler is cheanged
+			@param name the changed event handler's event name
+		]======]
+		event "OnEventHandlerChanged"
 
 		------------------------------------------------------
 		-- Method
