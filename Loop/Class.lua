@@ -165,7 +165,10 @@ do
 
 	create = coroutine.create
 	resume = coroutine.resume
+	running = coroutine.running
 	status = coroutine.status
+	wrap = coroutine.wrap
+	yield = coroutine.yield
 
 	local _ErrorHandler = print
 
@@ -1281,9 +1284,9 @@ do
 		BuildInterface(name)
 	end
 
-	--function partinterface(name)
-	--	BuildInterface(name, true)
-	--end
+	function partinterface(name)
+		BuildInterface(name, true)
+	end
 
 	------------------------------------
 	--- Set the current interface' extended interface
@@ -3097,7 +3100,7 @@ end
 ------------------------------------------------------
 do
 	function Install_KeyWord(env)
-		--env.partinterface = partinterface
+		env.partinterface = partinterface
 		env.finalclass = finalclass
 		env.partclass = partclass
 		env.interface = interface
@@ -4702,7 +4705,7 @@ do
 	------------------------------------------------------
 	-- System.Event & EventHandler
 	------------------------------------------------------
-	class "Event"
+	finalclass "Event"
 		doc [======[
 			@name Event
 			@type class
@@ -4739,7 +4742,7 @@ do
 		end
 	endclass "Event"
 
-	class "EventHandler"
+	finalclass "EventHandler"
 		doc [======[
 			@name EventHandler
 			@type class
@@ -5030,7 +5033,7 @@ do
 	------------------------------------------------------
 	-- System.Attribute
 	------------------------------------------------------
-	class "Attribute"
+	finalclass "Attribute"
 
 		doc [======[
 			@name Attribute
@@ -5106,7 +5109,7 @@ do
 		-- Constructor
 		------------------------------------------------------
 		function Attribute(self)
-			tinsert(_PrepareAttribute, self)
+			tinsert(_PrepareAttributes, self)
 		end
 
 		------------------------------------------------------
@@ -5114,52 +5117,35 @@ do
 		------------------------------------------------------
 	endclass "Attribute"
 
-	class "FlagsAttribute"
+	finalclass "__Flags__"
 		inherit "Attribute"
 
 		doc [======[
-			@name FlagsAttribute
+			@name __Flags__
 			@type class
 			@desc Indicates that an enumeration can be treated as a bit field; that is, a set of flags.
 		]======]
+	endclass "__Flags__"
 
-		------------------------------------------------------
-		-- Event
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-	    function FlagsAttribute(self, ...)
-
-	    end
-	endclass "FlagsAttribute"
-
+	--__Flags__()
 	enum "AttributeTargets" {
-		Class = 1,
-		Constructor = 2,
-		Enum = 4,
-		Event = 8,
-		Interface = 16,
-		Method = 32,
-		Parameter = 64,
-		Property = 128,
-		Struct = 256,
+		"All",
+		"Class",
+		"Constructor",
+		"Enum",
+		"Event",
+		"Interface",
+		"Method",
+		"Parameter",
+		"Property",
+		"Struct",
 	}
 
-	class "AttributeUsage"
+	class "__AttributeUsage__"
 		inherit "Attribute"
 
 		doc [======[
-			@name AttributeUsage
+			@name __AttributeUsage__
 			@type class
 			@desc Specifies the usage of another attribute class.
 		]======]
@@ -5174,7 +5160,7 @@ do
 		]======]
 		property "AttributeTarget" {
 			Get = function(self)
-				return self.__AttributeTarget
+				return self.__AttributeTarget or AttributeTargets.All
 			end,
 			Set = function(self, value)
 				self.__AttributeTarget = value
@@ -5189,10 +5175,10 @@ do
 		]======]
 		property "Inherited" {
 			Get = function(self)
-				return self.__Inherited
+				return not self.__NonInherited
 			end,
 			Set = function(self, value)
-				self.__Inherited = value
+				self.__NonInherited = not value or nil
 			end,
 			Type = Boolean,
 		}
@@ -5215,16 +5201,17 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	endclass "AttributeUsage"
+	endclass "__AttributeUsage__"
 
-	class "ThreadActivateAttribute"
+	--__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
+	class "__ThreadActivate__"
 		inherit "Attribute"
 		doc [======[
-			@name ThreadActivateAttribute
+			@name __ThreadActivate__
 			@type class
 			@desc Whether the event is thread activated by defalut
 		]======]
-	endclass "ThreadActivateAttribute"
+	endclass "__ThreadActivate__"
 
 	------------------------------------------------------
 	-- System.Object
@@ -5435,7 +5422,7 @@ do
 		_ModuleEnv.enum = enum
 		_ModuleEnv.namespace = namespace
 		_ModuleEnv.struct = struct
-		--_ModuleEnv.partinterface = partinterface
+		_ModuleEnv.partinterface = partinterface
 		_ModuleEnv.interface = interface
 		_ModuleEnv.import = function(name)
 			local ns = name
@@ -5959,7 +5946,7 @@ do
 
 	function Install_OOP(env)
 		if type(env) == "table" then
-			--env.partinterface = partinterface
+			env.partinterface = partinterface
 			env.finalclass = finalclass
 			env.partclass = partclass
 			env.interface = interface
