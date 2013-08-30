@@ -162,6 +162,7 @@ do
 	tinsert = tinsert or table.insert
 	tremove = tremove or table.remove
 	sort = sort or table.sort
+	floor = floor or math.floor
 
 	create = coroutine.create
 	resume = coroutine.resume
@@ -185,6 +186,8 @@ do
 	errorhandler = errorhandler or function(err)
 		return pcall(geterrorhandler(), err)
 	end
+
+	WEAK_KEY = {__mode = "k"}
 end
 
 ------------------------------------------------------
@@ -499,276 +502,8 @@ end
 -- Type
 ------------------------------------------------------
 do
-	_Meta4Type = _Meta4Type or {}
-	do
-		_Meta4Type.__add = function(v1, v2)
-			local ok, _type1, _type2
-
-			ok, _type1 = pcall(BuildType, v1)
-			if not ok then
-				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
-				error(_type1, 2)
-			end
-
-			ok, _type2 = pcall(BuildType, v2)
-			if not ok then
-				_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
-				error(_type2, 2)
-			end
-
-			if _type1 and _type2 then
-				local _type = setmetatable({}, _Meta4Type)
-
-				_type.AllowNil = _type1.AllowNil or _type2.AllowNil
-
-				local tmp = {}
-
-				for _, ns in ipairs(_type1) do
-					tinsert(_type, ns)
-					tmp[ns] = true
-				end
-				for _, ns in ipairs(_type2) do
-					if not tmp[ns] then
-						tinsert(_type, ns)
-					end
-				end
-
-				wipe(tmp)
-
-				local index = -1
-				local pos = -1
-
-				while _type1[index] do
-					tmp[_type1[index]] = true
-					_type[pos] = _type1[index]
-					pos = pos -1
-					index = index - 1
-				end
-
-				index = -1
-
-				while _type2[index] do
-					if not tmp[_type2[index]] then
-						_type[pos] = _type2[index]
-						pos = pos -1
-					end
-					index = index - 1
-				end
-
-				tmp = nil
-
-				return _type
-			else
-				return _type1 or _type2
-			end
-		end
-
-		_Meta4Type.__sub = function(v1, v2)
-			if IsNameSpace(v2) then
-				local ok, _type2
-
-				ok, _type2 = pcall(BuildType, v2, nil, true)
-				if not ok then
-					_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
-					error(_type2, 2)
-				end
-
-				return v1 + _type2
-			elseif v2 == nil then
-				return v1
-			else
-				error("The operation '-' must be used with class or struct.", 2)
-			end
-		end
-
-		_Meta4Type.__unm = function(v1)
-			error("Can't use unary '-' before a type", 2)
-		end
-
-		_Meta4Type.__index = {
-			-- value = Type:Validate(value)
-			Validate = function(self, value)
-				if value == nil and self.AllowNil then
-					return value
-				end
-
-				local flag, msg, info, new
-
-				local index = -1
-
-                local types = ""
-
-				while self[index] do
-					info = _NSInfo[self[index]]
-
-                    new = nil
-
-                    if not info then
-                        -- skip
-					elseif info.Type == TYPE_CLASS then
-						if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(self[index], value) then
-							return value
-						end
-
-						new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(self[index]))
-					elseif info.Type == TYPE_INTERFACE then
-						if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(self[index], value) then
-							return value
-						end
-
-						new = ("%s must be extended from [interface]%s."):format("%s", tostring(self[index]))
-                    elseif info.Type then
-                        if value == info.Owner then
-                            return value
-                        else
-                            types = types .. tostring(info.Owner) .. ", "
-                        end
-					end
-
-					if new and not msg then
-						if self.Name and self.Name ~= "" then
-							if new:find("%%s([_%w]+)") then
-								msg = new:gsub("%%s", "%%s"..self.Name..".")
-							else
-								msg = new:gsub("%%s", "%%s"..self.Name)
-							end
-						else
-							msg = new
-						end
-					end
-
-					index = index - 1
-				end
-
-                if types:len() >= 3 and not msg then
-                    new = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
-
-                    if self.Name and self.Name ~= "" then
-                        if new:find("%%s([_%w]+)") then
-                            msg = new:gsub("%%s", "%%s"..self.Name..".")
-                        else
-                            msg = new:gsub("%%s", "%%s"..self.Name)
-                        end
-                    else
-                        msg = new
-                    end
-                end
-
-				for _, ns in ipairs(self) do
-					info = _NSInfo[ns]
-
-					new = nil
-
-					if not info then
-						-- do nothing
-					elseif info.Type == TYPE_CLASS then
-						-- Check if the value is an instance of this class
-						if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
-							return value
-						end
-
-						new = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
-					elseif info.Type == TYPE_INTERFACE then
-						-- Check if the value is an instance of this interface
-						if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then
-							return value
-						end
-
-						new = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
-					elseif info.Type == TYPE_ENUM then
-						-- Check if the value is an enumeration value of this enum
-						if type(value) == "string" and info.Enum[value:upper()] then
-							return info.Enum[value:upper()]
-						end
-
-						for _, v in pairs(info.Enum) do
-							if value == v then
-								return v
-							end
-						end
-
-						new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
-					elseif info.Type == TYPE_STRUCT then
-						-- Check if the value is an enumeration value of this structure
-						flag, new = pcall(ValidateStruct, ns, value)
-
-						if flag then
-							return new
-						end
-
-						new = strtrim(new:match(":%d+:(.*)$") or new)
-					end
-
-					if new and not msg then
-						if self.Name and self.Name ~= "" then
-							if new:find("%%s([_%w]+)") then
-								msg = new:gsub("%%s", "%%s"..self.Name..".")
-							else
-								msg = new:gsub("%%s", "%%s"..self.Name)
-							end
-						else
-							msg = new
-						end
-					end
-				end
-
-				if msg and self.AllowNil and not msg:match("%(Optional%)$") then
-					msg = msg .. "(Optional)"
-				end
-
-				assert(not msg, msg)
-
-				return value
-			end,
-
-			-- newType = type:Copy()
-			Copy = function(self)
-				local _type = setmetatable({}, _Meta4Type)
-
-				for i, v in pairs(self) do
-					_type[i] = v
-				end
-
-				return _type
-			end,
-
-			-- boolean = type:Is(nil)
-			-- boolean = type:Is(System.String)
-			Is = function(self, ns, onlyClass)
-				local fenv = getfenv(2)
-
-				if ns == nil then
-					return self.AllowNil or false
-				end
-
-				if IsNameSpace(ns) then
-					if not onlyClass then
-						for _, v in ipairs(self) do
-							if v == ns then
-								return true
-							end
-						end
-					else
-						local index = -1
-
-						while self[index] do
-							if self[index] == ns then
-								return true
-							end
-							index = index - 1
-						end
-					end
-				end
-
-				return false
-			end,
-		}
-
-		_Meta4Type.__metatable = TYPE_TYPE
-	end
-
 	function IsType(tbl)
-		return type(tbl) == "table" and getmetatable(tbl) == TYPE_TYPE or false
+		return type(tbl) == "table" and getmetatable(tbl) == Type or false
 	end
 
 	function BuildType(ns, name, onlyClass)
@@ -784,7 +519,7 @@ do
 		end
 
 		if ns == nil or IsNameSpace(ns) then
-			local _type = setmetatable({}, _Meta4Type)
+			local _type = Type()
 
 			_type.AllowNil = allowNil or nil
 
@@ -1609,15 +1344,40 @@ do
 	--------------------------------------------------
 	do
 		function InitObjectWithClass(cls, obj, ...)
-			local  info = _NSInfo[cls]
+			local info = _NSInfo[cls]
+			local noError = true
 
 			if info.SuperClass then
-				InitObjectWithClass(info.SuperClass, obj, ...)
+				noError = InitObjectWithClass(info.SuperClass, obj, ...)
 			end
 
-			if type(info.Constructor) == "function" then
-				info.Constructor(obj, ...)
+			if noError and type(info.Constructor) == "function" then
+				local ok, ret = pcall(info.Constructor, obj, ...)
+
+				if not ok then
+					errorhandler(ret)
+
+					-- Roll back
+					noError = false
+
+					-- Call Class Dispose
+					while cls and _NSInfo[cls] do
+						local disfunc = _NSInfo[cls][DISPOSE_METHOD]
+
+						if disfunc then
+							pcall(disfunc, obj)
+						end
+
+						cls = _NSInfo[cls].SuperClass
+					end
+
+					wipe(obj)
+
+					rawset(obj, "Disposed", true)
+				end
 			end
+
+			return noError
 		end
 
 		function InitObjectWithInterface(cls, obj)
@@ -1909,8 +1669,12 @@ do
 				end
 			end
 		else
-			InitObjectWithClass(cls, obj, ...)
-			InitObjectWithInterface(cls, obj)
+			if InitObjectWithClass(cls, obj, ...) then
+				InitObjectWithInterface(cls, obj)
+			else
+				-- Error
+				return nil
+			end
 		end
 
 		return obj
@@ -3189,6 +2953,318 @@ do
 			return value
 		end
 	endstruct "Any"
+
+	------------------------------------------------------
+	-- System.Type
+	------------------------------------------------------
+	finalclass "Type"
+		doc [======[
+			@name Type
+			@type class
+			@desc The type object used to handle the value's validation
+		]======]
+
+		_ALLOW_NIL = "AllowNil"
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		doc [======[
+			@name Validate
+			@type method
+			@desc Used to validate the value
+			@param value
+			@return value
+		]======]
+		function Validate(self, value)
+			if value == nil and rawget(self, _ALLOW_NIL) then
+				return value
+			end
+
+			local flag, msg, info, new
+
+			local index = -1
+
+	        local types = ""
+
+			while rawget(self, index) do
+				info = _NSInfo[self[index]]
+
+	            new = nil
+
+	            if not info then
+	                -- skip
+				elseif info.Type == TYPE_CLASS then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(self[index], value) then
+						return value
+					end
+
+					new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(self[index]))
+				elseif info.Type == TYPE_INTERFACE then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(self[index], value) then
+						return value
+					end
+
+					new = ("%s must be extended from [interface]%s."):format("%s", tostring(self[index]))
+	            elseif info.Type then
+	                if value == info.Owner then
+	                    return value
+	                else
+	                    types = types .. tostring(info.Owner) .. ", "
+	                end
+				end
+
+				if new and not msg then
+					if self.Name and self.Name ~= "" then
+						if new:find("%%s([_%w]+)") then
+							msg = new:gsub("%%s", "%%s"..self.Name..".")
+						else
+							msg = new:gsub("%%s", "%%s"..self.Name)
+						end
+					else
+						msg = new
+					end
+				end
+
+				index = index - 1
+			end
+
+	        if types:len() >= 3 and not msg then
+	            new = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
+
+	            if self.Name and self.Name ~= "" then
+	                if new:find("%%s([_%w]+)") then
+	                    msg = new:gsub("%%s", "%%s"..self.Name..".")
+	                else
+	                    msg = new:gsub("%%s", "%%s"..self.Name)
+	                end
+	            else
+	                msg = new
+	            end
+	        end
+
+			for _, ns in ipairs(self) do
+				info = _NSInfo[ns]
+
+				new = nil
+
+				if not info then
+					-- do nothing
+				elseif info.Type == TYPE_CLASS then
+					-- Check if the value is an instance of this class
+					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
+						return value
+					end
+
+					new = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
+				elseif info.Type == TYPE_INTERFACE then
+					-- Check if the value is an instance of this interface
+					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then
+						return value
+					end
+
+					new = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
+				elseif info.Type == TYPE_ENUM then
+					-- Check if the value is an enumeration value of this enum
+					if type(value) == "string" and info.Enum[value:upper()] then
+						return info.Enum[value:upper()]
+					end
+
+					if Attribute._IsDefined(info.Owner, AttributeTargets.Enum, __Flags__) then
+						-- Bit flag validation
+						value = tonumber(value)
+
+						if value then
+							if value >= 1 and value < info.MaxValue * 2 then
+								return floor(value)
+							end
+						end
+					else
+						for _, v in pairs(info.Enum) do
+							if value == v then
+								return v
+							end
+						end
+					end
+
+					new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
+				elseif info.Type == TYPE_STRUCT then
+					-- Check if the value is an enumeration value of this structure
+					flag, new = pcall(ValidateStruct, ns, value)
+
+					if flag then
+						return new
+					end
+
+					new = strtrim(new:match(":%d+:(.*)$") or new)
+				end
+
+				if new and not msg then
+					if self.Name and self.Name ~= "" then
+						if new:find("%%s([_%w]+)") then
+							msg = new:gsub("%%s", "%%s"..self.Name..".")
+						else
+							msg = new:gsub("%%s", "%%s"..self.Name)
+						end
+					else
+						msg = new
+					end
+				end
+			end
+
+			if msg and rawget(self, _ALLOW_NIL) and not msg:match("%(Optional%)$") then
+				msg = msg .. "(Optional)"
+			end
+
+			assert(not msg, msg)
+
+			return value
+		end
+
+		doc [======[
+			@name Copy
+			@type method
+			@desc Copy the type object
+			@return the clone
+		]======]
+		function Copy(self)
+			local _type = Type()
+
+			for i, v in pairs(self) do
+				_type[i] = v
+			end
+
+			return _type
+		end
+
+		doc [======[
+			@name Is
+			@type method
+			@desc Check if the type object constains such type
+			@param type class | struct | enum | nil
+			@param onlyClass true if the type only much class, not class' object
+			@return boolean
+		]======]
+		function Is(self, ns, onlyClass)
+			local fenv = getfenv(2)
+
+			if ns == nil then
+				return self.AllowNil or false
+			end
+
+			if IsNameSpace(ns) then
+				if not onlyClass then
+					for _, v in ipairs(self) do
+						if v == ns then
+							return true
+						end
+					end
+				else
+					local index = -1
+
+					while self[index] do
+						if self[index] == ns then
+							return true
+						end
+						index = index - 1
+					end
+				end
+			end
+
+			return false
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+
+		------------------------------------------------------
+		-- MetaMethod
+		------------------------------------------------------
+		function __add(v1, v2)
+			local ok, _type1, _type2
+
+			ok, _type1 = pcall(BuildType, v1)
+			if not ok then
+				_type1 = strtrim(_type1:match(":%d+:(.*)$") or _type1)
+				error(_type1, 2)
+			end
+
+			ok, _type2 = pcall(BuildType, v2)
+			if not ok then
+				_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
+				error(_type2, 2)
+			end
+
+			if _type1 and _type2 then
+				local _type = Type()
+
+				_type.AllowNil = _type1.AllowNil or _type2.AllowNil
+
+				local tmp = {}
+
+				for _, ns in ipairs(_type1) do
+					tinsert(_type, ns)
+					tmp[ns] = true
+				end
+				for _, ns in ipairs(_type2) do
+					if not tmp[ns] then
+						tinsert(_type, ns)
+					end
+				end
+
+				wipe(tmp)
+
+				local index = -1
+				local pos = -1
+
+				while _type1[index] do
+					tmp[_type1[index]] = true
+					_type[pos] = _type1[index]
+					pos = pos -1
+					index = index - 1
+				end
+
+				index = -1
+
+				while _type2[index] do
+					if not tmp[_type2[index]] then
+						_type[pos] = _type2[index]
+						pos = pos -1
+					end
+					index = index - 1
+				end
+
+				tmp = nil
+
+				return _type
+			else
+				return _type1 or _type2
+			end
+		end
+
+		function __sub(v1, v2)
+			if IsNameSpace(v2) then
+				local ok, _type2
+
+				ok, _type2 = pcall(BuildType, v2, nil, true)
+				if not ok then
+					_type2 = strtrim(_type2:match(":%d+:(.*)$") or _type2)
+					error(_type2, 2)
+				end
+
+				return v1 + _type2
+			elseif v2 == nil then
+				return v1
+			else
+				error("The operation '-' must be used with class or interface.", 2)
+			end
+		end
+
+		function __unm(v1)
+			error("Can't use unary '-' before a Type", 2)
+		end
+	endclass "Type"
 
 	------------------------------------------------------
 	-- System.Reflector
@@ -5033,6 +5109,19 @@ do
 	------------------------------------------------------
 	-- System.Attribute
 	------------------------------------------------------
+	enum "AttributeTargets" {
+		All = 0,
+		Class = 1,
+		Constructor = 2,
+		Enum = 4,
+		Event = 8,
+		Interface = 16,
+		Method = 32,
+		Parameter = 64,
+		Property = 128,
+		Struct = 256,
+	}
+
 	finalclass "Attribute"
 
 		doc [======[
@@ -5041,7 +5130,63 @@ do
 			@desc The Attribute class associates predefined system information or user-defined custom information with a target element.
 		]======]
 
-		_PrepareAttributes = {}
+		_PreparedAttributes = {}
+		_ThreadPreparedAttributes = _ThreadPreparedAttributes or setmetatable({}, WEAK_KEY)
+
+		-- Since the targets are stable, so a big table is a good storage
+		_Property4Class = _Property4Class or setmetatable({}, WEAK_KEY)
+		_Property4Constructor = _Property4Constructor or setmetatable({}, WEAK_KEY)
+		_Property4Enum = _Property4Enum or setmetatable({}, WEAK_KEY)
+		_Property4Event = _Property4Event or setmetatable({}, WEAK_KEY)
+		_Property4Interface = _Property4Interface or setmetatable({}, WEAK_KEY)
+		_Property4Method = _Property4Method or setmetatable({}, WEAK_KEY)
+		_Property4Parameter = _Property4Parameter or setmetatable({}, WEAK_KEY)
+		_Property4Property = _Property4Property or setmetatable({}, WEAK_KEY)
+		_Property4Struct = _Property4Struct or setmetatable({}, WEAK_KEY)
+
+		_PropertyCache = {
+			[1] = _Property4Class,
+			[2] = _Property4Constructor,
+			[4] = _Property4Enum,
+			[8] = _Property4Event,
+			[16] = _Property4Interface,
+			[32] = _Property4Method,
+			[64] = _Property4Parameter,
+			[128] = _Property4Property,
+			[256] = _Property4Struct,
+		}
+
+		_PREVIOUS_LINK = "__Attribute_Previous"
+		_NEXT_LINK = "__Attribute_Next"
+
+		-- Recycle the cache for dispose attributes
+		_AttributeCache4Dispose = setmetatable({}, {
+			__call = function(self, key)
+				if key then
+					if type(key) == "table" and self[key] then
+						for attr in pairs(key) do
+							key[attr] = nil
+							if not rawget(attr, "Disposed") then
+								attr:Disposed()
+							end
+						end
+
+						tinsert(self, key)
+					end
+				else
+					if #self > 0 then
+						return tremove(self, #self)
+					else
+						local ret = {}
+
+						-- Mark it as recycle table
+						self[ret] = true
+
+						return ret
+					end
+				end
+			end,
+		})
 
 		------------------------------------------------------
 		-- Event
@@ -5051,28 +5196,102 @@ do
 		-- Method
 		------------------------------------------------------
 		doc [======[
-			@name _ClearPrepareAttributes
+			@name _ClearPreparedAttributes
 			@type method
 			@desc Clear the prepared attributes
 			@return nil
 		]======]
-		function _ClearPrepareAttributes()
-			wipe(_PrepareAttributes)
+		function _ClearPreparedAttributes()
+			local thread = running()
+
+			if thread then
+				if _ThreadPreparedAttributes[thread] then
+					wipe(_ThreadPreparedAttributes[thread])
+				end
+			else
+				wipe(_PreparedAttributes)
+			end
 		end
 
 		doc [======[
-			@name _ConsumePrepareAttributes
+			@name _ConsumePreparedAttributes
 			@type method
 			@desc Set the prepared attributes for target
 			@format target[, ...]
 			@param target class | event | method | property | struct | interface | enum
 			@param targetType System.AttributeTargets
+			@param superTarget the super target the contains several attributes to be inherited
 			@return nil
 		]======]
-		function _ConsumePrepareAttributes(target, targetType)
-			if #_PrepareAttributes > 0 then
-				_SetAttributes(target, targetType, unpack(_PrepareAttributes))
-				_ClearPrepareAttributes()
+		function _ConsumePreparedAttributes(target, targetType, superTarget)
+			-- create the clone of inheritable attributes from superTarget
+			if superTarget then
+				local current = _PropertyCache[targetType][superTarget]
+				local usage
+
+				while current do
+					usage = _GetCustomAttribute(getmetatable(current), AttributeTargets.Class, __AttributeUsage__)
+
+					if not usage or (usage and usage.Inherited) then
+						current:Clone()
+					end
+
+					current = rawget(current, _NEXT_LINK)
+				end
+			end
+
+			-- Consume the prepared Attributes
+			local prepared
+			local thread = running()
+
+			if thread then
+				prepared = _ThreadPreparedAttributes[thread]
+			else
+				prepared = _PreparedAttributes
+			end
+
+			if prepared and #prepared > 0 then
+				-- Check multi usage
+				local noUseAttr = _AttributeCache4Dispose()
+				local noMultiCls = _AttributeCache4Dispose()
+				local cls, usage
+
+				for _, v in ipairs(prepared) do
+					cls = getmetatable(v)
+
+					-- Remove the attribute that not inherited from Attribute
+					-- Well, handle attribute inhertied from other Attribute is too complex to be handle
+					if Reflector.GetSuperClass(cls) ~= Attribute then
+						noUseAttr[v] = true
+					else
+						usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
+
+						if not usage or not usage.AllowMultiple then
+							if noMultiCls[cls] then
+								noUseAttr[v] = true
+							else
+								noMultiCls[cls] = true
+							end
+						end
+					end
+				end
+
+				for i = #prepared, 1, -1 do
+					if noUseAttr[prepared[i]] then
+						tremove(prepared, i)
+					end
+				end
+
+				wipe(noMultiCls)
+				_AttributeCache4Dispose(noMultiCls)
+				_AttributeCache4Dispose(noUseAttr)
+
+				if #prepared > 0 then
+					-- Set the attributes
+					_SetAttributes(target, targetType, unpack(prepared))
+				end
+
+				_ClearPreparedAttributes()
 			end
 		end
 
@@ -5086,7 +5305,82 @@ do
 			@return nil
 		]======]
 		function _SetAttributes(target, targetType, ...)
+			-- Link all attributes so we can access them later
+			local current, nxt
+			local disposeCache = _AttributeCache4Dispose()
 
+			-- Clear previous attributes
+			current = _PropertyCache[targetType][target]
+
+			while current do
+				disposeCache[current] = true
+
+				nxt = rawget(current, _NEXT_LINK)
+				rawset(current, _NEXT_LINK, nil)
+				if nxt then rawset(nxt, _PREVIOUS_LINK, nil) end
+
+				current = nxt
+			end
+
+			for i = 1, select('#', ...) do
+				if i == 1 then
+					current = select(1, ...)
+					_PropertyCache[targetType][target] = current
+				else
+					nxt = select(i, ...)
+					rawset(current, _NEXT_LINK, nxt)
+					rawset(nxt, _PREVIOUS_LINK, current)
+					current = nxt
+				end
+
+				if disposeCache[current] then
+					-- Keep empty just empty
+					disposeCache[current] = nil
+				end
+			end
+
+			_AttributeCache4Dispose(disposeCache)
+		end
+
+		doc [======[
+			@name _ApplyAttribtues
+			@type method
+			@desc Try to call all attributes' ApplyAttribute method to update the target
+			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
+			@return nil
+		]======]
+		function _ApplyAttribtues(target, targetType, ...)
+			local current = _PropertyCache[targetType][target]
+			local ok, ret, nxt, prev
+
+			while current do
+				ok, ret = pcall(current.ApplyAttribute, current, target, targetType, ...)
+
+				if not ok then
+					--Remove the attribute
+					prev = rawget(current, _PREVIOUS_LINK)
+					nxt = rawget(current, _NEXT_LINK)
+
+					if prev then
+						rawset(prev, _NEXT_LINK, nxt)
+					else
+						_PropertyCache[targetType][target] = nxt
+					end
+
+					if nxt then
+						rawset(nxt, _PREVIOUS_LINK, prev)
+					end
+
+					current:Dispose()
+
+					current = nxt
+
+					if not ok then errorhandler(ret) end
+				else
+					current = rawget(current, _NEXT_LINK)
+				end
+			end
 		end
 
 		doc [======[
@@ -5094,27 +5388,134 @@ do
 			@type method
 			@desc Check whether the target contains such type attribute
 			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
 			@param type the attribute class type
 			@return boolean true if the target contains attribute with the type
 		]======]
-		function _IsDefined(target, type)
+		function _IsDefined(target, targetType, type)
+			local current = _PropertyCache[targetType][target]
 
+			while current do
+				if getmetatable(current) == type then
+					return true
+				end
+
+				current = rawget(current, _NEXT_LINK)
+			end
+
+			return false
 		end
 
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
+		doc [======[
+			@name _GetCustomAttribute
+			@type method
+			@desc Return the attribute of the given type
+			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
+			@param type the attribute class type
+			@return Attribute the attribute object
+		]======]
+		function _GetCustomAttribute(target, targetType, type)
+			local current = _PropertyCache[targetType][target]
+			local cache = _AttributeCache4Dispose()
+
+			while current do
+				if getmetatable(current) == type then
+					tinsert(cache, current)
+				end
+
+				current = rawget(current, _NEXT_LINK)
+			end
+
+			if #cache == 0 then
+				_AttributeCache4Dispose(cache)
+				return
+			elseif #cache == 1 then
+				local ret = cache[1]
+
+				wipe(cache)
+				_AttributeCache4Dispose(cache)
+
+				return ret
+			else
+				local ret = {}
+
+				for i = 1, #cache do
+					ret[i] = cache[i]
+					cache[i] = nil
+				end
+
+				_AttributeCache4Dispose(cache)
+
+				return unpack(ret)
+			end
+		end
+
+		doc [======[
+			@name ApplyAttribute
+			@type method
+			@desc Apply the attribute to the target, overridable
+			@param target the attribute's target
+			@param targetType System.AttributeTargets
+			@return nil
+		]======]
+		function ApplyAttribute(self, target, targetType)
+			-- Pass
+		end
+
+		doc [======[
+			@name Clone
+			@type method
+			@desc Return the object's clone object, used by the system, overridable
+			@return obj the clone of the attribute object
+		]======]
+		function Clone(self)
+			local cache = _AttributeCache4Dispose()
+
+			wipe(cache)
+
+			local i = 1
+
+			while rawget(self, "__Init_Param_" .. i) do
+				tinsert(cache, rawget(self, "__Init_Param_" .. i))
+			end
+
+			local clone = getmetatable(self)(unpack(cache))
+
+			wipe(cache)
+
+			_AttributeCache4Dispose(cache)
+
+			if clone then
+				for k, v in pairs(self) do
+					if not rawget(clone, k) then
+						rawset(clone, k, v)
+					end
+				end
+			end
+
+			return clone
+		end
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Attribute(self)
-			tinsert(_PrepareAttributes, self)
-		end
+		function Attribute(self, ...)
+			-- Register the params used for clone
+			for i = 1, select('#', ...) do
+				self["__Init_Param_" .. i] = select(i, ...)
+			end
 
-		------------------------------------------------------
-		-- Meta-Method
-		------------------------------------------------------
+			-- Send to prepared cache
+			local thread = running()
+
+			if thread then
+				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
+				tinsert(_ThreadPreparedAttributes[thread], self)
+			else
+				tinsert(_PreparedAttributes, self)
+			end
+		end
 	endclass "Attribute"
 
 	finalclass "__Flags__"
@@ -5125,21 +5526,39 @@ do
 			@type class
 			@desc Indicates that an enumeration can be treated as a bit field; that is, a set of flags.
 		]======]
-	endclass "__Flags__"
 
-	--__Flags__()
-	enum "AttributeTargets" {
-		"All",
-		"Class",
-		"Constructor",
-		"Enum",
-		"Event",
-		"Interface",
-		"Method",
-		"Parameter",
-		"Property",
-		"Struct",
-	}
+		doc [======[
+			@name ApplyAttribute
+			@type method
+			@desc Apply the attribute to the target, overridable
+			@param target the attribute's target
+			@param targetType System.AttributeTargets
+			@return nil
+		]======]
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsEnum(target) then
+				local info = _NSInfo[target]
+
+				local cache = {}
+
+				for k, v in pairs(info.Enum) do
+					if tonumber(v) then
+
+					else
+
+					end
+				end
+
+				for i, v in pairs(set) do
+					if type(i) == "string" then
+						info.Enum[i:upper()] = v
+					elseif type(v) == "string" then
+						info.Enum[v:upper()] = v
+					end
+				end
+			end
+		end
+	endclass "__Flags__"
 
 	class "__AttributeUsage__"
 		inherit "Attribute"
@@ -5156,7 +5575,7 @@ do
 		doc [======[
 			@name AttributeTarget
 			@type property
-			@desc The attribute target type
+			@desc The attribute target type, default AttributeTargets.All
 		]======]
 		property "AttributeTarget" {
 			Get = function(self)
@@ -5171,7 +5590,7 @@ do
 		doc [======[
 			@name Inherited
 			@type property
-			@desc description
+			@desc Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true
 		]======]
 		property "Inherited" {
 			Get = function(self)
@@ -5186,11 +5605,11 @@ do
 		doc [======[
 			@name AllowMultiple
 			@type property
-			@desc description
+			@desc whether multiple instances of your attribute can exist on an element. default false
 		]======]
 		property "AllowMultiple" {
 			Get = function(self)
-				return self.__AllowMultiple
+				return self.__AllowMultiple or false
 			end,
 			Set = function(self, value)
 				self.__AllowMultiple = value
@@ -5203,7 +5622,17 @@ do
 		------------------------------------------------------
 	endclass "__AttributeUsage__"
 
-	--__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
+	-- Apply Attribute to the previous definitions
+	do
+		Attribute._SetAttributes(AttributeTargets, AttributeTargets.Enum, __Flags__())
+		Attribute._ApplyAttribtues(AttributeTargets, AttributeTargets.Enum)
+
+		Attribute._SetAttributes(__Flags__, AttributeTargets.Class, __AttributeUsage__{AttributeTarget = AttributeTargets.Enum})
+
+		Attribute._SetAttributes(__AttributeUsage__, AttributeTargets.Class, __AttributeUsage__{AttributeTarget = AttributeTargets.Class})
+	end
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
 	class "__ThreadActivate__"
 		inherit "Attribute"
 		doc [======[
@@ -5412,7 +5841,7 @@ do
 		]======]
 
 		_Module = _Module or {}
-		_ModuleInfo = _ModuleInfo or setmetatable({}, {__mode = "k"})
+		_ModuleInfo = _ModuleInfo or setmetatable({}, WEAK_KEY)
 
 		_ModuleEnv = _ModuleEnv or {}
 
@@ -5919,6 +6348,8 @@ do
 			end
 
 			setfenv(depth + 1, self)
+
+			Attribute._ClearPreparedAttributes()
 		end
 	endclass "Module"
 end
