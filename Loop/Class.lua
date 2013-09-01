@@ -163,6 +163,7 @@ do
 	tremove = tremove or table.remove
 	sort = sort or table.sort
 	floor = floor or math.floor
+	log = log or math.log
 
 	create = coroutine.create
 	resume = coroutine.resume
@@ -254,7 +255,7 @@ do
 			if info.Type == TYPE_STRUCT then
 				if key == "Validate" then
 					if not info.Validate then
-						BuildStructVFalidate(self)
+						BuildStructValidate(self)
 					end
 					return info.Validate
 				else
@@ -1680,7 +1681,7 @@ do
 		return obj
 	end
 
-	function BuildClass(name, asPart, asFinal)
+	function BuildClass(name, asPart)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			if asPart then
 				error([[Usage: partclass "classname"]], 3)
@@ -1736,7 +1737,6 @@ do
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
-		info.IsFinal = asFinal
 
 		info.ClassEnv = info.ClassEnv or setmetatable({}, _MetaClsEnv)
 		_ClsEnv2Info[info.ClassEnv] = info
@@ -1940,17 +1940,6 @@ do
 	------------------------------------
 	function partclass(name)
 		BuildClass(name, true)
-	end
-
-	------------------------------------
-	--- Final class definition
-	-- @name partclass
-	-- @type function
-	-- @param name the class's name
-	-- @usage partclass "Form"
-	------------------------------------
-	function finalclass(name)
-		BuildClass(name, true, true)
 	end
 
 	------------------------------------
@@ -2344,6 +2333,10 @@ do
 				info.Enum[v:upper()] = v
 			end
 		end
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Enum)
+		end
 	end
 
 	function GetShortEnumInfo(cls)
@@ -2656,7 +2649,7 @@ do
 		error(("struct '%s' is abstract."):format(tostring(strt)), 3)
 	end
 
-	function BuildStructVFalidate(strt)
+	function BuildStructValidate(strt)
 		local info = _NSInfo[strt]
 
 		info.Validate = function ( value )
@@ -2842,6 +2835,10 @@ do
 		while rawget(_StructEnv2Info, env) do
 			local info = _StructEnv2Info[env]
 
+			if info.Owner and __Attribute__ then
+				__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+			end
+
 			if info.Name == name then
 				setfenv(2, info.BaseEnv)
 				return
@@ -2865,7 +2862,6 @@ end
 do
 	function Install_KeyWord(env)
 		env.partinterface = partinterface
-		env.finalclass = finalclass
 		env.partclass = partclass
 		env.interface = interface
 		env.class = class
@@ -2957,7 +2953,7 @@ do
 	------------------------------------------------------
 	-- System.Type
 	------------------------------------------------------
-	finalclass "Type"
+	class "Type"
 		doc [======[
 			@name Type
 			@type class
@@ -3070,12 +3066,12 @@ do
 						return info.Enum[value:upper()]
 					end
 
-					if Attribute._IsDefined(info.Owner, AttributeTargets.Enum, __Flags__) then
+					if __Attribute__._IsDefined(info.Owner, AttributeTargets.Enum, __Flags__) then
 						-- Bit flag validation
 						value = tonumber(value)
 
 						if value then
-							if value >= 1 and value < info.MaxValue * 2 then
+							if value >= 1 and value <= info.MaxValue then
 								return floor(value)
 							end
 						end
@@ -3786,12 +3782,37 @@ do
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			if ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_ENUM and _NSInfo[ns].Enum then
-				for n, v in pairs(_NSInfo[ns].Enum) do
-					if v == value then
-						return n
+				if __Attribute__._IsDefined(ns, AttributeTargets.Enum, __Flags__) and type(value) == "number" then
+					local ret = {}
+
+					for n, v in pairs(_NSInfo[ns].Enum) do
+						if ValidateFlags(v, value) then
+							tinsert(ret, n)
+						end
+					end
+
+					return unpack(ret)
+				else
+					for n, v in pairs(_NSInfo[ns].Enum) do
+						if v == value then
+							return n
+						end
 					end
 				end
 			end
+		end
+
+		doc [======[
+			@name ValidateFlags
+			@type method
+			@desc  hether the value is contains on the target value
+			@param checkValue like 1, 2, 4, 8, ...
+			@param targetValue like 3 : (1 + 2)
+			@return boolean true if the targetValue contains the checkValue
+		]======]
+		function ValidateFlags(checkValue, targetValue)
+			targetValue = targetValue % (2 * checkValue)
+			return (targetValue - targetValue % checkValue) == checkValue
 		end
 
 		doc [======[
@@ -4781,7 +4802,7 @@ do
 	------------------------------------------------------
 	-- System.Event & EventHandler
 	------------------------------------------------------
-	finalclass "Event"
+	class "Event"
 		doc [======[
 			@name Event
 			@type class
@@ -4818,7 +4839,7 @@ do
 		end
 	endclass "Event"
 
-	finalclass "EventHandler"
+	class "EventHandler"
 		doc [======[
 			@name EventHandler
 			@type class
@@ -4979,7 +5000,7 @@ do
 	    	self.__Owner = owner
 
 	    	-- Active the thread status based on the attribute setting
-	    	if Attribute._IsDefined(evt, ThreadActivatedAttribute) then
+	    	if __Attribute__._IsDefined(evt, AttributeTargets.Event, __ThreadActivate__) then
 	    		self.__ThreadActivated = true
 	    	end
 	    end
@@ -5107,7 +5128,7 @@ do
 	endclass "EventHandler"
 
 	------------------------------------------------------
-	-- System.Attribute
+	-- System.__Attribute__
 	------------------------------------------------------
 	enum "AttributeTargets" {
 		All = 0,
@@ -5117,17 +5138,16 @@ do
 		Event = 8,
 		Interface = 16,
 		Method = 32,
-		Parameter = 64,
-		Property = 128,
-		Struct = 256,
+		Property = 64,
+		Struct = 128,
 	}
 
-	finalclass "Attribute"
+	class "__Attribute__"
 
 		doc [======[
-			@name Attribute
+			@name __Attribute__
 			@type class
-			@desc The Attribute class associates predefined system information or user-defined custom information with a target element.
+			@desc The __Attribute__ class associates predefined system information or user-defined custom information with a target element.
 		]======]
 
 		_PreparedAttributes = {}
@@ -5140,7 +5160,6 @@ do
 		_Property4Event = _Property4Event or setmetatable({}, WEAK_KEY)
 		_Property4Interface = _Property4Interface or setmetatable({}, WEAK_KEY)
 		_Property4Method = _Property4Method or setmetatable({}, WEAK_KEY)
-		_Property4Parameter = _Property4Parameter or setmetatable({}, WEAK_KEY)
 		_Property4Property = _Property4Property or setmetatable({}, WEAK_KEY)
 		_Property4Struct = _Property4Struct or setmetatable({}, WEAK_KEY)
 
@@ -5151,13 +5170,12 @@ do
 			[8] = _Property4Event,
 			[16] = _Property4Interface,
 			[32] = _Property4Method,
-			[64] = _Property4Parameter,
-			[128] = _Property4Property,
-			[256] = _Property4Struct,
+			[64] = _Property4Property,
+			[128] = _Property4Struct,
 		}
 
-		_PREVIOUS_LINK = "__Attribute_Previous"
-		_NEXT_LINK = "__Attribute_Next"
+		TYPE_CLASS = TYPE_CLASS
+		TYPE_INTERFACE = TYPE_INTERFACE
 
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
@@ -5188,27 +5206,165 @@ do
 			end,
 		})
 
-		------------------------------------------------------
-		-- Event
-		------------------------------------------------------
+		local function ParseTarget(target, targetType, owner, name)
+			if targetType == AttributeTargets.Class then
+				return "[Class]" .. tostring(target)
+			elseif targetType == AttributeTargets.Constructor then
+				return "[Class]" .. tostring(owner) .. " [Constructor]" .. tostring(target)
+			elseif targetType == AttributeTargets.Enum then
+				return "[Enum]" .. tostring(target)
+			elseif targetType == AttributeTargets.Event then
+				return "[Class]" .. tostring(owner) .. " [Event]" .. tostring(target.Name)
+			elseif targetType == AttributeTargets.Interface then
+				return "[Interface]" .. tostring(target)
+			elseif targetType == AttributeTargets.Method then
+				if Reflector.IsClass(owner) then
+					return "[Class]" .. tostring(owner) .. " [Method]" .. tostring(name or "anonymous")
+				elseif Reflector.IsInterface(owner) then
+					return "[Interface]" .. tostring(owner) .. " [Method]" .. tostring(name or "anonymous")
+				else
+					return "[Method]" .. tostring(name or "anonymous")
+				end
+			elseif targetType == AttributeTargets.Property then
+				if Reflector.IsClass(owner) then
+					return "[Class]" .. tostring(owner) .. " [Property]" .. tostring(target.Name  or "anonymous")
+				elseif Reflector.IsInterface(owner) then
+					return "[Interface]" .. tostring(owner) .. " [Property]" .. tostring(target.Name  or "anonymous")
+				else
+					return "[Property]" .. tostring(target.Name  or "anonymous")
+				end
+			elseif targetType == AttributeTargets.Struct then
+				return "[Struct]" .. tostring(target)
+			end
+		end
+
+		local function ValidateTargetType(target, targetType)
+			if targetType == AttributeTargets.Class then
+				return Reflector.IsClass(target)
+			elseif targetType == AttributeTargets.Constructor then
+				return Reflector.IsClass(target)
+			elseif targetType == AttributeTargets.Enum then
+				return Reflector.IsEnum(target)
+			elseif targetType == AttributeTargets.Event then
+				return Reflector.ObjectIsClass(target, Event)
+			elseif targetType == AttributeTargets.Interface then
+				return Reflector.IsInterface(target)
+			elseif targetType == AttributeTargets.Method then
+				return type(target) == "function"
+			elseif targetType == AttributeTargets.Property then
+				-- Normally, this only be called by the system
+				return type(target) == "table" and type(target.Name) == "string"
+			elseif targetType == AttributeTargets.Struct then
+				return Reflector.IsStruct(target)
+			end
+		end
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
+		doc [======[
+			@name _ApplyAttributes
+			@type method
+			@desc Apply the attributes for the target
+			@format target, targetType[, superTarget, owner, name]
+			@param target class | event | method | property | struct | interface | enum
+			@param targetType System.AttributeTargets
+			@param superTarget the super target the contains several attributes to be inherited
+			@param owner the class|interface object, the owner of the target
+			@param name the target's name
+			@return target
+		]======]
+		local function _ApplyAttributes(target, targetType, owner, name)
+			-- Apply the attributes
+			local config = _PropertyCache[targetType][target]
+
+			if config then
+				local ok, ret, arg1, arg2, arg3
+
+				-- Some target can't be send to the attribute's ApplyAttribute directly
+				if targetType == AttributeTargets.Constructor then
+					-- Nothing should do to the constructor
+					-- Or maybe later
+					return
+				elseif targetType == AttributeTargets.Event then
+					arg1 = target.Name
+					arg2 = targetType
+					arg3 = owner
+				elseif targetType == AttributeTargets.Method then
+					arg1 = target
+					arg2 = targetType
+					arg3 = owner
+				elseif targetType == AttributeTargets.Property then
+					arg1 = target.Name
+					arg2 = targetType
+					arg3 = owner
+				else
+					arg1 = target
+					arg2 = targetType
+					arg3 = nil
+				end
+
+				if getmetatable(config) then
+					ok, ret = pcall(config.ApplyAttribute, config, arg1, arg2, arg3)
+
+					if not ok then
+						errorhandler(ret)
+
+						_PropertyCache[targetType][target] = nil
+					elseif targetType == AttributeTargets.Method then
+						-- The method may be wrapped in the apply operation
+						if type(ret) == "function" then
+							target = ret
+						end
+					end
+				else
+					for i = #config, 1, -1 do
+						ok, ret = pcall(config[i].ApplyAttribute, config[i], arg1, arg2, arg3)
+
+						if not ok then
+							errorhandler(ret)
+
+							tremove(config, i)
+						elseif targetType == AttributeTargets.Method then
+							if type(ret) == "function" then
+								target = ret
+							end
+						end
+					end
+
+					if #config == 0 then
+						_PropertyCache[targetType][target] = nil
+					end
+				end
+			end
+
+			return target
+		end
+
 		doc [======[
 			@name _ClearPreparedAttributes
 			@type method
 			@desc Clear the prepared attributes
 			@return nil
 		]======]
-		function _ClearPreparedAttributes()
+		function _ClearPreparedAttributes(noDispose)
 			local thread = running()
 
 			if thread then
 				if _ThreadPreparedAttributes[thread] then
+					if not noDispose then
+						for _, attr in ipairs(_ThreadPreparedAttributes[thread]) do
+							attr:Dispose()
+						end
+					end
 					wipe(_ThreadPreparedAttributes[thread])
 				end
 			else
+				if not noDispose then
+					for _, attr in ipairs(_PreparedAttributes) do
+						attr:Dispose()
+					end
+				end
 				wipe(_PreparedAttributes)
 			end
 		end
@@ -5217,27 +5373,27 @@ do
 			@name _ConsumePreparedAttributes
 			@type method
 			@desc Set the prepared attributes for target
-			@format target[, ...]
+			@format target, targetType[, superTarget[, owner, name]]
 			@param target class | event | method | property | struct | interface | enum
 			@param targetType System.AttributeTargets
 			@param superTarget the super target the contains several attributes to be inherited
-			@return nil
+			@param owner the class|interface object, the owner of the target
+			@param name the target's name
+			@return target
 		]======]
-		function _ConsumePreparedAttributes(target, targetType, superTarget)
-			-- create the clone of inheritable attributes from superTarget
-			if superTarget then
-				local current = _PropertyCache[targetType][superTarget]
-				local usage
+		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
+			if not _PropertyCache[targetType] then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'targetType' is invalid.", 2)
+			elseif  not ValidateTargetType(target, targetType) then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'target' is invalid.", 2)
+			end
 
-				while current do
-					usage = _GetCustomAttribute(getmetatable(current), AttributeTargets.Class, __AttributeUsage__)
+			-- No attribute declaration again
+			if _PropertyCache[targetType][target] then
+				errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
 
-					if not usage or (usage and usage.Inherited) then
-						current:Clone()
-					end
-
-					current = rawget(current, _NEXT_LINK)
-				end
+				_ClearPreparedAttributes()
+				return target
 			end
 
 			-- Consume the prepared Attributes
@@ -5250,34 +5406,83 @@ do
 				prepared = _PreparedAttributes
 			end
 
+			-- Filite with the usage
+			if prepared and #prepared > 0 then
+				local cls, usage
+				local noUseAttr = _AttributeCache4Dispose()
+
+				for i = #prepared, 1, -1 do
+					cls = getmetatable(prepared[i])
+					usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
+
+					if usage and usage.AttributeTarget > 0 and not Reflector.ValidateFlags(targetType, usage.AttributeTarget) then
+						errorhandler("Can't apply the " .. tostring(cls) .. " attribute to the " .. ParseTarget(target, targetType, owner, name))
+
+						noUseAttr[prepared[i]] = true
+						tremove(prepared, i)
+					end
+				end
+
+				_AttributeCache4Dispose(noUseAttr)
+			end
+
+			local newAttributeCount = prepared and #prepared or 0
+
+			-- get inheritable attributes from superTarget
+			if superTarget then
+				local config = _PropertyCache[targetType][superTarget]
+				local usage
+
+				if config then
+					if getmetatable(config) then
+						usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+
+						if not usage or usage.Inherited then
+							prepared = prepared or {}
+
+							tinsert(prepared, config)
+						end
+					else
+						for _, attr in ipairs(config) do
+							usage = _GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
+
+							if not usage or usage.Inherited then
+								prepared = prepared or {}
+
+								tinsert(prepared, attr)
+							end
+						end
+					end
+				end
+			end
+
+			-- Check multi attributes
 			if prepared and #prepared > 0 then
 				-- Check multi usage
 				local noUseAttr = _AttributeCache4Dispose()
 				local noMultiCls = _AttributeCache4Dispose()
 				local cls, usage
 
-				for _, v in ipairs(prepared) do
-					cls = getmetatable(v)
+				for _, attr in ipairs(prepared) do
+					cls = getmetatable(attr)
+					usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
 
-					-- Remove the attribute that not inherited from Attribute
-					-- Well, handle attribute inhertied from other Attribute is too complex to be handle
-					if Reflector.GetSuperClass(cls) ~= Attribute then
-						noUseAttr[v] = true
-					else
-						usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
-
-						if not usage or not usage.AllowMultiple then
-							if noMultiCls[cls] then
-								noUseAttr[v] = true
-							else
-								noMultiCls[cls] = true
-							end
+					if not usage or not usage.AllowMultiple then
+						if noMultiCls[cls] then
+							noUseAttr[attr] = true
+						else
+							noMultiCls[cls] = true
 						end
 					end
 				end
 
 				for i = #prepared, 1, -1 do
 					if noUseAttr[prepared[i]] then
+						if i > newAttributeCount then
+							noUseAttr[prepared[i]] = nil
+						else
+							errorhandler("No multi attributes be allowed for " .. tostring(getmetatable(prepared[i])))
+						end
 						tremove(prepared, i)
 					end
 				end
@@ -5285,102 +5490,62 @@ do
 				wipe(noMultiCls)
 				_AttributeCache4Dispose(noMultiCls)
 				_AttributeCache4Dispose(noUseAttr)
+			end
 
-				if #prepared > 0 then
-					-- Set the attributes
-					_SetAttributes(target, targetType, unpack(prepared))
+			-- Save & apply the attributes for target
+			if #prepared > 0 then
+				if #prepared == 1 then
+					_PropertyCache[targetType][target] = prepared[1]
+				else
+					_PropertyCache[targetType][target] = {unpack(prepared)}
 				end
+
+				wipe(prepared)
 
 				_ClearPreparedAttributes()
+
+				target =  _ApplyAttributes(target, targetType, owner, name) or target
 			end
+
+			return target
 		end
 
 		doc [======[
-			@name _SetAttributes
+			@name _CloneAttributes(source, target, targetType)
 			@type method
-			@desc Set attributes for target
-			@param target class | event | method | property | struct | interface | enum
+			@desc Clone the attributes
+			@param source the source
+			@param target the target
 			@param targetType System.AttributeTargets
-			@param ... Attributes list
-			@return nil
+			@param owner the class|interface object, the owner of the target
+			@param name the target's name
+			@return target
 		]======]
-		function _SetAttributes(target, targetType, ...)
-			-- Link all attributes so we can access them later
-			local current, nxt
-			local disposeCache = _AttributeCache4Dispose()
-
-			-- Clear previous attributes
-			current = _PropertyCache[targetType][target]
-
-			while current do
-				disposeCache[current] = true
-
-				nxt = rawget(current, _NEXT_LINK)
-				rawset(current, _NEXT_LINK, nil)
-				if nxt then rawset(nxt, _PREVIOUS_LINK, nil) end
-
-				current = nxt
+		function _CloneAttributes(source, target, targetType, owner, name)
+			if not _PropertyCache[targetType] then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
+			elseif  not ValidateTargetType(source, targetType) then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
+			elseif  not ValidateTargetType(target, targetType) then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'target' is invalid.", 2)
 			end
 
-			for i = 1, select('#', ...) do
-				if i == 1 then
-					current = select(1, ...)
-					_PropertyCache[targetType][target] = current
-				else
-					nxt = select(i, ...)
-					rawset(current, _NEXT_LINK, nxt)
-					rawset(nxt, _PREVIOUS_LINK, current)
-					current = nxt
-				end
-
-				if disposeCache[current] then
-					-- Keep empty just empty
-					disposeCache[current] = nil
-				end
+			-- No attribute declaration again
+			if _PropertyCache[targetType][target] then
+				errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
+				return target
 			end
 
-			_AttributeCache4Dispose(disposeCache)
-		end
+			local config = _PropertyCache[targetType][source]
 
-		doc [======[
-			@name _ApplyAttribtues
-			@type method
-			@desc Try to call all attributes' ApplyAttribute method to update the target
-			@param target class | event | method | property | struct | interface | enum
-			@param targetType System.AttributeTargets
-			@return nil
-		]======]
-		function _ApplyAttribtues(target, targetType, ...)
-			local current = _PropertyCache[targetType][target]
-			local ok, ret, nxt, prev
+			-- Save & apply the attributes for target
+			if config then
+				_PropertyCache[targetType][target] = config
 
-			while current do
-				ok, ret = pcall(current.ApplyAttribute, current, target, targetType, ...)
-
-				if not ok then
-					--Remove the attribute
-					prev = rawget(current, _PREVIOUS_LINK)
-					nxt = rawget(current, _NEXT_LINK)
-
-					if prev then
-						rawset(prev, _NEXT_LINK, nxt)
-					else
-						_PropertyCache[targetType][target] = nxt
-					end
-
-					if nxt then
-						rawset(nxt, _PREVIOUS_LINK, prev)
-					end
-
-					current:Dispose()
-
-					current = nxt
-
-					if not ok then errorhandler(ret) end
-				else
-					current = rawget(current, _NEXT_LINK)
-				end
+				target =  _ApplyAttributes(target, targetType, owner, name) or target
 			end
+
+			return target
 		end
 
 		doc [======[
@@ -5393,61 +5558,186 @@ do
 			@return boolean true if the target contains attribute with the type
 		]======]
 		function _IsDefined(target, targetType, type)
-			local current = _PropertyCache[targetType][target]
+			local config = _PropertyCache[targetType][target]
 
-			while current do
-				if getmetatable(current) == type then
-					return true
+			if not config then
+				return false
+			elseif getmetatable(config) then
+				return getmetatable(config) == type
+			else
+				for _, attr in ipairs(config) do
+					if getmetatable(attr) == type then
+						return true
+					end
 				end
-
-				current = rawget(current, _NEXT_LINK)
+				return false
 			end
-
-			return false
 		end
 
 		doc [======[
 			@name _GetCustomAttribute
 			@type method
-			@desc Return the attribute of the given type
+			@desc Return the attributes of the given type for the target
 			@param target class | event | method | property | struct | interface | enum
 			@param targetType System.AttributeTargets
 			@param type the attribute class type
-			@return Attribute the attribute object
+			@return ... the attribute objects
 		]======]
 		function _GetCustomAttribute(target, targetType, type)
-			local current = _PropertyCache[targetType][target]
-			local cache = _AttributeCache4Dispose()
+			local config = _PropertyCache[targetType][target]
 
-			while current do
-				if getmetatable(current) == type then
-					tinsert(cache, current)
-				end
-
-				current = rawget(current, _NEXT_LINK)
-			end
-
-			if #cache == 0 then
-				_AttributeCache4Dispose(cache)
+			if not config then
 				return
-			elseif #cache == 1 then
-				local ret = cache[1]
-
-				wipe(cache)
-				_AttributeCache4Dispose(cache)
-
-				return ret
+			elseif getmetatable(config) then
+				return getmetatable(config) == type and config or nil
 			else
-				local ret = {}
+				local cache = _AttributeCache4Dispose()
 
-				for i = 1, #cache do
-					ret[i] = cache[i]
-					cache[i] = nil
+				for _, attr in ipairs(config) do
+					if getmetatable(attr) == type then
+						tinsert(cache, attr)
+					end
 				end
 
-				_AttributeCache4Dispose(cache)
+				if #cache == 0 then
+					_AttributeCache4Dispose(cache)
+					return
+				elseif #cache == 1 then
+					local ret = cache[1]
+					wipe(cache)
+					_AttributeCache4Dispose(cache)
+					return ret
+				else
+					local ret = {unpack(cache)}
+					wipe(cache)
+					_AttributeCache4Dispose(cache)
+					return unpack(ret)
+				end
+			end
+		end
 
-				return unpack(ret)
+		doc [======[
+			@name _GetClassAttribute
+			@type method
+			@desc Return the attributes of the given type for the class
+			@param target class
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetClassAttribute(target, type)
+			if Reflector.IsClass(target) then
+				return _GetCustomAttribute(target, AttributeTargets.Class, type)
+			end
+		end
+
+		doc [======[
+			@name _GetConstructorAttribute
+			@type method
+			@desc Return the attributes of the given type for the class's constructor
+			@param target class
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetConstructorAttribute(target, type)
+			if Reflector.IsClass(target) then
+				return _GetCustomAttribute(target, AttributeTargets.Constructor, type)
+			end
+		end
+
+		doc [======[
+			@name _GetEnumAttribute
+			@type method
+			@desc Return the attributes of the given type for the enum
+			@param target enum
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetEnumAttribute(target, type)
+			if Reflector.IsEnum(target) then
+				return _GetCustomAttribute(target, AttributeTargets.Enum, type)
+			end
+		end
+
+		doc [======[
+			@name _GetEventAttribute
+			@type method
+			@desc Return the attributes of the given type for the class|interface's event
+			@param target class|interface
+			@param event the event's name
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetEventAttribute(target, event, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Event[event] then
+				return _GetCustomAttribute(info.Cache4Event[event], AttributeTargets.Event, type)
+			end
+		end
+
+		doc [======[
+			@name _GetInterfaceAttribute
+			@type method
+			@desc Return the attributes of the given type for the interface
+			@param target interface
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetInterfaceAttribute(target, type)
+			if Reflector.IsInterface(target) then
+				return _GetCustomAttribute(target, AttributeTargets.Interface, type)
+			end
+		end
+
+		doc [======[
+			@name _GetMethodAttribute
+			@type method
+			@desc Return the attributes of the given type for the class|interface's method
+			@format target, method, type
+			@format method, type
+			@param target class|interface
+			@param method the method's name(with target) or the method itself(without target)
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetMethodAttribute(target, method, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Method[method] then
+				return _GetCustomAttribute(info.Cache4Method[method], AttributeTargets.Method, type)
+			elseif type(target) == "function" then
+				return _GetCustomAttribute(target, AttributeTargets.Method, method)
+			end
+		end
+
+		doc [======[
+			@name _GetPropertyAttribute
+			@type method
+			@desc Return the attributes of the given type for the class|interface's property
+			@param target class|interface
+			@param prop the property's name
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetPropertyAttribute(target, prop, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[prop] then
+				return _GetCustomAttribute(info.Cache4Property[prop], AttributeTargets.Property, type)
+			end
+		end
+
+		doc [======[
+			@name _GetStructAttribute
+			@type method
+			@desc Return the attributes of the given type for the struct
+			@param target struct
+			@param type the attribute class type
+			@return ... the attribute objects
+		]======]
+		function _GetStructAttribute(target, type)
+			if Reflector.IsStruct(target) then
+				return _GetCustomAttribute(target, AttributeTargets.Struct, type)
 			end
 		end
 
@@ -5463,49 +5753,10 @@ do
 			-- Pass
 		end
 
-		doc [======[
-			@name Clone
-			@type method
-			@desc Return the object's clone object, used by the system, overridable
-			@return obj the clone of the attribute object
-		]======]
-		function Clone(self)
-			local cache = _AttributeCache4Dispose()
-
-			wipe(cache)
-
-			local i = 1
-
-			while rawget(self, "__Init_Param_" .. i) do
-				tinsert(cache, rawget(self, "__Init_Param_" .. i))
-			end
-
-			local clone = getmetatable(self)(unpack(cache))
-
-			wipe(cache)
-
-			_AttributeCache4Dispose(cache)
-
-			if clone then
-				for k, v in pairs(self) do
-					if not rawget(clone, k) then
-						rawset(clone, k, v)
-					end
-				end
-			end
-
-			return clone
-		end
-
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Attribute(self, ...)
-			-- Register the params used for clone
-			for i = 1, select('#', ...) do
-				self["__Init_Param_" .. i] = select(i, ...)
-			end
-
+		function __Attribute__(self, ...)
 			-- Send to prepared cache
 			local thread = running()
 
@@ -5516,10 +5767,10 @@ do
 				tinsert(_PreparedAttributes, self)
 			end
 		end
-	endclass "Attribute"
+	endclass "__Attribute__"
 
-	finalclass "__Flags__"
-		inherit "Attribute"
+	class "__Flags__"
+		inherit "__Attribute__"
 
 		doc [======[
 			@name __Flags__
@@ -5527,33 +5778,49 @@ do
 			@desc Indicates that an enumeration can be treated as a bit field; that is, a set of flags.
 		]======]
 
-		doc [======[
-			@name ApplyAttribute
-			@type method
-			@desc Apply the attribute to the target, overridable
-			@param target the attribute's target
-			@param targetType System.AttributeTargets
-			@return nil
-		]======]
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsEnum(target) then
-				local info = _NSInfo[target]
+				local enums = _NSInfo[target].Enum
 
 				local cache = {}
+				local count = 0
 
-				for k, v in pairs(info.Enum) do
-					if tonumber(v) then
+				-- Count and clear
+				for k, v in pairs(enums) do
+					cache[2^count] = true
+					count = count + 1
 
+					enums[k] = tonumber(v) or -1
+				end
+
+				_NSInfo[target].MaxValue = 2^(count+1) - 1
+
+				-- Scan the existed bit values
+				for k, v in pairs(enums) do
+					if cache[v] == true then
+						cache[v] = k
 					else
-
+						enums[k] = -1
 					end
 				end
 
-				for i, v in pairs(set) do
-					if type(i) == "string" then
-						info.Enum[i:upper()] = v
-					elseif type(v) == "string" then
-						info.Enum[v:upper()] = v
+				-- Apply the bit values
+				local index = 0
+
+				for k, v in pairs(enums) do
+					if v == -1 then
+						while cache[2^index] and cache[2^index] ~= true do
+							index = index + 1
+						end
+
+						if cache[2^index] == true then
+							cache[2^index] = k
+							enums[k] = 2^index
+
+							index = index + 1
+						else
+							error("There is something wrong")
+						end
 					end
 				end
 			end
@@ -5561,7 +5828,7 @@ do
 	endclass "__Flags__"
 
 	class "__AttributeUsage__"
-		inherit "Attribute"
+		inherit "__Attribute__"
 
 		doc [======[
 			@name __AttributeUsage__
@@ -5622,19 +5889,76 @@ do
 		------------------------------------------------------
 	endclass "__AttributeUsage__"
 
-	-- Apply Attribute to the previous definitions
+	class "__Final__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __Final__
+			@type class
+			@desc Mark the class|interface to be final, and can't be re-defined again
+		]======]
+
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsClass(target) or Reflector.IsInterface(target) then
+				_NSInfo[target].IsFinal = true
+			end
+		end
+	endclass "__Final__"
+
+	class "__NonInheritable__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __NonInheritable__
+			@type class
+			@desc Mark the class can't be inherited
+		]======]
+
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsClass(target) then
+				_NSInfo[target].NonInheritable = true
+			end
+		end
+	endclass "__NonInheritable__"
+
+	-- Apply Attribute to the previous definitions, since I can't use them before definition
 	do
-		Attribute._SetAttributes(AttributeTargets, AttributeTargets.Enum, __Flags__())
-		Attribute._ApplyAttribtues(AttributeTargets, AttributeTargets.Enum)
+		-- For Attribute system
+		__Flags__()
+		__Attribute__._ConsumePreparedAttributes(AttributeTargets, AttributeTargets.Enum)
 
-		Attribute._SetAttributes(__Flags__, AttributeTargets.Class, __AttributeUsage__{AttributeTarget = AttributeTargets.Enum})
+		__AttributeUsage__{AttributeTarget = AttributeTargets.All, Inherited = false} __Final__()
+		__Attribute__._ConsumePreparedAttributes(__Attribute__, AttributeTargets.Class)
 
-		Attribute._SetAttributes(__AttributeUsage__, AttributeTargets.Class, __AttributeUsage__{AttributeTarget = AttributeTargets.Class})
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum} __Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
+
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false} __Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
+
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false} __Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
+
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false} __Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
+
+		-- For others
+		__Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(Type, AttributeTargets.Class)
+
+		__Final__()
+		__Attribute__._ConsumePreparedAttributes(Reflector, AttributeTargets.Interface)
+
+		__Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(Event, AttributeTargets.Class)
+
+		__Final__() __NonInheritable__()
+		__Attribute__._ConsumePreparedAttributes(EventHandler, AttributeTargets.Class)
 	end
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method} __Final__() __NonInheritable__()
 	class "__ThreadActivate__"
-		inherit "Attribute"
+		inherit "__Attribute__"
 		doc [======[
 			@name __ThreadActivate__
 			@type class
@@ -5645,6 +5969,7 @@ do
 	------------------------------------------------------
 	-- System.Object
 	------------------------------------------------------
+	__Final__()
 	class "Object"
 
 		doc [======[
@@ -5831,6 +6156,7 @@ do
 	------------------------------------------------------
 	-- System.Module
 	------------------------------------------------------
+	__Final__()
 	class "Module"
 		inherit "Object"
 
@@ -5845,7 +6171,6 @@ do
 
 		_ModuleEnv = _ModuleEnv or {}
 
-		_ModuleEnv.finalclass = finalclass
 		_ModuleEnv.partclass = partclass
 		_ModuleEnv.class = class
 		_ModuleEnv.enum = enum
@@ -6349,7 +6674,7 @@ do
 
 			setfenv(depth + 1, self)
 
-			Attribute._ClearPreparedAttributes()
+			__Attribute__._ClearPreparedAttributes()
 		end
 	endclass "Module"
 end
@@ -6378,7 +6703,6 @@ do
 	function Install_OOP(env)
 		if type(env) == "table" then
 			env.partinterface = partinterface
-			env.finalclass = finalclass
 			env.partclass = partclass
 			env.interface = interface
 			env.class = class
