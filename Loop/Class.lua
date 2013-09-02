@@ -82,7 +82,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/08/12 System.Module is added to create an environment for oop system
 --               2013/08/27 System.Object's method ThreadCall will use the running thread instead of create new one
 --               2013/08/28 Now init table can be used to init the objects, like : o = System.Object{Name = "Obj", Type = "Object"}
---               2013/08/28 partinterface is removed
+--               2013/08/28 partinterface is removed(canceled)
+--               2013/09/01 Attribute system added
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -187,15 +188,13 @@ do
 	errorhandler = errorhandler or function(err)
 		return pcall(geterrorhandler(), err)
 	end
-
-	WEAK_KEY = {__mode = "k"}
 end
 
 ------------------------------------------------------
 -- Constant Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 73
+	LUA_OOP_VERSION = 74
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -210,6 +209,9 @@ do
 
 	-- Namespace field
 	NAMESPACE_FIELD = "__LOOP_NameSpace"
+
+	EMPTY_TABLE = {}
+	WEAK_KEY = {__mode = "k"}
 end
 
 ------------------------------------------------------
@@ -224,12 +226,11 @@ do
 				return
 			end
 
-			self[key] = {
-				Owner = key,
-			}
+			self[key] = { Owner = key }
 
 			return rawget(self, key)
 		end,
+		__mode = "k",
 	})
 
 	-- metatable for class
@@ -689,98 +690,6 @@ do
 
 	_KeyWord4IFEnv = _KeyWord4IFEnv or {}
 
-	-- metatable for interface's env
-	_MetaIFEnv = _MetaIFEnv or {}
-	do
-		_MetaIFEnv.__index = function(self, key)
-			local info = _IFEnv2Info[self]
-
-			-- Check owner
-			if key == info.Name then
-				return info.Owner
-			end
-
-			-- Check keywords
-			if _KeyWord4IFEnv[key] then
-				return _KeyWord4IFEnv[key]
-			end
-
-			-- Check namespace
-			if info.NameSpace then
-				if key == _NSInfo[info.NameSpace].Name then
-					rawset(self, key, info.NameSpace)
-					return rawget(self, key)
-				elseif info.NameSpace[key] then
-					rawset(self, key, info.NameSpace[key])
-					return rawget(self, key)
-				end
-			end
-
-			-- Check imports
-			if info.Import4Env then
-				for _, ns in ipairs(info.Import4Env) do
-					if key == _NSInfo[ns].Name then
-						rawset(self, key, ns)
-						return rawget(self, key)
-					elseif ns[key] then
-						rawset(self, key, ns[key])
-						return rawget(self, key)
-					end
-				end
-			end
-
-			-- Check base namespace
-			if GetNameSpace(GetDefaultNameSpace(), key) then
-				rawset(self, key, GetNameSpace(GetDefaultNameSpace(), key))
-				return rawget(self, key)
-			end
-
-			-- Check Base
-			if info.BaseEnv then
-				local value = info.BaseEnv[key]
-
-				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
-					rawset(self, key, value)
-				end
-
-				return value
-			end
-		end
-
-		_MetaIFEnv.__newindex = function(self, key, value)
-			local info = _IFEnv2Info[self]
-
-			if _KeyWord4IFEnv[key] then
-				error(("'%s' is a keyword."):format(key), 2)
-			end
-
-			if key == info.Name then
-				if type(value) == "function" then
-					rawset(info, "Constructor", value)
-					return
-				else
-					error(("'%s' must be a function as constructor."):format(key), 2)
-				end
-			end
-
-			if key == DISPOSE_METHOD then
-				if type(value) == "function" then
-					rawset(info, DISPOSE_METHOD, value)
-					return
-				else
-					error(("'%s' must be a function as dispose method."):format(DISPOSE_METHOD), 2)
-				end
-			end
-
-			if type(key) == "string" and type(value) == "function" then
-				info.Method[key] = true
-				-- keep function in env, just register the method
-			end
-
-			rawset(self, key, value)
-		end
-	end
-
 	do
 		function CloneWithoutOverride(dest, src)
 			for key, value in pairs(src) do
@@ -790,10 +699,14 @@ do
 			end
 		end
 
-		function CloneWithoutOverride4Method(dest, src, method, isinterface)
+		function CloneWithoutOverride4Method(dest, src, method, isinterface, owner)
 			if method then
-				for key in pairs(method) do
+				for key, prototype in pairs(method) do
 					if dest[key] == nil and type(key) == "string" and type(src[key]) == "function" then
+						if __Attribute__ and prototype ~= src[key] then
+							src[key] = __Attribute__._CloneAttributes(prototype, src[key], AttributeTargets.Method, owner, key, true) or src[key]
+						end
+
 						dest[key] = src[key]
 					end
 				end
@@ -865,7 +778,7 @@ do
 			-- Cache4Method
 			wipe(info.Cache4Method)
 			--- self method
-			CloneWithoutOverride4Method(info.Cache4Method, info.ClassEnv or info.InterfaceEnv, info.Method)
+			CloneWithoutOverride4Method(info.Cache4Method, info.ClassEnv or info.InterfaceEnv, info.Method, nil, info.Owner)
 			--- superclass method
 			if info.SuperClass then
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method)
@@ -885,6 +798,129 @@ do
 					RefreshCache(subcls)
 				end
 			end
+		end
+
+		function GetSuperProperty(cls, name)
+			local info = _NSInfo[cls]
+
+			if info.SuperClass and _NSInfo[info.SuperClass].Cache4Property[name] then
+				return _NSInfo[info.SuperClass].Cache4Property[name]
+			end
+
+			for _, IF in ipairs(info.ExtendInterface) do
+				if _NSInfo[IF].Cache4Property[name] then
+					return _NSInfo[IF].Cache4Property[name]
+				end
+			end
+		end
+
+		function GetSuperMethod(cls, name)
+			local info = _NSInfo[cls]
+
+			if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] then
+				return _NSInfo[info.SuperClass].Cache4Method[name]
+			end
+
+			for _, IF in ipairs(info.ExtendInterface) do
+				if _NSInfo[IF].Cache4Method[name] then
+					return _NSInfo[IF].Cache4Method[name]
+				end
+			end
+		end
+	end
+
+	-- metatable for interface's env
+	_MetaIFEnv = _MetaIFEnv or {}
+	do
+		_MetaIFEnv.__index = function(self, key)
+			local info = _IFEnv2Info[self]
+
+			-- Check owner
+			if key == info.Name then
+				return info.Owner
+			end
+
+			-- Check keywords
+			if _KeyWord4IFEnv[key] then
+				return _KeyWord4IFEnv[key]
+			end
+
+			-- Check namespace
+			if info.NameSpace then
+				if key == _NSInfo[info.NameSpace].Name then
+					rawset(self, key, info.NameSpace)
+					return rawget(self, key)
+				elseif info.NameSpace[key] then
+					rawset(self, key, info.NameSpace[key])
+					return rawget(self, key)
+				end
+			end
+
+			-- Check imports
+			if info.Import4Env then
+				for _, ns in ipairs(info.Import4Env) do
+					if key == _NSInfo[ns].Name then
+						rawset(self, key, ns)
+						return rawget(self, key)
+					elseif ns[key] then
+						rawset(self, key, ns[key])
+						return rawget(self, key)
+					end
+				end
+			end
+
+			-- Check base namespace
+			if GetNameSpace(GetDefaultNameSpace(), key) then
+				rawset(self, key, GetNameSpace(GetDefaultNameSpace(), key))
+				return rawget(self, key)
+			end
+
+			-- Check Base
+			if info.BaseEnv then
+				local value = info.BaseEnv[key]
+
+				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+					rawset(self, key, value)
+				end
+
+				return value
+			end
+		end
+
+		_MetaIFEnv.__newindex = function(self, key, value)
+			local info = _IFEnv2Info[self]
+
+			if _KeyWord4IFEnv[key] then
+				error(("'%s' is a keyword."):format(key), 2)
+			end
+
+			if key == info.Name then
+				if type(value) == "function" then
+					rawset(info, "Constructor", value)
+					return
+				else
+					error(("'%s' must be a function to initialize the object."):format(key), 2)
+				end
+			end
+
+			if key == DISPOSE_METHOD then
+				if type(value) == "function" then
+					rawset(info, DISPOSE_METHOD, value)
+					return
+				else
+					error(("'%s' must be a function as dispose method."):format(DISPOSE_METHOD), 2)
+				end
+			end
+
+			if type(key) == "string" and type(value) == "function" then
+				if __Attribute__ then
+					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, GetSuperMethod(info.Owner, key), info.Owner, key) or value
+				end
+
+				info.Method[key] = value
+			end
+
+			rawset(self, key, value)
 		end
 	end
 
@@ -909,9 +945,9 @@ do
 	function BuildInterface(name, asPart)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			if asPart then
-				error([[Usage: partinterface "interfacename"]], 2)
+				error([[Usage: partinterface "interfacename"]], 3)
 			else
-				error([[Usage: interface "interfacename"]], 2)
+				error([[Usage: interface "interfacename"]], 3)
 			end
 		end
 		local fenv = getfenv(3)
@@ -925,11 +961,11 @@ do
 
 			if _NSInfo[IF] then
 				if _NSInfo[IF].Type and _NSInfo[IF].Type ~= TYPE_INTERFACE then
-					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), 2)
+					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), 3)
 				end
 
 				if _NSInfo[IF].BaseEnv and _NSInfo[IF].BaseEnv ~= fenv then
-					error(("%s is defined in another environment, can't be defined here."):format(name), 2)
+					error(("%s is defined in another environment, can't be defined here."):format(name), 3)
 				end
 			end
 		else
@@ -941,20 +977,26 @@ do
 		end
 
 		if not IF then
-			error("no interface is created.", 2)
+			error("no interface is created.", 3)
 		end
-
-		-- save interface to the environment
-		rawset(fenv, name, IF)
 
 		-- Build interface
 		info = _NSInfo[IF]
+
+		-- Check if the class is final
+		if info.IsFinal then
+			error("The interface is a final interface, can't be re-defined.", 3)
+		end
+
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = ns
 		info.BaseEnv = info.BaseEnv or fenv
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
+
+		-- save interface to the environment
+		rawset(fenv, name, IF)
 
 		info.InterfaceEnv = info.InterfaceEnv or setmetatable({}, _MetaIFEnv)
 		_IFEnv2Info[info.InterfaceEnv] = info
@@ -1003,6 +1045,11 @@ do
 		-- Clear dispose method
 		if not asPart then
 			info[DISPOSE_METHOD] = nil
+		end
+
+		if __Attribute__ then
+			-- No super target for interface
+			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface)
 		end
 
 		-- Set the environment to interface's environment
@@ -1080,6 +1127,8 @@ do
 
 		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
 			error("Usage: extend (interface) : 'interface' - interface expected", 2)
+		elseif IFInfo.NonInheritable then
+			error(("%s is non-inheritable."):format(tostring(IF)), 2)
 		end
 
 		if IsExtend(info.Owner, IF) then
@@ -1178,6 +1227,10 @@ do
 		end
 
 		info.Event[name] = info.Event[name] or Event(name)
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		end
 	end
 
 	local function SetProperty2IF(info, name, set)
@@ -1225,11 +1278,15 @@ do
 
 				wipe(tempProperty)
 
-				error(_type, 3)
+				errorhandler(_type)
 			end
 		end
 
 		wipe(tempProperty)
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
+		end
 	end
 
 	------------------------------------
@@ -1294,7 +1351,6 @@ do
 		if info.Name == name then
 			setfenv(2, info.BaseEnv)
 			RefreshCache(info.Owner)
-			return
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -1405,6 +1461,11 @@ do
 			local objCls = getmetatable(self)
 			local IF, info, disfunc
 
+			if __Attribute__._IsDefined(objCls, AttributeTargets.Class, __Unique__) then
+				-- No dispose to a unique object
+				return
+			end
+
 			info = objCls and rawget(_NSInfo, objCls)
 
 			if not info then return end
@@ -1510,6 +1571,11 @@ do
 			if key == info.Name then
 				if type(value) == "function" then
 					rawset(info, "Constructor", value)
+
+					if __Attribute__ and info.Owner ~= __Attribute__ then
+						__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Constructor, info.SuperClass)
+					end
+
 					return
 				else
 					error(("'%s' must be a function as constructor."):format(key), 2)
@@ -1537,8 +1603,12 @@ do
 			end
 
 			if type(key) == "string" and type(value) == "function" then
-				info.Method[key] = true
-				-- Keep function body in env
+				-- keep function in env, just register the method
+				if __Attribute__ and info.Owner ~= __Attribute__ then
+					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, GetSuperMethod(info.Owner, key), info.Owner, key) or value
+				end
+
+				info.Method[key] = value
 			end
 
 			rawset(self, key, value)
@@ -1633,9 +1703,21 @@ do
 
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
-		local obj
+		local obj, isUnique
 
 		if not info then return end
+
+		-- Check if the class is unique and already created one object to be return
+		if __Attribute__ then
+			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
+
+			if isUnique and info.UniqueObject then
+				pcall(info.UniqueObject, ...)
+				return info.UniqueObject
+			end
+		else
+			isUnique = false
+		end
 
 		-- Check if this class has __exist so no need to create again.
 		if type(info.MetaTable.__exist) == "function" then
@@ -1676,6 +1758,10 @@ do
 				-- Error
 				return nil
 			end
+		end
+
+		if obj and isUnique then
+			info.UniqueObject = obj
 		end
 
 		return obj
@@ -1720,9 +1806,6 @@ do
 			error("no class is created.", 3)
 		end
 
-		-- save class to the environment
-		rawset(fenv, name, cls)
-
 		-- Build class
 		info = _NSInfo[cls]
 
@@ -1737,6 +1820,9 @@ do
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
+
+		-- save class to the environment
+		rawset(fenv, name, cls)
 
 		info.ClassEnv = info.ClassEnv or setmetatable({}, _MetaClsEnv)
 		_ClsEnv2Info[info.ClassEnv] = info
@@ -1916,6 +2002,10 @@ do
 			end
 		end
 
+		if __Attribute__ and info.Owner ~= __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
+		end
+
 		-- Set the environment to class's environment
 		setfenv(3, info.ClassEnv)
 	end
@@ -2009,6 +2099,10 @@ do
 			error("Usage: inherit (class) : 'class' - class expected", 2)
 		end
 
+		if superInfo.NonInheritable then
+			error(("%s is non-inheritable."):format(tostring(superCls)), 2)
+		end
+
 		if IsChildClass(info.Owner, superCls) then
 			error(("%s is inherited from %s, can't be used as super class."):format(tostring(superCls), tostring(info.Owner)), 2)
 		end
@@ -2085,6 +2179,8 @@ do
 
 		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
 			error("Usage: extend (interface) : 'interface' - interface expected", 2)
+		elseif IFInfo.NonInheritable then
+			error(("%s is non-inheritable."):format(tostring(IF)), 2)
 		end
 
 		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
@@ -2178,6 +2274,10 @@ do
 		end
 
 		info.Event[name] = info.Event[name] or Event(name)
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		end
 	end
 
 	local function SetProperty2Cls(info, name, set)
@@ -2225,11 +2325,15 @@ do
 
 				wipe(tempProperty)
 
-				error(_type, 3)
+				errorhandler(_type)
 			end
 		end
 
 		wipe(tempProperty)
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
+		end
 	end
 
 	------------------------------------
@@ -2294,7 +2398,6 @@ do
 		if info.Name == name then
 			setfenv(2, info.BaseEnv)
 			RefreshCache(info.Owner)
-			return
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -3066,8 +3169,8 @@ do
 						return info.Enum[value:upper()]
 					end
 
-					if __Attribute__._IsDefined(info.Owner, AttributeTargets.Enum, __Flags__) then
-						-- Bit flag validation
+					if info.MaxValue then
+						-- Bit flag validation, use MaxValue check to reduce cost
 						value = tonumber(value)
 
 						if value then
@@ -5185,7 +5288,7 @@ do
 						for attr in pairs(key) do
 							key[attr] = nil
 							if not rawget(attr, "Disposed") then
-								attr:Disposed()
+								attr:Dispose()
 							end
 						end
 
@@ -5205,6 +5308,27 @@ do
 				end
 			end,
 		})
+
+		local function SendToPrepared(self)
+			-- Send to prepared cache
+			local thread = running()
+			local prepared
+
+			if thread then
+				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
+				prepared = _ThreadPreparedAttributes[thread]
+			else
+				prepared = _PreparedAttributes
+			end
+
+			for i, v in ipairs(prepared) do
+				if v == self then
+					return
+				end
+			end
+
+			tinsert(prepared, self)
+		end
 
 		local function ParseTarget(target, targetType, owner, name)
 			if targetType == AttributeTargets.Class then
@@ -5277,6 +5401,7 @@ do
 		local function _ApplyAttributes(target, targetType, owner, name)
 			-- Apply the attributes
 			local config = _PropertyCache[targetType][target]
+			local usage
 
 			if config then
 				local ok, ret, arg1, arg2, arg3
@@ -5285,7 +5410,7 @@ do
 				if targetType == AttributeTargets.Constructor then
 					-- Nothing should do to the constructor
 					-- Or maybe later
-					return
+					return target
 				elseif targetType == AttributeTargets.Event then
 					arg1 = target.Name
 					arg2 = targetType
@@ -5311,10 +5436,18 @@ do
 						errorhandler(ret)
 
 						_PropertyCache[targetType][target] = nil
-					elseif targetType == AttributeTargets.Method then
-						-- The method may be wrapped in the apply operation
-						if type(ret) == "function" then
-							target = ret
+					else
+						usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+
+						if usage and not usage.Inherited and usage.RunOnce then
+							_PropertyCache[targetType][target] = nil
+						end
+
+						if targetType == AttributeTargets.Method then
+							-- The method may be wrapped in the apply operation
+							if type(ret) == "function" then
+								target = ret
+							end
 						end
 					end
 				else
@@ -5325,9 +5458,18 @@ do
 							errorhandler(ret)
 
 							tremove(config, i)
-						elseif targetType == AttributeTargets.Method then
-							if type(ret) == "function" then
-								target = ret
+						else
+							usage = _GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
+
+							if usage and not usage.Inherited and usage.RunOnce then
+								tremove(config, i)
+							end
+
+							if targetType == AttributeTargets.Method then
+								if type(ret) == "function" then
+									target = ret
+									arg1 = ret
+								end
 							end
 						end
 					end
@@ -5384,16 +5526,10 @@ do
 		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
 			if not _PropertyCache[targetType] then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'targetType' is invalid.", 2)
-			elseif  not ValidateTargetType(target, targetType) then
+			elseif not ValidateTargetType(target, targetType) then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'target' is invalid.", 2)
-			end
-
-			-- No attribute declaration again
-			if _PropertyCache[targetType][target] then
-				errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
-
-				_ClearPreparedAttributes()
-				return target
+			elseif superTarget and not ValidateTargetType(superTarget, targetType) then
+				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'superTarget' is invalid.", 2)
 			end
 
 			-- Consume the prepared Attributes
@@ -5427,6 +5563,16 @@ do
 			end
 
 			local newAttributeCount = prepared and #prepared or 0
+
+			-- No attribute declaration again
+			if _PropertyCache[targetType][target] then
+				if prepared and #prepared > 0 then
+					errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
+				end
+
+				_ClearPreparedAttributes()
+				return target
+			end
 
 			-- get inheritable attributes from superTarget
 			if superTarget then
@@ -5504,7 +5650,14 @@ do
 
 				_ClearPreparedAttributes()
 
-				target =  _ApplyAttributes(target, targetType, owner, name) or target
+				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
+
+				if target ~= ret then
+					_PropertyCache[targetType][ret] = _PropertyCache[targetType][target]
+					_PropertyCache[targetType][target] = nil
+
+					target = ret
+				end
 			end
 
 			return target
@@ -5521,14 +5674,16 @@ do
 			@param name the target's name
 			@return target
 		]======]
-		function _CloneAttributes(source, target, targetType, owner, name)
+		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
 			if not _PropertyCache[targetType] then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
+				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
 			elseif  not ValidateTargetType(source, targetType) then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
+				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
 			elseif  not ValidateTargetType(target, targetType) then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(source, target, targetType[, owner, name]) - 'target' is invalid.", 2)
+				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'target' is invalid.", 2)
 			end
+
+			if source == target then return end
 
 			-- No attribute declaration again
 			if _PropertyCache[targetType][target] then
@@ -5542,7 +5697,18 @@ do
 			if config then
 				_PropertyCache[targetType][target] = config
 
-				target =  _ApplyAttributes(target, targetType, owner, name) or target
+				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
+
+				if target ~= ret then
+					_PropertyCache[targetType][ret] = _PropertyCache[targetType][target]
+					_PropertyCache[targetType][target] = nil
+
+					target = ret
+				end
+
+				if removeSource then
+					_PropertyCache[targetType][source] = nil
+				end
 			end
 
 			return target
@@ -5571,6 +5737,129 @@ do
 					end
 				end
 				return false
+			end
+		end
+
+		doc [======[
+			@name _IsClassAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsClassAttributeDefined(target, type)
+			if Reflector.IsClass(target) then
+				return _IsDefined(target, AttributeTargets.Class, type)
+			end
+		end
+
+		doc [======[
+			@name _IsConstructorAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsConstructorAttributeDefined(target, type)
+			if Reflector.IsClass(target) then
+				return _IsDefined(target, AttributeTargets.Constructor, type)
+			end
+		end
+
+		doc [======[
+			@name _IsEnumAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target enum
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsEnumAttributeDefined(target, type)
+			if Reflector.IsEnum(target) then
+				return _IsDefined(target, AttributeTargets.Enum, type)
+			end
+		end
+
+		doc [======[
+			@name _IsEventAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class | interface
+			@param event the event's name
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsEventAttributeDefined(target, event, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Event[event] then
+				return _IsDefined(info.Cache4Event[event], AttributeTargets.Event, type)
+			end
+		end
+
+		doc [======[
+			@name _IsInterfaceAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target interface
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsInterfaceAttributeDefined(target, type)
+			if Reflector.IsInterface(target) then
+				return _IsDefined(target, AttributeTargets.Interface, type)
+			end
+		end
+
+		doc [======[
+			@name _IsMethodAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class | interface
+			@param method the method's name
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsMethodAttributeDefined(target, method, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Method[method] then
+				return _IsDefined(info.Cache4Method[method], AttributeTargets.Method, type)
+			elseif type(target) == "function" then
+				return _IsDefined(target, AttributeTargets.Method, method)
+			end
+		end
+
+		doc [======[
+			@name _IsPropertyAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target class | interface
+			@param property the property's name
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsPropertyAttributeDefined(target, prop, type)
+			local info = rawget(_NSInfo, target)
+
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[prop] then
+				return _IsDefined(info.Cache4Property[prop], AttributeTargets.Property, type)
+			end
+		end
+
+		doc [======[
+			@name _IsStructAttributeDefined
+			@type method
+			@desc Check whether the target contains such type attribute
+			@param target struct
+			@param type the attribute class type
+			@return boolean true if the target contains attribute with the type
+		]======]
+		function _IsStructAttributeDefined(target, type)
+			if Reflector.IsStruct(target) then
+				return _IsDefined(target, AttributeTargets.Struct, type)
 			end
 		end
 
@@ -5756,21 +6045,52 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function __Attribute__(self, ...)
-			-- Send to prepared cache
-			local thread = running()
+		function __Attribute__(self)
+			SendToPrepared(self)
+		end
 
-			if thread then
-				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
-				tinsert(_ThreadPreparedAttributes[thread], self)
-			else
-				tinsert(_PreparedAttributes, self)
-			end
+		function __call(self)
+			SendToPrepared(self)
 		end
 	endclass "__Attribute__"
 
+	class "__Unique__"
+		inherit "__Attribute__"
+
+		local _UniqueObj
+
+		doc [======[
+			@name __Unique__
+			@type class
+			@desc Mark the class will only create one unique object, and can't be disposed, also the class can't be inherited
+		]======]
+
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsClass(target) then
+				_NSInfo[target].NonInheritable = true
+			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __Unique__(self)
+			_UniqueObj = self
+		end
+
+		function __exist()
+			if _UniqueObj then
+				_UniqueObj()
+			end
+
+			return _UniqueObj
+		end
+	endclass "__Unique__"
+
 	class "__Flags__"
 		inherit "__Attribute__"
+
+		local _UniqueObj
 
 		doc [======[
 			@name __Flags__
@@ -5824,6 +6144,20 @@ do
 					end
 				end
 			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __Flags__(self)
+			_UniqueObj = self
+		end
+
+		function __exist()
+			if _UniqueObj then
+				_UniqueObj()
+			end
+			return _UniqueObj
 		end
 	endclass "__Flags__"
 
@@ -5884,6 +6218,21 @@ do
 			Type = Boolean,
 		}
 
+		doc [======[
+			@name RunOnce
+			@type property
+			@desc Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation
+		]======]
+		property "RunOnce" {
+			Get = function(self)
+				return self.__RunOnce
+			end,
+			Set = function(self, value)
+				self.__RunOnce = value
+			end,
+			Type = Boolean,
+		}
+
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
@@ -5891,6 +6240,8 @@ do
 
 	class "__Final__"
 		inherit "__Attribute__"
+
+		local _UniqueObj
 
 		doc [======[
 			@name __Final__
@@ -5903,10 +6254,26 @@ do
 				_NSInfo[target].IsFinal = true
 			end
 		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __Final__(self)
+			_UniqueObj = self
+		end
+
+		function __exist()
+			if _UniqueObj then
+				_UniqueObj()
+			end
+			return _UniqueObj
+		end
 	endclass "__Final__"
 
 	class "__NonInheritable__"
 		inherit "__Attribute__"
+
+		local _UniqueObj
 
 		doc [======[
 			@name __NonInheritable__
@@ -5915,48 +6282,98 @@ do
 		]======]
 
 		function ApplyAttribute(self, target, targetType)
-			if Reflector.IsClass(target) then
+			if Reflector.IsClass(target) or Reflector.IsInterface(target) then
 				_NSInfo[target].NonInheritable = true
 			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __NonInheritable__(self)
+			_UniqueObj = self
+		end
+
+		function __exist()
+			if _UniqueObj then
+				_UniqueObj()
+			end
+			return _UniqueObj
 		end
 	endclass "__NonInheritable__"
 
 	-- Apply Attribute to the previous definitions, since I can't use them before definition
 	do
+		------------------------------------------------------
 		-- For Attribute system
+		------------------------------------------------------
+		-- System.AttributeTargets
 		__Flags__()
 		__Attribute__._ConsumePreparedAttributes(AttributeTargets, AttributeTargets.Enum)
 
-		__AttributeUsage__{AttributeTarget = AttributeTargets.All, Inherited = false} __Final__()
+		-- System.__Attribute__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.All}
+		__Final__()
 		__Attribute__._ConsumePreparedAttributes(__Attribute__, AttributeTargets.Class)
 
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum} __Final__() __NonInheritable__()
+		-- System.__Unique__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
+		__Final__()
+		__Unique__()
+		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
+
+		-- System.__Flags__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false}
+		__Final__()
+		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
 
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false} __Final__() __NonInheritable__()
+		-- System.__AttributeUsage__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
+		__Final__()
+		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
 
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false} __Final__() __NonInheritable__()
+		-- System.__Final__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false}
+		__Final__()
+		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
 
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false} __Final__() __NonInheritable__()
+		-- System.__NonInheritable__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false}
+		__Final__()
+		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
 
-		-- For others
-		__Final__() __NonInheritable__()
+		------------------------------------------------------
+		-- For other classes
+		------------------------------------------------------
+		-- System.Type
+		__Final__()
+		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(Type, AttributeTargets.Class)
 
+		-- System.Reflector
 		__Final__()
+		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(Reflector, AttributeTargets.Interface)
 
-		__Final__() __NonInheritable__()
+		-- System.Event
+		__Final__()
+		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(Event, AttributeTargets.Class)
 
-		__Final__() __NonInheritable__()
+		-- System.EventHandler
+		__Final__()
+		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(EventHandler, AttributeTargets.Class)
 	end
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method} __Final__() __NonInheritable__()
+	-- More usable attributes
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
+	__Final__()
+	__Unique__()
 	class "__ThreadActivate__"
 		inherit "__Attribute__"
 		doc [======[
@@ -5965,6 +6382,78 @@ do
 			@desc Whether the event is thread activated by defalut
 		]======]
 	endclass "__ThreadActivate__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false}
+	__Final__()
+	__Unique__()
+	class "__AutoProperty__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __AutoProperty__
+			@type class
+			@desc Auto-generated property body if no get and set method
+		]======]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, name, targetType, owner)
+			local prop = _NSInfo[owner].Property[name]
+
+			if prop then
+				if not prop.Get and not prop.Set and prop.Name then
+					local field = "_" .. _NSInfo[owner].Name .. "_" .. prop.Name
+
+					prop.Get = function (self)
+						return rawget(self, field)
+					end
+
+					prop.Set = function (self, value)
+						rawset(self, field, value)
+					end
+				end
+			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	endclass "__AutoProperty__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false}
+	__Final__()
+	__Unique__()
+	class "__AutoAccessor__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __AutoAccessor__
+			@type class
+			@desc Auto-generated property accessor methods like 'SetXXX' and 'GetXXX', where the 'XXX' is the property's name
+		]======]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, name, targetType, owner)
+			local prop = _NSInfo[owner].Property[name]
+
+			if prop then
+				if not prop.Get and not prop.Set and prop.Name then
+					local field = "_" .. _NSInfo[owner].Name .. "_" .. prop.Name
+
+					prop.Get = function (self)
+						return rawget(self, field)
+					end
+
+					prop.Set = function (self, value)
+						rawset(self, field, value)
+					end
+				end
+			end
+		end
+	endclass "__AutoAccessor__"
 
 	------------------------------------------------------
 	-- System.Object
@@ -6683,6 +7172,9 @@ end
 -- Global Settings
 ------------------------------------------------------
 do
+	-- Keep the root so can't be disposed
+	System = Reflector.ForName("System")
+
 	function import_install(name, all)
 		local ns = Reflector.ForName(name)
 		local env = getfenv(2)
