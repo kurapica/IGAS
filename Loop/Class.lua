@@ -699,7 +699,7 @@ do
 			end
 		end
 
-		function CloneWithoutOverride4Method(dest, src, method, isinterface, owner)
+		function CloneWithoutOverride4Method(dest, src, method, owner)
 			if method then
 				for key, prototype in pairs(method) do
 					if dest[key] == nil and type(key) == "string" and type(src[key]) == "function" then
@@ -712,7 +712,7 @@ do
 				end
 			else
 				for key, value in pairs(src) do
-					if type(key) == "string" and type(value) == "function" and (not isinterface or not key:match("^_")) then
+					if type(key) == "string" and type(value) == "function" and not key:match("^_") then
 						if dest[key] == nil then
 							dest[key] = value
 						end
@@ -778,14 +778,14 @@ do
 			-- Cache4Method
 			wipe(info.Cache4Method)
 			--- self method
-			CloneWithoutOverride4Method(info.Cache4Method, info.ClassEnv or info.InterfaceEnv, info.Method, nil, info.Owner)
+			CloneWithoutOverride4Method(info.Cache4Method, info.ClassEnv or info.InterfaceEnv, info.Method, info.Owner)
 			--- superclass method
 			if info.SuperClass then
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method)
 			end
 			--- extend method
 			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method, nil, true)
+				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
 			end
 
 			-- Clear branch
@@ -5441,6 +5441,8 @@ do
 
 						if usage and not usage.Inherited and usage.RunOnce then
 							_PropertyCache[targetType][target] = nil
+
+							config:Dispose()
 						end
 
 						if targetType == AttributeTargets.Method then
@@ -5462,6 +5464,7 @@ do
 							usage = _GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
 
 							if usage and not usage.Inherited and usage.RunOnce then
+								config[i]:Dispose()
 								tremove(config, i)
 							end
 
@@ -6383,7 +6386,7 @@ do
 		]======]
 	endclass "__ThreadActivate__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__()
 	__Unique__()
 	class "__AutoProperty__"
@@ -6402,7 +6405,17 @@ do
 			local prop = _NSInfo[owner].Property[name]
 
 			if prop then
-				if not prop.Get and not prop.Set and prop.Name then
+				if self.Storage then
+					local field = self.Storage
+
+					prop.Get = prop.Get or function (self)
+						return rawget(self, field)
+					end
+
+					prop.Set = prop.Set or function (self, value)
+						rawset(self, field, value)
+					end
+				elseif not prop.Get and not prop.Set and prop.Name then
 					local field = "_" .. _NSInfo[owner].Name .. "_" .. prop.Name
 
 					prop.Get = function (self)
@@ -6417,11 +6430,29 @@ do
 		end
 
 		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Storage
+			@type property
+			@desc The target field
+		]======]
+		property "Storage" {
+			Get = function(self)
+				return self.__Storage
+			end,
+			Set = function(self, value)
+				self.__Storage = value
+			end,
+			Type = String,
+		}
+
+		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 	endclass "__AutoProperty__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__()
 	__Unique__()
 	class "__AutoAccessor__"
