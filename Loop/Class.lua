@@ -5046,10 +5046,10 @@ do
 		]======]
 		property "Blocked" {
 			Get = function(self)
-				return self.__Blocked
+				return rawget(self, "__Blocked") or false
 			end,
 			Set = function(self, value)
-				self.__Blocked = value
+				rawset(self, "__Blocked", value)
 			end,
 			Type = Boolean,
 		}
@@ -5061,10 +5061,10 @@ do
 		]======]
 		property "ThreadActivated" {
 			Get = function(self)
-				return self.__ThreadActivated
+				return rawget(self, "__ThreadActivated") or false
 			end,
 			Set = function(self, value)
-				self.__ThreadActivated = value
+				rawset(self, "__ThreadActivated", value)
 			end,
 			Type = Boolean,
 		}
@@ -6183,10 +6183,10 @@ do
 		]======]
 		property "AttributeTarget" {
 			Get = function(self)
-				return self.__AttributeTarget or AttributeTargets.All
+				return rawget(self, "__AttributeTarget") or AttributeTargets.All
 			end,
 			Set = function(self, value)
-				self.__AttributeTarget = value
+				rawset(self, "__AttributeTarget", value)
 			end,
 			Type = AttributeTargets,
 		}
@@ -6198,10 +6198,10 @@ do
 		]======]
 		property "Inherited" {
 			Get = function(self)
-				return not self.__NonInherited
+				return not rawget(self, "__NonInherited")
 			end,
 			Set = function(self, value)
-				self.__NonInherited = not value or nil
+				rawset(self, "__NonInherited", not value or nil)
 			end,
 			Type = Boolean,
 		}
@@ -6213,10 +6213,10 @@ do
 		]======]
 		property "AllowMultiple" {
 			Get = function(self)
-				return self.__AllowMultiple or false
+				return rawget(self, "__AllowMultiple") or false
 			end,
 			Set = function(self, value)
-				self.__AllowMultiple = value
+				rawset(self, "__AllowMultiple", value or nil)
 			end,
 			Type = Boolean,
 		}
@@ -6228,10 +6228,10 @@ do
 		]======]
 		property "RunOnce" {
 			Get = function(self)
-				return self.__RunOnce
+				return rawget(self, "__RunOnce") or false
 			end,
 			Set = function(self, value)
-				self.__RunOnce = value
+				rawset(self, "__RunOnce", value)
 			end,
 			Type = Boolean,
 		}
@@ -6389,41 +6389,68 @@ do
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__()
 	__Unique__()
-	class "__AutoProperty__"
+	class "__Auto__"
 		inherit "__Attribute__"
 
 		doc [======[
-			@name __AutoProperty__
+			@name __Auto__
 			@type class
-			@desc Auto-generated property body if no get and set method
+			@desc Auto-generated property body
 		]======]
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, name, targetType, owner)
+			local info = _NSInfo[owner]
 			local prop = _NSInfo[owner].Property[name]
 
 			if prop then
-				if self.Storage then
-					local field = self.Storage
+				if self.Accessor then
+					local getMethod = info.Method["Get" .. name] or GetSuperMethod(info.Owner, "Get" .. name)
+					local setMethod = info.Method["Set" .. name] or GetSuperMethod(info.Owner, "Set" .. name)
 
-					prop.Get = prop.Get or function (self)
-						return rawget(self, field)
+					if getMethod or setMethod then
+						-- Use the existed method as the accessor, the system won't know the detail, keep simple
+						prop.Get = getMethod
+						prop.Set = setMethod
+					else
+						-- Decalre new get/set method and also send to the class definition's environment
+
 					end
+				else
+					if self.Storage or (not prop.Get and not prop.Set) then
+						local field = self.Storage or ("_" .. _NSInfo[owner].Name .. "_" .. name)
 
-					prop.Set = prop.Set or function (self, value)
-						rawset(self, field, value)
-					end
-				elseif not prop.Get and not prop.Set and prop.Name then
-					local field = "_" .. _NSInfo[owner].Name .. "_" .. prop.Name
+						if prop.Type and #(prop.Type) == 1 and prop.Type[1] == Boolean then
+							if self.Default then
+								-- Default true
+								prop.Get = prop.Get or function (self)
+									return not rawget(self, field)
+								end
 
-					prop.Get = function (self)
-						return rawget(self, field)
-					end
+								prop.Set = prop.Set or function (self, value)
+									rawset(self, field, not value)
+								end
+							else
+								-- Default false or no defalut
+								prop.Get = prop.Get or function (self)
+									return rawget(self, field) or false
+								end
 
-					prop.Set = function (self, value)
-						rawset(self, field, value)
+								prop.Set = prop.Set or function (self, value)
+									rawset(self, field, value)
+								end
+							end
+						else
+							prop.Get = prop.Get or function (self)
+								return rawget(self, field)
+							end
+
+							prop.Set = prop.Set or function (self, value)
+								rawset(self, field, value)
+							end
+						end
 					end
 				end
 			end
@@ -6439,52 +6466,47 @@ do
 		]======]
 		property "Storage" {
 			Get = function(self)
-				return self.__Storage
+				return rawget(self, "__Storage")
 			end,
 			Set = function(self, value)
-				self.__Storage = value
+				rawset(self, "__Storage", strtrim(value) ~= "" and strtrim(value) or nil)
 			end,
 			Type = String,
+		}
+
+		doc [======[
+			@name Default
+			@type property
+			@desc The default value of the property
+		]======]
+		property "Default" {
+			Get = function(self)
+				return rawget(self, "__Default")
+			end,
+			Set = function(self, value)
+				rawset(self, "__Default", value)
+			end,
+		}
+
+		doc [======[
+			@name Accessor
+			@type property
+			@desc Auto-generated property with accessor methods like 'SetXXX' and 'GetXXX', where the 'XXX' is the property's name, take the existed accessor for default
+		]======]
+		property "Accessor" {
+			Get = function(self)
+				return rawget(self, "__Accessor") or false
+			end,
+			Set = function(self, value)
+				rawset(self, "___Accessor", value or nil)
+			end,
+			Type = Boolean,
 		}
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	endclass "__AutoProperty__"
-
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__()
-	__Unique__()
-	class "__AutoAccessor__"
-		inherit "__Attribute__"
-
-		doc [======[
-			@name __AutoAccessor__
-			@type class
-			@desc Auto-generated property accessor methods like 'SetXXX' and 'GetXXX', where the 'XXX' is the property's name
-		]======]
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		function ApplyAttribute(self, name, targetType, owner)
-			local prop = _NSInfo[owner].Property[name]
-
-			if prop then
-				if not prop.Get and not prop.Set and prop.Name then
-					local field = "_" .. _NSInfo[owner].Name .. "_" .. prop.Name
-
-					prop.Get = function (self)
-						return rawget(self, field)
-					end
-
-					prop.Set = function (self, value)
-						rawset(self, field, value)
-					end
-				end
-			end
-		end
-	endclass "__AutoAccessor__"
+	endclass "__Auto__"
 
 	------------------------------------------------------
 	-- System.Object
