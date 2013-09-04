@@ -3688,6 +3688,34 @@ do
 		end
 
 		doc [======[
+			@name IsFinal
+			@type method
+			@desc Check if the class|interface is final, can't be re-defined
+			@param object
+			@return boolean true if the class|interface is final
+			@usage System.Reflector.IsFinal(System.Object)
+		]======]
+		function IsFinal(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFinal or false
+		end
+
+		doc [======[
+			@name IsNonInheritable
+			@type method
+			@desc Check if the class|interface is non-inheritable
+			@param object
+			@return boolean true if the class|interface is non-inheritable
+			@usage System.Reflector.IsFinal(System.Object)
+		]======]
+		function IsNonInheritable(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].NonInheritable or false
+		end
+
+		doc [======[
 			@name GetSubNamespace
 			@type method
 			@desc Get the sub namespace of the namespace
@@ -6415,44 +6443,47 @@ do
 		------------------------------------------------------
 		-- For Attribute system
 		------------------------------------------------------
+		local objFinal = __Final__()
+		local objNonInheritable = __NonInheritable__()
+
 		-- System.AttributeTargets
 		__Flags__()
 		__Attribute__._ConsumePreparedAttributes(AttributeTargets, AttributeTargets.Enum)
 
 		-- System.__Attribute__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.All}
-		__Final__()
 		__Attribute__._ConsumePreparedAttributes(__Attribute__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__Attribute__, AttributeTargets.Class)
 
 		-- System.__Unique__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
-		__Final__()
 		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__Unique__, AttributeTargets.Class)
 
 		-- System.__Flags__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false}
-		__Final__()
 		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__Flags__, AttributeTargets.Class)
 
 		-- System.__AttributeUsage__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
-		__Final__()
-		__NonInheritable__()
 		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
+		objNonInheritable:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
 
 		-- System.__Final__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false}
-		__Final__()
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
 		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__Final__, AttributeTargets.Class)
 
 		-- System.__NonInheritable__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false}
-		__Final__()
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
 		__Unique__()
 		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
+		objFinal:ApplyAttribute(__NonInheritable__, AttributeTargets.Class)
 
 		------------------------------------------------------
 		-- For other classes
@@ -6492,13 +6523,13 @@ do
 
 		local function validateReturn(ok, ...)
 			if ok then return ... end
-			error(..., 2)
+			errorhandler(...)
 		end
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		function ApplyAttributes(self, target, targetType, owner, name)
+		function ApplyAttribute(self, target, targetType, owner, name)
 			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
 				-- Wrap the target method
 				return function (self, ...)
@@ -6786,14 +6817,7 @@ do
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name ValidateArguments
-			@type method
-			@desc Validate the arguments and return the result
-			@param ...
-			@return ...
-		]======]
-		function ValidateArguments(self, ...)
+		local function ValidateArguments(self, ...)
 			local ret = {...}
 			local max = #self
 			local ok, value
@@ -6807,7 +6831,6 @@ do
 					end
 
 					if arg.Type then
-
 						ok, value = pcall(arg.Type.Validate, arg.Type, ret[i])
 
 						if not ok then
@@ -6848,10 +6871,12 @@ do
 
 		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Self validation once
-			for i = #self, 1, -1 do
+			local max = #self
+
+			for i = max, 1, -1 do
 				if not Reflector.ObjectIsClass(self[i], Argument) then
 					tremove(self, i)
-				elseif not self[i].Name and (i < #self or not self[i].IsList) then
+				elseif not self[i].Name and (i < max or not self[i].IsList) then
 					tremove(self, i)
 				end
 			end
