@@ -150,6 +150,15 @@ do
 	}))
 
 	-- Common features
+	strlen = string.len
+	strformat = string.format
+	strfind = string.find
+	strsub = string.sub
+	strbyte = string.byte
+	strchar = string.char
+	strrep = string.rep
+	strsub = string.gsub
+	strupper = string.upper
 	strtrim = strtrim or function(s)
 	  return s and (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -786,6 +795,21 @@ do
 			--- extend method
 			for _, IF in ipairs(info.ExtendInterface) do
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
+			end
+
+			-- Cache for objects
+			if __Attribute__ and __Cache__ then
+				local cache = {}
+				for key, func in pairs(info.Cache4Method) do
+					if not strfind(key, "^_") and __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
+						tinsert(cache, key)
+					end
+				end
+				if next(cache) then
+					info.Cache4Object = cache
+				else
+					info.Cache4Object = nil
+				end
 			end
 
 			-- Clear branch
@@ -1701,6 +1725,24 @@ do
 		self[name] = value
 	end
 
+	-- The cache for constructor parameters
+	_Class2ObjCache = setmetatable({}, {
+		__call = function(self, key)
+			if type(key) == "table" then
+				wipe(key)
+				tinsert(self, key)
+			else
+				if #self > 0 then
+					return tremove(self)
+				else
+					local ret = {}
+
+					return ret
+				end
+			end
+		end,
+	})
+
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
 		local obj, isUnique
@@ -1708,7 +1750,7 @@ do
 		if not info then return end
 
 		-- Check if the class is unique and already created one object to be return
-		if __Attribute__ then
+		if __Attribute__ and __Unique__ then
 			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
 
 			if isUnique and info.UniqueObject then
@@ -1739,15 +1781,56 @@ do
 			-- With the init table
 			local init = select('1', ...)
 			local ok, msg
+			local cache = _Class2ObjCache()
 
-			InitObjectWithClass(cls, obj)
+			if __Attribute__ and __Arguments__ then
+				local args = __Attribute__._GetCustomAttribute(cls, AttributeTargets.Constructor, __Arguments__)
+
+				if args then
+					local max = #args
+
+					for i = 1, max do
+						local arg = args[i]
+
+						if i < max or not arg.IsList then
+							local value = init[arg.Name]
+							if value == nil then value = arg.Default end
+							init[arg.Name] = nil
+
+							if arg.Type then
+								ok, value = pcall(arg.Type.Validate, arg.Type, value)
+
+								if not ok then
+									_Class2ObjCache(cache)
+
+									value = strtrim(value:match(":%d+:(.*)$") or value)
+
+									if value:find("%%s") then
+										value = value:gsub("%%s[_%w]*", arg.Name)
+									end
+
+									error(args.Usage .. value, 3)
+								end
+							end
+
+							cache[i] = value
+						end
+					end
+				end
+			end
+
+			InitObjectWithClass(cls, obj, unpack(cache))
 			InitObjectWithInterface(cls, obj)
+
+			_Class2ObjCache(cache)
 
 			-- Try set properties
 			for name, value in pairs(init) do
 				ok, msg = pcall(TrySetProperty, obj, name, value)
 
 				if not ok then
+					msg = strtrim(msg:match(":%d+:(.*)$") or msg)
+
 					errorhandler(msg)
 				end
 			end
@@ -1757,6 +1840,15 @@ do
 			else
 				-- Error
 				return nil
+			end
+		end
+
+		-- Auto cache methods in object
+		if info.Cache4Object then
+			for _, key in ipairs(info.Cache4Object) do
+				if not rawget(obj, key) then
+					rawset(obj,  key, info.Cache4Method[key])
+				end
 			end
 		end
 
@@ -1884,6 +1976,25 @@ do
 			info[DISPOSE_METHOD] = nil
 		end
 
+		local isCached = false
+
+		if __Attribute__ and info.Owner ~= __Attribute__ then
+			if __Cache__ then
+				isCached = __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__)
+			end
+
+			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
+
+			if not isCached and __Cache__ then
+				isCached = __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__)
+
+				if isCached and info.MetaTable then
+					-- So, the __index need re-build
+					info.MetaTable.__index = nil
+				end
+			end
+		end
+
 		-- MetaTable
 		info.MetaTable = info.MetaTable or {}
 		do
@@ -1899,21 +2010,18 @@ do
 				end
 			end
 
-			local ClassEnv = info.ClassEnv
 			local Cache4Event = info.Cache4Event
 			local Cache4Property = info.Cache4Property
 			local Cache4Method = info.Cache4Method
-			local ClassName = info.Name
 
 			local DISPOSE_METHOD = DISPOSE_METHOD
 			local type = type
 			local strfind = string.find
 			local rawget = rawget
+			local rawset = rawset
 			local getmetatable = getmetatable
 			local setmetatable = setmetatable
 			local CheckProperty = CheckProperty
-
-			MetaTable.__class = cls
 
 			MetaTable.__metatable = cls
 
@@ -1935,7 +2043,12 @@ do
 
 					-- Method Get
 					if not strfind(key, "^_") and Cache4Method[key] then
-						return Cache4Method[key]
+						if isCached then
+							rawset(self, key, Cache4Method[key])
+							return Cache4Method[key]
+						else
+							return Cache4Method[key]
+						end
 					end
 
 					-- Events
@@ -1949,7 +2062,7 @@ do
 				end
 
 				-- Custom index metametods
-				local ___index = rawget(MetaTable, "___index")
+				local ___index = MetaTable["___index"]
 				if ___index then
 					if type(___index) == "table" then
 						return ___index[key]
@@ -1993,17 +2106,13 @@ do
 				end
 
 				-- Custom newindex metametods
-				local ___newindex = rawget(MetaTable, "___newindex")
-				if type(___newindex) == "function" then
+				local ___newindex = MetaTable["___newindex"]
+				if ___newindex and type(___newindex) == "function" then
 					return ___newindex(self, key, value)
 				end
 
-				rawset(self,key,value)			-- Other key can be set as usual
+				rawset(self, key, value)			-- Other key can be set as usual
 			end
-		end
-
-		if __Attribute__ and info.Owner ~= __Attribute__ then
-			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
 		end
 
 		-- Set the environment to class's environment
@@ -5046,10 +5155,10 @@ do
 		]======]
 		property "Blocked" {
 			Get = function(self)
-				return rawget(self, "__Blocked") or false
+				return self.__Blocked
 			end,
 			Set = function(self, value)
-				rawset(self, "__Blocked", value)
+				self.__Blocked = value
 			end,
 			Type = Boolean,
 		}
@@ -5061,10 +5170,10 @@ do
 		]======]
 		property "ThreadActivated" {
 			Get = function(self)
-				return rawget(self, "__ThreadActivated") or false
+				return self.__ThreadActivated
 			end,
 			Set = function(self, value)
-				rawset(self, "__ThreadActivated", value)
+				self.__ThreadActivated = value
 			end,
 			Type = Boolean,
 		}
@@ -5103,7 +5212,7 @@ do
 	    	self.__Owner = owner
 
 	    	-- Active the thread status based on the attribute setting
-	    	if __Attribute__._IsDefined(evt, AttributeTargets.Event, __ThreadActivate__) then
+	    	if __Attribute__._IsDefined(evt, AttributeTargets.Event, __Thread__) then
 	    		self.__ThreadActivated = true
 	    	end
 	    end
@@ -5257,24 +5366,24 @@ do
 		_ThreadPreparedAttributes = _ThreadPreparedAttributes or setmetatable({}, WEAK_KEY)
 
 		-- Since the targets are stable, so a big table is a good storage
-		_Property4Class = _Property4Class or setmetatable({}, WEAK_KEY)
-		_Property4Constructor = _Property4Constructor or setmetatable({}, WEAK_KEY)
-		_Property4Enum = _Property4Enum or setmetatable({}, WEAK_KEY)
-		_Property4Event = _Property4Event or setmetatable({}, WEAK_KEY)
-		_Property4Interface = _Property4Interface or setmetatable({}, WEAK_KEY)
-		_Property4Method = _Property4Method or setmetatable({}, WEAK_KEY)
-		_Property4Property = _Property4Property or setmetatable({}, WEAK_KEY)
-		_Property4Struct = _Property4Struct or setmetatable({}, WEAK_KEY)
+		_Attribute4Class = _Attribute4Class or setmetatable({}, WEAK_KEY)
+		_Attribute4Constructor = _Attribute4Constructor or setmetatable({}, WEAK_KEY)
+		_Attribute4Enum = _Attribute4Enum or setmetatable({}, WEAK_KEY)
+		_Attribute4Event = _Attribute4Event or setmetatable({}, WEAK_KEY)
+		_Attribute4Interface = _Attribute4Interface or setmetatable({}, WEAK_KEY)
+		_Attribute4Method = _Attribute4Method or setmetatable({}, WEAK_KEY)
+		_Attribute4Property = _Attribute4Property or setmetatable({}, WEAK_KEY)
+		_Attribute4Struct = _Attribute4Struct or setmetatable({}, WEAK_KEY)
 
-		_PropertyCache = {
-			[1] = _Property4Class,
-			[2] = _Property4Constructor,
-			[4] = _Property4Enum,
-			[8] = _Property4Event,
-			[16] = _Property4Interface,
-			[32] = _Property4Method,
-			[64] = _Property4Property,
-			[128] = _Property4Struct,
+		_AttributeCache = {
+			[1] = _Attribute4Class,
+			[2] = _Attribute4Constructor,
+			[4] = _Attribute4Enum,
+			[8] = _Attribute4Event,
+			[16] = _Attribute4Interface,
+			[32] = _Attribute4Method,
+			[64] = _Attribute4Property,
+			[128] = _Attribute4Struct,
 		}
 
 		TYPE_CLASS = TYPE_CLASS
@@ -5400,18 +5509,14 @@ do
 		]======]
 		local function _ApplyAttributes(target, targetType, owner, name)
 			-- Apply the attributes
-			local config = _PropertyCache[targetType][target]
+			local config = _AttributeCache[targetType][target]
 			local usage
 
 			if config then
-				local ok, ret, arg1, arg2, arg3
+				local ok, ret, arg1, arg2, arg3, arg4
 
 				-- Some target can't be send to the attribute's ApplyAttribute directly
-				if targetType == AttributeTargets.Constructor then
-					-- Nothing should do to the constructor
-					-- Or maybe later
-					return target
-				elseif targetType == AttributeTargets.Event then
+				if targetType == AttributeTargets.Event then
 					arg1 = target.Name
 					arg2 = targetType
 					arg3 = owner
@@ -5419,6 +5524,7 @@ do
 					arg1 = target
 					arg2 = targetType
 					arg3 = owner
+					arg4 = name
 				elseif targetType == AttributeTargets.Property then
 					arg1 = target.Name
 					arg2 = targetType
@@ -5426,21 +5532,20 @@ do
 				else
 					arg1 = target
 					arg2 = targetType
-					arg3 = nil
 				end
 
 				if getmetatable(config) then
-					ok, ret = pcall(config.ApplyAttribute, config, arg1, arg2, arg3)
+					ok, ret = pcall(config.ApplyAttribute, config, arg1, arg2, arg3, arg4)
 
 					if not ok then
 						errorhandler(ret)
 
-						_PropertyCache[targetType][target] = nil
+						_AttributeCache[targetType][target] = nil
 					else
 						usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 						if usage and not usage.Inherited and usage.RunOnce then
-							_PropertyCache[targetType][target] = nil
+							_AttributeCache[targetType][target] = nil
 
 							config:Dispose()
 						end
@@ -5478,7 +5583,7 @@ do
 					end
 
 					if #config == 0 then
-						_PropertyCache[targetType][target] = nil
+						_AttributeCache[targetType][target] = nil
 					end
 				end
 			end
@@ -5527,7 +5632,7 @@ do
 			@return target
 		]======]
 		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
-			if not _PropertyCache[targetType] then
+			if not _AttributeCache[targetType] then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'targetType' is invalid.", 2)
 			elseif not ValidateTargetType(target, targetType) then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'target' is invalid.", 2)
@@ -5568,7 +5673,7 @@ do
 			local newAttributeCount = prepared and #prepared or 0
 
 			-- No attribute declaration again
-			if _PropertyCache[targetType][target] then
+			if _AttributeCache[targetType][target] then
 				if prepared and #prepared > 0 then
 					errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
 				end
@@ -5579,7 +5684,7 @@ do
 
 			-- get inheritable attributes from superTarget
 			if superTarget then
-				local config = _PropertyCache[targetType][superTarget]
+				local config = _AttributeCache[targetType][superTarget]
 				local usage
 
 				if config then
@@ -5644,9 +5749,9 @@ do
 			-- Save & apply the attributes for target
 			if #prepared > 0 then
 				if #prepared == 1 then
-					_PropertyCache[targetType][target] = prepared[1]
+					_AttributeCache[targetType][target] = prepared[1]
 				else
-					_PropertyCache[targetType][target] = {unpack(prepared)}
+					_AttributeCache[targetType][target] = {unpack(prepared)}
 				end
 
 				wipe(prepared)
@@ -5656,8 +5761,8 @@ do
 				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
 
 				if target ~= ret then
-					_PropertyCache[targetType][ret] = _PropertyCache[targetType][target]
-					_PropertyCache[targetType][target] = nil
+					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
+					_AttributeCache[targetType][target] = nil
 
 					target = ret
 				end
@@ -5678,7 +5783,7 @@ do
 			@return target
 		]======]
 		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
-			if not _PropertyCache[targetType] then
+			if not _AttributeCache[targetType] then
 				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
 			elseif  not ValidateTargetType(source, targetType) then
 				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
@@ -5689,28 +5794,28 @@ do
 			if source == target then return end
 
 			-- No attribute declaration again
-			if _PropertyCache[targetType][target] then
+			if _AttributeCache[targetType][target] then
 				errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
 				return target
 			end
 
-			local config = _PropertyCache[targetType][source]
+			local config = _AttributeCache[targetType][source]
 
 			-- Save & apply the attributes for target
 			if config then
-				_PropertyCache[targetType][target] = config
+				_AttributeCache[targetType][target] = config
 
 				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
 
 				if target ~= ret then
-					_PropertyCache[targetType][ret] = _PropertyCache[targetType][target]
-					_PropertyCache[targetType][target] = nil
+					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
+					_AttributeCache[targetType][target] = nil
 
 					target = ret
 				end
 
 				if removeSource then
-					_PropertyCache[targetType][source] = nil
+					_AttributeCache[targetType][source] = nil
 				end
 			end
 
@@ -5727,7 +5832,7 @@ do
 			@return boolean true if the target contains attribute with the type
 		]======]
 		function _IsDefined(target, targetType, type)
-			local config = _PropertyCache[targetType][target]
+			local config = _AttributeCache[targetType][target]
 
 			if not config then
 				return false
@@ -5876,7 +5981,7 @@ do
 			@return ... the attribute objects
 		]======]
 		function _GetCustomAttribute(target, targetType, type)
-			local config = _PropertyCache[targetType][target]
+			local config = _AttributeCache[targetType][target]
 
 			if not config then
 				return
@@ -6183,10 +6288,10 @@ do
 		]======]
 		property "AttributeTarget" {
 			Get = function(self)
-				return rawget(self, "__AttributeTarget") or AttributeTargets.All
+				return self.__AttributeTarget or AttributeTargets.All
 			end,
 			Set = function(self, value)
-				rawset(self, "__AttributeTarget", value)
+				self.__AttributeTarget = value
 			end,
 			Type = AttributeTargets,
 		}
@@ -6198,10 +6303,10 @@ do
 		]======]
 		property "Inherited" {
 			Get = function(self)
-				return not rawget(self, "__NonInherited")
+				return not self.__NonInherited
 			end,
 			Set = function(self, value)
-				rawset(self, "__NonInherited", not value or nil)
+				self.__NonInherited = not value
 			end,
 			Type = Boolean,
 		}
@@ -6213,10 +6318,10 @@ do
 		]======]
 		property "AllowMultiple" {
 			Get = function(self)
-				return rawget(self, "__AllowMultiple") or false
+				return self.__AllowMultiple
 			end,
 			Set = function(self, value)
-				rawset(self, "__AllowMultiple", value or nil)
+				self.__AllowMultiple = value
 			end,
 			Type = Boolean,
 		}
@@ -6228,10 +6333,10 @@ do
 		]======]
 		property "RunOnce" {
 			Get = function(self)
-				return rawget(self, "__RunOnce") or false
+				return self.__RunOnce
 			end,
 			Set = function(self, value)
-				rawset(self, "__RunOnce", value)
+				self.__RunOnce = value
 			end,
 			Type = Boolean,
 		}
@@ -6377,18 +6482,39 @@ do
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
 	__Final__()
 	__Unique__()
-	class "__ThreadActivate__"
+	class "__Thread__"
 		inherit "__Attribute__"
 		doc [======[
-			@name __ThreadActivate__
+			@name __Thread__
 			@type class
-			@desc Whether the event is thread activated by defalut
+			@desc Whether the event is thread activated by defalut, or wrap the method as coroutine
 		]======]
-	endclass "__ThreadActivate__"
+
+		local function validateReturn(ok, ...)
+			if ok then return ... end
+			error(..., 2)
+		end
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttributes(self, target, targetType, owner, name)
+			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
+				-- Wrap the target method
+				return function (self, ...)
+					if not running() then
+						return validateReturn(resume(create(target), self, ...))
+					else
+						return target(self, ...)
+					end
+				end
+			end
+		end
+	endclass "__Thread__"
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__()
-	__Unique__()
+	__NonInheritable__()
 	class "__Auto__"
 		inherit "__Attribute__"
 
@@ -6406,49 +6532,95 @@ do
 			local prop = _NSInfo[owner].Property[name]
 
 			if prop then
+				prop.Type = prop.Type or self.Type
+
 				if self.Accessor then
 					local getMethod = info.Method["Get" .. name] or GetSuperMethod(info.Owner, "Get" .. name)
 					local setMethod = info.Method["Set" .. name] or GetSuperMethod(info.Owner, "Set" .. name)
 
 					if getMethod or setMethod then
 						-- Use the existed method as the accessor, the system won't know the detail, keep simple
-						prop.Get = getMethod
-						prop.Set = setMethod
 					else
 						-- Decalre new get/set method and also send to the class definition's environment
+						local field = self.Storage or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
 
+						if prop.Get or prop.Set then
+							getMethod = prop.Get
+
+							if prop.Set and prop.Type then
+								local func = prop.Set
+
+								-- Auto handle the validation
+								setMethod = function(self, value)
+									if prop.Type then
+										local ok
+
+										ok, value = pcall(prop.Type.Validate, prop.Type, value)
+
+										if not ok then
+											ret = strtrim(ret:match(":%d+:(.*)$") or ret)
+
+											if ret:find("%%s") then
+												ret = ret:gsub("%%s[_%w]*", "obj:Set" .. prop.Name .. "(value) - 'value'")
+											end
+
+											error(ret, 2)
+										end
+									end
+
+									func(self, value)
+								end
+							else
+								setMethod = prop.Set
+							end
+
+							-- Set to the environment
+							if getMethod then info.ClassEnv["Get"..prop.Name] = getMethod end
+							if setMethod then info.ClassEnv["Set"..prop.Name] = setMethod end
+						end
 					end
+
+					prop.Get = getMethod and function(self) return self["Get" .. name](self) end
+					prop.Set = setMethod and function(self, value) self["Set" .. name](self, value) end
 				else
 					if self.Storage or (not prop.Get and not prop.Set) then
-						local field = self.Storage or ("_" .. _NSInfo[owner].Name .. "_" .. name)
+						local field = self.Storage or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
 
 						if prop.Type and #(prop.Type) == 1 and prop.Type[1] == Boolean then
 							if self.Default then
 								-- Default true
 								prop.Get = prop.Get or function (self)
-									return not rawget(self, field)
+									return not self[field]
 								end
 
 								prop.Set = prop.Set or function (self, value)
-									rawset(self, field, not value)
+									self[field] = not value
 								end
 							else
 								-- Default false or no defalut
 								prop.Get = prop.Get or function (self)
-									return rawget(self, field) or false
+									return self[field] or false
 								end
 
 								prop.Set = prop.Set or function (self, value)
-									rawset(self, field, value)
+									self[field] = value
 								end
 							end
 						else
-							prop.Get = prop.Get or function (self)
-								return rawget(self, field)
+							local defalut = self.Default
+
+							if defalut then
+								prop.Get = prop.Get or function (self)
+									return self[field] or defalut
+								end
+							else
+								prop.Get = prop.Get or function (self)
+									return self[field]
+								end
 							end
 
 							prop.Set = prop.Set or function (self, value)
-								rawset(self, field, value)
+								self[field] = value
 							end
 						end
 					end
@@ -6503,10 +6675,230 @@ do
 			Type = Boolean,
 		}
 
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
+		doc [======[
+			@name Type
+			@type property
+			@desc The type of the property
+		]======]
+		property "Type" {
+			Get = function(self)
+				return self.__Type
+			end,
+			Set = function(self, value)
+				self.__Type = value
+			end,
+			Type = Type,
+		}
 	endclass "__Auto__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Method}
+	__Final__()
+	__Unique__()
+	class "__Cache__"
+		inherit "__Attribute__"
+		doc [======[
+			@name __Cache__
+			@type class
+			@desc Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created
+		]======]
+	endclass "__Cache__"
+
+	__Final__()
+	class "Argument"
+		doc [======[
+			@name Argument
+			@type class
+			@desc The argument description object
+		]======]
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Name
+			@type property
+			@desc The name of the argument
+		]======]
+		property "Name" {
+			Get = function(self)
+				return self.__Name
+			end,
+			Set = function(self, value)
+				self.__Name = value
+			end,
+			Type = String,
+		}
+
+		doc [======[
+			@name Type
+			@type property
+			@desc The type of the argument
+		]======]
+		property "Type" {
+			Get = function(self)
+				return self.__Type
+			end,
+			Set = function(self, value)
+				self.__Type = BuildType(value)
+			end,
+		}
+
+		doc [======[
+			@name Default
+			@type property
+			@desc The defalut value of the argument
+		]======]
+		property "Default" {
+			Get = function(self)
+				return self.__Default
+			end,
+			Set = function(self, value)
+				self.__Default = value
+			end,
+		}
+
+		doc [======[
+			@name IsList
+			@type property
+			@desc Whether the rest are a list of the same type argument, only used for the last argument
+		]======]
+		property "IsList" {
+			Get = function(self)
+				return self.__IsList
+			end,
+			Set = function(self, value)
+				self.__IsList = value
+			end,
+			Type = Boolean,
+		}
+	endclass "Argument"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor}
+	__Final__()
+	class "__Arguments__"
+		inherit "__Attribute__"
+		doc [======[
+			@name __Arguments__
+			@type class
+			@desc The argument definitions of the target method or class's constructor
+		]======]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		doc [======[
+			@name ValidateArguments
+			@type method
+			@desc Validate the arguments and return the result
+			@param ...
+			@return ...
+		]======]
+		function ValidateArguments(self, ...)
+			local ret = {...}
+			local max = #self
+			local ok, value
+
+			for i = 1, max do
+				local arg = self[i]
+
+				if i < max or not arg.IsList then
+					if ret[i] == nil and arg.Default ~= nil then
+						ret[i] = arg.Default
+					end
+
+					if arg.Type then
+
+						ok, value = pcall(arg.Type.Validate, arg.Type, ret[i])
+
+						if not ok then
+							value = strtrim(value:match(":%d+:(.*)$") or value)
+
+							if value:find("%%s") then
+								value = value:gsub("%%s[_%w]*", arg.Name)
+							end
+
+							error(self.Usage .. value, 3)
+						elseif ret[i] ~= nil then
+							ret[i] = value
+						end
+					end
+				else
+					if arg.Type then
+						for j = i, #ret do
+							ok, value = pcall(arg.Type.Validate, arg.Type, ret[j])
+
+							if not ok then
+								value = strtrim(value:match(":%d+:(.*)$") or value)
+
+								if value:find("%%s") then
+									value = value:gsub("%%s[_%w]*", "...")
+								end
+
+								error(self.Usage .. value, 3)
+							elseif ret[j] ~= nil then
+								ret[j] = value
+							end
+						end
+					end
+				end
+			end
+
+			return unpack(ret)
+		end
+
+		function ApplyAttribute(self, target, targetType, owner, name)
+			-- Self validation once
+			for i = #self, 1, -1 do
+				if not Reflector.ObjectIsClass(self[i], Argument) then
+					tremove(self, i)
+				elseif not self[i].Name and (i < #self or not self[i].IsList) then
+					tremove(self, i)
+				end
+			end
+
+			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
+				self.Usage = "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "("
+
+				for i = 1, #self do
+					local arg = self[i]
+
+					if i > 1 then
+						self.Usage = self.Usage .. ", "
+					end
+
+					if i == #self and arg.IsList then
+						self.Usage = self.Usage .. "..."
+					else
+						self.Usage = self.Usage .. arg.Name
+					end
+				end
+
+				self.Usage = self.Usage .. ") - "
+
+				return function(obj, ...)
+					return target(obj, unpack(ValidateArguments(self, ...)))
+				end
+			elseif Reflector.IsClass(target) and targetType == AttributeTargets.Constructor then
+				self.Usage = "Usage : " .. _NSInfo[target].Name .. "("
+
+				for i = 1, #self do
+					local arg = self[i]
+
+					if i > 1 then
+						self.Usage = self.Usage .. ", "
+					end
+
+					if i == #self and arg.IsList then
+						self.Usage = self.Usage .. "..."
+					else
+						self.Usage = self.Usage .. arg.Name
+					end
+				end
+
+				self.Usage = self.Usage .. ") - "
+			end
+		end
+	endclass "__Arguments__"
 
 	------------------------------------------------------
 	-- System.Object
