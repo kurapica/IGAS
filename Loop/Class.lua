@@ -1746,13 +1746,10 @@ do
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
 		local obj, isUnique
-
-		if not info then return end
-
 		local ok, msg, args
 		local cache = _Class2ObjCache()
 		local max = select('#', ...)
-		local init = select('1', ...)
+		local init = select(1, ...)
 
 		if __Attribute__ and __Arguments__ then
 			args = __Attribute__._GetCustomAttribute(cls, AttributeTargets.Constructor, __Arguments__)
@@ -1830,7 +1827,7 @@ do
 						cache[i] = value
 					else
 						for j = maxArgs, max do
-							local value = cache[i]
+							local value = cache[j]
 
 							if arg.Type then
 								ok, value = pcall(arg.Type.Validate, arg.Type, value)
@@ -1848,7 +1845,7 @@ do
 								end
 							end
 
-							cache[i] = value
+							cache[j] = value
 						end
 					end
 				end
@@ -4400,7 +4397,7 @@ do
 					name = select(i, ...)
 
 					if HasEvent(cls, name) then
-						obj[name]._ThreadActivated = true
+						obj[name].__ThreadActivated = true
 					end
 				end
 			end
@@ -4420,7 +4417,7 @@ do
 			local name
 
 			if cls and HasEvent(cls, sc) then
-				return obj[sc]._ThreadActivated or false
+				return obj[sc].__ThreadActivated or false
 			end
 
 			return false
@@ -4444,7 +4441,7 @@ do
 					name = select(i, ...)
 
 					if HasEvent(cls, name) then
-						obj[name]._ThreadActivated = nil
+						obj[name].__ThreadActivated = nil
 					end
 				end
 			end
@@ -5329,7 +5326,7 @@ do
 		end
 
 		function __tostring(self)
-			return tostring(Event) .. "( " .. self.__Name .. " )"
+			return ("%s( %q )"):format(tostring(Event), self.__Name)
 		end
 	endclass "Event"
 
@@ -5536,18 +5533,18 @@ do
 			return self
 		end
 
+		local create = create
+		local resume = resume
+		local status = status
+		local rawget = rawget
+		local pcall = pcall
+		local ipairs = ipairs
+		local errorhandler = errorhandler
+
 		function __call(self, obj, ...)
 			-- The event call is so frequent
 			-- keep local for optimization
-			local create = create
-			local resume = resume
-			local status = status
-			local rawget = rawget
-			local pcall = pcall
-			local ipairs = ipairs
-			local errorhandler = errorhandler
-
-			if not rawget(self, "__Owner") or rawget(self, "__Blocked") then return end
+			if self.__Blocked then return end
 
 			local owner = self.__Owner
 			local asParam, useThread, chk, ret
@@ -5595,7 +5592,7 @@ do
 			end
 
 			-- Call the final handler
-			if not ret and rawget(self, 0) then
+			if not ret and self[0] then
 				local handler = self[0]
 
 				if useThread then
