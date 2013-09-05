@@ -1749,53 +1749,88 @@ do
 
 		if not info then return end
 
-		-- Check if the class is unique and already created one object to be return
-		if __Attribute__ and __Unique__ then
-			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
+		local ok, msg, args
+		local cache = _Class2ObjCache()
+		local max = select('#', ...)
+		local init = select('1', ...)
 
-			if isUnique and info.UniqueObject then
-				pcall(info.UniqueObject, ...)
-				return info.UniqueObject
-			end
-		else
-			isUnique = false
+		if __Attribute__ and __Arguments__ then
+			args = __Attribute__._GetCustomAttribute(cls, AttributeTargets.Constructor, __Arguments__)
 		end
 
-		-- Check if this class has __exist so no need to create again.
-		if type(info.MetaTable.__exist) == "function" then
-			obj = info.MetaTable.__exist(...)
+		if max == 1 and type(init) == "table" and getmetatable(init) == nil then
+			-- With the init table
+			if args then
+				max = #args
 
-			if type(obj) == "table" then
-				if getmetatable(obj) == cls then
-					return obj
-				else
-					error(("There is an existed object as type '%s'."):format(Reflector.GetName(Reflector.GetObjectClass(obj)) or ""), 2)
+				for i = 1, max do
+					local arg = args[i]
+
+					if i < max or not arg.IsList then
+						local value = init[arg.Name]
+						if value == nil then value = arg.Default end
+						init[arg.Name] = nil
+
+						if arg.Type then
+							ok, value = pcall(arg.Type.Validate, arg.Type, value)
+
+							if not ok then
+								_Class2ObjCache(cache)
+
+								value = strtrim(value:match(":%d+:(.*)$") or value)
+
+								if value:find("%%s") then
+									value = value:gsub("%%s[_%w]*", arg.Name)
+								end
+
+								error(args.Usage .. value, 3)
+							end
+						end
+
+						cache[i] = value
+					end
 				end
 			end
-		end
+		else
+			-- Without the init table
+			for i = 1, max do
+				cache[i] = select(i, ...)
+			end
 
-		-- Create new object
-		obj = setmetatable({}, info.MetaTable)
+			if args then
+				local maxArgs = #args
 
-		if select('#', ...) == 1 and type(select('1', ...)) == "table" and getmetatable(select('1', ...)) == nil then
-			-- With the init table
-			local init = select('1', ...)
-			local ok, msg
-			local cache = _Class2ObjCache()
+				if maxArgs > max then
+					max = maxArgs
+				end
 
-			if __Attribute__ and __Arguments__ then
-				local args = __Attribute__._GetCustomAttribute(cls, AttributeTargets.Constructor, __Arguments__)
+				for i = 1, maxArgs do
+					local arg = args[i]
 
-				if args then
-					local max = #args
+					if i < maxArgs or not arg.IsList then
+						local value = cache[i]
+						if value == nil then value = arg.Default end
 
-					for i = 1, max do
-						local arg = args[i]
+						if arg.Type then
+							ok, value = pcall(arg.Type.Validate, arg.Type, value)
 
-						if i < max or not arg.IsList then
-							local value = init[arg.Name]
-							if value == nil then value = arg.Default end
-							init[arg.Name] = nil
+							if not ok then
+								_Class2ObjCache(cache)
+
+								value = strtrim(value:match(":%d+:(.*)$") or value)
+
+								if value:find("%%s") then
+									value = value:gsub("%%s[_%w]*", arg.Name)
+								end
+
+								error(args.Usage .. value, 3)
+							end
+						end
+
+						cache[i] = value
+					else
+						for j = maxArgs, max do
+							local value = cache[i]
 
 							if arg.Type then
 								ok, value = pcall(arg.Type.Validate, arg.Type, value)
@@ -1806,7 +1841,7 @@ do
 									value = strtrim(value:match(":%d+:(.*)$") or value)
 
 									if value:find("%%s") then
-										value = value:gsub("%%s[_%w]*", arg.Name)
+										value = value:gsub("%%s[_%w]*", "...")
 									end
 
 									error(args.Usage .. value, 3)
@@ -1818,13 +1853,50 @@ do
 					end
 				end
 			end
+		end
 
-			InitObjectWithClass(cls, obj, unpack(cache))
+		-- Check if the class is unique and already created one object to be return
+		if __Attribute__ and __Unique__ then
+			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
+
+			if isUnique and info.UniqueObject then
+				pcall(info.UniqueObject, unpack(cache, 1, max))
+				_Class2ObjCache(cache)
+				return info.UniqueObject
+			end
+		else
+			isUnique = false
+		end
+
+		-- Check if this class has __exist so no need to create again.
+		if type(info.MetaTable.__exist) == "function" then
+			ok, obj = pcall(info.MetaTable.__exist, unpack(cache, 1, max))
+
+			if type(obj) == "table" then
+				_Class2ObjCache(cache)
+				if getmetatable(obj) == cls then
+					return obj
+				else
+					error(("There is an existed object as type '%s'."):format(Reflector.GetName(Reflector.GetObjectClass(obj)) or ""), 2)
+				end
+			end
+		end
+
+		-- Create new object
+		obj = setmetatable({}, info.MetaTable)
+
+		if InitObjectWithClass(cls, obj, unpack(cache, 1, max)) then
 			InitObjectWithInterface(cls, obj)
+		else
+			obj = nil
+		end
 
-			_Class2ObjCache(cache)
+		_Class2ObjCache(cache)
 
-			-- Try set properties
+		if not obj then return nil end
+
+		-- Try set properties
+		if type(init) == "table" then
 			for name, value in pairs(init) do
 				ok, msg = pcall(TrySetProperty, obj, name, value)
 
@@ -1833,13 +1905,6 @@ do
 
 					errorhandler(msg)
 				end
-			end
-		else
-			if InitObjectWithClass(cls, obj, ...) then
-				InitObjectWithInterface(cls, obj)
-			else
-				-- Error
-				return nil
 			end
 		end
 
@@ -3193,9 +3258,9 @@ do
 
 			local index = -1
 
-	        local types = ""
+	        local types
 
-			while rawget(self, index) do
+			while self[index] do
 				info = _NSInfo[self[index]]
 
 	            new = nil
@@ -3203,22 +3268,22 @@ do
 	            if not info then
 	                -- skip
 				elseif info.Type == TYPE_CLASS then
-					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(self[index], value) then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then
 						return value
 					end
 
-					new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(self[index]))
+					new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(info.Owner))
 				elseif info.Type == TYPE_INTERFACE then
-					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(self[index], value) then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then
 						return value
 					end
 
-					new = ("%s must be extended from [interface]%s."):format("%s", tostring(self[index]))
+					new = ("%s must be extended from [interface]%s."):format("%s", tostring(info.Owner))
 	            elseif info.Type then
 	                if value == info.Owner then
 	                    return value
 	                else
-	                    types = types .. tostring(info.Owner) .. ", "
+	                    types = (types or "") .. tostring(info.Owner) .. ", "
 	                end
 				end
 
@@ -3237,7 +3302,7 @@ do
 				index = index - 1
 			end
 
-	        if types:len() >= 3 and not msg then
+	        if types and types:len() >= 3 and not msg then
 	            new = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
 
 	            if self.Name and self.Name ~= "" then
@@ -3375,6 +3440,96 @@ do
 							return true
 						end
 						index = index - 1
+					end
+				end
+			end
+
+			return false
+		end
+
+		doc [======[
+			@name GetObjectType
+			@type method
+			@desc Get the object type if validated, false if nothing match
+			@param value
+			@return type struct | enum | class | interface | nil
+		]======]
+		function GetObjectType(self, value)
+			if value == nil and rawget(self, _ALLOW_NIL) then
+				return
+			end
+
+			local flag, msg, info, new
+
+			local index = -1
+
+			while self[index] do
+				info = _NSInfo[self[index]]
+
+	            if not info then
+	                -- skip
+				elseif info.Type == TYPE_CLASS then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then
+						return info.Owner
+					end
+				elseif info.Type == TYPE_INTERFACE then
+					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then
+						return info.Owner
+					end
+	            elseif info.Type then
+	                if value == info.Owner then
+	                    return info.Owner
+	                end
+				end
+
+				index = index - 1
+			end
+
+			for _, ns in ipairs(self) do
+				info = _NSInfo[ns]
+
+				new = nil
+
+				if not info then
+					-- do nothing
+				elseif info.Type == TYPE_CLASS then
+					-- Check if the value is an instance of this class
+					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
+						return ns
+					end
+				elseif info.Type == TYPE_INTERFACE then
+					-- Check if the value is an instance of this interface
+					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then
+						return ns
+					end
+				elseif info.Type == TYPE_ENUM then
+					-- Check if the value is an enumeration value of this enum
+					if type(value) == "string" and info.Enum[value:upper()] then
+						return ns
+					end
+
+					if info.MaxValue then
+						-- Bit flag validation, use MaxValue check to reduce cost
+						value = tonumber(value)
+
+						if value then
+							if value >= 1 and value <= info.MaxValue then
+								return ns
+							end
+						end
+					else
+						for _, v in pairs(info.Enum) do
+							if value == v then
+								return ns
+							end
+						end
+					end
+				elseif info.Type == TYPE_STRUCT then
+					-- Check if the value is an enumeration value of this structure
+					flag, new = pcall(ValidateStruct, ns, value)
+
+					if flag then
+						return ns
 					end
 				end
 			end
@@ -5037,6 +5192,101 @@ do
 				end
 			end
 		end
+
+		doc [======[
+			@name Serialize
+			@type method
+			@desc Serialize the data
+			@param type the data't type
+			@param data the data
+			@return string
+		]======]
+		function Serialize(ns, data)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			if ObjectIsClass(ns, Type) then
+				ns = ns:GetObjectType(data)
+
+				if ns == false then
+					return nil
+				elseif ns == nil then
+					return "nil"
+				end
+			end
+
+			if not rawget(_NSInfo, ns) then return end
+
+			if Reflector.IsEnum(ns) then
+				local str = Reflector.ParseEnum(ns, data)
+
+				return str and (tostring(ns) .. "." .. str)
+			elseif Reflector.IsClass(ns) then
+				-- Class handle the serialize itself with __tostring
+				return tostring(data)
+			elseif Reflector.IsStruct(ns) then
+				if Reflector.GetStructType(ns) == "MEMBER" then
+					local parts = Reflector.GetStructParts(ns)
+
+					if not parts or not next(parts) then
+						-- Mean it's a base element struct
+						if type(data) == "string" then
+							return strformat("%q", data)
+						elseif type(data) == "number" or type(data) == "boolean" then
+							return tostring(data)
+						end
+					elseif type(data) == "table" then
+						local ret = tostring(ns) .. "( "
+
+						for i, part in ipairs(parts) do
+							local sty = Reflector.GetStructPart(ns, part)
+							local value = data[part]
+
+							if sty and #sty == 1 then
+								value = Serialize(sty[1], value)
+							end
+
+							if i == 1 then
+								ret = ret .. tostring(value)
+							else
+								ret = ret .. ", " .. tostring(value)
+							end
+						end
+
+						ret = ret .. " )"
+
+						return ret
+					end
+				elseif Reflector.GetStructType(ns) == "ARRAY" and type(data) == "table" then
+					local ret = tostring(ns) .. "( "
+
+					sty = Reflector.GetStructArrayElement(ns)
+
+					if sty and #sty == 1 then
+						for i, v in ipairs(data) do
+							v = Serialize(sty[1], v)
+
+							if i == 1 then
+								ret = ret .. tostring(v)
+							else
+								ret = ret .. ", " .. tostring(v)
+							end
+						end
+					else
+						for i, v in ipairs(data) do
+							if i == 1 then
+								ret = ret .. tostring(v)
+							else
+								ret = ret .. ", " .. tostring(v)
+							end
+						end
+					end
+
+					ret = ret .. " )"
+
+					return ret
+				end
+			end
+		end
 	endinterface "Reflector"
 
 	------------------------------------------------------
@@ -5076,6 +5326,10 @@ do
 		------------------------------------------------------
 		function __call(self)
 			-- Pass
+		end
+
+		function __tostring(self)
+			return tostring(Event) .. "( " .. self.__Name .. " )"
 		end
 	endclass "Event"
 
@@ -5364,6 +5618,10 @@ do
 					return errorhandler(ret)
 				end
 			end
+		end
+
+		function __tostring(self)
+			return tostring(EventHandler) .. "( " .. tostring(self.__Event) .. " )"
 		end
 	endclass "EventHandler"
 
@@ -6188,6 +6446,10 @@ do
 		function __call(self)
 			SendToPrepared(self)
 		end
+
+		function __tostring(self)
+			return tostring(getmetatable(self))
+		end
 	endclass "__Attribute__"
 
 	class "__Unique__"
@@ -6808,16 +7070,83 @@ do
 	__Final__()
 	class "__Arguments__"
 		inherit "__Attribute__"
+
 		doc [======[
 			@name __Arguments__
 			@type class
 			@desc The argument definitions of the target method or class's constructor
 		]======]
 
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		local function ValidateArguments(self, ...)
+		_Validate_Header = [[
+			return function (self, %s, ...)
+				local ok, value, objArg
+				local index = 0
+
+		]]
+
+		_Validate_Body = [[
+				index = index + 1
+				objArg = self[index]
+				if objArg then
+					arg@ = arg@ or objArg.Default
+					if objArg.Type then
+						ok, value = pcall(objArg.Type.Validate, objArg.Type, arg@)
+
+						if not ok then
+							value = value:match(":%d+:(.*)$") or value
+
+							if value:find("%%s") then
+								value = value:gsub("%%s[_%w]*", objArg.Name)
+							end
+
+							error(self.Usage .. value, 3)
+						else
+							arg@ = value
+						end
+					end
+				end
+
+		]]
+
+		_Validate_Tail = [[
+				return %s, ...
+			end
+		]]
+
+		local function buildValidate(count)
+			local args = ""
+
+			for i = 1, count do
+				if i > 1 then
+					args = args .. ", arg" .. i
+				else
+					args = "arg1"
+				end
+			end
+
+			local func = _Validate_Header:format(args)
+
+			for i = 1, count do
+				func = func .. _Validate_Body:gsub("@", tostring(i))
+			end
+
+			func = func .. _Validate_Tail:format(args)
+
+			func = func:gsub("\n%s+", "\n"):gsub("^%s+", "")
+
+			return func
+		end
+
+		_ValidateArgumentsCache = setmetatable({}, {__index = function(self, key)
+			if type(key) == "number" and key >= 1 then
+				key = floor(key)
+
+				rawset(self, key, loadstring(buildValidate(key))())
+				return rawget(self, key)
+			end
+		end})
+
+		_ValidateArgumentsCache[0] = function (self, ...)
 			local ret = {...}
 			local max = #self
 			local ok, value
@@ -6869,6 +7198,10 @@ do
 			return unpack(ret)
 		end
 
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+
 		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Self validation once
 			local max = #self
@@ -6882,10 +7215,14 @@ do
 			end
 
 			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
+				local useList = false
+				local count = 0
+
 				self.Usage = "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "("
 
 				for i = 1, #self do
 					local arg = self[i]
+					local str = ""
 
 					if i > 1 then
 						self.Usage = self.Usage .. ", "
@@ -6893,17 +7230,52 @@ do
 
 					if i == #self and arg.IsList then
 						self.Usage = self.Usage .. "..."
+						useList = true
 					else
-						self.Usage = self.Usage .. arg.Name
+						local serialize
+
+						if arg.Default ~= nil then
+							if arg.Type then
+								serialize = Reflector.Serialize(arg.Type, arg.Default)
+							else
+								serialize = tostring(arg.Default)
+							end
+						end
+
+						if serialize then
+							serialize = arg.Name .. " = " .. serialize
+						else
+							serialize = arg.Name
+						end
+
+						if arg.Type and arg.Type:Is(nil) then
+							serialize = "[" .. serialize .. "]"
+						end
+
+						self.Usage = self.Usage .. serialize
+						count = count + 1
 					end
 				end
 
 				self.Usage = self.Usage .. ") - "
 
-				return function(obj, ...)
-					return target(obj, unpack(ValidateArguments(self, ...)))
+				if useList then
+					self.ValidateArguments = _ValidateArgumentsCache[0]
+				elseif count > 0 then
+					self.ValidateArguments = _ValidateArgumentsCache[count]
+				end
+
+				if self.ValidateArguments then
+					return function(obj, ...)
+						return target(obj, self:ValidateArguments(...))
+					end
+				else
+					return target
 				end
 			elseif Reflector.IsClass(target) and targetType == AttributeTargets.Constructor then
+				local useList = false
+				local count = 0
+
 				self.Usage = "Usage : " .. _NSInfo[target].Name .. "("
 
 				for i = 1, #self do
@@ -6915,12 +7287,40 @@ do
 
 					if i == #self and arg.IsList then
 						self.Usage = self.Usage .. "..."
+						useList = true
 					else
-						self.Usage = self.Usage .. arg.Name
+						local serialize
+
+						if arg.Default ~= nil then
+							if arg.Type then
+								serialize = Reflector.Serialize(arg.Type, arg.Default)
+							else
+								serialize = tostring(arg.Default)
+							end
+						end
+
+						if serialize then
+							serialize = arg.Name .. " = " .. serialize
+						else
+							serialize = arg.Name
+						end
+
+						if arg.Type and arg.Type:Is(nil) then
+							serialize = "[" .. serialize .. "]"
+						end
+
+						self.Usage = self.Usage .. serialize
+						count = count + 1
 					end
 				end
 
 				self.Usage = self.Usage .. ") - "
+
+				if useList then
+					self.ValidateArguments = _ValidateArgumentsCache[0]
+				elseif count > 0 then
+					self.ValidateArguments = _ValidateArgumentsCache[count]
+				end
 			end
 		end
 	endclass "__Arguments__"
@@ -7109,6 +7509,13 @@ do
 					return method(self, ...)
 				end
 			end
+		end
+
+		------------------------------------------------------
+		-- Meta-methods
+		------------------------------------------------------
+		function __tostring(self)
+			return "[Object]" .. tostring(getmetatable(self)) .. "()"
 		end
 	endclass "Object"
 
@@ -7634,6 +8041,10 @@ do
 			setfenv(depth + 1, self)
 
 			__Attribute__._ClearPreparedAttributes()
+		end
+
+		function __tostring(self)
+			return tostring(Module) .. "( " .. _ModuleInfo[self].Name .. " ) " .. (_ModuleInfo[self].Version or "")
 		end
 	endclass "Module"
 end
