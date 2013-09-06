@@ -478,7 +478,7 @@ class "Region"
 				if x == 0 then x = nil end
 				if y == 0 then y = nil end
 
-				ret[i] = AnchorPoint(point, relativeTo and relativeTo:GetName(), relativePoint, x, y)
+				ret[i] = AnchorPoint(point, x, y, relativeTo and relativeTo:GetName(), relativePoint)
 			end
 
 			return ret

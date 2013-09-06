@@ -331,10 +331,10 @@ endstruct "Size"
 -- AnchorPoint
 struct "AnchorPoint"
 	point = FramePoint
-	relativeTo = String + nil
-	relativePoint = FramePoint + nil
 	xOffset = Number + nil
 	yOffset = Number + nil
+	relativeTo = String + nil
+	relativePoint = FramePoint + nil
 endstruct "AnchorPoint"
 
 -- struct Location
