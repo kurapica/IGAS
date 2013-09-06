@@ -338,9 +338,8 @@ struct "AnchorPoint"
 endstruct "AnchorPoint"
 
 -- struct Location
+__StructType__(StructType.Array)
 struct "Location"
-	structtype "Array"
-
 	element = AnchorPoint
 endstruct "Location"
 

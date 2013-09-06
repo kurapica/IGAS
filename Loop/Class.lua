@@ -1378,6 +1378,10 @@ do
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
+
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
+		end
 	end
 
 	_KeyWord4IFEnv.extend = extend_IF
@@ -1756,6 +1760,19 @@ do
 		end
 
 		if max == 1 and type(init) == "table" and getmetatable(init) == nil then
+			-- Check if the init table should be the argument
+			if args and #args == 1 then
+				local arg = args[1]
+
+				if arg.Type and arg.Type:GetObjectType(init) then
+					init = nil
+				end
+			end
+		else
+			init = nil
+		end
+
+		if init then
 			-- With the init table
 			if args then
 				max = #args
@@ -2569,8 +2586,18 @@ do
 		if info.Name == name then
 			setfenv(2, info.BaseEnv)
 			RefreshCache(info.Owner)
+
+			if not info.Constructor then
+				if __Attribute__ and info.Owner ~= __Attribute__ then
+					__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Constructor, info.SuperClass)
+				end
+			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
+		end
+
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
 		end
 	end
 
@@ -2768,7 +2795,7 @@ do
 			local info = _StructEnv2Info[self]
 
 			if _KeyWord4StrtEnv[key] then
-				error(("the '%s' is a keyword."):format(key), 2)
+				error(("'%s' is a keyword."):format(key), 2)
 			end
 
 			if key == info.Name then
@@ -2777,7 +2804,7 @@ do
 					rawset(info, "Constructor", value)
 					return
 				else
-					error(("the '%s' must be a function as constructor."):format(key), 2)
+					error(("'%s' must be a function as constructor."):format(key), 2)
 				end
 			end
 
@@ -2786,8 +2813,20 @@ do
 					info.UserValidate = value
 					return
 				else
-					error(("the '%s' must be a function used for validation."):format(key), 2)
+					error(("'%s' must be a function used for validation."):format(key), 2)
 				end
+			end
+
+			-- Cache the method for the struct data
+			if type(key) == "string" and type(value) == "function" then
+				info.Cache4Method = info.Cache4Method or {}
+
+				-- keep function in env, just register the method
+				if __Attribute__ and info.Owner ~= __Attribute__ then
+					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
+				end
+
+				info.Cache4Method[key] = value
 			end
 
 			if type(key) == "string" and (value == nil or IsType(value) or IsNameSpace(value)) then
@@ -2857,9 +2896,69 @@ do
 	function Struct2Obj(strt, ...)
 		local info = _NSInfo[strt]
 
+		local max = select("#", ...)
+		local init = select(1, ...)
+
+		if max == 1 and type(init) == "table" and getmetatable(init) == nil then
+			local continue = true
+
+			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0 then
+				if not info.StructEnv[info.Members[1]]:GetObjectType(init) then
+					continue = false
+				end
+			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+				if not info.ArrayElement:GetObjectType(init) then
+					continue = false
+				end
+			end
+
+			local ok, value = pcall(ValidateStruct, strt, init)
+
+			if ok then
+				if info.Cache4Method then
+					for k, v in pairs(info.Cache4Method) do
+						value[k] = v
+					end
+				end
+
+				return value
+			elseif not continue then
+				if info.SubType == _STRUCT_TYPE_MEMBER then
+					value = strtrim(value:match(":%d+:(.*)$") or value)
+					value = value:gsub("%%s%.", ""):gsub("%%s", "")
+
+					local args = ""
+					for i, n in ipairs(info.Members) do
+						if info.StructEnv[n]:Is(nil) and not args:find("%[") then
+							n = "["..n
+						end
+						if i == 1 then
+							args = n
+						else
+							args = args..", "..n
+						end
+					end
+					if args:find("%[") then
+						args = args.."]"
+					end
+					error(("Usage : %s(%s) - %s"):format(tostring(strt), args, value), 3)
+				else
+					value = strtrim(value:match(":%d+:(.*)$") or value)
+					value = value:gsub("%%s%.", ""):gsub("%%s", "")
+
+					error(("Usage : %s(...) - %s"):format(tostring(strt), value), 3)
+				end
+			end
+		end
+
 		if type(info.Constructor) == "function" then
 			local ok, ret = pcall(info.Constructor, ...)
 			if ok then
+				if info.Cache4Method then
+					for k, v in pairs(info.Cache4Method) do
+						ret[k] = v
+					end
+				end
 				return ret
 			else
 				ret = strtrim(ret:match(":%d+:(.*)$") or ret)
@@ -2878,6 +2977,12 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
+				if info.Cache4Method then
+					for k, v in pairs(info.Cache4Method) do
+						value[k] = v
+					end
+				end
+
 				return value
 			else
 				value = strtrim(value:match(":%d+:(.*)$") or value)
@@ -2911,6 +3016,11 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
+				if info.Cache4Method then
+					for k, v in pairs(info.Cache4Method) do
+						value[k] = v
+					end
+				end
 				return value
 			else
 				value = strtrim(value:match(":%d+:(.*)$") or value)
@@ -2998,6 +3108,7 @@ do
 		info.UserValidate = nil
 		info.Validate = nil
 		info.SubType = _STRUCT_TYPE_MEMBER
+		info.Cache4Method = nil
 
 		info.StructEnv = info.StructEnv or setmetatable({}, _MetaStrtEnv)
 		_StructEnv2Info[info.StructEnv] = info
@@ -3009,6 +3120,10 @@ do
 
 		-- Set namespace
 		SetNameSpace4Env(info.StructEnv, strt)
+
+		if __Attribute__ then
+			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+		end
 
 		-- Set the environment to class's environment
 		setfenv(2, info.StructEnv)
@@ -3061,37 +3176,6 @@ do
 		tinsert(info.Import4Env, ns)
 	end
 
-	function structtype(name)
-		if type(name) ~= "string" then
-			error([[Usage: structtype "Member"|"Array"|"Custom"]], 2)
-		end
-
-		local env = getfenv(2)
-
-		local info = _StructEnv2Info[env]
-
-		if not info then
-			error("can't use structtype here.", 2)
-		end
-
-		name = name:upper()
-
-		if name == "MEMBER" then
-			-- use member list, default type
-			info.SubType = _STRUCT_TYPE_MEMBER
-			info.ArrayElement = nil
-		elseif name == "ARRAY" then
-			-- user array list
-			info.SubType = _STRUCT_TYPE_ARRAY
-			info.Members = nil
-		else
-			-- else all custom
-			info.SubType = _STRUCT_TYPE_CUSTOM
-			info.Members = nil
-			info.ArrayElement = nil
-		end
-	end
-
 	------------------------------------
 	--- End the class's definition and restore the environment
 	-- @name class
@@ -3106,14 +3190,31 @@ do
 
 		local env = getfenv(2)
 
-		while rawget(_StructEnv2Info, env) do
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
+		end
+
+		while _StructEnv2Info[env] do
 			local info = _StructEnv2Info[env]
 
-			if info.Owner and __Attribute__ then
-				__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
-			end
-
 			if info.Name == name then
+				-- Refersh for the Cache4Method
+				if info.Cache4Method then
+					for key, prototype in pairs(info.Cache4Method) do
+						local value = rawget(env, key)
+						if type(value) == "function" then
+							if __Attribute__ and prototype ~= value then
+								value = __Attribute__._CloneAttributes(prototype, value, AttributeTargets.Method, info.Owner, key, true) or value
+							end
+
+							env[key] = value
+							info.Cache4Method[key] = value
+						else
+							info.Cache4Method[key] = nil
+						end
+					end
+				end
+
 				setfenv(2, info.BaseEnv)
 				return
 			end
@@ -3126,7 +3227,6 @@ do
 
 	_KeyWord4StrtEnv.struct = struct
 	_KeyWord4StrtEnv.import = import_STRT
-	_KeyWord4StrtEnv.structtype = structtype
 	_KeyWord4StrtEnv.endstruct = endstruct
 end
 
@@ -5551,7 +5651,7 @@ do
 
 			asParam = (obj ~= owner)
 
-			useThread = rawget(self, "__ThreadActivated") or false
+			useThread = self.__ThreadActivated
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
@@ -5582,7 +5682,7 @@ do
 					return errorhandler(ret)
 				end
 
-				if not rawget(owner, "__Events") then
+				if rawget(owner, "Disposed") then
 					-- means it's disposed
 					ret = true
 				end
@@ -5726,7 +5826,7 @@ do
 			if targetType == AttributeTargets.Class then
 				return "[Class]" .. tostring(target)
 			elseif targetType == AttributeTargets.Constructor then
-				return "[Class]" .. tostring(owner) .. " [Constructor]" .. tostring(target)
+				return "[Class.Constructor]" .. tostring(target)
 			elseif targetType == AttributeTargets.Enum then
 				return "[Enum]" .. tostring(target)
 			elseif targetType == AttributeTargets.Event then
@@ -6789,7 +6889,7 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
+			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner) or Reflector.IsStruct(owner)) then
 				-- Wrap the target method
 				return function (self, ...)
 					if not running() then
@@ -7211,7 +7311,7 @@ do
 				end
 			end
 
-			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner)) then
+			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner) or Reflector.IsStruct(owner)) then
 				local useList = false
 				local count = 0
 
@@ -7273,6 +7373,8 @@ do
 				local useList = false
 				local count = 0
 
+				if self.Usage and self.ValidateArguments then return end
+
 				self.Usage = "Usage : " .. _NSInfo[target].Name .. "("
 
 				for i = 1, #self do
@@ -7321,6 +7423,79 @@ do
 			end
 		end
 	endclass "__Arguments__"
+
+	enum "StructType" {
+		"Member",
+		"Array",
+		"Custom"
+	}
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
+	__Final__()
+	__NonInheritable__()
+	class "__StructType__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __StructType__
+			@type class
+			@desc Mark the struct's type, default 'Member'
+		]======]
+
+		_STRUCT_TYPE_MEMBER = _STRUCT_TYPE_MEMBER
+		_STRUCT_TYPE_ARRAY = _STRUCT_TYPE_ARRAY
+		_STRUCT_TYPE_CUSTOM = _STRUCT_TYPE_CUSTOM
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsStruct(target) then
+				local info = _NSInfo[target]
+
+				if self.Type == StructType.Member then
+					-- use member list, default type
+					info.SubType = _STRUCT_TYPE_MEMBER
+					info.ArrayElement = nil
+				elseif self.Type == StructType.Array then
+					-- user array list
+					info.SubType = _STRUCT_TYPE_ARRAY
+					info.Members = nil
+				else
+					-- else all custom
+					info.SubType = _STRUCT_TYPE_CUSTOM
+					info.Members = nil
+					info.ArrayElement = nil
+				end
+			end
+		end
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Type
+			@type property
+			@desc The struct's type
+		]======]
+		property "Type" {
+			Get = function(self)
+				return self.__Type or StructType.Member
+			end,
+			Set = function(self, value)
+				self.__Type = value
+			end,
+			Type = StructType,
+		}
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{ Argument{ Name = "Type", Type = StructType, Default = StructType.Member } }
+		function __StructType__(self, type)
+			self.__Type = type
+		end
+	endclass "__StructType__"
 
 	------------------------------------------------------
 	-- System.Object

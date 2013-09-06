@@ -447,6 +447,7 @@ class "UIObject"
 
 	end
 
+	__Arguments__{ Argument{ Name = "Name" , Type = String + nil }, Argument{ Name = "Parent" }, Argument{ Name = "Inherit", Type = String + nil } }
 	function UIObject(self, name, parent, ...)
 		if type(name) == "table" and type(name[0]) == "userdata" then
 			-- Wrapper blz's element

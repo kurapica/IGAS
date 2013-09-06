@@ -56,21 +56,18 @@ interface "IFGroup"
 		"DRUID",
 	}
 
+	__StructType__(StructType.Array)
 	struct "GroupFilter"
-		structtype "Array"
-
 		element = System.Number
 	endstruct "GroupFilter"
 
+	__StructType__(StructType.Array)
 	struct "ClassFilter"
-		structtype "Array"
-
 		element = PlayerClass
 	endstruct "ClassFilter"
 
+	__StructType__(StructType.Array)
 	struct "RoleFilter"
-		structtype "Array"
-
 		element = RoleType
 	endstruct "RoleFilter"
 
