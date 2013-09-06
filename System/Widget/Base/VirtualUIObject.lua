@@ -382,7 +382,7 @@ class "VirtualUIObject"
 		return name..i
 	end
 
-	__Arguments__{ Argument{ Name = "Name" , Type = String + nil }, Argument{ Name = "Parent" } }
+	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" } }
 	function VirtualUIObject(self, name, parent)
 		parent = parent or IGAS.UIParent
 

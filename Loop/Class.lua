@@ -1869,6 +1869,16 @@ do
 			end
 		end
 
+		-- No tail nil
+		for i = max, 1, -1 do
+			if cache[i] ~= nil then
+				max = i
+				break
+			elseif i == 1 then
+				max = 0
+			end
+		end
+
 		-- Check if the class is unique and already created one object to be return
 		if __Attribute__ and __Unique__ then
 			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
