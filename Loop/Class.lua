@@ -219,7 +219,6 @@ do
 	-- Namespace field
 	NAMESPACE_FIELD = "__LOOP_NameSpace"
 
-	EMPTY_TABLE = {}
 	WEAK_KEY = {__mode = "k"}
 end
 
@@ -281,7 +280,7 @@ do
 						return info.MetaTable["_"..key]
 					end
 				else
-					return info.Cache4Method[key]
+					return info.Method[key] or info.Cache4Method[key]
 				end
 			elseif info.Type == TYPE_ENUM then
 				return type(key) == "string" and info.Enum[key:upper()] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
@@ -711,20 +710,23 @@ do
 		function CloneWithoutOverride4Method(dest, src, method, owner)
 			if method then
 				for key, prototype in pairs(method) do
-					if dest[key] == nil and type(key) == "string" and type(src[key]) == "function" then
+					if type(src[key]) == "function" then
 						if __Attribute__ and prototype ~= src[key] then
 							src[key] = __Attribute__._CloneAttributes(prototype, src[key], AttributeTargets.Method, owner, key, true) or src[key]
+							method[key] = src[key]
 						end
 
-						dest[key] = src[key]
+						if not key:match("^_") then
+							dest[key] = method[key]
+						end
+					else
+						method[key] = nil
 					end
 				end
 			else
 				for key, value in pairs(src) do
-					if type(key) == "string" and type(value) == "function" and not key:match("^_") then
-						if dest[key] == nil then
-							dest[key] = value
-						end
+					if dest[key] == nil then
+						dest[key] = value
 					end
 				end
 			end
@@ -798,10 +800,10 @@ do
 			end
 
 			-- Cache for objects
-			if __Attribute__ and __Cache__ then
+			if __Attribute__ and __Cache__ and info.Type == TYPE_CLASS then
 				local cache = {}
 				for key, func in pairs(info.Cache4Method) do
-					if not strfind(key, "^_") and __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
+					if func and __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
 						tinsert(cache, key)
 					end
 				end
@@ -1257,31 +1259,20 @@ do
 		end
 	end
 
-	local function SetProperty2IF(info, name, set)
-		local tempProperty = {}
-
+	function SetPropertyWithSet(info, name, set)
 		if type(set) ~= "table" then
-			error([=[Usage: property "propertyName" {
+			error([=[Usage: property "XXX" {
 				Get = function(self)
 					-- return the property's value
 				end,
 				Set = function(self, value)
 					-- Set the property's value
 				end,
+				GetMethod = "GetXXX",
+				SetMethod = "SetXXX",
+				Storage = "__XXX",
 				Type = Type1 [+ Type2 [+ nil]],	-- set the property's type
 			}]=], 2)
-		end
-
-		for i, v in pairs(set) do
-			if type(i) == "string" then
-				if i:lower() == "get" then
-					tempProperty.Get = v
-				elseif i:lower() == "set" then
-					tempProperty.Set = v
-				elseif i:lower() == "type" then
-					tempProperty.Type = v
-				end
-			end
 		end
 
 		local prop = info.Property[name] or {}
@@ -1290,23 +1281,43 @@ do
 		wipe(prop)
 
 		prop.Name = name
-		prop.Get = type(tempProperty.Get) == "function" and tempProperty.Get
-		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
 
-		if tempProperty.Type then
-			local ok, _type = pcall(BuildType, tempProperty.Type, name)
-			if ok then
-				prop.Type = _type
-			else
-				_type = strtrim(_type:match(":%d+:(.*)$") or _type)
+		for k, v in pairs(set) do
+			if type(k) == "string" then
+				k = k:lower()
 
-				wipe(tempProperty)
+				if k == "get" then
+					if type(v) == "function" then
+						prop.Get = v
+					end
+				elseif k == "set" then
+					if type(v) == "function" then
+						prop.Set = v
+					end
+				elseif k == "getmethod" then
+					if type(v) == "string" then
+						prop.GetMethod = v
+					end
+				elseif k == "setmethod" then
+					if type(v) == "string" then
+						prop.SetMethod = v
+					end
+				elseif k == "storage" then
+					if type(v) == "string" then
+						prop.Storage = v
+					end
+				elseif k == "type" then
+					local ok, ret = pcall(BuildType, v, name)
+					if ok then
+						prop.Type = ret
+					else
+						ret = strtrim(ret:match(":%d+:(.*)$") or ret)
 
-				errorhandler(_type)
+						errorhandler(ret)
+					end
+				end
 			end
 		end
-
-		wipe(tempProperty)
 
 		if __Attribute__ then
 			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
@@ -1352,7 +1363,7 @@ do
 		end
 
 		return function(set)
-			return SetProperty2IF(info, name, set)
+			return SetPropertyWithSet(info, name, set)
 		end
 	end
 
@@ -1643,26 +1654,6 @@ do
 		end
 	end
 
-	_MetaEvents = _MetaEvents or {}
-	do
-		_MetaEvents.__index = function(self, key)
-			-- Check Event
-			local cls = self._Owner and getmetatable(self._Owner)
-			local evt = _NSInfo[cls].Cache4Event[key]
-
-			if not evt then
-				return
-			end
-
-			-- Add Event Handler
-			rawset(self, key, EventHandler(evt, self._Owner))
-			return rawget(self, key)
-		end
-
-		_MetaEvents.__newindex = function(self, key, value)
-		end
-	end
-
 	function IsChildClass(cls, child)
 		if not cls or not child or not _NSInfo[cls] or _NSInfo[cls].Type ~= TYPE_CLASS or not _NSInfo[child] or _NSInfo[child].Type ~= TYPE_CLASS then
 			return false
@@ -1697,26 +1688,6 @@ do
 				end
 			end
 		end
-	end
-
-	function CheckProperty(prop, value)
-		if prop and prop.Type then
-			local ok, ret = pcall(prop.Type.Validate, prop.Type, value)
-
-			if not ok then
-				ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-				if ret:find("%%s") then
-					ret = ret:gsub("%%s[_%w]*", prop.Name)
-				end
-
-				error(ret, 3)
-			end
-
-			return ret
-		end
-
-		return value
 	end
 
 	function CallEventWithoutCreate(self, eventName, ...)
@@ -2110,94 +2081,121 @@ do
 			local rawset = rawset
 			local getmetatable = getmetatable
 			local setmetatable = setmetatable
-			local CheckProperty = CheckProperty
 
 			MetaTable.__metatable = cls
 
 			MetaTable.__index = MetaTable.__index or function(self, key)
+				local oper
+
 				-- Dispose Method
 				if key == DISPOSE_METHOD then
 					return DisposeObject
 				end
 
-				if type(key) == "string" and not strfind(key, "^__") then
-					-- Property Get
-					if Cache4Property[key] then
-						if Cache4Property[key]["Get"] then
-							return Cache4Property[key]["Get"](self)
-						else
-							error(("%s is write-only."):format(tostring(key)),2)
-						end
+				-- Property Get
+				oper = Cache4Property[key]
+				if oper then
+					if oper.Get then
+						return oper.Get(self)
+					elseif oper.GetMethod then
+						return self[oper.GetMethod](self)
+					elseif oper.Storage then
+						return rawget(self, oper.Storage)
+					else
+						error(("%s is write-only."):format(tostring(key)),2)
+					end
+				end
+
+				-- Method Get
+				oper = Cache4Method[key]
+				if oper then
+					if isCached then
+						rawset(self, key, oper)
+						return oper
+					else
+						return oper
+					end
+				end
+
+				-- Events
+				if Cache4Event[key] then
+					oper = rawget(self, "__Events")
+					if type(oper) ~= "table" then
+						oper = {}
+						rawset(self, "__Events", oper)
 					end
 
-					-- Method Get
-					if not strfind(key, "^_") and Cache4Method[key] then
-						if isCached then
-							rawset(self, key, Cache4Method[key])
-							return Cache4Method[key]
-						else
-							return Cache4Method[key]
-						end
-					end
-
-					-- Events
-					if Cache4Event[key] then
-						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
-							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
-						end
-
-						return self.__Events[key]
+					-- No more check
+					if oper[key] then
+						return oper[key]
+					else
+						oper[key] = EventHandler(Cache4Event[key], self)
+						return oper[key]
 					end
 				end
 
 				-- Custom index metametods
-				local ___index = MetaTable["___index"]
-				if ___index then
-					if type(___index) == "table" then
-						return ___index[key]
-					elseif type(___index) == "function" then
-						return ___index(self, key)
+				oper = MetaTable["___index"]
+				if oper then
+					if type(oper) == "table" then
+						return oper[key]
+					elseif type(oper) == "function" then
+						return oper(self, key)
 					end
 				end
 			end
 
 			MetaTable.__newindex = MetaTable.__newindex or function(self, key, value)
-				if type(key) == "string" and not strfind(key, "^__") then
-					-- Property Set
-					if Cache4Property[key] then
-						if Cache4Property[key]["Set"] then
-							return Cache4Property[key]["Set"](self, CheckProperty(Cache4Property[key], value))
-						else
-							error(("%s is read-only."):format(tostring(key)),2)
-						end
+				local oper
+
+				-- Property Set
+				oper = Cache4Property[key]
+				if oper then
+					if oper.Type then
+						value = oper.Type:Validate(value, key, 2)
 					end
 
-					-- Events
-					if Cache4Event[key] then
-						if type(rawget(self, "__Events")) ~= "table" or getmetatable(self.__Events) ~= _MetaEvents then
-							rawset(self, "__Events", setmetatable({_Owner = self}, _MetaEvents))
-						end
-
-						if value == nil or type(value) == "function" then
-							if value == nil and rawget(self.__Events, key) == nil then
-								-- pass
-							else
-								self.__Events[key].Handler = value
-							end
-						elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
-							self.__Events[key]:Copy(value)
-						else
-							error("can't set this value to the event handler.", 2)
-						end
-
-						return
+					if oper.Set then
+						return oper.Set(self, value)
+					elseif oper.SetMethod then
+						return self[oper.SetMethod](self, value)
+					elseif oper.Storage then
+						return rawset(self, oper.Storage, value)
+					else
+						error(("%s is read-only."):format(tostring(key)),2)
 					end
 				end
 
+				-- Events
+				if Cache4Event[key] then
+					oper = rawget(self, "__Events")
+					if type(oper) ~= "table" then
+						oper = {}
+						rawset(self, "__Events", oper)
+					end
+
+					if value == nil and not oper[key] then return end
+
+					if not oper[key] then
+						oper[key] = EventHandler(Cache4Event[key], self)
+					end
+					oper = oper[key]
+
+					if value == nil or type(value) == "function" then
+						oper.Handler = value
+					elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
+						oper:Copy(value)
+					else
+						error("can't set this value to the event handler.", 2)
+					end
+
+					return
+				end
+
 				-- Custom newindex metametods
-				local ___newindex = MetaTable["___newindex"]
-				if ___newindex and type(___newindex) == "function" then
-					return ___newindex(self, key, value)
+				oper = MetaTable["___newindex"]
+				if oper and type(oper) == "function" then
+					return oper(self, key, value)
 				end
 
 				rawset(self, key, value)			-- Other key can be set as usual
@@ -2478,62 +2476,6 @@ do
 		end
 	end
 
-	local function SetProperty2Cls(info, name, set)
-		local tempProperty = {}
-
-		if type(set) ~= "table" then
-			error([=[Usage: property "propertyName" {
-				Get = function(self)
-					-- return the property's value
-				end,
-				Set = function(self, value)
-					-- Set the property's value
-				end,
-				Type = Type1 [+ Type2 [+ nil]],	-- set the property's type
-			}]=], 2)
-		end
-
-		for i, v in pairs(set) do
-			if type(i) == "string" then
-				if i:lower() == "get" then
-					tempProperty.Get = v
-				elseif i:lower() == "set" then
-					tempProperty.Set = v
-				elseif i:lower() == "type" then
-					tempProperty.Type = v
-				end
-			end
-		end
-
-		local prop = info.Property[name] or {}
-		info.Property[name] = prop
-
-		wipe(prop)
-
-		prop.Name = name
-		prop.Get = type(tempProperty.Get) == "function" and tempProperty.Get
-		prop.Set = type(tempProperty.Set) == "function" and tempProperty.Set
-
-		if tempProperty.Type then
-			local ok, _type = pcall(BuildType, tempProperty.Type, name)
-			if ok then
-				prop.Type = _type
-			else
-				_type = strtrim(_type:match(":%d+:(.*)$") or _type)
-
-				wipe(tempProperty)
-
-				errorhandler(_type)
-			end
-		end
-
-		wipe(tempProperty)
-
-		if __Attribute__ then
-			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
-		end
-	end
-
 	------------------------------------
 	--- set a propert to the current class
 	-- @name property
@@ -2573,7 +2515,7 @@ do
 		end
 
 		return function(set)
-			return SetProperty2Cls(info, name, set)
+			return SetPropertyWithSet(info, name, set)
 		end
 	end
 
@@ -3353,10 +3295,13 @@ do
 			@name Validate
 			@type method
 			@desc Used to validate the value
+			@format value[, name[, stack]]
 			@param value
+			@param name the name present the value
+			@param stack the stack level, default 1
 			@return value
 		]======]
-		function Validate(self, value)
+		function Validate(self, value, name, stack)
 			if value == nil and rawget(self, _ALLOW_NIL) then
 				return value
 			end
@@ -3457,6 +3402,12 @@ do
 						if value then
 							if value >= 1 and value <= info.MaxValue then
 								return floor(value)
+							elseif value == 0 then
+								for _, v in pairs(info.Enum) do
+									if value == v then
+										return v
+									end
+								end
 							end
 						end
 					else
@@ -3496,7 +3447,15 @@ do
 				msg = msg .. "(Optional)"
 			end
 
-			assert(not msg, msg)
+			if msg then
+				if name then
+					if msg:find("%%s") then
+						msg = msg:gsub("%%s[_%w]*", name)
+					end
+				end
+
+				error(msg, (stack or 1) + 1)
+			end
 
 			return value
 		end
@@ -6609,22 +6568,31 @@ do
 
 				local cache = {}
 				local count = 0
+				local firstZero = true
 
 				-- Count and clear
 				for k, v in pairs(enums) do
-					cache[2^count] = true
-					count = count + 1
+					if v == 0 and firstZero then
+						-- Only one may keep zero
+						firstZero = false
+					else
+						cache[2^count] = true
+						count = count + 1
 
-					enums[k] = tonumber(v) or -1
+						enums[k] = tonumber(v) or -1
+						if enums[k] == 0 then
+							enums[k] = -1
+						end
+					end
 				end
 
-				_NSInfo[target].MaxValue = 2^(count+1) - 1
+				_NSInfo[target].MaxValue = 2^count - 1
 
 				-- Scan the existed bit values
 				for k, v in pairs(enums) do
 					if cache[v] == true then
 						cache[v] = k
-					else
+					elseif v ~= 0 then
 						enums[k] = -1
 					end
 				end
@@ -7587,14 +7555,12 @@ do
 			@param ... the event's arguments
 			@return nil
 		]======]
+		local rawget = rawget
 		function Fire(self, sc, ...)
-			if type(sc) ~= "string" then
-				error(("Usage : Object:Fire(event [, args, ...]) : 'event' - string expected, got %s."):format(type(sc)), 2)
-			end
-
-			if rawget(self, "__Events") and rawget(self.__Events, sc) then
-				return rawget(self.__Events, sc)(self, ...)
-			end
+			-- No more check , just fire the event as quick as we can
+			local handler = rawget(self, "__Events")
+			handler = handler and handler[sc]
+			return handler and handler(self, ...)
 		end
 
 		doc [======[
