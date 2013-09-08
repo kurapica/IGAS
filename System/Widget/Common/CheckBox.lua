@@ -50,8 +50,6 @@ class "CheckBox"
 	end
 
     local function OnClick(self, ...)
-		if self.InDesignMode then return end
-
         self:GetChild("ChkBtn").Checked = not self:GetChild("ChkBtn").Checked
 		UpdateText(self)
 

@@ -41,9 +41,7 @@ class "NormalButton"
 	-- Event Handler
 	------------------------------------------------------
     local function OnClick_Close(self)
-		if not self.Parent.InDesignMode then
-			self.Parent.Visible = false
-		end
+		self.Parent.Visible = false
     end
 
 	local function SetButtonStyle(self, style)

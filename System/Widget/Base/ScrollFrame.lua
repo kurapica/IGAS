@@ -115,38 +115,6 @@ class "ScrollFrame"
 		@return nil
 	]======]
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name HorizontalScroll
-		@type property
-		@desc the scroll frame's current horizontal scroll position
-	]======]
-	property "HorizontalScroll" {
-		Get = function(self)
-			return self:GetHorizontalScroll()
-		end,
-		Set = function(self, offset)
-			self:SetHorizontalScroll(offset)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name VerticalScroll
-		@type property
-		@desc the scroll frame's vertical scroll position
-	]======]
-	property "VerticalScroll" {
-		Get = function(self)
-			return self:GetVerticalScroll()
-		end,
-		Set = function(self, offset)
-			self:SetVerticalScroll(offset)
-		end,
-		Type = Number,
-	}
 
 	------------------------------------------------------
 	-- Event Handler
@@ -165,4 +133,23 @@ partclass "ScrollFrame"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(ScrollFrame)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name HorizontalScroll
+		@type property
+		@desc the scroll frame's current horizontal scroll position
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "HorizontalScroll" {}
+
+	doc [======[
+		@name VerticalScroll
+		@type property
+		@desc the scroll frame's vertical scroll position
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "VerticalScroll" {}
 endclass "ScrollFrame"

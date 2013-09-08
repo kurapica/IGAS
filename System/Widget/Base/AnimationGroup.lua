@@ -224,6 +224,28 @@ class "AnimationGroup"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not IGAS:GetUI(parent).CreateAnimationGroup then
+			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
+		end
+
+		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
+	end
+endclass "AnimationGroup"
+
+partclass "AnimationGroup"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(AnimationGroup)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -231,15 +253,8 @@ class "AnimationGroup"
 		@type property
 		@desc looping type for the animation group: BOUNCE , NONE  , REPEAT
 	]======]
-	property "Looping" {
-		Set = function(self, loopType)
-			self:SetLooping(loopType)
-		end,
-		Get = function(self)
-			return self:GetLooping()
-		end,
-		Type = AnimLoopType,
-	}
+	__Auto__{ Method = true, Type = AnimLoopType }
+	property "Looping" {}
 
 	doc [======[
 		@name LoopState
@@ -247,9 +262,7 @@ class "AnimationGroup"
 		@desc the current loop state of the group: FORWARD , NONE , REVERSE
 	]======]
 	property "LoopState" {
-		Get = function(self)
-			return self:GetLoopState()
-		end,
+		Get = "GetLoopState",
 		Type = AnimLoopStateType,
 	}
 
@@ -274,9 +287,7 @@ class "AnimationGroup"
 		@desc whether the animationgroup is playing
 	]======]
 	property "Playing" {
-		Get = function(self)
-			return self:IsPlaying()
-		end,
+		Get = "IsPlaying",
 		Set = function(self, value)
 			if value then
 				if not self:IsPlaying() then
@@ -296,9 +307,7 @@ class "AnimationGroup"
 		@desc whether the animationgroup is paused
 	]======]
 	property "Paused" {
-		Get = function(self)
-			return self:IsPaused()
-		end,
+		Get = "IsPaused",
 		Set = function(self, value)
 			if value then
 				if self:IsPlaying() then
@@ -340,30 +349,7 @@ class "AnimationGroup"
 		@desc duration of all child animations (in seconds)
 	]======]
 	property "Duration" {
-		Get = function(self)
-			return self:GetDuration()
-		end
+		Get = "GetDuration",
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not IGAS:GetUI(parent).CreateAnimationGroup then
-			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
-		end
-
-		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
-	end
-endclass "AnimationGroup"
-
-partclass "AnimationGroup"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(AnimationGroup)
 endclass "AnimationGroup"

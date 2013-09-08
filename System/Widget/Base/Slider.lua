@@ -135,6 +135,24 @@ class "Slider"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Slider", nil, parent, ...)
+	end
+endclass "Slider"
+
+partclass "Slider"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(Slider)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -142,29 +160,19 @@ class "Slider"
 		@type property
 		@desc the orientation of the slider
 	]======]
-	property "Orientation" {
-		Get = function(self)
-			return self:GetOrientation()
-		end,
-		Set = function(self, orientation)
-			self:SetOrientation(orientation)
-		end,
-		Type = Orientation,
-	}
+	__Auto__{ Method = true, Type = Orientation }
+	property "Orientation" {}
 
 	doc [======[
 		@name ThumbTexture
 		@type property
 		@desc the texture object for the slider thumb
 	]======]
+	__Auto__{ Method = true, Type = Texture + nil }
 	property "ThumbTexture" {
-		Get = function(self)
-			return self:GetThumbTexture()
-		end,
 		Set = function(self, texture)
 			self:SetThumbTexture(texture, self.Layer)
 		end,
-		Type = Texture + nil,
 	}
 
 	doc [======[
@@ -202,30 +210,16 @@ class "Slider"
 		@type property
 		@desc the value representing the current position of the slider thumb
 	]======]
-	property "Value" {
-		Get = function(self)
-			return self:GetValue()
-		end,
-		Set = function(self, value)
-			self:SetValue(value)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Value" {}
 
 	doc [======[
 		@name ValueStep
 		@type property
 		@desc the minimum increment between allowed slider values
 	]======]
-	property "ValueStep" {
-		Get = function(self)
-			return self:GetValueStep()
-		end,
-		Set = function(self, value)
-			self:SetValueStep(value)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "ValueStep" {}
 
 	doc [======[
 		@name Enabled
@@ -261,21 +255,4 @@ class "Slider"
 		Type = MinMax,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Slider", nil, parent, ...)
-	end
-endclass "Slider"
-
-partclass "Slider"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(Slider)
 endclass "Slider"

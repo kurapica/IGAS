@@ -81,6 +81,24 @@ class "CheckButton"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("CheckButton", nil, parent, ...)
+	end
+endclass "CheckButton"
+
+partclass "CheckButton"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(CheckButton)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -88,30 +106,16 @@ class "CheckButton"
 		@type property
 		@desc true if the checkbutton is checked
 	]======]
-	property "Checked" {
-		Get = function(self)
-			return (self:GetChecked() and true) or false
-		end,
-		Set = function(self, value)
-			self:SetChecked(value)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "Checked" {}
 
 	doc [======[
 		@name CheckedTexture
 		@type property
 		@desc the texture object used when the button is checked
 	]======]
-	property "CheckedTexture" {
-		Get = function(self)
-			return self:GetCheckedTexture()
-		end,
-		Set = function(self, texture)
-			self:SetCheckedTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "CheckedTexture" {}
 
 	doc [======[
 		@name CheckedTexturePath
@@ -133,15 +137,8 @@ class "CheckButton"
 		@type property
 		@desc the texture object used when the button is disabled and checked
 	]======]
-	property "DisabledCheckedTexture" {
-		Get = function(self)
-			return self:GetDisabledCheckedTexture()
-		end,
-		Set = function(self, texture)
-			self:SetDisabledCheckedTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "DisabledCheckedTexture" {}
 
 	doc [======[
 		@name DisabledCheckedTexturePath
@@ -158,21 +155,4 @@ class "CheckButton"
 		Type = String + nil,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("CheckButton", nil, parent, ...)
-	end
-endclass "CheckButton"
-
-partclass "CheckButton"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(CheckButton)
 endclass "CheckButton"

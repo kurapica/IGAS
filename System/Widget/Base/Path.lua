@@ -30,7 +30,7 @@ class "Path"
 		@desc Creates a new control point for the given path
 		@format [name [, template [, order]]]
 		@param name string, the name of the object
-		@param template string, the template from which the new point should inherit 
+		@param template string, the template from which the new point should inherit
 		@param order number, the order of the new control point
 		@return System.Widget.ControlPoint Reference to the new control point object
 	]======]
@@ -65,7 +65,7 @@ class "Path"
 		@name SetCurve
 		@type method
 		@desc Sets the curve type for the path animation
-		@param curveType string, NONE | SMOOTH 
+		@param curveType string, NONE | SMOOTH
 		@return nil
 	]======]
 
@@ -73,26 +73,8 @@ class "Path"
 		@name GetCurve
 		@type method
 		@desc Returns the curveType of the given path
-		@return curveType string, NONE | SMOOTH 
+		@return curveType string, NONE | SMOOTH
 	]======]
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Curve
-		@type property
-		@desc The curveType of the given path
-	]======]
-	property "Curve" {
-		Get = function(self)
-			return self:GetCurve()
-		end,
-		Set = function(self, value)
-			self:SetCurve(value)
-		end,
-		Type = AnimCurveType,
-	}
 
 	------------------------------------------------------
 	-- Constructor
@@ -111,6 +93,18 @@ partclass "Path"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Path, AnimationGroup)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Curve
+		@type property
+		@desc The curveType of the given path
+	]======]
+	__Auto__{ Method = true, Type = AnimCurveType }
+	property "Curve" {}
+
 endclass "Path"
 
 class "ControlPoint"
@@ -162,6 +156,23 @@ class "ControlPoint"
 	]======]
 
 	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, Path) then
+			error("Usage : ControlPoint(name, parent) : 'parent' - Path UI element expected.", 2)
+		end
+		return IGAS:GetUI(parent):CreateControlPoint(nil, ...)
+	end
+endclass "ControlPoint"
+
+partclass "ControlPoint"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(ControlPoint, Path, AnimationGroup)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -184,30 +195,7 @@ class "ControlPoint"
 		@type property
 		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
 	]======]
-	property "Order" {
-		Set = function(self, order)
-			self:SetOrder(order)
-		end,
-		Get = function(self)
-			return self:GetOrder()
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Order" {}
 
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, Path) then
-			error("Usage : ControlPoint(name, parent) : 'parent' - Path UI element expected.", 2)
-		end
-		return IGAS:GetUI(parent):CreateControlPoint(nil, ...)
-	end
-endclass "ControlPoint"
-
-partclass "ControlPoint"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(ControlPoint, Path, AnimationGroup)
 endclass "ControlPoint"

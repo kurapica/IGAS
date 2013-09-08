@@ -359,6 +359,24 @@ class "Button"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Button", nil, parent, ...)
+	end
+endclass "Button"
+
+partclass "Button"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(Button)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -367,9 +385,7 @@ class "Button"
 		@desc true if the button is enabled
 	]======]
 	property "Enabled" {
-		Get = function(self)
-			return (self:IsEnabled() and true) or false
-		end,
+		Get = "IsEnabled",
 		Set = function(self, enabled)
 			if enabled then
 				self:Enable()
@@ -386,9 +402,7 @@ class "Button"
 		@desc the button's current state: NORMAL, PUSHED
 	]======]
 	property "ButtonState" {
-		Get = function(self)
-			return self:GetButtonState()
-		end,
+		Get = "GetButtonState",
 		Set = function(self, state)
 			self:SetButtonState(state, self.__Locked)
 		end,
@@ -416,30 +430,16 @@ class "Button"
 		@type property
 		@desc the font object used for the button's disabled state
 	]======]
-	property "DisabledFontObject" {
-		Get = function(self)
-			return self:GetDisabledFontObject()
-		end,
-		Set = function(self, font)
-			self:SetDisabledFontObject(font)
-		end,
-		Type = Font + String + nil,
-	}
+	__Auto__{ Method = true, Type = Font + String + nil }
+	property "DisabledFontObject" {}
 
 	doc [======[
 		@name DisabledTexture
 		@type property
 		@desc the texture object used when the button is disabled
 	]======]
-	property "DisabledTexture" {
-		Get = function(self)
-			return self:GetDisabledTexture()
-		end,
-		Set = function(self, texture)
-			self:SetDisabledTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "DisabledTexture" {}
 
 	doc [======[
 		@name DisabledTexturePath
@@ -450,9 +450,7 @@ class "Button"
 		Get = function(self)
 			return self:GetDisabledTexture() and self:GetDisabledTexture().TexturePath
 		end,
-		Set = function(self, texture)
-			self:SetDisabledTexture(texture)
-		end,
+		Set = "SetDisabledTexture",
 		Type = String + nil,
 	}
 
@@ -461,15 +459,8 @@ class "Button"
 		@type property
 		@desc the texture object used when the button is highlighted
 	]======]
-	property "HighlightTexture" {
-		Get = function(self)
-			return self:GetHighlightTexture()
-		end,
-		Set = function(self, texture)
-			self:SetHighlightTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "HighlightTexture" {}
 
 	doc [======[
 		@name HighlightTexturePath
@@ -480,9 +471,7 @@ class "Button"
 		Get = function(self)
 			return self:GetHighlightTexture() and self:GetHighlightTexture().TexturePath
 		end,
-		Set = function(self, texture)
-			self:SetHighlightTexture(texture)
-		end,
+		Set = "SetHighlightTexture",
 		Type = String + nil,
 	}
 
@@ -491,15 +480,8 @@ class "Button"
 		@type property
 		@desc the texture object used for the button's normal state
 	]======]
-	property "NormalTexture" {
-		Get = function(self)
-			return self:GetNormalTexture()
-		end,
-		Set = function(self, texture)
-			self:SetNormalTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "NormalTexture" {}
 
 	doc [======[
 		@name NormalTexturePath
@@ -510,9 +492,7 @@ class "Button"
 		Get = function(self)
 			return self:GetNormalTexture() and self:GetNormalTexture().TexturePath
 		end,
-		Set = function(self, texture)
-			self:SetNormalTexture(texture)
-		end,
+		Set = "SetNormalTexture",
 		Type = String + nil,
 	}
 
@@ -521,15 +501,8 @@ class "Button"
 		@type property
 		@desc the texture object used when the button is pushed
 	]======]
-	property "PushedTexture" {
-		Get = function(self)
-			return self:GetPushedTexture()
-		end,
-		Set = function(self, texture)
-			self:SetPushedTexture(texture)
-		end,
-		Type = Texture + nil,
-	}
+	__Auto__{ Method = true, Type = Texture + nil }
+	property "PushedTexture" {}
 
 	doc [======[
 		@name PushedTexturePath
@@ -540,9 +513,7 @@ class "Button"
 		Get = function(self)
 			return self:GetPushedTexture() and self:GetPushedTexture().TexturePath
 		end,
-		Set = function(self, texture)
-			self:SetPushedTexture(texture)
-		end,
+		Set = "SetPushedTexture",
 		Type = String + nil,
 	}
 
@@ -551,45 +522,24 @@ class "Button"
 		@type property
 		@desc the FontString object used for the button's label text
 	]======]
-	property "FontString" {
-		Get = function(self)
-			return self:GetFontString()
-		end,
-		Set = function(self, label)
-			self:SetFontString(label)
-		end,
-		Type = FontString,
-	}
+	__Auto__{ Method = true, Type = FontString }
+	property "FontString" {}
 
 	doc [======[
 		@name HighlightFontObject
 		@type property
 		@desc the font object used when the button is highlighted
 	]======]
-	property "HighlightFontObject" {
-		Get = function(self)
-			return self:GetHighlightFontObject()
-		end,
-		Set = function(self, fontObject)
-			self:SetHighlightFontObject(fontObject)
-		end,
-		Type = Font + String + nil,
-	}
+	__Auto__{ Method = true, Type = Font + String + nil }
+	property "HighlightFontObject" {}
 
 	doc [======[
 		@name NormalFontObject
 		@type property
 		@desc the font object used for the button's normal state
 	]======]
-	property "NormalFontObject" {
-		Get = function(self)
-			return self:GetNormalFontObject()
-		end,
-		Set = function(self, fontObject)
-			self:SetNormalFontObject(fontObject)
-		end,
-		Type = Font + String + nil,
-	}
+	__Auto__{ Method = true, Type = Font + String + nil }
+	property "NormalFontObject" {}
 
 	doc [======[
 		@name PushedTextOffset
@@ -611,15 +561,8 @@ class "Button"
 		@type property
 		@desc the text displayed as the button's label
 	]======]
-	property "Text" {
-		Get = function(self)
-			return self:GetText()
-		end,
-		Set = function(self, text)
-			self:SetText(text)
-		end,
-		Type = LocaleString,
-	}
+	__Auto__{ Method = true, Type = LocaleString }
+	property "Text" {}
 
 	doc [======[
 		@name HighlightLocked
@@ -642,21 +585,4 @@ class "Button"
 		Type = Boolean,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Button", nil, parent, ...)
-	end
-endclass "Button"
-
-partclass "Button"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(Button)
 endclass "Button"

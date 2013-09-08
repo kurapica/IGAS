@@ -246,200 +246,6 @@ class "Font"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Name
-		@type property
-		@desc the name of the font object
-	]======]
-	property "Name" {
-		Get = function(self)
-			return self:GetName()
-		end,
-	}
-
-	doc [======[
-		@name Font
-		@type property
-		@desc the font's defined table, contains font path, height and flags' settings
-	]======]
-	property "Font" {
-		Get = function(self)
-			local font = {}
-			local flags
-			font.path, font.height, flags = self:GetFont()
-			flags = (flags or ""):upper()
-			if flags:find("THICKOUTLINE") then
-				font.outline = "THICK"
-			elseif flags:find("OUTLINE") then
-				font.outline = "NORMAL"
-			else
-				font.outline = "NONE"
-			end
-			if flags:find("MONOCHROME") then
-				font.monochrome = true
-			end
-
-			return font
-		end,
-		Set = function(self, font)
-			local flags = ""
-			if font.outline then
-				if font.outline == "NORMAL" then
-					flags = flags.."OUTLINE"
-				elseif font.outline == "THICK" then
-					flags = flags.."THICKOUTLINE"
-				end
-			end
-			if font.monochrome then
-				if flags ~= "" then
-					flags = flags..","
-				end
-				flags = flags.."MONOCHROME"
-			end
-
-			self:SetFont(font.path, font.height, flags)
-		end,
-		Type = FontType,
-	}
-
-	doc [======[
-		@name FontObject
-		@type property
-		@desc the Font object
-	]======]
-	property "FontObject" {
-		Get = function(self)
-			return self:GetFontObject()
-		end,
-		Set = function(self, fontObject)
-			self:SetFontObject(fontObject)
-		end,
-		Type = Font + String + nil,
-	}
-
-	doc [======[
-		@name JustifyH
-		@type property
-		@desc the fontstring's horizontal text alignment style
-	]======]
-	property "JustifyH" {
-		Get = function(self)
-			return self:GetJustifyH()
-		end,
-		Set = function(self, justifyH)
-			self:SetJustifyH(justifyH)
-		end,
-		Type = JustifyHType,
-	}
-
-	doc [======[
-		@name JustifyV
-		@type property
-		@desc the fontstring's vertical text alignment style
-	]======]
-	property "JustifyV" {
-		Get = function(self)
-			return self:GetJustifyV()
-		end,
-		Set = function(self, justifyV)
-			self:SetJustifyV(justifyV)
-		end,
-		Type = JustifyVType,
-	}
-
-	doc [======[
-		@name ShadowColor
-		@type property
-		@desc the color of the font's text shadow
-	]======]
-	property "ShadowColor" {
-		Get = function(self)
-			return ColorType(self:GetShadowColor())
-		end,
-		Set = function(self, color)
-			self:SetShadowColor(color.r, color.g, color.b, color.a)
-		end,
-		Type = ColorType,
-	}
-
-	doc [======[
-		@name ShadowOffset
-		@type property
-		@desc the offset of the fontstring's text shadow from its text
-	]======]
-	property "ShadowOffset" {
-		Get = function(self)
-			return Dimension(self:GetShadowOffset())
-		end,
-		Set = function(self, offset)
-			self:SetShadowOffset(offset.x, offset.y)
-		end,
-		Type = Dimension,
-	}
-
-	doc [======[
-		@name Spacing
-		@type property
-		@desc the fontstring's amount of spacing between lines
-	]======]
-	property "Spacing" {
-		Get = function(self)
-			return self:GetSpacing()
-		end,
-		Set = function(self, spacing)
-			self:SetSpacing(spacing)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name TextColor
-		@type property
-		@desc the fontstring's default text color
-	]======]
-	property "TextColor" {
-		Get = function(self)
-			return ColorType(self:GetTextColor())
-		end,
-		Set = function(self, color)
-			self:SetTextColor(color.r, color.g, color.b, color.a)
-		end,
-		Type = ColorType,
-	}
-
-	doc [======[
-		@name Alpha
-		@type property
-		@desc the opacity for text displayed by the font
-	]======]
-	property "Alpha" {
-		Get = function(self)
-			return self:GetAlpha()
-		end,
-		Set = function(self, alpha)
-			return self:SetAlpha(alpha)
-		end,
-		Type = ColorFloat,
-	}
-
-	doc [======[
-		@name IndentedWordWrap
-		@type property
-		@desc whether long lines of text are indented when wrapping
-	]======]
-	property "IndentedWordWrap" {
-		Get = function(self)
-			return self:GetIndentedWordWrap()
-		end,
-		Set = function(self, flag)
-			return self:SetIndentedWordWrap(flag)
-		end,
-		Type = Boolean,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -498,4 +304,155 @@ partclass "Font"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Font, GameFontNormal)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Name
+		@type property
+		@desc the name of the font object
+	]======]
+	property "Name" {
+		Get = "GetName",
+	}
+
+	doc [======[
+		@name Font
+		@type property
+		@desc the font's defined table, contains font path, height and flags' settings
+	]======]
+	property "Font" {
+		Get = function(self)
+			local font = {}
+			local flags
+			font.path, font.height, flags = self:GetFont()
+			flags = (flags or ""):upper()
+			if flags:find("THICKOUTLINE") then
+				font.outline = "THICK"
+			elseif flags:find("OUTLINE") then
+				font.outline = "NORMAL"
+			else
+				font.outline = "NONE"
+			end
+			if flags:find("MONOCHROME") then
+				font.monochrome = true
+			end
+
+			return font
+		end,
+		Set = function(self, font)
+			local flags = ""
+			if font.outline then
+				if font.outline == "NORMAL" then
+					flags = flags.."OUTLINE"
+				elseif font.outline == "THICK" then
+					flags = flags.."THICKOUTLINE"
+				end
+			end
+			if font.monochrome then
+				if flags ~= "" then
+					flags = flags..","
+				end
+				flags = flags.."MONOCHROME"
+			end
+
+			self:SetFont(font.path, font.height, flags)
+		end,
+		Type = FontType,
+	}
+
+	doc [======[
+		@name FontObject
+		@type property
+		@desc the Font object
+	]======]
+	__Auto__{ Method = true, Type = Font + String + nil }
+	property "FontObject" {}
+
+	doc [======[
+		@name JustifyH
+		@type property
+		@desc the fontstring's horizontal text alignment style
+	]======]
+	__Auto__{ Method = true, Type = JustifyHType }
+	property "JustifyH" {}
+
+	doc [======[
+		@name JustifyV
+		@type property
+		@desc the fontstring's vertical text alignment style
+	]======]
+	__Auto__{ Method = true, Type = JustifyVType }
+	property "JustifyV" {}
+
+	doc [======[
+		@name ShadowColor
+		@type property
+		@desc the color of the font's text shadow
+	]======]
+	property "ShadowColor" {
+		Get = function(self)
+			return ColorType(self:GetShadowColor())
+		end,
+		Set = function(self, color)
+			self:SetShadowColor(color.r, color.g, color.b, color.a)
+		end,
+		Type = ColorType,
+	}
+
+	doc [======[
+		@name ShadowOffset
+		@type property
+		@desc the offset of the fontstring's text shadow from its text
+	]======]
+	property "ShadowOffset" {
+		Get = function(self)
+			return Dimension(self:GetShadowOffset())
+		end,
+		Set = function(self, offset)
+			self:SetShadowOffset(offset.x, offset.y)
+		end,
+		Type = Dimension,
+	}
+
+	doc [======[
+		@name Spacing
+		@type property
+		@desc the fontstring's amount of spacing between lines
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Spacing" {}
+
+	doc [======[
+		@name TextColor
+		@type property
+		@desc the fontstring's default text color
+	]======]
+	property "TextColor" {
+		Get = function(self)
+			return ColorType(self:GetTextColor())
+		end,
+		Set = function(self, color)
+			self:SetTextColor(color.r, color.g, color.b, color.a)
+		end,
+		Type = ColorType,
+	}
+
+	doc [======[
+		@name Alpha
+		@type property
+		@desc the opacity for text displayed by the font
+	]======]
+	__Auto__{ Method = true, Type = ColorFloat }
+	property "Alpha" {}
+
+	doc [======[
+		@name IndentedWordWrap
+		@type property
+		@desc whether long lines of text are indented when wrapping
+	]======]
+	__Auto__{ Method = true, Type = Boolean }
+	property "IndentedWordWrap" {}
+
 endclass "Font"

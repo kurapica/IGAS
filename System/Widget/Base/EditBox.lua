@@ -441,6 +441,28 @@ class "EditBox"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("EditBox", nil, parent, ...)
+	end
+
+	function EditBox(self)
+		_FirstLoadedFix[self] = true
+	end
+endclass "EditBox"
+
+partclass "EditBox"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(EditBox)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -449,12 +471,8 @@ class "EditBox"
 		@desc true if the edit box shows more than one line of text
 	]======]
 	property "MultiLine" {
-		Get = function(self)
-			return (self:IsMultiLine() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetMultiLine(state)
-		end,
+		Get = "IsMultiLine",
+		Set = "SetMultiLine",
 		Type = Boolean,
 	}
 
@@ -464,12 +482,8 @@ class "EditBox"
 		@desc true if the edit box only accepts numeric input
 	]======]
 	property "NumericOnly" {
-		Get = function(self)
-			return (self:IsNumeric() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetNumeric(state)
-		end,
+		Get = "IsNumeric",
+		Set = "SetNumeric",
 		Type = Boolean,
 	}
 
@@ -479,12 +493,8 @@ class "EditBox"
 		@desc true if the text entered in the edit box is masked
 	]======]
 	property "Password" {
-		Get = function(self)
-			return (self:IsPassword() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetPassword(state)
-		end,
+		Get = "IsPassword",
+		Set = "SetPassword",
 		Type = Boolean,
 	}
 
@@ -494,12 +504,8 @@ class "EditBox"
 		@desc true if the edit box automatically acquires keyboard input focus
 	]======]
 	property "AutoFocus" {
-		Get = function(self)
-			return (self:IsAutoFocus() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetAutoFocus(state)
-		end,
+		Get = "IsAutoFocus",
+		Set = "SetAutoFocus",
 		Type = Boolean,
 	}
 
@@ -508,15 +514,8 @@ class "EditBox"
 		@type property
 		@desc the maximum number of history lines stored by the edit box
 	]======]
-	property "HistoryLines" {
-		Get = function(self)
-			return self:GetHistoryLines()
-		end,
-		Set = function(self, num)
-			self:SetHistoryLines(num)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "HistoryLines" {}
 
 	doc [======[
 		@name Focused
@@ -524,9 +523,7 @@ class "EditBox"
 		@desc true if the edit box is currently focused
 	]======]
 	property "Focused" {
-		Get = function(self)
-			return (self:HasFocus() and true) or false
-		end,
+		Get = "HasFocus",
 		Set = function(self, focus)
 			if focus then
 				self:SetFocus()
@@ -542,105 +539,56 @@ class "EditBox"
 		@type property
 		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
 	]======]
-	property "AltArrowKeyMode" {
-		Get = function(self)
-			return (self:GetAltArrowKeyMode() and true) or false
-		end,
-		Set = function(self, enable)
-			self:SetAltArrowKeyMode(enable)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "AltArrowKeyMode" {}
 
 	doc [======[
 		@name BlinkSpeed
 		@type property
 		@desc the rate at which the text insertion blinks when the edit box is focused
 	]======]
-	property "BlinkSpeed" {
-		Get = function(self)
-			return self:GetBlinkSpeed()
-		end,
-		Set = function(self, speed)
-			self:SetBlinkSpeed(speed)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "BlinkSpeed" {}
 
 	doc [======[
 		@name CursorPosition
 		@type property
 		@desc the current cursor position inside edit box
 	]======]
-	property "CursorPosition" {
-		Get = function(self)
-			return self:GetCursorPosition()
-		end,
-		Set = function(self, position)
-			self:SetCursorPosition(position)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "CursorPosition" {}
 
 	doc [======[
 		@name MaxBytes
 		@type property
 		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
 	]======]
-	property "MaxBytes" {
-		Get = function(self)
-			return self:GetMaxBytes()
-		end,
-		Set = function(self, maxBytes)
-			self:SetMaxBytes(maxBytes)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "MaxBytes" {}
 
 	doc [======[
 		@name MaxLetters
 		@type property
 		@desc the maximum number of text characters allowed in the edit box
 	]======]
-	property "MaxLetters" {
-		Get = function(self)
-			return self:GetMaxLetters()
-		end,
-		Set = function(self, maxLetters)
-			self:SetMaxLetters(maxLetters)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "MaxLetters" {}
 
 	doc [======[
 		@name Number
 		@type property
 		@desc the contents of the edit box as a number
 	]======]
-	property "Number" {
-		Get = function(self)
-			return self:GetNumber()
-		end,
-		Set = function(self, number)
-			self:SetNumber(number)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Number" {}
 
 	doc [======[
 		@name Text
 		@type property
 		@desc the edit box's text contents
 	]======]
-	property "Text" {
-		Get = function(self)
-			return self:GetText()
-		end,
-		Set = function(self, text)
-			self:SetText(text)
-		end,
-		Type = String + Number,
-	}
+	__Auto__{ Method = true, Type = String + Number }
+	property "Text" {}
 
 	doc [======[
 		@name TextInsets
@@ -678,25 +626,4 @@ class "EditBox"
 		Type = Boolean,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("EditBox", nil, parent, ...)
-	end
-
-	function EditBox(self)
-		_FirstLoadedFix[self] = true
-	end
-endclass "EditBox"
-
-partclass "EditBox"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(EditBox)
 endclass "EditBox"

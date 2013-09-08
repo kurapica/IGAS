@@ -74,54 +74,6 @@ class "Rotation"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Degrees
-		@type property
-		@desc the animation's rotation amount (in degrees)
-	]======]
-	property "Degrees" {
-		Get = function(self)
-			return self:GetDegrees()
-		end,
-		Set = function(self, degrees)
-			self:SetDegrees(degrees)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Radians
-		@type property
-		@desc the animation's rotation amount (in radians)
-	]======]
-	property "Radians" {
-		Get = function(self)
-			return self:GetRadians()
-		end,
-		Set = function(self, radians)
-			self:SetRadians(radians)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Origin
-		@type property
-		@desc the rotation animation's origin point
-	]======]
-	property "Origin" {
-		Get = function(self)
-			return AnimOriginType(self:GetOrigin())
-		end,
-		Set = function(self, origin)
-			self:SetOrigin(origin.point, origin.x, origin.y)
-		end,
-		Type = AnimOriginType,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -142,4 +94,39 @@ partclass "Rotation"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Rotation, AnimationGroup)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Degrees
+		@type property
+		@desc the animation's rotation amount (in degrees)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Degrees" {}
+
+	doc [======[
+		@name Radians
+		@type property
+		@desc the animation's rotation amount (in radians)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Radians" {}
+
+	doc [======[
+		@name Origin
+		@type property
+		@desc the rotation animation's origin point
+	]======]
+	property "Origin" {
+		Get = function(self)
+			return AnimOriginType(self:GetOrigin())
+		end,
+		Set = function(self, origin)
+			self:SetOrigin(origin.point, origin.x, origin.y)
+		end,
+		Type = AnimOriginType,
+	}
+
 endclass "Rotation"

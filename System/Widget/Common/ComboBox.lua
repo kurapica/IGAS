@@ -136,9 +136,6 @@ class "ComboBox"
 	}
 
     local function OnClick(self)
-		if self.Parent.InDesignMode then
-			return
-		end
 		if _List.Visible and _List.__ComboBox == self.Parent then
 			_List.Visible = false
 		else

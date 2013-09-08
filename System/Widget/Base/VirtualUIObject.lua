@@ -307,43 +307,16 @@ class "VirtualUIObject"
 		@type property
 		@desc The virtual widget object's name, it's parent can use the name to access it by parent[self.Name]
 	]======]
-	property "Name" {
-		Set = function(self, name)
-			return SetName(self, name)
-		end,
-
-		Get = function(self)
-			return self.__Name or ""
-		end,
-
-		Type = String + nil,
-	}
-
-	doc [======[
-		@name InDesignMode
-		@type property
-		@desc Using to block some action when in design mode
-	]======]
-	property "InDesignMode" {
-		Get = function(self)
-			return (self.__InDesignMode and true) or false
-		end,
-	}
+	__Auto__{ Storage = "__Name", Type = String + nil }
+	property "Name" { Set = SetName }
 
 	doc [======[
 		@name Parent
 		@type property
 		@desc the virtual widget object's parent widget object, can be virtual or not.
 	]======]
-	property "Parent" {
-		Set = function(self, parent)
-			self:SetParent(parent)
-		end,
-		Get = function(self)
-			return self:GetParent()
-		end,
-		Type = UIObject + nil,
-	}
+	__Auto__{ Method = true, Type = UIObject + nil }
+	property "Parent" {}
 
 	------------------------------------------------------
 	-- Dispose

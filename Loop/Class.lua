@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2011 WangXH <kurapica.igas@gmail.com>
+Copyright (c) 2011-2013 WangXH <kurapica.igas@gmail.com>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -84,6 +84,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/08/28 Now init table can be used to init the objects, like : o = System.Object{Name = "Obj", Type = "Object"}
 --               2013/08/28 partinterface is removed(canceled)
 --               2013/09/01 Attribute system added
+--               2013/09/07 Init-table system added for class and struct
+--               2013/09/08 Reduce the cpu cost for methods, properties, events system
+--               2013/09/09 Improve the property system
+--               2013/09/08 New property system
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -288,7 +292,7 @@ do
 				if info.SubNS and info.SubNS[key] then
 					return info.SubNS[key]
 				else
-					return info.Cache4Method[key]
+					return info.Method[key] or info.Cache4Method[key]
 				end
 			else
 				return info.SubNS and info.SubNS[key]
@@ -773,19 +777,6 @@ do
 				CloneWithoutOverride(info.Cache4Event, _NSInfo[IF].Cache4Event)
 			end
 
-			-- Cache4Property
-			wipe(info.Cache4Property)
-			--- self property
-			CloneWithoutOverride(info.Cache4Property, info.Property)
-			--- superclass property
-			if info.SuperClass then
-				CloneWithoutOverride(info.Cache4Property, _NSInfo[info.SuperClass].Cache4Property)
-			end
-			--- extend property
-			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
-			end
-
 			-- Cache4Method
 			wipe(info.Cache4Method)
 			--- self method
@@ -798,6 +789,30 @@ do
 			for _, IF in ipairs(info.ExtendInterface) do
 				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
 			end
+
+			-- Cache4Property
+			wipe(info.Cache4Property)
+			-- Validate the properties
+			for name, prop in pairs(info.Property) do
+				if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
+					prop.GetMethod = nil
+				end
+
+				if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then
+					prop.SetMethod = nil
+				end
+			end
+			--- self property
+			CloneWithoutOverride(info.Cache4Property, info.Property)
+			--- superclass property
+			if info.SuperClass then
+				CloneWithoutOverride(info.Cache4Property, _NSInfo[info.SuperClass].Cache4Property)
+			end
+			--- extend property
+			for _, IF in ipairs(info.ExtendInterface) do
+				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
+			end
+
 
 			-- Cache for objects
 			if __Attribute__ and __Cache__ and info.Type == TYPE_CLASS then
@@ -1289,10 +1304,14 @@ do
 				if k == "get" then
 					if type(v) == "function" then
 						prop.Get = v
+					elseif type(v) == "string" then
+						prop.GetMethod = v
 					end
 				elseif k == "set" then
 					if type(v) == "function" then
 						prop.Set = v
+					elseif type(v) == "string" then
+						prop.SetMethod = v
 					end
 				elseif k == "getmethod" then
 					if type(v) == "string" then
@@ -1318,6 +1337,10 @@ do
 				end
 			end
 		end
+
+		-- Clear
+		if prop.Get then prop.GetMethod = nil end
+		if prop.Set then prop.SetMethod = nil end
 
 		if __Attribute__ then
 			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
@@ -1855,9 +1878,25 @@ do
 			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
 
 			if isUnique and info.UniqueObject then
-				pcall(info.UniqueObject, unpack(cache, 1, max))
+				obj = info.UniqueObject
+
+				pcall(obj, unpack(cache, 1, max))
 				_Class2ObjCache(cache)
-				return info.UniqueObject
+
+				-- Try set properties
+				if type(init) == "table" then
+					for name, value in pairs(init) do
+						ok, msg = pcall(TrySetProperty, obj, name, value)
+
+						if not ok then
+							msg = strtrim(msg:match(":%d+:(.*)$") or msg)
+
+							errorhandler(msg)
+						end
+					end
+				end
+
+				return obj
 			end
 		else
 			isUnique = false
@@ -2076,9 +2115,10 @@ do
 
 			local DISPOSE_METHOD = DISPOSE_METHOD
 			local type = type
-			local strfind = string.find
 			local rawget = rawget
 			local rawset = rawset
+			local error = error
+			local tostring = tostring
 			local getmetatable = getmetatable
 			local setmetatable = setmetatable
 
@@ -2098,7 +2138,13 @@ do
 					if oper.Get then
 						return oper.Get(self)
 					elseif oper.GetMethod then
-						return self[oper.GetMethod](self)
+						oper = oper.GetMethod
+						local func = rawget(self, oper)
+						if type(func) == "function" then
+							return func(self)
+						else
+							return Cache4Method[oper](self)
+						end
 					elseif oper.Storage then
 						return rawget(self, oper.Storage)
 					else
@@ -2158,7 +2204,13 @@ do
 					if oper.Set then
 						return oper.Set(self, value)
 					elseif oper.SetMethod then
-						return self[oper.SetMethod](self, value)
+						oper = oper.SetMethod
+						local func = rawget(self, oper)
+						if type(func) == "function" then
+							return func(self, value)
+						else
+							return Cache4Method[oper](self, value)
+						end
 					elseif oper.Storage then
 						return rawset(self, oper.Storage, value)
 					else
@@ -5371,13 +5423,8 @@ do
 			@desc The event's name
 		]======]
 		property "Name" {
-			Get = function(self)
-				return self.__Name
-			end,
-			Set = function(self, value)
-				self.__Name = value
-			end,
-			Type = System.String,
+			Storage = "__Name",
+			Type = String,
 		}
 
 		------------------------------------------------------
@@ -5502,12 +5549,7 @@ do
 			@desc Whether the event handler is blocked
 		]======]
 		property "Blocked" {
-			Get = function(self)
-				return self.__Blocked
-			end,
-			Set = function(self, value)
-				self.__Blocked = value
-			end,
+			Storage = "__Blocked",
 			Type = Boolean,
 		}
 
@@ -5517,12 +5559,7 @@ do
 			@desc Whether the event handler is thread activated
 		]======]
 		property "ThreadActivated" {
-			Get = function(self)
-				return self.__ThreadActivated
-			end,
-			Set = function(self, value)
-				self.__ThreadActivated = value
-			end,
+			Storage = "__ThreadActivated",
 			Type = Boolean,
 		}
 
@@ -6512,10 +6549,6 @@ do
 		function __call(self)
 			SendToPrepared(self)
 		end
-
-		function __tostring(self)
-			return tostring(getmetatable(self))
-		end
 	endclass "__Attribute__"
 
 	class "__Unique__"
@@ -6652,12 +6685,7 @@ do
 			@desc The attribute target type, default AttributeTargets.All
 		]======]
 		property "AttributeTarget" {
-			Get = function(self)
-				return self.__AttributeTarget or AttributeTargets.All
-			end,
-			Set = function(self, value)
-				self.__AttributeTarget = value
-			end,
+			Storage = "__AttributeTarget",
 			Type = AttributeTargets,
 		}
 
@@ -6667,12 +6695,7 @@ do
 			@desc Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true
 		]======]
 		property "Inherited" {
-			Get = function(self)
-				return not self.__NonInherited
-			end,
-			Set = function(self, value)
-				self.__NonInherited = not value
-			end,
+			Storage = "__Inherited",
 			Type = Boolean,
 		}
 
@@ -6682,12 +6705,7 @@ do
 			@desc whether multiple instances of your attribute can exist on an element. default false
 		]======]
 		property "AllowMultiple" {
-			Get = function(self)
-				return self.__AllowMultiple
-			end,
-			Set = function(self, value)
-				self.__AllowMultiple = value
-			end,
+			Storage = "__AllowMultiple",
 			Type = Boolean,
 		}
 
@@ -6697,18 +6715,17 @@ do
 			@desc Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation
 		]======]
 		property "RunOnce" {
-			Get = function(self)
-				return self.__RunOnce
-			end,
-			Set = function(self, value)
-				self.__RunOnce = value
-			end,
+			Storage = "__RunOnce",
 			Type = Boolean,
 		}
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
+		function __AttributeUsage__(self)
+			self.__Inherited = true
+			self.__AttributeTarget = AttributeTargets.All
+		end
 	endclass "__AttributeUsage__"
 
 	class "__Final__"
@@ -6882,7 +6899,7 @@ do
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__()
-	__NonInheritable__()
+	__Unique__()
 	class "__Auto__"
 		inherit "__Attribute__"
 
@@ -6897,101 +6914,20 @@ do
 		------------------------------------------------------
 		function ApplyAttribute(self, name, targetType, owner)
 			local info = _NSInfo[owner]
-			local prop = _NSInfo[owner].Property[name]
+			local prop = info.Property[name]
 
 			if prop then
 				prop.Type = prop.Type or self.Type
 
-				if self.Accessor then
-					local getMethod = info.Method["Get" .. name] or GetSuperMethod(info.Owner, "Get" .. name)
-					local setMethod = info.Method["Set" .. name] or GetSuperMethod(info.Owner, "Set" .. name)
+				if type(self.__Storage) == "string" then
+					prop.Storage = prop.Storage or self.__Storage
+				elseif self.__Storage then
+					prop.Storage = prop.Storage or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
+				end
 
-					if getMethod or setMethod then
-						-- Use the existed method as the accessor, the system won't know the detail, keep simple
-					else
-						-- Decalre new get/set method and also send to the class definition's environment
-						local field = self.Storage or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
-
-						if prop.Get or prop.Set then
-							getMethod = prop.Get
-
-							if prop.Set and prop.Type then
-								local func = prop.Set
-
-								-- Auto handle the validation
-								setMethod = function(self, value)
-									if prop.Type then
-										local ok
-
-										ok, value = pcall(prop.Type.Validate, prop.Type, value)
-
-										if not ok then
-											ret = strtrim(ret:match(":%d+:(.*)$") or ret)
-
-											if ret:find("%%s") then
-												ret = ret:gsub("%%s[_%w]*", "obj:Set" .. prop.Name .. "(value) - 'value'")
-											end
-
-											error(ret, 2)
-										end
-									end
-
-									func(self, value)
-								end
-							else
-								setMethod = prop.Set
-							end
-
-							-- Set to the environment
-							if getMethod then info.ClassEnv["Get"..prop.Name] = getMethod end
-							if setMethod then info.ClassEnv["Set"..prop.Name] = setMethod end
-						end
-					end
-
-					prop.Get = getMethod and function(self) return self["Get" .. name](self) end
-					prop.Set = setMethod and function(self, value) self["Set" .. name](self, value) end
-				else
-					if self.Storage or (not prop.Get and not prop.Set) then
-						local field = self.Storage or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
-
-						if prop.Type and #(prop.Type) == 1 and prop.Type[1] == Boolean then
-							if self.Default then
-								-- Default true
-								prop.Get = prop.Get or function (self)
-									return not self[field]
-								end
-
-								prop.Set = prop.Set or function (self, value)
-									self[field] = not value
-								end
-							else
-								-- Default false or no defalut
-								prop.Get = prop.Get or function (self)
-									return self[field] or false
-								end
-
-								prop.Set = prop.Set or function (self, value)
-									self[field] = value
-								end
-							end
-						else
-							local defalut = self.Default
-
-							if defalut then
-								prop.Get = prop.Get or function (self)
-									return self[field] or defalut
-								end
-							else
-								prop.Get = prop.Get or function (self)
-									return self[field]
-								end
-							end
-
-							prop.Set = prop.Set or function (self, value)
-								self[field] = value
-							end
-						end
-					end
+				if self.__Method then
+					prop.SetMethod = prop.SetMethod or "Set" .. name
+					prop.GetMethod = prop.GetMethod or "Get" .. name
 				end
 			end
 		end
@@ -7005,13 +6941,8 @@ do
 			@desc The target field
 		]======]
 		property "Storage" {
-			Get = function(self)
-				return rawget(self, "__Storage")
-			end,
-			Set = function(self, value)
-				rawset(self, "__Storage", strtrim(value) ~= "" and strtrim(value) or nil)
-			end,
-			Type = String,
+			Storage = "__Storage",
+			Type = String + Boolean,
 		}
 
 		doc [======[
@@ -7020,26 +6951,16 @@ do
 			@desc The default value of the property
 		]======]
 		property "Default" {
-			Get = function(self)
-				return rawget(self, "__Default")
-			end,
-			Set = function(self, value)
-				rawset(self, "__Default", value)
-			end,
+			Storage = "__Default",
 		}
 
 		doc [======[
-			@name Accessor
+			@name Method
 			@type property
-			@desc Auto-generated property with accessor methods like 'SetXXX' and 'GetXXX', where the 'XXX' is the property's name, take the existed accessor for default
+			@desc Whether use the object's method as the accessors
 		]======]
-		property "Accessor" {
-			Get = function(self)
-				return rawget(self, "__Accessor") or false
-			end,
-			Set = function(self, value)
-				rawset(self, "___Accessor", value or nil)
-			end,
+		property "Method" {
+			Storage = "__Method",
 			Type = Boolean,
 		}
 
@@ -7049,14 +6970,25 @@ do
 			@desc The type of the property
 		]======]
 		property "Type" {
-			Get = function(self)
-				return self.__Type
-			end,
+			Storage = "__Type",
 			Set = function(self, value)
-				self.__Type = value
+				self.__Type = BuildType(value)
 			end,
-			Type = Type,
 		}
+
+		------------------------------------------------------
+		-- Meta-Method
+		------------------------------------------------------
+		local superCall = Super.__call
+		function __call(self)
+			superCall(self)
+
+			-- Clear
+			self.__Storage = nil
+			self.__Default = nil
+			self.__Method = nil
+			self.__Type = nil
+		end
 	endclass "__Auto__"
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Method}
@@ -7088,12 +7020,7 @@ do
 			@desc The name of the argument
 		]======]
 		property "Name" {
-			Get = function(self)
-				return self.__Name
-			end,
-			Set = function(self, value)
-				self.__Name = value
-			end,
+			Storage = "__Name",
 			Type = String,
 		}
 
@@ -7103,9 +7030,7 @@ do
 			@desc The type of the argument
 		]======]
 		property "Type" {
-			Get = function(self)
-				return self.__Type
-			end,
+			Storage = "__Type",
 			Set = function(self, value)
 				self.__Type = BuildType(value)
 			end,
@@ -7117,12 +7042,7 @@ do
 			@desc The defalut value of the argument
 		]======]
 		property "Default" {
-			Get = function(self)
-				return self.__Default
-			end,
-			Set = function(self, value)
-				self.__Default = value
-			end,
+			Storage = "__Default",
 		}
 
 		doc [======[
@@ -7131,12 +7051,7 @@ do
 			@desc Whether the rest are a list of the same type argument, only used for the last argument
 		]======]
 		property "IsList" {
-			Get = function(self)
-				return self.__IsList
-			end,
-			Set = function(self, value)
-				self.__IsList = value
-			end,
+			Storage = "__IsList",
 			Type = Boolean,
 		}
 	endclass "Argument"
@@ -7457,12 +7372,7 @@ do
 			@desc The struct's type
 		]======]
 		property "Type" {
-			Get = function(self)
-				return self.__Type or StructType.Member
-			end,
-			Set = function(self, value)
-				self.__Type = value
-			end,
+			Storage = "__Type",
 			Type = StructType,
 		}
 

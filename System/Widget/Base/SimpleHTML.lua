@@ -292,24 +292,6 @@ class "SimpleHTML"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name HyperlinksEnabled
-		@type property
-		@desc Whether hyperlinks in the frame's text are interactive
-	]======]
-	property "HyperlinksEnabled" {
-		Get = function(self)
-			return (self:GetHyperlinksEnabled() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetHyperlinksEnabled(state)
-		end,
-		Type = Boolean,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -326,4 +308,16 @@ partclass "SimpleHTML"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(SimpleHTML)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name HyperlinksEnabled
+		@type property
+		@desc Whether hyperlinks in the frame's text are interactive
+	]======]
+	__Auto__{ Method = true, Type = Boolean }
+	property "HyperlinksEnabled" {}
+
 endclass "SimpleHTML"

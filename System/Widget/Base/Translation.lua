@@ -43,24 +43,6 @@ class "Translation"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Offset
-		@type property
-		@desc the animation's translation offsets
-	]======]
-	property "Offset" {
-		Get = function(self)
-			return Dimension(elf:GetOffset())
-		end,
-		Set = function(self, offset)
-			return self:SetOffset(offset.x, offset.y)
-		end,
-		Type = Dimension,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -81,4 +63,23 @@ partclass "Translation"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Translation, AnimationGroup)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Offset
+		@type property
+		@desc the animation's translation offsets
+	]======]
+	property "Offset" {
+		Get = function(self)
+			return Dimension(self:GetOffset())
+		end,
+		Set = function(self, offset)
+			return self:SetOffset(offset.x, offset.y)
+		end,
+		Type = Dimension,
+	}
+
 endclass "Translation"

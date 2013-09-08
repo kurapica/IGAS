@@ -870,10 +870,8 @@ class "DropDownList"
     end
 
 	local function OnTimer(self)
-		if not self.Parent.__Mask.InDesignMode then
-			hideDropList(self.Parent)
-			self.Interval = 0
-		end
+		hideDropList(self.Parent)
+		self.Interval = 0
 	end
 
 	local function OnEnter(self)
@@ -920,13 +918,12 @@ class "DropDownList"
             return self.__Mask:Fire("OnShow")
         end
 
-		if not self.__Mask.InDesignMode then
-			if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList ~= self then
-				_DropDownListContainer.__ShowList.Visible = false
-			end
-
-			_DropDownListContainer.__ShowList = self
+        -- Hide the previous
+		if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList ~= self then
+			_DropDownListContainer.__ShowList.Visible = false
 		end
+
+		_DropDownListContainer.__ShowList = self
 
 		if self.__ShowOnCursor then
             local cursorX, cursorY = GetCursorPosition()

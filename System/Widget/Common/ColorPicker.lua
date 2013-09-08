@@ -56,9 +56,7 @@ class "ColorPicker"
 
 	-- Event Handlers
 	local function frameOnMouseDown(self)
-		if not self.Parent.InDesignMode then
-			self.Parent:StartMoving()
-		end
+		self.Parent:StartMoving()
 	end
 
 	local function frameOnMouseUp(self)

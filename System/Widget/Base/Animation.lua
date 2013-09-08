@@ -276,165 +276,6 @@ class "Animation"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name StartDelay
-		@type property
-		@desc Amount of time the animation delays before its progress begins (in seconds)
-	]======]
-	property "StartDelay" {
-		Set = function(self, delaySec)
-			self:SetStartDelay(delaySec)
-		end,
-		Get = function(self)
-			return self:GetStartDelay()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name EndDelay
-		@type property
-		@desc Time for the animation to delay after finishing (in seconds)
-	]======]
-	property "EndDelay" {
-		Set = function(self, delaySec)
-			self:SetEndDelay(delaySec)
-		end,
-		Get = function(self)
-			return self:GetEndDelay()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Duration
-		@type property
-		@desc Time for the animation to progress from start to finish (in seconds)
-	]======]
-	property "Duration" {
-		Set = function(self, durationSec)
-			self:SetDuration(durationSec)
-		end,
-		Get = function(self)
-			return self:GetDuration()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name MaxFramerate
-		@type property
-		@desc Maximum number of times per second that the animation will update its progress
-	]======]
-	property "MaxFramerate" {
-		Set = function(self, framerate)
-			self:SetMaxFramerate(framerate)
-		end,
-		Get = function(self)
-			return self:GetMaxFramerate()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Order
-		@type property
-		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
-	]======]
-	property "Order" {
-		Set = function(self, order)
-			self:SetOrder(order)
-		end,
-		Get = function(self)
-			return self:GetOrder()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Smoothing
-		@type property
-		@desc Type of smoothing for the animation, IN, IN_OUT, NONE, OUT
-	]======]
-	property "Smoothing" {
-		Set = function(self, smoothType)
-			self:SetSmoothing(smoothType)
-		end,
-		Get = function(self)
-			return self:GetSmoothing()
-		end,
-		Type = AnimSmoothType,
-	}
-
-	doc [======[
-		@name Playing
-		@type property
-		@desc whether the animation is playing
-	]======]
-	property "Playing" {
-		Get = function(self)
-			return self:IsPlaying()
-		end,
-		Set = function(self, value)
-			if value then
-				if not self:IsPlaying() then
-					return self:Play()
-				end
-			else
-				if self:IsPlaying() then
-					return self:Stop()
-				end
-			end
-		end,
-	}
-
-	doc [======[
-		@name Paused
-		@type property
-		@desc whether the animation is paused
-	]======]
-	property "Paused" {
-		Get = function(self)
-			return self:IsPaused()
-		end,
-		Set = function(self, value)
-			if value then
-				if self:IsPlaying() then
-					return self:Pause()
-				end
-			else
-				if self:IsPaused() then
-					return self:Play()
-				end
-			end
-		end,
-	}
-
-	doc [======[
-		@name Stoped
-		@type property
-		@desc whether the animation is stoped
-	]======]
-	property "Stoped" {
-		Get = function(self)
-			return self:IsStopped()
-		end,
-		Set = function(self, value)
-			if value then
-				if self:IsPlaying() or self:IsPaused() then
-					return self:Stop()
-				end
-			else
-				if self:IsStopped()  then
-					return self:Play()
-				end
-			end
-		end,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -455,4 +296,116 @@ partclass "Animation"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Animation, AnimationGroup)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name StartDelay
+		@type property
+		@desc Amount of time the animation delays before its progress begins (in seconds)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "StartDelay" {}
+
+	doc [======[
+		@name EndDelay
+		@type property
+		@desc Time for the animation to delay after finishing (in seconds)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "EndDelay" {}
+
+	doc [======[
+		@name Duration
+		@type property
+		@desc Time for the animation to progress from start to finish (in seconds)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Duration" {}
+
+	doc [======[
+		@name MaxFramerate
+		@type property
+		@desc Maximum number of times per second that the animation will update its progress
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "MaxFramerate" {}
+
+	doc [======[
+		@name Order
+		@type property
+		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Order" {}
+
+	doc [======[
+		@name Smoothing
+		@type property
+		@desc Type of smoothing for the animation, IN, IN_OUT, NONE, OUT
+	]======]
+	__Auto__{ Method = true, Type = AnimSmoothType }
+	property "Smoothing" {}
+
+	doc [======[
+		@name Playing
+		@type property
+		@desc whether the animation is playing
+	]======]
+	property "Playing" {
+		Get = "IsPlaying",
+		Set = function(self, value)
+			if value then
+				if not self:IsPlaying() then
+					return self:Play()
+				end
+			else
+				if self:IsPlaying() then
+					return self:Stop()
+				end
+			end
+		end,
+	}
+
+	doc [======[
+		@name Paused
+		@type property
+		@desc whether the animation is paused
+	]======]
+	property "Paused" {
+		Get = "IsPaused",
+		Set = function(self, value)
+			if value then
+				if self:IsPlaying() then
+					return self:Pause()
+				end
+			else
+				if self:IsPaused() then
+					return self:Play()
+				end
+			end
+		end,
+	}
+
+	doc [======[
+		@name Stoped
+		@type property
+		@desc whether the animation is stoped
+	]======]
+	property "Stoped" {
+		Get = "IsStopped",
+		Set = function(self, value)
+			if value then
+				if self:IsPlaying() or self:IsPaused() then
+					return self:Stop()
+				end
+			else
+				if self:IsStopped()  then
+					return self:Play()
+				end
+			end
+		end,
+	}
+
 endclass "Animation"

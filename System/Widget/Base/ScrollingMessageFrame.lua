@@ -309,98 +309,6 @@ class "ScrollingMessageFrame"
 		@return nil
 	]======]
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Fading
-		@type property
-		@desc whether messages added to the frame automatically fade out after a period of time
-	]======]
-	property "Fading" {
-		Get = function(self)
-			return (self:GetFading() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetFading(state)
-		end,
-		Type = Boolean,
-	}
-
-	doc [======[
-		@name HyperlinksEnabled
-		@type property
-		@desc whether hyperlinks in the frame's text are interactive
-	]======]
-	property "HyperlinksEnabled" {
-		Get = function(self)
-			return (self:GetHyperlinksEnabled() and true) or false
-		end,
-		Set = function(self, state)
-			self:SetHyperlinksEnabled(state)
-		end,
-		Type = Boolean,
-	}
-
-	doc [======[
-		@name TimeVisible
-		@type property
-		@desc the amount of time for which a message remains visible before beginning to fade out
-	]======]
-	property "TimeVisible" {
-		Get = function(self)
-			return self:GetTimeVisible()
-		end,
-		Set = function(self, seconds)
-			self:SetTimeVisible(seconds)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name FadeDuration
-		@type property
-		@desc the duration of the fade-out animation for disappearing messages
-	]======]
-	property "FadeDuration" {
-		Get = function(self)
-			return self:GetFadeDuration()
-		end,
-		Set = function(self, seconds)
-			self:SetFadeDuration(seconds)
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name InsertMode
-		@type property
-		@desc the position at which new messages are added to the frame
-	]======]
-	property "InsertMode" {
-		Get = function(self)
-			return self:GetInsertMode()
-		end,
-		Set = function(self, mode)
-			self:SetInsertMode(mode)
-		end,
-		Type = InsertMode,
-	}
-
-	doc [======[
-		@name MaxLines
-		@type property
-		@desc the maximum number of messages to be kept in the frame
-	]======]
-	property "MaxLines" {
-		Get = function(self)
-			return self:GetMaxLines()
-		end,
-		Set = function(self, lines)
-			self:SetMaxLines(lines)
-		end,
-		Type = Number,
-	}
 
 	------------------------------------------------------
 	-- Event Handler
@@ -419,4 +327,55 @@ partclass "ScrollingMessageFrame"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(ScrollingMessageFrame)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Fading
+		@type property
+		@desc whether messages added to the frame automatically fade out after a period of time
+	]======]
+	__Auto__{ Method = true, Type = Boolean }
+	property "Fading" {}
+
+	doc [======[
+		@name HyperlinksEnabled
+		@type property
+		@desc whether hyperlinks in the frame's text are interactive
+	]======]
+	__Auto__{ Method = true, Type = Boolean }
+	property "HyperlinksEnabled" {}
+
+	doc [======[
+		@name TimeVisible
+		@type property
+		@desc the amount of time for which a message remains visible before beginning to fade out
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "TimeVisible" {}
+
+	doc [======[
+		@name FadeDuration
+		@type property
+		@desc the duration of the fade-out animation for disappearing messages
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "FadeDuration" {}
+
+	doc [======[
+		@name InsertMode
+		@type property
+		@desc the position at which new messages are added to the frame
+	]======]
+	__Auto__{ Method = true, Type = InsertMode }
+	property "InsertMode" {}
+
+	doc [======[
+		@name MaxLines
+		@type property
+		@desc the maximum number of messages to be kept in the frame
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "MaxLines" {}
 endclass "ScrollingMessageFrame"

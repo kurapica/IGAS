@@ -853,24 +853,6 @@ class "GameTooltip"
 	end
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Owner
-		@type property
-		@desc The owner of this gametooltip
-	]======]
-	property "Owner" {
-		Get = function(self)
-			return self:GetOwner()
-		end,
-		Set = function(self, owner)
-			self:SetOwner(owner)
-		end,
-		Type = UIObject + nil,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -928,4 +910,16 @@ partclass "GameTooltip"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(GameTooltip)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Owner
+		@type property
+		@desc The owner of this gametooltip
+	]======]
+	__Auto__{ Method = true, Type = UIObject + nil }
+	property "Owner" {}
+
 endclass "GameTooltip"

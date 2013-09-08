@@ -229,7 +229,7 @@ class "Form"
 
 	-- Event Handlers
 	local function frameOnMouseDown(self)
-		if not self.Parent.InDesignMode and self.Parent.Movable then
+		if self.Parent.Movable then
 			self.Parent:StartMoving()
 		end
 	end
@@ -240,7 +240,7 @@ class "Form"
 	end
 
 	local function sizerseOnMouseDown(self)
-		if not self.Parent.InDesignMode and self.Parent.Resizable then
+		if self.Parent.Resizable then
 			self.Parent:StartSizing("BOTTOMRIGHT")
 		end
 	end

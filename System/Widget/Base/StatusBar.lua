@@ -150,6 +150,24 @@ class "StatusBar"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("StatusBar", nil, parent, ...)
+	end
+endclass "StatusBar"
+
+partclass "StatusBar"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(StatusBar)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -172,15 +190,8 @@ class "StatusBar"
 		@type property
 		@desc the orientation of the status bar
 	]======]
-	property "Orientation" {
-		Get = function(self)
-			return self:GetOrientation()
-		end,
-		Set = function(self, orientation)
-			self:SetOrientation(orientation)
-		end,
-		Type = Orientation,
-	}
+	__Auto__{ Method = true, Type = Orientation }
+	property "Orientation" {}
 
 	doc [======[
 		@name StatusBarColor
@@ -202,14 +213,11 @@ class "StatusBar"
 		@type property
 		@desc the texture used for drawing the filled-in portion of the status bar
 	]======]
+	__Auto__{ Method = true, Type = Texture + nil }
 	property "StatusBarTexture" {
-		Get = function(self)
-			return self:GetStatusBarTexture()
-		end,
 		Set = function(self, texture)
 			self:SetStatusBarTexture(texture, self.Layer)
 		end,
-		Type = Texture + nil,
 	}
 
 	doc [======[
@@ -247,46 +255,15 @@ class "StatusBar"
 		@type property
 		@desc  the value of the status bar
 	]======]
-	property "Value" {
-		Get = function(self)
-			return self:GetValue()
-		end,
-		Set = function(self, value)
-			self:SetValue(value)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Value" {}
 
 	doc [======[
 		@name RotatesTexture
 		@type property
 		@desc whether the status bar's texture is rotated to match its orientation
 	]======]
-	property "RotatesTexture" {
-		Get = function(self)
-			return self:GetRotatesTexture() and true or false
-		end,
-		Set = function(self, flag)
-			self:SetRotatesTexture(flag)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "RotatesTexture" {}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("StatusBar", nil, parent, ...)
-	end
-endclass "StatusBar"
-
-partclass "StatusBar"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(StatusBar)
 endclass "StatusBar"

@@ -289,13 +289,6 @@ class "Frame"
 		@param enable boolean, true to enable keyboard interactivity; false to disable
 		@return nil
 	]======]
-	function EnableKeyboard(self, enabled)
-		if not self.InDesignMode then
-			self.__UI:EnableKeyboard(enabled)
-		else
-			self.__KeyboardEnabled = (enabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name EnableMouse
@@ -304,13 +297,6 @@ class "Frame"
 		@param enable boolean, true to enable mouse interactivity; false to disable
 		@return nil
 	]======]
-	function EnableMouse(self, enabled)
-		if not self.InDesignMode then
-			self.__UI:EnableMouse(enabled)
-		else
-			self.__MouseEnabled = (enabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name EnableMouseWheel
@@ -562,13 +548,6 @@ class "Frame"
 		@desc Returns whether keyboard interactivity is enabled for the frame
 		@return boolean 1 if keyboard interactivity is enabled for the frame; otherwise nil
 	]======]
-	function IsKeyboardEnabled(self, ...)
-		if not self.InDesignMode then
-			return (self.__UI:IsKeyboardEnabled() and true) or false
-		else
-			return (self.__KeyboardEnabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name IsMouseEnabled
@@ -576,13 +555,6 @@ class "Frame"
 		@desc Returns whether mouse interactivity is enabled for the frame
 		@return boolean 1 if mouse interactivity is enabled for the frame; otherwise nil
 	]======]
-	function IsMouseEnabled(self, ...)
-		if not self.InDesignMode then
-			return (self.__UI:IsMouseEnabled() and true) or false
-		else
-			return (self.__MouseEnabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name IsMouseWheelEnabled
@@ -597,13 +569,6 @@ class "Frame"
 		@desc Returns whether the frame can be moved by the user
 		@return boolean 1 if the frame can be moved by the user; otherwise nil
 	]======]
-	function IsMovable(self, ...)
-		if not self.InDesignMode then
-			return (self.__UI:IsMovable() and true) or false
-		else
-			return (self.__Movable and true) or false
-		end
-	end
 
 	doc [======[
 		@name IsResizable
@@ -611,13 +576,6 @@ class "Frame"
 		@desc Returns whether the frame can be resized by the user
 		@return boolean 1 if the frame can be resized by the user; otherwise nil
 	]======]
-	function IsResizable(self, ...)
-		if not self.InDesignMode then
-			return (self.__UI:IsResizable() and true) or false
-		else
-			return (self.__Resizable and true) or false
-		end
-	end
 
 	doc [======[
 		@name IsToplevel
@@ -807,13 +765,6 @@ class "Frame"
 		@param enable boolean, true to allow the frame to be moved by the user; false to disable
 		@return nil
 	]======]
-	function SetMovable(self, enabled)
-		if not self.InDesignMode then
-			self.__UI:SetMovable(enabled)
-		else
-			self.__Movable = (enabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name SetPropagateKeyboardInput
@@ -830,13 +781,6 @@ class "Frame"
 		@param enable boolean, true to allow the frame to be resized by the user; false to disable
 		@return nil
 	]======]
-	function SetResizable(self, enabled)
-		if not self.InDesignMode then
-			self.__UI:SetResizable(enabled)
-		else
-			self.__Resizable = (enabled and true) or false
-		end
-	end
 
 	doc [======[
 		@name SetScale
@@ -924,6 +868,36 @@ class "Frame"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	function OnEvent(self, event, ...)
+		if type(self[event]) == "function" then
+			return self[event](self, ...)
+		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		UnregisterAllEvents(self)
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Frame", nil, parent, ...)
+	end
+endclass "Frame"
+
+partclass "Frame"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(Frame)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -932,12 +906,8 @@ class "Frame"
 		@desc whether keyboard interactivity is enabled for the frame
 	]======]
 	property "KeyboardEnabled" {
-		Get = function(self)
-			return self:IsKeyboardEnabled()
-		end,
-		Set = function(self, enabled)
-			self:EnableKeyboard(enabled)
-		end,
+		Get = "IsKeyboardEnabled",
+		Set = "EnableKeyboard",
 		Type = Boolean,
 	}
 
@@ -947,12 +917,8 @@ class "Frame"
 		@desc whether mouse interactivity is enabled for the frame
 	]======]
 	property "MouseEnabled" {
-		Get = function(self)
-			return self:IsMouseEnabled()
-		end,
-		Set = function(self, enabled)
-			self:EnableMouse(enabled)
-		end,
+		Get = "IsMouseEnabled",
+		Set = "EnableMouse",
 		Type = Boolean,
 	}
 
@@ -962,12 +928,8 @@ class "Frame"
 		@desc whether the frame can be moved by the user
 	]======]
 	property "Movable" {
-		Get = function(self)
-			return self:IsMovable()
-		end,
-		Set = function(self, enabled)
-			self:SetMovable(enabled)
-		end,
+		Get = "IsMovable",
+		Set = "SetMovable",
 		Type = Boolean,
 	}
 
@@ -977,12 +939,8 @@ class "Frame"
 		@desc whether the frame can be resized by the user
 	]======]
 	property "Resizable" {
-		Get = function(self)
-			return self:IsResizable()
-		end,
-		Set = function(self, enabled)
-			self:SetResizable(enabled)
-		end,
+		Get = "IsResizable",
+		Set = "SetResizable",
 		Type = Boolean,
 	}
 
@@ -992,12 +950,8 @@ class "Frame"
 		@desc whether mouse wheel interactivity is enabled for the frame
 	]======]
 	property "MouseWheelEnabled" {
-		Get = function(self)
-			return (self:IsMouseWheelEnabled() and true) or false
-		end,
-		Set = function(self, enabled)
-			self:EnableMouseWheel(enabled)
-		end,
+		Get = "IsMouseWheelEnabled",
+		Set = "EnableMouseWheel",
 		Type = Boolean,
 	}
 
@@ -1006,15 +960,8 @@ class "Frame"
 		@type property
 		@desc the backdrop graphic for the frame
 	]======]
-	property "Backdrop" {
-		Get = function(self)
-			return self:GetBackdrop()
-		end,
-		Set = function(self, backdropTable)
-			self:SetBackdrop(backdropTable)
-		end,
-		Type = BackdropType,
-	}
+	__Auto__{ Method = true, Type = BackdropType }
+	property "Backdrop" {}
 
 	doc [======[
 		@name BackdropBorderColor
@@ -1052,12 +999,8 @@ class "Frame"
 		@desc whether the frame's boundaries are limited to those of the screen
 	]======]
 	property "ClampedToScreen" {
-		Get = function(self)
-			return (self:IsClampedToScreen() and true) or false
-		end,
-		Set = function(self, enabled)
-			self:SetClampedToScreen(enabled)
-		end,
+		Get = "IsClampedToScreen",
+		Set = "SetClampedToScreen",
 		Type = Boolean,
 	}
 
@@ -1081,30 +1024,16 @@ class "Frame"
 		@type property
 		@desc the level at which the frame is layered relative to others in its strata
 	]======]
-	property "FrameLevel" {
-		Get = function(self)
-			return self:GetFrameLevel()
-		end,
-		Set = function(self, level)
-			self:SetFrameLevel(level)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "FrameLevel" {}
 
 	doc [======[
 		@name FrameStrata
 		@type property
 		@desc the general layering strata of the frame
 	]======]
-	property "FrameStrata" {
-		Get = function(self)
-			return self:GetFrameStrata()
-		end,
-		Set = function(self, strata)
-			self:SetFrameStrata(strata)
-		end,
-		Type = FrameStrata,
-	}
+	__Auto__{ Method = true, Type = FrameStrata }
+	property "FrameStrata" {}
 
 	doc [======[
 		@name HitRectInsets
@@ -1126,15 +1055,8 @@ class "Frame"
 		@type property
 		@desc a numeric identifier for the frame
 	]======]
-	property "ID" {
-		Get = function(self)
-			return self:GetID()
-		end,
-		Set = function(self, id)
-			self:SetID(id)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "ID" {}
 
 	doc [======[
 		@name MaxResize
@@ -1171,15 +1093,8 @@ class "Frame"
 		@type property
 		@desc the frame's scale factor
 	]======]
-	property "Scale" {
-		Get = function(self)
-			return self:GetScale()
-		end,
-		Set = function(self, scale)
-			self:SetScale(scale)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Scale" {}
 
 	doc [======[
 		@name Toplevel
@@ -1187,12 +1102,8 @@ class "Frame"
 		@desc whether the frame should automatically come to the front when clicked
 	]======]
 	property "Toplevel" {
-		Get = function(self)
-			return (self:IsToplevel() and true) or false
-		end,
-		Set = function(self, enabled)
-			self:SetToplevel(enabled)
-		end,
+		Get = "IsToplevel",
+		Set = "SetToplevel",
 		Type = Boolean,
 	}
 
@@ -1201,15 +1112,8 @@ class "Frame"
 		@type property
 		@desc the 3D depth of the frame (for stereoscopic 3D setups)
 	]======]
-	property "Depth" {
-		Get = function(self)
-			return self:GetDepth()
-		end,
-		Set = function(self, depth)
-			self:SetDepth(depth)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "Depth" {}
 
 	doc [======[
 		@name DepthIgnored
@@ -1217,42 +1121,9 @@ class "Frame"
 		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
 	]======]
 	property "DepthIgnored" {
-		Get = function(self)
-			return (self:IsIgnoringDepth() and true) or false
-		end,
-		Set = function(self, enabled)
-			self:IgnoreDepth(enabled)
-		end,
+		Get = "IsIgnoringDepth",
+		Set = "IgnoreDepth",
 		Type = Boolean,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	function OnEvent(self, event, ...)
-		if type(self[event]) == "function" then
-			return self[event](self, ...)
-		end
-	end
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		UnregisterAllEvents(self)
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Frame", nil, parent, ...)
-	end
-endclass "Frame"
-
-partclass "Frame"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(Frame)
 endclass "Frame"

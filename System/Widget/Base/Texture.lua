@@ -488,6 +488,29 @@ class "Texture"
 	end
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
+			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
+		end
+		return IGAS:GetUI(parent):CreateTexture(nil, ...)
+	end
+
+	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
+endclass "Texture"
+
+partclass "Texture"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(Texture)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -495,15 +518,8 @@ class "Texture"
 		@type property
 		@desc the blend mode of the texture
 	]======]
-	property "BlendMode" {
-		Get = function(self)
-			return self:GetBlendMode()
-		end,
-		Set = function(self, mode)
-			self:SetBlendMode(mode)
-		end,
-		Type = AlphaMode,
-	}
+	__Auto__{ Method = true, Type = AlphaMode }
+	property "BlendMode" {}
 
 	doc [======[
 		@name Desaturated
@@ -571,12 +587,8 @@ class "Texture"
 		@desc the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
 	]======]
 	property "PortraitTexture" {
-		Get = function(self)
-			return self.__Portrait
-		end,
-		Set = function(self, texture)
-			return self:SetPortraitTexture(texture)
-		end,
+		Storage = "__Portrait",
+		SetMethod = "SetPortraitTexture",
 		Type = String + nil,
 	}
 
@@ -619,66 +631,23 @@ class "Texture"
 		@type property
 		@desc
 	]======]
-	property "HorizTile" {
-		Get = function(self)
-			return self:GetHorizTile()
-		end,
-		Set = function(self, value)
-			return self:SetHorizTile(value)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "HorizTile" {}
 
 	doc [======[
 		@name VertTile
 		@type property
 		@desc
 	]======]
-	property "VertTile" {
-		Get = function(self)
-			return self:GetVertTile()
-		end,
-		Set = function(self, value)
-			return self:SetVertTile(value)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "VertTile" {}
 
 	doc [======[
 		@name NonBlocking
 		@type property
 		@desc whether the texture object loads its image file in the background
 	]======]
-	property "NonBlocking" {
-		Get = function(self)
-			return self:GetNonBlocking() and true or false
-		end,
-		Set = function(self, value)
-			return self:SetNonBlocking(value)
-		end,
-		Type = Boolean,
-	}
+	__Auto__{ Method = true, Type = Boolean }
+	property "NonBlocking" {}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
-			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
-		end
-		return IGAS:GetUI(parent):CreateTexture(nil, ...)
-	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
-endclass "Texture"
-
-partclass "Texture"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(Texture)
 endclass "Texture"

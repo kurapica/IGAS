@@ -41,24 +41,6 @@ class "Alpha"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Change
-		@type property
-		@desc the animation's amount of alpha (opacity) change
-	]======]
-	property "Change" {
-		Get = function(self)
-			return self:GetChange()
-		end,
-		Set = function(self, change)
-			self:SetChange(change)
-		end,
-		Type = Number,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -79,4 +61,16 @@ partclass "Alpha"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Alpha, AnimationGroup)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Change
+		@type property
+		@desc the animation's amount of alpha (opacity) change
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Change" {}
+
 endclass "Alpha"

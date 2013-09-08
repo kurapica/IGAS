@@ -150,63 +150,6 @@ class "FontString"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name NonSpaceWrap
-		@type property
-		@desc whether long lines of text will wrap within or between words
-	]======]
-	property "NonSpaceWrap" {
-		Get = function(self)
-			return (self:CanNonSpaceWrap() and true) or false
-		end,
-		Set = function(self, flag)
-			self:SetNonSpaceWrap(flag)
-		end,
-		Type = Boolean,
-	}
-
-	doc [======[
-		@name StringHeight
-		@type property
-		@desc the height of the text displayed in the font string
-	]======]
-	property "StringHeight" {
-		Get = function(self)
-			return self:GetStringHeight()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name StringWidth
-		@type property
-		@desc the width of the text displayed in the font string
-	]======]
-	property "StringWidth" {
-		Get = function(self)
-			return self:GetStringWidth()
-		end,
-		Type = Number,
-	}
-
-	doc [======[
-		@name Text
-		@type property
-		@desc the text to be displayed in the font string
-	]======]
-	property "Text" {
-		Get = function(self)
-			return self:GetText()
-		end,
-		Set = function(self, text)
-			self:SetText(text)
-		end,
-		Type = LocaleString,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -229,4 +172,45 @@ partclass "FontString"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(FontString)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name NonSpaceWrap
+		@type property
+		@desc whether long lines of text will wrap within or between words
+	]======]
+	property "NonSpaceWrap" {
+		Get = "CanNonSpaceWrap",
+		Set = "SetNonSpaceWrap",
+		Type = Boolean,
+	}
+
+	doc [======[
+		@name StringHeight
+		@type property
+		@desc the height of the text displayed in the font string
+	]======]
+	property "StringHeight" {
+		Get = "GetStringHeight",
+	}
+
+	doc [======[
+		@name StringWidth
+		@type property
+		@desc the width of the text displayed in the font string
+	]======]
+	property "StringWidth" {
+		Get = "GetStringWidth",
+	}
+
+	doc [======[
+		@name Text
+		@type property
+		@desc the text to be displayed in the font string
+	]======]
+	__Auto__{ Method = true, Type = LocaleString }
+	property "Text" {}
+
 endclass "FontString"

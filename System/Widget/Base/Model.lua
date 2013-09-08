@@ -251,6 +251,24 @@ class "Model"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Model", nil, parent, ...)
+	end
+endclass "Model"
+
+partclass "Model"
+	------------------------------------------------------
+	-- BlzMethodes
+	------------------------------------------------------
+	StoreBlzMethod(Model)
+
+	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	doc [======[
@@ -273,55 +291,32 @@ class "Model"
 		@type property
 		@desc the far clipping distance for the model's fog
 	]======]
-	property "FogFar" {
-		Get = function(self)
-			return self:GetFogFar()
-		end,
-		Set = function(self, value)
-			self:SetFogFar(value)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "FogFar" {}
 
 	doc [======[
 		@name FogNear
 		@type property
 		@desc the near clipping distance for the model's fog
 	]======]
-	property "FogNear" {
-		Get = function(self)
-			return self:GetFogNear()
-		end,
-		Set = function(self, value)
-			self:SetFogNear(value)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "FogNear" {}
 
 	doc [======[
 		@name ModelScale
 		@type property
 		@desc the scale factor determining the size at which the 3D model appears
 	]======]
-	property "ModelScale" {
-		Get = function(self)
-			return self:GetModelScale()
-		end,
-		Set = function(self, scale)
-			self:SetModelScale(scale)
-		end,
-		Type = Number,
-	}
+	__Auto__{ Method = true, Type = Number }
+	property "ModelScale" {}
 
 	doc [======[
 		@name Model
 		@type property
 		@desc the model file to be displayed
 	]======]
+	__Auto__{ Method = true, Type = String + nil }
 	property "Model" {
-		Get = function(self)
-			return self:GetModel()
-		end,
 		Set = function(self, file)
 			if file and type(file) == "string" and file ~= "" then
 				self:SetModel(file)
@@ -329,7 +324,6 @@ class "Model"
 				self:ClearModel()
 			end
 		end,
-		Type = String + nil,
 	}
 
 	doc [======[
@@ -362,21 +356,4 @@ class "Model"
 		Type = LightType,
 	}
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Model", nil, parent, ...)
-	end
-endclass "Model"
-
-partclass "Model"
-	------------------------------------------------------
-	-- BlzMethodes
-	------------------------------------------------------
-	StoreBlzMethod(Model)
 endclass "Model"

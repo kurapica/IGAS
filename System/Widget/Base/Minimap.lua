@@ -144,24 +144,6 @@ class "Minimap"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Zoom
-		@type property
-		@desc the minimap's current zoom level
-	]======]
-	property "Zoom" {
-		Get = function(self)
-			return self:GetZoom()
-		end,
-		Set = function(self, level)
-			self:SetZoom(level)
-		end,
-		Type = Number,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -178,4 +160,16 @@ partclass "Minimap"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Minimap)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Zoom
+		@type property
+		@desc the minimap's current zoom level
+	]======]
+	__Auto__{ Method = true, Type = Number }
+	property "Zoom" {}
+
 endclass "Minimap"

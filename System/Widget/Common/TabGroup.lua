@@ -407,9 +407,6 @@ class "TabGroup"
 
     -- Events
     local function CloseButtOnClick(self)
-		if self.Parent.InDesignMode then
-			return
-		end
 		self.Parent:Fire("OnTabClose")
         if self.Parent.__HeaderContainer.__SelectTab then
             self.Parent.__HeaderContainer.__SelectTab:Dispose()

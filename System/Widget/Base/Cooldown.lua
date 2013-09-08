@@ -65,24 +65,6 @@ class "Cooldown"
 	]======]
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	doc [======[
-		@name Reverse
-		@type property
-		@desc true if the cooldown animation "sweeps" an area of darkness over the underlying image; false if the animation darkens the underlying image and "sweeps" the darkened area away
-	]======]
-	property "Reverse" {
-		Get = function(self)
-			return self:GetReverse() and true or false
-		end,
-		Set = function(self, enabled)
-			self:SetReverse(enabled)
-		end,
-		Type = Boolean,
-	}
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 
@@ -99,4 +81,16 @@ partclass "Cooldown"
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Cooldown)
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Reverse
+		@type property
+		@desc true if the cooldown animation "sweeps" an area of darkness over the underlying image; false if the animation darkens the underlying image and "sweeps" the darkened area away
+	]======]
+	__Auto__{ Method = true, Type = Boolean }
+	property "Reverse" {}
+
 endclass "Cooldown"

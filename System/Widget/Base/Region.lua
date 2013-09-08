@@ -415,24 +415,13 @@ class "Region"
 	]======]
 	property "Visible" {
 		Get = function(self)
-			if not self.InDesignMode then
-				return (self:IsShown() and true ) or false
-			else
-				if self.__Visible == nil then
-					self.__Visible = true
-				end
-				return (self.__Visible and true) or false
-			end
+			return self:IsShown()
 		end,
 		Set = function(self, visible)
-			if not self.InDesignMode then
-				if visible then
-					self:Show()
-				else
-					self:Hide()
-				end
+			if visible then
+				self:Show()
 			else
-				self.__Visible = (visible and true) or false
+				self:Hide()
 			end
 		end,
 		Type = Boolean,
