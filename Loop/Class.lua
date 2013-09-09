@@ -300,6 +300,28 @@ do
 		end
 
 		_MetaNS.__newindex = function(self, key, value)
+			local info = _NSInfo[self]
+
+			if info.Type == TYPE_CLASS and __Attribute__._IsDefined(self, AttributeTargets.Class, __Expandable__) and type(key) == "string" and type(value) == "function" then
+				if not info.Cache4Method[key] and info.ClassEnv[key] == nil then
+					info.Method[key] = value
+					info.ClassEnv[key] = value
+
+					return RefreshCache(self)
+				else
+					error("Can't override the existed features.", 2)
+				end
+			elseif info.Type == TYPE_INTERFACE and __Attribute__._IsDefined(self, AttributeTargets.Interface, __Expandable__) and type(key) == "string" and type(value) == "function" then
+				if not info.Cache4Method[key] and info.InterfaceEnv[key] == nil then
+					info.Method[key] = value
+					info.InterfaceEnv[key] = value
+
+					return RefreshCache(self)
+				else
+					error("Can't override the existed features.", 2)
+				end
+			end
+
 			error(("can't set value for %s, it's readonly."):format(tostring(self)), 2)
 		end
 
@@ -7387,6 +7409,20 @@ do
 			self.__Type = type
 		end
 	endclass "__StructType__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class}
+	__Final__()
+	__Unique__()
+	class "__Expandable__"
+		inherit "__Attribute__"
+		doc [======[
+			@name __Expandable__
+			@type class
+			@desc Mark the class|interface can receive functions as new methods like :
+				System.Object.Print = function(self) print(self) end, give all object of System.Object a new method.
+				The cost should be expensive, use it carefully.
+		]======]
+	endclass "__Expandable__"
 
 	------------------------------------------------------
 	-- System.Object
