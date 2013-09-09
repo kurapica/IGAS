@@ -1,3 +1,6 @@
+2013/09/09: IGAS v48
+    1. Fix System.Reflector method error.
+
 2013/09/09: IGAS v47
     1. New property , attribtue system bring into the lua.
     2. Reduce the memory increasement, and reduce the cpu cost to increase the fps.
