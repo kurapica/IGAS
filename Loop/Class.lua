@@ -920,7 +920,8 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				if value ~= nil then
 					rawset(self, key, value)
 				end
 
@@ -1615,7 +1616,8 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				if value ~= nil then
 					rawset(self, key, value)
 				end
 
@@ -2787,7 +2789,8 @@ do
 			if info.BaseEnv then
 				local value = info.BaseEnv[key]
 
-				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				if value ~= nil then
 					rawset(self, key, value)
 				end
 
@@ -3427,6 +3430,15 @@ do
 
 				if not info then
 					-- do nothing
+				elseif info.Type == TYPE_STRUCT then
+					-- Check if the value is an enumeration value of this structure
+					flag, new = pcall(ValidateStruct, ns, value)
+
+					if flag then
+						return new
+					end
+
+					new = strtrim(new:match(":%d+:(.*)$") or new)
 				elseif info.Type == TYPE_CLASS then
 					-- Check if the value is an instance of this class
 					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
@@ -3471,15 +3483,6 @@ do
 					end
 
 					new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
-				elseif info.Type == TYPE_STRUCT then
-					-- Check if the value is an enumeration value of this structure
-					flag, new = pcall(ValidateStruct, ns, value)
-
-					if flag then
-						return new
-					end
-
-					new = strtrim(new:match(":%d+:(.*)$") or new)
 				end
 
 				if new and not msg then
@@ -7985,7 +7988,8 @@ do
 			if info.Parent then
 				local value = info.Parent[key]
 
-				if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				if value ~= nil then
 					rawset(self, key, value)
 				end
 
@@ -7996,14 +8000,13 @@ do
 				end
 
 				local value = _G[key]
-				if value then
-					if type(value) == "userdata" or type(value) == "function" or type(value) == "table" then
-						rawset(self, key, value)
-						return rawget(self, key)
-					end
 
-					return value
+				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
+				if value ~= nil then
+					rawset(self, key, value)
 				end
+
+				return value
 			end
 		end
 
