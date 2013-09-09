@@ -187,12 +187,8 @@ class "ScrollForm"
 		@desc The scroll child frame
 	]======]
 	property "ScrollChild" {
-		Get = function(self)
-			return self:GetScrollChild()
-		end,
-		Set = function(self, value)
-			self:SetScrollChild(value)
-		end,
+		Get = "GetScrollChild",
+		Set = "SetScrollChild",
 		Type = System.Widget.Region + nil,
 	}
 

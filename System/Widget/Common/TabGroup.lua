@@ -281,9 +281,7 @@ class "TabGroup"
 				end
 			end,
 
-			Get = function(self)
-				return (self:IsEnabled() and true) or false
-			end,
+			Get = "IsEnabled",
 
 			Type = Boolean,
 		}
@@ -298,22 +296,14 @@ class "TabGroup"
 				end
 			end,
 
-			Get = function(self)
-				return (self:IsSelected() and true) or false
-			end,
+			Get = "IsSelected",
 
 			Type = Boolean,
 		}
 		-- Text
 		property "Text" {
-			Set = function(self, text)
-				self:SetText(text)
-			end,
-
-			Get = function(self)
-				return self:GetText()
-			end,
-
+			Set = "SetText",
+			Get = "GetText",
 			Type = LocaleString,
 		}
 		-- Container

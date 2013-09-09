@@ -844,14 +844,8 @@ class "ComboBox"
 		@desc whether the comboBox is auto focus
 	]======]
 	property "AutoFocus" {
-		Set = function(self, state)
-			self:SetAutoFocus(state)
-		end,
-
-		Get = function(self)
-			return (self:IsAutoFocus() and true) or false
-		end,
-
+		Set = "SetAutoFocus",
+		Get = "IsAutoFocus",
 		Type = Boolean,
 	}
 
@@ -868,11 +862,7 @@ class "ComboBox"
 				self:ClearFocus()
 			end
 		end,
-
-		Get = function(self)
-			return (self:HasFocus() and true) or false
-		end,
-
+		Get = "HasFocus",
 		Type = Boolean,
 	}
 
@@ -882,14 +872,8 @@ class "ComboBox"
 		@desc the comboBox's displayed item count
 	]======]
 	property "DisplayItemCount" {
-		Set = function(self, cnt)
-			self:SetDisplayItemCount(cnt)
-		end,
-
-		Get = function(self)
-			return self:GetDisplayItemCount()
-		end,
-
+		Set = "SetDisplayItemCount",
+		Get = "GetDisplayItemCount",
 		Type = Number,
 	}
 
@@ -899,14 +883,8 @@ class "ComboBox"
 		@desc the choosed item's value
 	]======]
 	property "Value" {
-		Set = function(self, value)
-			self:SetValue(value)
-		end,
-
-		Get = function(self)
-			return self:GetValue()
-		end,
-
+		Set = "SetValue",
+		Get = "GetValue",
 		Type = Any,
 	}
 
@@ -916,14 +894,8 @@ class "ComboBox"
 		@desc the displayed text
 	]======]
 	property "Text" {
-		Set = function(self, text)
-			self:SetText(text)
-		end,
-
-		Get = function(self)
-			return self:GetText()
-		end,
-
+		Set = "SetText",
+		Get = "GetText",
 		Type = LocaleString,
 	}
 
@@ -933,14 +905,8 @@ class "ComboBox"
 		@desc whether the comboBox is ediatable
 	]======]
 	property "Editable" {
-		Set = function(self, flag)
-			self:SetEditable(flag)
-		end,
-
-		Get = function(self)
-			return (self:GetEditable() and true) or false
-		end,
-
+		Set = "SetEditable",
+		Get = "GetEditable",
 		Type = Boolean,
 	}
 
@@ -1061,14 +1027,8 @@ class "ComboBox"
 		@desc the comboBox's style
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = ComboBoxStyle,
 	}
 

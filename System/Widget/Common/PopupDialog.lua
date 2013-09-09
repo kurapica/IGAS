@@ -436,14 +436,7 @@ class "PopupDialog"
 		@desc whether show while player is dead
 	]======]
 	property "ShowWhileDead" {
-		Set = function(self, flag)
-			self.__ShowWhileDead = (flag and true) or false
-		end,
-
-		Get = function(self)
-			return self.__ShowWhileDead or false
-		end,
-
+		Storage = "__ShowWhileDead",
 		Type = Boolean,
 	}
 
@@ -453,14 +446,7 @@ class "PopupDialog"
 		@desc whether show while player is in cinematic
 	]======]
 	property "ShowWhileCinematic" {
-		Set = function(self, flag)
-			self.__ShowWhileCinematic = (flag and true) or false
-		end,
-
-		Get = function(self)
-			return (self.__ShowWhileCinematic and true) or false
-		end,
-
+		Storage = "__ShowWhileCinematic",
 		Type = Boolean,
 	}
 
@@ -470,14 +456,8 @@ class "PopupDialog"
 		@desc the popupdialog's style
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = PopupDialogStyle,
 	}
 

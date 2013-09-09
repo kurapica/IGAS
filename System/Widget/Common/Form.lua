@@ -388,14 +388,8 @@ class "Form"
 		@desc the style of the form
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = FormStyle,
 	}
 
@@ -528,12 +522,7 @@ class "Form"
 		@desc true if the form should not be shown in combat with DockMode on
 	]======]
 	property "HideForCombat" {
-		Get = function(self)
-			return self.__HideForCombat
-		end,
-		Set = function(self, value)
-			self.__HideForCombat = value
-		end,
+		Storage = "__HideForCombat",
 		Type = System.Boolean,
 	}
 

@@ -2763,12 +2763,8 @@ class "MultiLineTextBox"
 		@desc the Font object
 	]======]
 	property "FontObject" {
-		Get = function(self)
-			return self:GetFontObject()
-		end,
-		Set = function(self, fontObject)
-			self:SetFontObject(fontObject)
-		end,
+		Get = "GetFontObject",
+		Set = "SetFontObject",
 		Type = Font + String + nil,
 	}
 
@@ -2808,12 +2804,8 @@ class "MultiLineTextBox"
 		@desc the fontstring's amount of spacing between lines
 	]======]
 	property "Spacing" {
-		Get = function(self)
-			return self:GetSpacing()
-		end,
-		Set = function(self, spacing)
-			self:SetSpacing(spacing)
-		end,
+		Get = "GetSpacing",
+		Set = "SetSpacing",
 		Type = Number,
 	}
 
@@ -2838,14 +2830,8 @@ class "MultiLineTextBox"
 		@desc true if the edit box only accepts numeric input
 	]======]
 	property "NumericOnly" {
-		Set = function(self, state)
-			self:SetNumeric(state)
-		end,
-
-		Get = function(self)
-			return (self:IsNumeric() and true) or false
-		end,
-
+		Set = "SetNumeric",
+		Get = "IsNumeric",
 		Type = Boolean,
 	}
 
@@ -2855,14 +2841,8 @@ class "MultiLineTextBox"
 		@desc true if the text entered in the edit box is masked
 	]======]
 	property "Password" {
-		Set = function(self, state)
-			self:SetPassword(state)
-		end,
-
-		Get = function(self)
-			return (self:IsPassword() and true) or false
-		end,
-
+		Set = "SetPassword",
+		Get = "IsPassword",
 		Type = Boolean,
 	}
 
@@ -2872,14 +2852,8 @@ class "MultiLineTextBox"
 		@desc true if the edit box automatically acquires keyboard input focus
 	]======]
 	property "AutoFocus" {
-		Set = function(self, state)
-			self:SetAutoFocus(state)
-		end,
-
-		Get = function(self)
-			return (self:IsAutoFocus() and true) or false
-		end,
-
+		Set = "SetAutoFocus",
+		Get = "IsAutoFocus",
 		Type = Boolean,
 	}
 
@@ -2889,14 +2863,8 @@ class "MultiLineTextBox"
 		@desc the maximum number of history lines stored by the edit box
 	]======]
 	property "HistoryLines" {
-		Set = function(self, num)
-			self:SetHistoryLines(num)
-		end,
-
-		Get = function(self)
-			return self:GetHistoryLines()
-		end,
-
+		Set = "HistoryLines",
+		Get = "GetHistoryLines",
 		Type = Number,
 	}
 
@@ -2913,11 +2881,7 @@ class "MultiLineTextBox"
 				self:ClearFocus()
 			end
 		end,
-
-		Get = function(self)
-			return (self:HasFocus() and true) or false
-		end,
-
+		Get = "HasFocus",
 		Type = Boolean,
 	}
 
@@ -2927,14 +2891,8 @@ class "MultiLineTextBox"
 		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
 	]======]
 	property "AltArrowKeyMode" {
-		Set = function(self, enable)
-			self:SetAltArrowKeyMode(enable)
-		end,
-
-		Get = function(self)
-			return (self:GetAltArrowKeyMode() and true) or false
-		end,
-
+		Set = "SetAltArrowKeyMode",
+		Get = "GetAltArrowKeyMode",
 		Type = Boolean,
 	}
 
@@ -2944,14 +2902,8 @@ class "MultiLineTextBox"
 		@desc the rate at which the text insertion blinks when the edit box is focused
 	]======]
 	property "BlinkSpeed" {
-		Set = function(self, speed)
-			self:SetBlinkSpeed(speed)
-		end,
-
-		Get = function(self)
-			return self:GetBlinkSpeed()
-		end,
-
+		Set = "SetBlinkSpeed",
+		Get = "GetBlinkSpeed",
 		Type = Number,
 	}
 
@@ -2961,14 +2913,8 @@ class "MultiLineTextBox"
 		@desc the current cursor position inside edit box
 	]======]
 	property "CursorPosition" {
-		Set = function(self, position)
-			self:SetCursorPosition(position)
-		end,
-
-		Get = function(self)
-			return self:GetCursorPosition()
-		end,
-
+		Set = "SetCursorPosition",
+		Get = "GetCursorPosition",
 		Type = Number,
 	}
 
@@ -2978,14 +2924,8 @@ class "MultiLineTextBox"
 		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
 	]======]
 	property "MaxBytes" {
-		Set = function(self, maxBytes)
-			self:SetMaxBytes(maxBytes)
-		end,
-
-		Get = function(self)
-			return self:GetMaxBytes()
-		end,
-
+		Set = "SetMaxBytes",
+		Get = "GetMaxBytes",
 		Type = Number,
 	}
 
@@ -2995,14 +2935,8 @@ class "MultiLineTextBox"
 		@desc the maximum number of text characters allowed in the edit box
 	]======]
 	property "MaxLetters" {
-		Set = function(self, maxLetters)
-			self:SetMaxLetters(maxLetters)
-		end,
-
-		Get = function(self)
-			return self:GetMaxLetters()
-		end,
-
+		Set = "SetMaxLetters",
+		Get = "GetMaxLetters",
 		Type = Number,
 	}
 
@@ -3012,14 +2946,8 @@ class "MultiLineTextBox"
 		@desc the contents of the edit box as a number
 	]======]
 	property "Number" {
-		Set = function(self, number)
-			self:SetNumber(number)
-		end,
-
-		Get = function(self)
-			return self:GetNumber()
-		end,
-
+		Set = "SetNumber",
+		Get = "GetNumber",
 		Type = Number,
 	}
 
@@ -3029,14 +2957,8 @@ class "MultiLineTextBox"
 		@desc the edit box's text contents
 	]======]
 	property "Text" {
-		Set = function(self, text)
-			self:SetText(text)
-		end,
-
-		Get = function(self)
-			return self:GetText()
-		end,
-
+		Set = "SetText",
+		Get = "GetText",
 		Type = String,
 	}
 
@@ -3107,12 +3029,8 @@ class "MultiLineTextBox"
 		@desc The tab's width
 	]======]
 	property "TabWidth" {
-		Get = function(self)
-			return self:GetTabWidth()
-		end,
-		Set = function(self, tabWidth)
-			self:SetTabWidth(tabWidth)
-		end,
+		Get = "GetTabWidth",
+		Set = "SetTabWidth",
 		Type = Number + nil,
 	}
 

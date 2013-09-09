@@ -534,12 +534,7 @@ class "Mask"
 		@desc The mask is used to move parent
 	]======]
 	property "AsMove" {
-		Get = function(self)
-			return self.__AsMove or false
-		end,
-		Set = function(self, value)
-			self.__AsMove = value
-		end,
+		Storage = "__AsMove",
 		Type = System.Boolean,
 	}
 
@@ -564,12 +559,7 @@ class "Mask"
 		@desc The mask is used to bind key
 	]======]
 	property "AsKeyBind" {
-		Get = function(self)
-			return self.__AsKeyBind or false
-		end,
-		Set = function(self, value)
-			self.__AsKeyBind = value
-		end,
+		Storage = "__AsKeyBind",
 		Type = System.Boolean,
 	}
 
@@ -579,9 +569,7 @@ class "Mask"
 		@desc The binding key
 	]======]
 	property "BindKey" {
-		Get = function(self)
-			return self.__BindKey
-		end,
+		Storage = "__BindKey",
 		Set = function(self, value)
 			self.__BindKey = value
 			self.Text = ToShortKey(value) or " "

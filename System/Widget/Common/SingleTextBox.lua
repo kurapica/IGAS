@@ -141,14 +141,8 @@ class "SingleTextBox"
 		@desc the singletextbox's style
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = TextBoxStyle,
 	}
 

@@ -461,12 +461,8 @@ class "HTMLViewer"
 		@desc Whether hyperlinks in the frame's text are interactive
 	]======]
 	property "HyperlinksEnabled" {
-		Get = function(self)
-			return self:GetHyperlinksEnabled() and true or false
-		end,
-		Set = function(self, state)
-			self:SetHyperlinksEnabled(state)
-		end,
+		Get = "GetHyperlinksEnabled",
+		Set = "SetHyperlinksEnabled",
 		Type = Boolean,
 	}
 
@@ -476,12 +472,8 @@ class "HTMLViewer"
 		@desc The content of the html viewer
 	]======]
 	property "Text" {
-		Get = function(self)
-			return self:GetText()
-		end,
-		Set = function(self, value)
-			self:SetText(value)
-		end,
+		Get = "GetText",
+		Set = "SetText",
 		Type = String + nil,
 	}
 

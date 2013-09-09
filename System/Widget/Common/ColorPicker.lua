@@ -247,12 +247,8 @@ class "ColorPicker"
 		@desc the style of the ColorPicker
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-		Get = function(self)
-			return self:GetStyle()
-		end,
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = ColorPickerStyle,
 	}
 

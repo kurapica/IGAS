@@ -869,14 +869,8 @@ class "List"
 		@desc the minimum increment between allowed slider values
 	]======]
 	property "ScrollStep" {
-		Set = function(self, step)
-			self:SetScrollStep(step)
-		end,
-
-		Get = function(self)
-			return self:GetScrollStep()
-		end,
-
+		Set = "SetScrollStep",
+		Get = "GetScrollStep",
 		Type = Number,
 	}
 
@@ -886,6 +880,7 @@ class "List"
 		@desc the display count in the list
 	]======]
 	property "DisplayItemCount" {
+		Storage = "__DisplayItemCount",
 		Set = function(self, cnt)
 			if cnt and type(cnt) == "number" and cnt > 3 and cnt ~= self.__DisplayItemCount then
 				self.__DisplayItemCount = cnt
@@ -895,11 +890,6 @@ class "List"
 				--end
 			end
 		end,
-
-		Get = function(self)
-			return self.__DisplayItemCount
-		end,
-
 		Type = Number,
 	}
 
@@ -988,7 +978,6 @@ class "List"
 		Get = function(self)
 			return #self.Keys
 		end,
-
 		Type = Number,
 	}
 
@@ -998,6 +987,7 @@ class "List"
 		@desc the list's horizontal text alignment style
 	]======]
 	property "JustifyH" {
+		Storage = "__JustifyH",
 		Set = function(self, justifyH)
 			self.__JustifyH = justifyH
 			local i = 1
@@ -1010,11 +1000,6 @@ class "List"
 				i = i + 1
 			end
 		end,
-
-		Get = function(self)
-			return self.__JustifyH
-		end,
-
 		Type = JustifyHType,
 	}
 
@@ -1024,14 +1009,8 @@ class "List"
 		@desc the list's style
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = ListStyle,
 	}
 
@@ -1056,12 +1035,7 @@ class "List"
 		@desc whether show tooltip or not
 	]======]
 	property "ShowTootip" {
-		Set = function(self, flag)
-			self.__ShowTootip = (flag and true) or false
-		end,
-		Get = function(self)
-			return self.__ShowTootip or false
-		end,
+		Storage = "__ShowTootip",
 		Type = Boolean,
 	}
 

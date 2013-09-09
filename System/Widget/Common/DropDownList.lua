@@ -583,14 +583,8 @@ class "DropDownList"
 			@desc the index of the dropDownMenuButton
 		]======]
 		property "Index" {
-			Set = function(self, index)
-				self:SetIndex(index)
-			end,
-
-			Get = function(self)
-				return self:GetIndex()
-			end,
-
+			Set = "SetIndex",
+			Get = "GetIndex",
 			Type = Number,
 		}
 
@@ -617,14 +611,8 @@ class "DropDownList"
 			@desc the icon to be displayed on the dropDownMenuButton
 		]======]
 		property "Icon" {
-			Set = function(self, path)
-				self:SetIcon(path)
-			end,
-
-			Get = function(self)
-				return self:GetIcon()
-			end,
-
+			Set = "SetIcon",
+			Get = "GetIcon",
 			Type = String + nil,
 		}
 
@@ -634,14 +622,8 @@ class "DropDownList"
 			@desc the sub pop-up menu for the dropDownMenuButton
 		]======]
 		property "DropDownList" {
-			Set = function(self, list)
-				self:SetDropDownList(list)
-			end,
-
-			Get = function(self)
-				return self:GetDropDownList()
-			end,
-
+			Set = "SetDropDownList",
+			Get = "GetDropDownList",
 			Type = DropDownList + Region + nil,
 		}
 
@@ -651,14 +633,8 @@ class "DropDownList"
 			@desc the displayed text
 		]======]
 		property "Text" {
-			Set = function(self, text)
-				self:SetText(text)
-			end,
-
-			Get = function(self)
-				return self:GetText()
-			end,
-
+			Set = "SetText",
+			Get = "GetText",
 			Type = LocaleString,
 		}
 
@@ -668,17 +644,13 @@ class "DropDownList"
 			@desc whether the dropDownMenuButton is a checkButton
 		]======]
 		property "IsCheckButton" {
+			Storage = "__IsCheckButton",
 			Set = function(self, flag)
 				self.__IsCheckButton = (flag and true) or false
 				if not flag then
 					self:GetChild("Check").Visible = false
 				end
 			end,
-
-			Get = function(self)
-				return (self.__IsCheckButton and true) or false
-			end,
-
 			Type = Boolean,
 		}
 
@@ -1629,14 +1601,8 @@ class "DropDownList"
 		@desc the frame's transparency value(0-1)
 	]======]
 	property "Alpha" {
-		Set = function(self, alpha)
-			self:SetAlpha(alpha)
-		end,
-
-		Get = function(self)
-			return self:GetAlpha()
-		end,
-
+		Set ="SetAlpha",
+		Get = "GetAlpha",
 		Type = ColorFloat,
 	}
 
@@ -1729,14 +1695,8 @@ class "DropDownList"
 		@desc the backdrop graphic for the frame
 	]======]
 	property "Backdrop" {
-		Set = function(self, backdropTable)
-			self:SetBackdrop(backdropTable)
-		end,
-
-		Get = function(self)
-			return self:GetBackdrop()
-		end,
-
+		Set = "SetBackdrop",
+		Get = "GetBackdrop",
 		Type = BackdropType,
 	}
 
@@ -1822,14 +1782,8 @@ class "DropDownList"
 		@desc a numeric identifier for the frame
 	]======]
 	property "ID" {
-		Set = function(self, id)
-			self:SetID(id)
-		end,
-
-		Get = function(self)
-			return self:GetID()
-		end,
-
+		Set = "SetID",
+		Get = "GetID",
 		Type = Number,
 	}
 
@@ -1839,14 +1793,8 @@ class "DropDownList"
 		@desc the 3D depth of the frame (for stereoscopic 3D setups)
 	]======]
 	property "Depth" {
-		Set = function(self, depth)
-			self:SetDepth(depth)
-		end,
-
-		Get = function(self)
-			return self:GetDepth()
-		end,
-
+		Set = "SetDepth",
+		Get = "GetDepth",
 		Type = Number,
 	}
 
@@ -1856,14 +1804,8 @@ class "DropDownList"
 		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
 	]======]
 	property "DepthIgnored" {
-		Set = function(self, enabled)
-			self:IgnoreDepth(enabled)
-		end,
-
-		Get = function(self)
-			return (self:IsIgnoringDepth() and true) or false
-		end,
-
+		Set = "IgnoreDepth",
+		Get = "IsIgnoringDepth",
 		Type = Boolean,
 	}
 

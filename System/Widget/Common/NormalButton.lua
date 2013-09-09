@@ -205,12 +205,8 @@ class "NormalButton"
 		@desc The button's style
 	]======]
 	property "Style" {
-		Get = function(self)
-			return self:GetStyle()
-		end,
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
+		Get = "GetStyle",
+		Set = "SetStyle",
 		Type = NormalButtonStyle,
 	}
 
@@ -220,9 +216,7 @@ class "NormalButton"
 		@desc Whether should auto change the button's size when text is changed
 	]======]
 	property "AutoSize" {
-		Get = function(self)
-			return self.__AutoSize
-		end,
+		Storage = "__AutoSize",
 		Set = function(self, value)
 			self.__AutoSize = value
 

@@ -311,14 +311,8 @@ class "ScrollBar"
 		@desc the value representing the current position of the slider thumb
 	]======]
 	property "Value" {
-		Set = function(self, value)
-			self:SetValue(value)
-		end,
-
-		Get = function(self)
-			return self:GetValue()
-		end,
-
+		Set = "SetValue",
+		Get = "GetValue",
 		Type = Number,
 	}
 
@@ -328,14 +322,8 @@ class "ScrollBar"
 		@desc the minimum increment between allowed slider values
 	]======]
 	property "ValueStep" {
-		Set = function(self, value)
-			self:SetValueStep(value)
-		end,
-
-		Get = function(self)
-			return self:GetValueStep()
-		end,
-
+		Set = "SetValueStep",
+		Get = "GetValueStep",
 		Type = Number,
 	}
 
@@ -352,11 +340,7 @@ class "ScrollBar"
 				self:Disable()
 			end
 		end,
-
-		Get = function(self)
-			return (self:IsEnabled() and true) or false
-		end,
-
+		Get = "IsEnabled",
 		Type = Boolean,
 	}
 
@@ -366,14 +350,8 @@ class "ScrollBar"
 		@desc the scrollbar's style
 	]======]
 	property "Style" {
-		Set = function(self, style)
-			self:SetStyle(style)
-		end,
-
-		Get = function(self)
-			return self:GetStyle()
-		end,
-
+		Set = "SetStyle",
+		Get = "GetStyle",
 		Type = ScrollBarStyle,
 	}
 

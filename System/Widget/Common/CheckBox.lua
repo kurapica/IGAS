@@ -178,14 +178,8 @@ class "CheckBox"
 		@desc whether the CheckBox is checked
 	]======]
 	property "Checked" {
-		Set = function(self, value)
-			self:SetChecked(value)
-		end,
-
-		Get = function(self)
-			return (self:GetChecked() and true) or false
-		end,
-
+		Set = "SetChecked",
+		Get = "GetChecked",
 		Type = Boolean,
 	}
 
@@ -199,11 +193,7 @@ class "CheckBox"
 			self:SetText(text)
 			self.Width = self:GetChild("Text"):GetStringWidth() + 32
 		end,
-
-		Get = function(self)
-			return self:GetText()
-		end,
-
+		Get = "GetText",
 		Type = LocaleString,
 	}
 
