@@ -1,3 +1,7 @@
+2013/09/09: IGAS v47
+    1. New property , attribtue system bring into the lua.
+    2. Reduce the memory increasement, and reduce the cpu cost to increase the fps.
+
 2013/08/13: IGAS v46
     1. The object oriented program system now all moved to Loop folder, separated from the other part for wow.
     2. Reduce the memory and cpu usage.
