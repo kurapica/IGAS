@@ -3806,7 +3806,12 @@ do
 			@return nil
 		]======]
 		function FireObjectEvent(self, sc, ...)
-			if not GetObjectClass(self) then
+			-- No more check , just fire the event as quick as we can
+			local handler = rawget(self, "__Events")
+			handler = handler and handler[sc]
+			return handler and handler(self, ...)
+
+			--[[if not GetObjectClass(self) then
 				error("Usage : Reflector.FireObjectEvent(object, event[, ...]) : 'object' - object expected.")
 			end
 
@@ -3816,7 +3821,7 @@ do
 
 			if rawget(self, "__Events") and rawget(self.__Events, sc) then
 				return rawget(self.__Events, sc)(self, ...)
-			end
+			end--]]
 		end
 
 		doc [======[
