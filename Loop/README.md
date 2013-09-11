@@ -105,7 +105,7 @@ The 'namespace' function is used to declare a default namespace for the current 
 
 	namespace (name)
 
-Here a simple example, we can see :
+Here a simple example :
 
 	namespace "MySpace.Example"  -- Decalre a new namespace for the current environment
 
@@ -120,7 +120,7 @@ The namespace system is used to share features like class, if you don't declare 
 enum
 ====
 
-enum is used to defined new value types with enumerated values, normally it would be used as the property's type, and when the object's property is changed, it'll be used to validate the new value.
+enum is used to defined new value types with enumerated values.
 
 Here is an example to show how to use create a new enum type :
 
