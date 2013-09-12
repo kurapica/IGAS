@@ -8387,15 +8387,15 @@ do
 
 	function Install_OOP(env)
 		if type(env) == "table" then
-			env.partinterface = partinterface
-			env.partclass = partclass
-			env.interface = interface
-			env.class = class
-			env.enum = enum
-			env.namespace = namespace
-			env.struct = struct
-			env.import = import_install
-			env.Module = Module
+			env.partinterface = env.partinterface or partinterface
+			env.partclass = env.partclass or partclass
+			env.interface = env.interface or interface
+			env.class = env.class or class
+			env.enum = env.enum or enum
+			env.namespace = env.namespace or namespace
+			env.struct = env.struct or struct
+			env.import = env.import or import_install
+			env.Module = env.Module or Module
 		end
 	end
 

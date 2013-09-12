@@ -2,9 +2,10 @@
 -- Create Date : 2012/06/25
 -- Change Log  :
 --               2013/04/08 Reduce the refresh times
+--               2013/09/12 Fix for wow 5.4.0
 
 -- Check Version
-local version = 4
+local version = 5
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitName", version) then
 	return
 end
@@ -53,11 +54,7 @@ interface "IFUnitName"
 	]======]
 	function Refresh(self)
 		if self.Unit then
-			local name, server = UnitName(self.Unit)
-			if (name and server and self.WithServerName and server ~= "") then
-				name = name.."-"..server
-			end
-			self.Text = name or self.Unit
+			self.Text = GetUnitName(self.Unit, self.WithServerName) or self.Unit
 		else
 			self.Text = ""
 		end
@@ -72,9 +69,7 @@ interface "IFUnitName"
 		@desc Whether show the server name
 	]======]
 	property "WithServerName" {
-		Get = function(self)
-			return self.__WithServerName
-		end,
+		Storage = "__WithServerName",
 		Set = function(self, value)
 			self.__WithServerName = value
 			self:Refresh()

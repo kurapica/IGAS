@@ -195,12 +195,8 @@ class "UnitFrame"
 		@desc The unit's ID
 	]======]
 	property "Unit" {
-		Get = function(self)
-			return self:GetUnit()
-		end,
-		Set = function(self, unit)
-			self:SetUnit(unit)
-		end,
+		Get = "GetUnit",
+		Set = "SetUnit",
 		Type = String + nil,
 	}
 
