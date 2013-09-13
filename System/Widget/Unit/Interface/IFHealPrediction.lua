@@ -38,10 +38,10 @@ _IFAllHealPredictionUnitList.OnUnitListChanged = OnUnitListChanged
 _IFAbsorbUnitList.OnUnitListChanged = OnUnitListChanged
 _IFHealAbsorbUnitList.OnUnitListChanged = OnUnitListChanged
 
-MAX_INCOMING_HEAL_OVERFLOW = 1
+MAX_INCOMING_HEAL_OVERFLOW = 1.0
 
 function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
-	if _IFMyHealPredictionUnitList:HasUnit(unit) or _IFAllHealPredictionUnitList:HasUnit(unit) or _IFAbsorbUnitList:HasUnit(unit) then
+	if _IFHealPredictionUnitMaxHealthCache[unit] then
 		if event == "UNIT_MAXHEALTH" then
 			_MinMax.max = UnitHealthMax(unit)
 			_IFHealPredictionUnitMaxHealthCache[unit] = _MinMax.max
@@ -163,7 +163,11 @@ interface "IFMyHealPrediction"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFMyHealPredictionUnitList[self] = self.Unit
+		local unit = self.Unit
+		_IFMyHealPredictionUnitList[self] = unit
+		if unit then
+			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		end
 	end
 
 	------------------------------------------------------
@@ -227,7 +231,11 @@ interface "IFOtherHealPrediction"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFOtherHealPredictionUnitList[self] = self.Unit
+		local unit = self.Unit
+		_IFOtherHealPredictionUnitList[self] = unit
+		if unit then
+			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		end
 	end
 
 	------------------------------------------------------
@@ -291,7 +299,11 @@ interface "IFAllHealPrediction"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFAllHealPredictionUnitList[self] = self.Unit
+		local unit = self.Unit
+		_IFAllHealPredictionUnitList[self] = unit
+		if unit then
+			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		end
 	end
 
 	------------------------------------------------------
@@ -358,7 +370,11 @@ interface "IFAbsorb"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFAbsorbUnitList[self] = self.Unit
+		local unit = self.Unit
+		_IFAbsorbUnitList[self] = unit
+		if unit then
+			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		end
 	end
 
 	------------------------------------------------------
@@ -424,7 +440,11 @@ interface "IFHealAbsorb"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFHealAbsorbUnitList[self] = self.Unit
+		local unit = self.Unit
+		_IFHealAbsorbUnitList[self] = unit
+		if unit then
+			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		end
 	end
 
 	------------------------------------------------------
