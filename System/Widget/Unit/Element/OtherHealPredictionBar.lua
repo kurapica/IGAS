@@ -4,28 +4,28 @@
 
 -- Check Version
 local version = 1
-if not IGAS:NewAddon("IGAS.Widget.Unit.TotalAbsorbBar", version) then
+if not IGAS:NewAddon("IGAS.Widget.Unit.OtherHealPredictionBar", version) then
 	return
 end
 
-class "TotalAbsorbBar"
+class "OtherHealPredictionBar"
 	inherit "StatusBar"
-	extend "IFAbsorb"
+	extend "IFOtherHealPrediction"
 
 	doc [======[
-		@name TotalAbsorbBar
+		@name OtherHealPredictionBar
 		@type class
-		@desc The prediction heal of the player
+		@desc The prediction heal of the other players
 	]======]
 
-	_TotalAbsorbBarMap = _TotalAbsorbBarMap or setmetatable({}, {__mode = "kv"})
+	_OtherHealPredictionBarMap = _OtherHealPredictionBarMap or setmetatable({}, {__mode = "kv"})
 
 	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
 	local function OnSizeChanged(self)
-		if _TotalAbsorbBarMap[self] then
-			_TotalAbsorbBarMap[self].Size = self.Size
+		if _OtherHealPredictionBarMap[self] then
+			_OtherHealPredictionBarMap[self].Size = self.Size
 		end
 	end
 
@@ -43,20 +43,16 @@ class "TotalAbsorbBar"
 			if self.__HealthBar ~= value then
 				if self.__HealthBar then
 					self.__HealthBar.OnSizeChanged = self.__HealthBar.OnSizeChanged - OnSizeChanged
-					_TotalAbsorbBarMap[self.__HealthBar] = nil
+					_OtherHealPredictionBarMap[self.__HealthBar] = nil
 				end
 
 				self.__HealthBar = value
-				_TotalAbsorbBarMap[value] = self
+				_OtherHealPredictionBarMap[value] = self
 
 				self:ClearAllPoints()
 				self:SetPoint("TOPLEFT", value.StatusBarTexture, "TOPRIGHT")
 				self.FrameLevel = value.FrameLevel + 2
 				self.Size = value.Size
-
-				self.OverGlow:ClearAllPoints()
-				self.OverGlow:SetPoint("TOPLEFT", value, "TOPRIGHT", -7, 0)
-				self.OverGlow:SetPoint("BOTTOMLEFT", value, "BOTTOMRIGHT", -7, 0)
 
 				value.OnSizeChanged = value.OnSizeChanged + OnSizeChanged
 			end
@@ -64,25 +60,11 @@ class "TotalAbsorbBar"
 		Type = StatusBar,
 	}
 
-	property "OverAbsorb" {
-		Storage = "__OverAbsorb",
-		Set = function(self, value)
-			if self.__OverAbsorb ~= value then
-				self.__OverAbsorb = value
-				self.OverGlow.Visible = value
-			end
-		end,
-	}
-
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function TotalAbsorbBar(self)
-    	local overGlow = Texture("OverGlow", self)
-
-    	overGlow.BlendMode = "ADD"
-    	overGlow.TexturePath = [[Interface\RaidFrame\Shield-Overshield]]
-    	overGlow.Width = 16
-    	overGlow.Visible = false
+    function OtherHealPredictionBar(self)
+		self.StatusBarTexturePath = [[Interface\Tooltips\UI-Tooltip-Background]]
+		self.StatusBarColor = ColorType(0, 0.631, 0.557)
     end
-endclass "TotalAbsorbBar"
+endclass "OtherHealPredictionBar"

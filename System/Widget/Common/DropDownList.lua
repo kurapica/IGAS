@@ -226,7 +226,9 @@ class "DropDownList"
                 root = root.__MenuBase
             end
 
-            hideDropList(root)
+            if root.AutoHide then
+            	hideDropList(root)
+            end
 		end
 
 		local function Frame_OnEnter(self)

@@ -10,7 +10,7 @@ end
 
 class "MyHealPredictionBar"
 	inherit "StatusBar"
-	extend "IFMyHealPredictionBar"
+	extend "IFMyHealPrediction"
 
 	doc [======[
 		@name MyHealPredictionBar

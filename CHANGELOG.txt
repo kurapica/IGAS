@@ -1,3 +1,6 @@
+2013/09/16: IGAS v49
+    1. New heal absorb features.
+
 2013/09/09: IGAS v48
     1. Fix System.Reflector method error.
 

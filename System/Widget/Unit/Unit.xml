@@ -83,6 +83,7 @@
 	<Script file="Element\Unit3DPortrait.lua"/>
 	<Script file="Element\WarlockPowerBar.lua"/>
 	<Script file="Element\MyHealPredictionBar.lua"/>
+	<Script file="Element\OtherHealPredictionBar.lua"/>
 	<Script file="Element\AllHealPredictionBar.lua"/>
 	<Script file="Element\TotalAbsorbBar.lua"/>
 	<Script file="Element\HealAbsorbBar.lua"/>

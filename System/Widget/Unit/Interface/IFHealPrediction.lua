@@ -73,6 +73,8 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 			end
 
 			local overHealAbsorb = false
+			local hasIncomingHeal = false
+			local hasAbsorb = false
 
 			--We don't fill outside the health bar with healAbsorbs.  Instead, an overHealAbsorbGlow is shown.
 			if ( health < myCurrentHealAbsorb ) then
@@ -108,6 +110,21 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 				end
 			end
 
+			--If allIncomingHeal is greater than myCurrentHealAbsorb, then the current
+			--heal absorb will be completely overlayed by the incoming heals so we don't show it.
+			if ( myCurrentHealAbsorb > allIncomingHeal ) then
+				myCurrentHealAbsorb = myCurrentHealAbsorb - allIncomingHeal
+
+				--If there are incoming heals the left shadow would be overlayed by the incoming heals
+				--so it isn't shown.
+				hasIncomingHeal = allIncomingHeal > 0
+
+				-- The right shadow is only shown if there are absorbs on the health bar.
+				hasAbsorb = totalAbsorb > 0
+			else
+				myCurrentHealAbsorb = 0
+			end
+
 			_IFMyHealPredictionUnitList:EachK(unit, "Value", myIncomingHeal)
 			_IFOtherHealPredictionUnitList:EachK(unit, "Value", otherIncomingHeal)
 			_IFAllHealPredictionUnitList:EachK(unit, "Value", allIncomingHeal)
@@ -115,12 +132,10 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 			_IFAbsorbUnitList:EachK(unit, "Value", totalAbsorb)
 			_IFAbsorbUnitList:EachK(unit, "OverAbsorb", overAbsorb)
 
-			if myCurrentHealAbsorb > allIncomingHeal then
-				_IFHealAbsorbUnitList:EachK(unit, "Value", myCurrentHealAbsorb)
-
-			else
-				_IFHealAbsorbUnitList:EachK(unit, "Value", 0)
-			end
+			_IFHealAbsorbUnitList:EachK(unit, "Value", myCurrentHealAbsorb)
+			_IFHealAbsorbUnitList:EachK(unit, "OverAbsorb", overHealAbsorb)
+			_IFHealAbsorbUnitList:EachK(unit, "HasIncomingHeal", hasIncomingHeal)
+			_IFHealAbsorbUnitList:EachK(unit, "HasAbsorb", hasAbsorb)
 		end
 	end
 end
@@ -254,7 +269,7 @@ interface "IFOtherHealPrediction"
 		-- Default Texture
 		if self:IsClass(StatusBar) and not self.StatusBarTexture then
 			self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
-			self.StatusBarColor = ColorType(0, 0.827, 0.765)
+			self.StatusBarColor = ColorType(0, 0.631, 0.557)
 		end
 
 		self.MouseEnabled = false
@@ -424,11 +439,15 @@ interface "IFHealAbsorb"
 			self.MinMaxValue = _MinMax
 			self.Value = 0
 			self.OverAbsorb = false
+			self.HasIncomingHeal = false
+			self.HasAbsorb = false
 		else
 			_MinMax.max = 100
 			self.MinMaxValue = _MinMax
 			self.Value = 0
 			self.OverAbsorb = false
+			self.HasIncomingHeal = false
+			self.HasAbsorb = false
 		end
 	end
 
@@ -459,11 +478,6 @@ interface "IFHealAbsorb"
 	------------------------------------------------------
 	function IFHealAbsorb(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(StatusBar) and not self.StatusBarTexture then
-			self.StatusBarTexturePath = [[Interface\RaidFrame\Shield-Fill]]
-		end
 
 		self.MouseEnabled = false
 	end

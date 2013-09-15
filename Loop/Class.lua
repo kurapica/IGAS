@@ -7826,9 +7826,9 @@ do
 		------------------------------------------------------
 		-- Meta-methods
 		------------------------------------------------------
-		function __tostring(self)
+		--[[function __tostring(self)
 			return "[Object]" .. tostring(getmetatable(self)) .. "()"
-		end
+		end--]]
 	endclass "Object"
 
 	------------------------------------------------------
