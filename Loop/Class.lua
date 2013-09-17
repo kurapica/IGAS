@@ -90,6 +90,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/09/08 New property system
 --               2013/09/09 Improve the cache system to improve performance
 --               2013/09/11 Fix Reflector.Help & ParseEnum
+--               2013/09/17 The basic structs can validate values like custom structs now
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -209,7 +210,7 @@ end
 -- Constant Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 75
+	LUA_OOP_VERSION = 76
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -3059,6 +3060,20 @@ do
 
 				error(("Usage : %s(...) - %s"):format(tostring(strt), value), 3)
 			end
+		end
+
+		if max == 1 and type(info.UserValidate) == "function"  then
+			local ok, ret = pcall(info.UserValidate, ...)
+
+			if not ok then
+				ret = strtrim(ret:match(":%d+:(.*)$") or ret)
+
+				ret = ret:gsub("%%s", "[".. info.Name .."]")
+
+				error(ret, 3)
+			end
+
+			return ret
 		end
 
 		error(("struct '%s' is abstract."):format(tostring(strt)), 3)
