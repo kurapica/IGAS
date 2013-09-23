@@ -457,11 +457,26 @@ Calling an object's method is like sending a message to the object, so the objec
 		function SetName(self, name)
 			self.__Name = tostring(name)
 		end
+
 	endclass "Person"
 
 Any global functions that defined in the class definition with name not start with "_" are the methods of the class's objects. The object methods should have *self* as the first paramter to receive the object.
 
-Here two methods are defined for the *Person*'s objects. *GetName* used to get the person's name, and *SetName* used to set the person's name. The objects are lua tables with special metatable settings, so the name value are stored in the person object itself in the field *__Name*.
+Here two methods are defined for the *Person*'s objects. *GetName* used to get the person's name, and *SetName* used to set the person's name. The objects are lua tables with special metatable settings, so the name value are stored in the person object itself in the field *__Name*, also you can use a special table to store the name value like :
+
+	class "Person"
+
+		_PersonName = setmetatable( {}, { __mode = "k" } )
+
+		function GetName(self)
+			return _PersonName[self]
+		end
+
+		function SetName(self, name)
+			_PersonName[self] = tostring(name)
+		end
+
+	endclass "Person"
 
 So, we can used it like :
 
@@ -484,6 +499,7 @@ Constructor
 Well, it's better to give the name to a person object when objects are created. When define a global function with the class name, the function will be treated as the constructor function, like the object methods, it use *self* as the first paramter to receive the objecet, and all other paramters passed in.
 
 	class "Person"
+
 		-- Object Method
 		function GetName(self)
 			return self.__Name
@@ -495,8 +511,9 @@ Well, it's better to give the name to a person object when objects are created. 
 
 		-- Constructor
 		function Person(self, name)
-			self.__Name = tostring(name)
+			self:SetName(name)
 		end
+
 	endclass "Person"
 
 So, here we can use it like :
@@ -513,6 +530,7 @@ Class Method
 Any global functions defined in the class's definition with name start with "_" are class methods, can't be used by the class's objects, as example, we can use a class method to count the persons :
 
 	class "Person"
+
 		_PersonCount = _PersonCount or 0
 
 		-- Class Method
@@ -520,12 +538,22 @@ Any global functions defined in the class's definition with name start with "_" 
 			return _PersonCount
 		end
 
+		-- Object Method
+		function GetName(self)
+			return self.__Name
+		end
+
+		function SetName(self, name)
+			self.__Name = tostring(name)
+		end
+
 		-- Constructor
 		function Person(self, name)
 			_PersonCount = _PersonCount + 1
 
-			self.__Name = tostring(name)
+			self:SetName(name)
 		end
+
 	endclass "Person"
 
 	obj = Person("A")
@@ -536,7 +564,7 @@ Any global functions defined in the class's definition with name start with "_" 
 	print("Person Count : " .. Person._GetPersonCount())
 
 
-Notice a global variable *_PersonCount* is used to count the persons, it can be decalred as local, but keep global is simple and won't pollute the _G, when re-define the class, the class won't lose informations about the old version objects(run the code again, you should get 6). The detail will be put at the last part of the class.
+Notice a global variable *_PersonCount* is used to count the persons, it can be decalred as local, but keep global is simple, and when re-define the class, the class won't lose informations about the old version objects(run the code again, you should get 6).
 
 
 Property & Init with table
@@ -564,13 +592,15 @@ So, here is the full definition format for a property :
 So, re-define the *Person* class with the property :
 
 	class "Person"
+
 		property "Name" {
 			Storage = "__Name",
 			Type = System.String,
 		}
+
 	endclass "Person"
 
-With the property system, we can create objects with a new format, called *init with a table* :
+With the property system, we can create objects with a new format, called *Init with a table* :
 
 	obj = Person { Name = "A", Age = 20 }
 
@@ -579,16 +609,21 @@ With the property system, we can create objects with a new format, called *init 
 
 If only a normal table passed to the class to create the object, the object will be created with no parameters, and then any key-value paris in the table will be tried to write to the object (just like obj[key] = value). If you want some parameters be passed into the class's constructor, the features will be added in the *Attribute* system.
 
-With the *Storage*, the read and write are the quickest way to access the property, but normally, we need to do more things when the object's properties are accessed, like return a default value when data not existed. So, here is a full example to show *Get* and *Set* :
+With the *Storage*, the reading and writing are the quickest, but normally, we need to do more things when the object's properties are accessed, like return a default value when data not existed. So, here is a full example to show *Get* and *Set* :
 
 	class "Person"
+
+		-- Object method
 		function GetName(self)
 			return self.__Name or "Anonymous"
 		end
 
+		-- Property
 		property "Name" {
+			-- Using the object method
 			Get = "GetName",
 
+			-- Using special set function
 			Set = function(self, name)
 				local oldname = self.Name
 
@@ -597,8 +632,10 @@ With the *Storage*, the read and write are the quickest way to access the proper
 				print("The name is changed from " .. oldname .. " to " .. self.Name)
 			end,
 
+			-- So in set method, no need to valdiate the 'name' value
 			Type = System.String + nil,
 		}
+
 	endclass "Person"
 
 So, the *Get* part is using the object method *GetName*, and the *Set* part is using an anonymous function to do the job.
@@ -616,17 +653,19 @@ The events are used to let the outside know changes happened in the objects. The
 
 	event "name"
 
-The *event* keyword is used to declare an event with the event name. So, here we decalre an event *OnNameChanged* when the *Person*'s *Name* property is changed.
+The *event* keyword is used to declare an event with the event name. So, here we declare an event *OnNameChanged* fired when the *Person*'s *Name* property is changed.
 
 	class "Person"
 
-		-- Declare the event
+		-- Event
 		event "OnNameChanged"
 
+		-- Property
 		property "Name" {
 			Get = function(self)
 				return self.__Name or "Anonymous"
 			end,
+
 			Set = function(self, name)
 				local oldName = self.Name
 
@@ -635,13 +674,15 @@ The *event* keyword is used to declare an event with the event name. So, here we
 				-- Fire the event with parameters
 				self:OnNameChanged(oldName, self.Name)
 			end,
+
 			Type = System.String + nil,
 		}
 	endclass "Person"
 
-It looks like we just give the object a *OnNameChanged* method, and call it when needed. The truth is the obj.OnNameChanged is an object created from *System.EventHandler* class. It's used to control all event handlers, there are two type event handlers :
+It looks like we just give the object a *OnNameChanged* method, and call it when needed. The truth is the *self.OnNameChanged* is an object created from *System.EventHandler* class. It's used to control all event handlers (functions), there are two type event handlers :
 
 * Stackable event handler
+
 * Normal event handler
 
 So, it's quick to use an example to show the different :
@@ -654,44 +695,752 @@ So, it's quick to use an example to show the different :
 	end
 
 	-- Normal event handler
-	obj.OnNameChanged = function(self, old, new)
+	function obj:OnNameChanged(old, new)
 		print("Normal 1 : ", old, new)
 	end
 
-	-- More stackable event handler
-	obj.OnNameChanged = obj.OnNameChanged + function(self, old, new)
+	-- Another global stackable event handler
+	function OnNameChangedHandler(self, old, new)
 		print("Stack 2 : ", old, new)
 	end
 
-	obj.OnNameChanged = obj.OnNameChanged + function(self, old, new)
-		print("Stack 3 : ", old, new)
-	end
+	obj.OnNameChanged = obj.OnNameChanged + OnNameChangedHandler
 
 	-- Another normal event handler
 	obj.OnNameChanged = function(self, old, new)
 		print("Normal 2 : ", old, new)
 	end
 
+	-- The last stackable event handler
+	obj.OnNameChanged = obj.OnNameChanged + function(self, old, new)
+		print("Stack 3 : ", old, new)
+	end
+
 	obj.Name = "Kurapica"
 
+	print("------------------")
+
+	obj.OnNameChanged = obj.OnNameChanged - OnNameChangedHandler
+
+	obj.Name = "Another"
+
+	print("------------------")
+
+	-- A handler return true
+	obj.OnNameChanged = obj.OnNameChanged + function(self, old, new)
+		print("Stack 4 : ", old, new)
+
+		return true
+	end
+
+	obj.Name = "Last"
+
 Here is the result :
+
 	Stack 1 : 	Anonymous	Kurapica
 	Stack 2 : 	Anonymous	Kurapica
 	Stack 3 : 	Anonymous	Kurapica
 	Normal 2 : 	Anonymous	Kurapica
+	------------------
+	Stack 1 : 	Kurapica	Another
+	Stack 3 : 	Kurapica	Another
+	Normal 2 : 	Kurapica	Another
+	------------------
+	Stack 1 : 	Another	Last
+	Stack 3 : 	Another	Last
+	Stack 4 : 	Another	Last
+
 
 So, we can get detail from the example :
 
-* There can be many stackable event handlers, can the order is first registered first be called.
-* There can be only one normal event handler.
+* There can be many stackable event handlers, handlers can be added or removed by + / -.
+
+* There can be only one normal event handler, older one will be replaced by the new one.
+
+* When an event is fired, the stackable event handlers are called at the first time, first registered first be called, the normal event handler will be the last.
+
+* Any handler return true will stop the calling operation, any handlers after it won't be called.
+
+
+It's not good to use the *EventHandler* directly, anytime access the object's *EventHandler*, the object will create the *EventHandler* when not existed. So, fire an event without any handlers will be a greate waste of memeory. There are two ways to do it :
+
+* Using *System.Reflector.FireObjectEvent*, for the previous example :
+
+		self:OnNameChanged(oldName, self.Name)
+
+		-- Change to
+
+		System.Reflector.FireObjectEvent(self, "OnNameChanged", oldName, self.Name)
+
+* Inherit from *System.Object*, then using the *Fire* method :
+
+		class "Person"
+			inherit "System.Object"  -- Explained later
+
+			-- Declare the event
+			event "OnNameChanged"
+
+			property "Name" {
+				Get = function(self)
+					return self.__Name or "Anonymous"
+				end,
+
+				Set = function(self, name)
+					local oldName = self.Name
+
+					self.__Name = name
+
+					-- Fire the event with parameters
+					self:Fire("OnNameChanged", oldName, self.Name)
+				end,
+				Type = System.String + nil,
+			}
+
+		endclass "Person"
+
+The inheritance Systems is a powerful feature in the object-oriented program, it makes the class can using the features in its super class.
+
+Here, the *System.Object* class is a class that should be other classes's super class, contains many useful method, the *Fire* method is used to fire an event, it won't create the *EventHandler* object when not needed.
 
 
 Meta-method
 ----
 
+In lua, a table can have many metatable settings, like *__call* use the table as a function, more details can be found in [Lua 5.1 Reference Manual](http://www.lua.org/manual/5.1/manual.html#2.8).
+
+Since the objects are lua tables with special metatable set by the Loop system, setmetatable can't be used to the objects. But it's easy to provide meta-method for the objects, take the *__call* as an example :
+
+	class "Person"
+
+		-- Property
+		property "Name" {
+			Storage = "__Name",
+			Type = System.String + nil,
+		}
+
+		-- Meta-method
+		function __call(self, name)
+			print("Hello, " .. name .. ", it's " .. self.Name)
+		end
+
+	endclass "Person"
+
+So, just declare a global function with the meta-method's name, and it can be used like :
+
+	obj = Person { Name = "Dean" }
+
+	-- Output : Hello, Sam, it's Dean
+	obj("Sam")
+
+All metamethod can used include the *__index* and *__newindex*. Also a new metamethod used by the Loop system : *__exist*, the *__exist* method receive all parameters passed to the constructor, and decide if there is an existed object, if true, return the object directly.
+
+	class "Person"
+
+		_PersonStorage = setmetatable( {}, { __mode = "v" })
+
+		-- Constructor
+		function Person(self, name)
+			_PersonStorage[name] = self
+		end
+
+		-- __exist
+		function __exist(name)
+			return _PersonStorage[name]
+		end
+
+	endclass "Person"
+
+So, here is a test :
+
+	print(Person("A"))
+
+Run the test anytimes, the result will be the same.
+
+
+Inheritance
+----
+
+The inheritance system is the most important system in an oop system. In the Loop, it make the classes can gain the object methods, properties, events, metamethods settings from its superclass.
+
+The format is
+
+	inherit ( superclass )
+
+	or
+
+	inherit "superclass path"
+
+The *inherit* keyword can only be used in the class definition. In the previous example, the *Person* class inherit from *System.Object* class, so it can use the *Fire* method defined in it. One class can only have one super class.
+
+* In many scene, the class should override its superclass's method, and also want to use the origin method in it. The key features is, in the class definition, a var named *Super* can be used as the superclass, so here is an example :
+
+		class "A"
+
+			function Print(self)
+				print("Here is A's Print.")
+			end
+
+		endclass "A"
+
+		class "B"
+			inherit "A"
+
+			function Print(self)
+				Super.Print( self )
+
+				print("Here is B's Print.")
+			end
+
+		endclass "B"
+
+		-- Test part
+		obj = B()
+
+		obj:Print()
+
+	So, we got
+
+		Here is A's Print.
+		Here is B's Print.
+
+	It's all right if you want keep the origin method as a local var like, it's the quickest way to call functions :
+
+		class "B"
+			inherit "A"
+
+			local oldPrint = Super.Print
+
+			function Print(self)
+				oldPrint( self )
+
+				print("Here is B's Print.")
+			end
+
+		endclass "B"
+
+	But when re-define the *A* class, the *oldPrint* would point to an old version *Print* method, it's better to avoid, unless you don't need to re-define any features.
+
+* With the inheritance system, go back to the property definition :
+
+		property "name" {
+			Storage = "field",
+			Get = "GetMethod" or function(self) end,
+			Set = "SetMethod" or function(self, value) end,
+			Type = types,
+		}
+
+	Normally, if want the property accessors can be changed in the child-classes, it's better to define the get & set object methods, and using the name of the methods as the *Get* & *Set* part's value in the property definition, so the child-class only need to override the object methods to change the behavior of the property accesses. Like the *Person* class :
+
+		class "Person"
+
+			-- Object method
+			function GetName(self)
+				return self.__Name
+			end
+
+			function SetName(self, name)
+				self.__Name = name
+			end
+
+			-- Property
+			property "Name" {
+				Get = "GetName",
+				Set = "SetName",
+				Type = System.String + nil,
+			}
+
+			-- Meta-method
+			function __call(self, name)
+				print("Hello, " .. name .. ", it's " .. self.Name)
+			end
+
+		endclass "Person"
+
+	So, when a child-class of the *Person* re-define the *GetName* or *SetName*, there is no need to override the property *Name*.
+
+	If override the property definition in the child-class, the superclass's property will be removed from the child-class.
+
+* Like the object methods, override the metamethods is the same, take *__call* as example, *super.__call* can be used to retrieve the superclass's *__call* metamethod.
+
+* When the class create an object, the object should passed to its super class's constructor first, and then send to the class's constructor, unlike oop system in the other languages, the child-class can't acess any vars defined in super-class's definition environment, it's simple that the child-class focus on how to manipulate the object that created from the super-class.
+
+		class "A"
+			function A(self)
+				print ("[A]" .. tostring(self))
+			end
+		endclass "A"
+
+		class "B"
+			inherit "A"
+
+			function B(self)
+				print("[B]" .. tostring(self))
+			end
+		endclass "B"
+
+		obj = B()
+
+	Ouput :
+
+		[A]table: 0x7fe080ca4680
+		[B]table: 0x7fe080ca4680
+
+* Focus on the event handlers, so why need two types, take an example first :
+
+		class "Person"
+			inherit "System.Object"
+
+			event "OnNameChanged"
+
+			property "Name" {
+				Storage = "__Name",
+				Set = function(self, name)
+					local oldName = self.__Name
+
+					self.__Name = name
+
+					return self:Fire("OnNameChanged", oldName, name)
+				end,
+				Type = System.String,
+			}
+
+			property "GUID" {
+				Storage = "__ID",
+				Type = System.String,
+			}
+
+			function Person(self)
+				math.randomseed(os.time())
+
+				local guid = ""
+
+				for i = 1, 8 do
+					guid = guid .. ("%04X"):format(math.random(0xffff))
+
+					if i > 1 and i < 6 then
+						guid = guid .. "-"
+					end
+				end
+
+				self.GUID = guid
+			end
+		endclass "Person"
+
+	Here is a *Person* class definition, it has two properties, one *Name* used to storage a person's name, a *GUID* used to mark the unique person, so we can diff two person with the same name. When a new person add to the system, we create the object with a new guid like :
+
+		person = Person { Name = "Jane" }
+
+	And a new guid is created for the person like 'C2022B9F-ADC2-BBA6-B911-2F670757AD12', then we can save the person's data to somewhere, and when we need we could read the data, and create the person again like :
+
+		person = Person { Name = "Jane", GUID = "C2022B9F-ADC2-BBA6-B911-2F670757AD12" }
+
+	The *Person* class is a simple class used as the root class, we can create many child-class like *Child* and *Adult*, so *Child* should have a *Guardian* property point to another person object, and so on. So, there is an event *OnNameChanged* that fired when the person's name is changed. Now we define a *Member* class inherited from the *Person*, also it will count person based on the name.
+
+		class "Member"
+			inherit "Person"
+
+			_NameCount = {}
+
+			-- Class Method
+			function _GetMemberCount(name)
+				return _NameCount[name] or 0
+			end
+
+			-- Event handler
+			local function OnNameChanged(self, old, new)
+				if old then
+					_NameCount[old] = _NameCount[old] - 1
+				end
+
+				if new then
+					_NameCount[new] = (_NameCount[new] or 0) + 1
+				end
+			end
+
+			-- Constructor
+			function Member(self)
+				self.OnNameChanged = self.OnNameChanged + OnNameChanged
+			end
+		endclass "Member"
+
+	So, in the *Member* class, a stackable handler is added for the object, normally, the stackable handler is used in the child-class's definition, so the child-class won't remove any handler added by its super classes.
+
+	And for the final using, normal handler is easy to write, and the user won't need to know anything about the stackable handlers.
+
+		a = Member { Name = "Jane" }
+
+		function a:OnNameChanged(old, new)
+			print(old .. " rename to " .. new)
+		end
+
+		-- Output : Jane rename to Ann
+		a.Name = "Ann"
+
+		b = Member { Name = "Ann" }
+		c = Member { Name = "King" }
+
+		-- Output : Member count for 'Ann' : 2
+		print("Member count for 'Ann' : " .. Member._GetMemberCount( "Ann" ))
+
+
+
+partclass & re-define
+----
+
+* The class can be re-defined, and the object that created from the old version class, will use the new version's features.
+
+		class "A"
+		endclass "A"
+
+		obj = A()
+
+		-- Re-define the class A
+		class "A"
+			function Hi(self)
+				print( "Hello" )
+			end
+		endclass "A"
+
+		-- Outout : Hello
+		obj:Hi()
+
+* When re-define a class, its object methods, class methods, events, properties and meta-methods all will be cleared. So :
+
+		class "A"
+			function Hi(self)
+				print( "Hello" )
+			end
+		endclass "A"
+
+		obj = A()
+
+		class "A"
+		endclass "A"
+
+		-- Error : attempt to call method 'Hi' (a nil value)
+		obj:Hi()
+
+* Any global vars with no function values should be kept in the class definition's environment, so we can used it again :
+
+		class "A"
+			_Objs = _Objs or {}
+
+			function A(self, name)
+				_Objs[name] = self
+			end
+
+			function __exist(name)
+				return _Objs[name]
+			end
+		endclass "A"
+
+		print( A("HI") )
+
+		-- Re-define agian
+		class "A"
+			_Objs = _Objs or {}
+
+			function A(self, name)
+				_Objs[name] = self
+			end
+
+			function __exist(name)
+				return _Objs[name]
+			end
+		endclass "A"
+
+		print( A("HI") )
+
+	Output :
+
+		table: 0x7fe080c4a410
+		table: 0x7fe080c4a410
+
+* partclass is used to start the class definition without clearance :
+
+		class "A"
+			function Hi(self)
+				print( "Hello" )
+			end
+		endclass "A"
+
+		obj = A()
+
+		partclass "A"
+		endclass "A"
+
+		-- Output : Hello
+		obj:Hi()
+
+* When re-define the class, any sub-class will receive the new features that inherited from the super class, won't receive if they have their owns.
+
+		class "A"
+		endclass "A"
+
+		class "B"
+			inherit "A"
+		endclass "B"
+
+		obj = B()
+
+		class "A"
+			function Hi(self)
+				print( "Hello" )
+			end
+		endclass "A"
+
+		-- Output : Hello
+		obj:Hi()
+
 
 interface
 ====
+
+Using the interface is like the class, the format is
+
+	extend ( interface ) ( interface2 ) ( interface3 ) ...
+
+	or
+
+	extend "interface path" "interface2 path" "interface3 path" ...
+
+The definition of an interface is started with *interface* and end with *endinterface* :
+
+	-- Define an interface has one method
+	interface "IFGreet"
+		function Greet(self)
+			print("Hi, I'm " .. self.Name)
+		end
+	endinterface "IFGreet"
+
+	-- Define an interface with one property
+	interface "IFName"
+		property "Name" {
+			Storage = "__Name",
+			Type = System.String,
+		}
+	endinterface "IFName"
+
+	-- Define a class extend from the interfaces
+	class "Person"
+		-- so the Person class have one method and one property from the two interfaces
+		extend "IFName" "IFGreet"
+	endclass "Person"
+
+	obj = Person { Name = "Ann" }
+
+	-- Output : Hi, I'm Ann
+	obj:Greet()
+
+In the Loop system, the interface system is used to support multi-inheritance. One class can only inherited from one super class, but can extend from no-limit interfaces, also an interface can extend from other interfaces.
+
+Define an interface is just like define a class with little different :
+
+* The interface can't be used to create objects.
+
+* Define events, properties, object methods is the same like the define them in the classes.
+
+* Global method start with "_" are interface methods, can only be called by the interface itself.
+
+* Global method whose name is the interface name, is initializer , will receive object that created from the classes that extend from the interface without any other paramters.
+
+* No meta-methods can be defined in the interface.
+
+* Re-define interface is like re-define a class, any features would be passed to classes that extend from it.
+
+* like the *partclass*, *partinterface* is used to re-define the interface without clearance.
+
+
+Init & Dispose
+----
+
+In class, there may be a constructor, in interface, there may be a initializer, they are used to do the init jobs to the object, and when we don't need the object anymore, we need to clear the object, so it can be collected by the lua's garbage collector.
+
+Normally, if in the definition, we use some table to cache the object's data, when clear the object, we should clear the cache tables, so no reference will keep the object away from garbage collector.
+
+There are a special method used by all objects named *Dispose*, and any class, interface can define a *Dispose* method to clear reference for themselves.
+
+Take one class as the first example :
+
+	class "A"
+		-- Used to store real name values
+		_Name = {}
+
+		-- Dispose
+		function Dispose(self)
+			-- remove the reference from _Name
+			_Name[self] = nil
+		end
+
+		property "Name" {
+			Get = function(self) return _Name[self] or "Anonymous" end,
+			Set = function(self, name) _Name[self] = name end,
+			Type = System.String + nil,
+		}
+	endclass "A"
+
+	obj = A { Name = "Jane" }
+
+	-- Dispose the object
+	obj:Dispose()
+	obj = nil
+
+If your class or interface won't add any reference to the object, there is no need to decalre a *Dispose* method. And remember, the obj.Dispose is not A.Dispose, all objects use a same method, and the method would call the *Dispose* method that defined in the classes and interfaces.
+
+So, that leave one problem, what's the order of the init and dispose in the inheritance system. Just an example will show :
+
+	interface "IFA"
+	    function Dispose(self)
+	        print("IFA <-", self.Name)
+	    end
+
+	    function IFA(self)
+	        print("IFA ->", self.Name)
+	    end
+	endinterface "IFA"
+
+	interface "IFB"
+	    function Dispose(self)
+	        print("IFB <-", self.Name)
+	    end
+
+	    function IFB(self)
+	        print("IFB ->", self.Name)
+	    end
+	endinterface "IFB"
+
+	interface "IFC"
+	    extend "IFB"
+
+	    function Dispose(self)
+	        print("IFC <-", self.Name)
+	    end
+
+	    function IFC(self)
+	        print("IFC ->", self.Name)
+	    end
+	endinterface "IFC"
+
+	class "A"
+	    extend "IFA"
+
+	    function Dispose(self)
+	        print("A <-", self.Name)
+	    end
+	    function A(self, name)
+	        self.Name = name
+	        print("A ->", name)
+	    end
+	endclass "A"
+
+	class "B"
+	    inherit "A"
+	    extend "IFC"
+
+	    function Dispose(self)
+	        print("B <-", self.Name)
+	    end
+
+	    function B(self, name)
+	        print("B ->", name)
+	    end
+	endclass "B"
+
+	obj = B("Test")
+	print("-----------------------")
+	obj:Dispose()
+
+The result :
+
+	A ->	Test
+	B ->	Test
+	IFA ->	Test
+	IFB ->	Test
+	IFC ->	Test
+	-----------------------
+	IFC <-	Test
+	IFB <-	Test
+	IFA <-	Test
+	B <-	Test
+	A <-	Test
+
+So, the rule is :
+
+* For the init :
+
+	* The class's constructor would be called before call the interfaces's initializer.
+
+	* All parameter should be passed into the class and all its superclasses's constructor, and the superclass's constructor will be called first.
+
+	* No other parameter would be passed into the interfaces' initializer, the superclass's interface's initializer would be called first, and if the class has more than one interfaces, first extended will be called first.
+
+* For the dispose : just reversed order of the init.
+
+
+How to use
+----
+
+The oop system is used to describe any real world object into data, using the property to represent the object's state like person's name, birthday, sex, and etc, using the methods to represent what the object can do, like walking, talking and more.
+
+The class is used to descrbie a group of objects with same behaviors. Like *Person* for human beings.
+
+The interface don't represent a group of objects, it don't know what objects will use the features of it, but it know what can be used by the objects.
+
+Take the game as an example, to display the health points of the player, we may display it in text, or something like the health orb in the Diablo, and if using text, we may display it in percent, or some short format like '101.3 k'. So, the text or texture is the objects that used to display the data, and we can use an interface to provide the data like :
+
+	interface "IFHealth"
+
+		_IFHealthObjs = {}
+
+		-- Object method
+		function SetValue(self, value)
+		end
+
+		-- Interface method
+		function _SetValue(value)
+			-- Refresh all objects's value
+			for _, obj in ipairs(_IFHealthObjs) do
+				obj:SetValue(value)
+			end
+		end
+
+		-- Dispose
+		function Dispose(self)
+			-- Remove the object
+			for i, obj in ipairs(_IFHealthObjs) do
+				if obj == self then
+					return table.remove(_IFHealthObjs, i)
+				end
+			end
+		end
+
+		-- Initializer
+		function IFHealth(self)
+			-- Register the object
+			table.insert(_IFHealthObjs, self)
+		end
+
+	endinterface "IFHealth"
+
+In the interface, a empty method *SetValue* is defined, it will be override by the classes that extended from the *IFHealth*, so in the *_SetValue* interface method, there is no need to check whether the object has a *SetValue* method.
+
+And for a text to display the health point, if we have a *Label* class used to display strings with a *SetText* method to display, we can create a new class to do the job like :
+
+	class "HealthText"
+		inherit "Label"
+		extend "IFHealth"
+
+		-- Override the method
+		function SetValue(self, value)
+			self:SetText( ("%d"):format(value) )
+		end
+	endclass "HealthText"
+
+So, when a *HealthText*'s object is created, it will be stored into the *_IFHealthObjs* table, and when the system call
+
+	IFHealth._SetValue(10000)
+
+The text of the object would be refreshed to the new value.
 
 
 
@@ -701,6 +1450,7 @@ Module
 
 Attribute
 ====
+
 
 Tips
 ====
