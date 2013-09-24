@@ -147,7 +147,7 @@ First, an example used to show how to create a new enum type :
 	-- Acees the values as table field, just case ignored
 	print( Week.sunday )
 	print( Week.Sunday )
-	print( Week.sundDay )
+	print( Week.sunDay )
 
 	-- Output : 'None'
 	print( Week.none )
@@ -1440,15 +1440,86 @@ So, when a *HealthText*'s object is created, it will be stored into the *_IFHeal
 
 	IFHealth._SetValue(10000)
 
-The text of the object would be refreshed to the new value.
+The text of the *HealthText* object would be refreshed to the new value.
 
 
 
 Module
 ====
 
+Private environment
+----
 
-Attribute
+The Loop system is built by manipulate the lua's environment with getfenv / setfenv function. Like
+
+	class "A"
+		-- Ouput : table: 0x7fd9fb4a2480	table: 0x7fd9fb403f30
+		print( getfenv( 1 ), _G)
+	endclass "A"
+
+So, in the class definition, the environment is a private environment belonged to the class *A*. That's why the system can gather events, properties and methodes settings for the class, also why the *endclass* is needed to set back the environment ( the *endclass* is also used to cache features to make the method & properties access more quickly ).
+
+Beside the definition, the environment also provide a simple way to access namespaces :
+
+	import "System"
+
+	-- Ouput : System.Object
+	print( System.Object )
+
+	-- Ouput : nil
+	print( Object )
+
+	namespace "Windows.Forms.DataGrid"
+
+	class "A"
+		----------------------------------
+		-- Ouput : System
+		print( System )
+
+		-- Ouput : Windows.Forms
+		print(Windows.Forms)
+
+		-- Ouput : nil
+		print( Object )
+
+		----------------------------------
+		-- Import a namespace
+		import "System"
+
+		-- Output : System.Object
+		print( Object )
+		----------------------------------
+	endclass "A"
+
+* Any root namespace can be accessed directly in the private environment, so we can access the *System* and *Windows* directly.
+* When import a namespace, any namespace in it can be accessed directly in the private environment.
+
+Since it's a private environment, so, why *print* and other global vars can be accessed in the environment. As a simple example, the things works like :
+
+	local base = getfenv( 1 )
+
+	env = setmetatable ( {}, { __index = function (self, key)
+		local value = base[ key ]
+
+		if value ~=  nil and type(key) == "string" and ( key == "_G" or not key:match("^_")) then
+			rawset(self, key, value)
+		end
+
+		return value
+	end })
+
+When access anything not defined in the private environment, the *__index* would try to get the value from its base environment ( normally _G ), and if the value is not nil, and the key is a string not started with "_" or the key is "_G", the value would be stored in the private environment.
+
+Why the key can't be started with "_", its because sometimes we need a global vars that used to stored datas between different version class (interface .etc), like :
+
+	class "A"
+		_Names = _Names or {}
+	endclass "A"
+
+But if there is a *_Names* that defined in the _G, the value'll be used and it's not what we wanted, luckly, there are little useful vars started with "_" in the _G.
+
+
+System.__Attribute__
 ====
 
 
