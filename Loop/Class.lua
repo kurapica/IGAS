@@ -211,7 +211,7 @@ end
 -- Constant Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 77
+	LUA_OOP_VERSION = 78
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -5188,7 +5188,7 @@ do
 						-- Desc
 						desc = desc and desc()
 						if desc then
-							result = result .. "\n\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
+							result = result .. "\n\n  Description :\n    " .. desc:gsub("<br>", "\n        "):gsub("  %s+", "\n        "):gsub("\t+", "\n        ")
 						end
 
 						-- Inherit
@@ -5210,24 +5210,50 @@ do
 						-- Event
 						if next(info.Event) then
 							result = result .. "\n\n  Event :"
-							for sc in pairs(info.Event) do
-								result = result .. "\n    " .. sc
+							for _, evt in ipairs(GetEvents(ns, true)) do
+								-- Desc
+								desc = HasDocument(ns, "event", evt) and GetDocument(ns, "event", evt, "desc")
+								desc = desc and desc()
+								if desc then
+									desc = "　-　" .. desc
+								else
+									desc = ""
+								end
+
+								result = result .. "\n    " .. evt .. desc
 							end
 						end
 
 						-- Property
 						if next(info.Property) then
 							result = result .. "\n\n  Property :"
-							for prop in pairs(info.Property) do
-								result = result .. "\n    " .. prop
+							for _, prop in ipairs(GetProperties(ns, true)) do
+								-- Desc
+								desc = HasDocument(ns, "property", prop) and GetDocument(ns, "property", prop, "desc")
+								desc = desc and desc()
+								if desc then
+									desc = "　-　" .. desc
+								else
+									desc = ""
+								end
+
+								result = result .. "\n    " .. prop .. desc
 							end
 						end
 
 						-- Method
 						if next(info.Method) then
 							result = result .. "\n\n  Method :"
-							for method in pairs(info.Method) do
-								result = result .. "\n    " .. method
+							for _, method in ipairs(GetMethods(ns, true)) do
+								-- Desc
+								desc = HasDocument(ns, "method", method) and GetDocument(ns, "method", method, "desc")
+								desc = desc and desc()
+								if desc then
+									desc = "　-　" .. desc
+								else
+									desc = ""
+								end
+								result = result .. "\n    " .. method .. desc
 							end
 						end
 
