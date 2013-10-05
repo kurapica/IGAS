@@ -230,6 +230,19 @@ do
 	NAMESPACE_FIELD = "__LOOP_NameSpace"
 
 	WEAK_KEY = {__mode = "k"}
+
+	CACHE_TABLE = setmetatable({}, {
+		__call = function(self, key)
+			if key then
+				wipe(key)
+				tinsert(self, key)
+			elseif next(self) then
+				return tremove(self)
+			else
+				return {}
+			end
+		end,
+	})
 end
 
 ------------------------------------------------------
@@ -1752,26 +1765,11 @@ do
 	end
 
 	-- The cache for constructor parameters
-	_Class2ObjCache = setmetatable({}, {
-		__call = function(self, key)
-			if key then
-				wipe(key)
-				tinsert(self, key)
-			else
-				if #self > 0 then
-					return tremove(self)
-				else
-					return {}
-				end
-			end
-		end,
-	})
-
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
 		local obj, isUnique
 		local ok, msg, args
-		local cache = _Class2ObjCache()
+		local cache = CACHE_TABLE()
 		local max = select('#', ...)
 		local init = select(1, ...)
 
@@ -1809,7 +1807,7 @@ do
 							ok, value = pcall(arg.Type.Validate, arg.Type, value)
 
 							if not ok then
-								_Class2ObjCache(cache)
+								CACHE_TABLE(cache)
 
 								value = strtrim(value:match(":%d+:(.*)$") or value)
 
@@ -1849,7 +1847,7 @@ do
 							ok, value = pcall(arg.Type.Validate, arg.Type, value)
 
 							if not ok then
-								_Class2ObjCache(cache)
+								CACHE_TABLE(cache)
 
 								value = strtrim(value:match(":%d+:(.*)$") or value)
 
@@ -1870,7 +1868,7 @@ do
 								ok, value = pcall(arg.Type.Validate, arg.Type, value)
 
 								if not ok then
-									_Class2ObjCache(cache)
+									CACHE_TABLE(cache)
 
 									value = strtrim(value:match(":%d+:(.*)$") or value)
 
@@ -1907,7 +1905,7 @@ do
 				obj = info.UniqueObject
 
 				pcall(obj, unpack(cache, 1, max))
-				_Class2ObjCache(cache)
+				CACHE_TABLE(cache)
 
 				-- Try set properties
 				if type(init) == "table" then
@@ -1933,7 +1931,7 @@ do
 			ok, obj = pcall(info.MetaTable.__exist, unpack(cache, 1, max))
 
 			if type(obj) == "table" then
-				_Class2ObjCache(cache)
+				CACHE_TABLE(cache)
 				if getmetatable(obj) == cls then
 					return obj
 				else
@@ -1951,7 +1949,7 @@ do
 			obj = nil
 		end
 
-		_Class2ObjCache(cache)
+		CACHE_TABLE(cache)
 
 		if not obj then return nil end
 
@@ -4825,23 +4823,16 @@ do
 		_Validate_Type = setmetatable({}, {
 			__call = function(self, key)
 				if key then
-					if type(key) == "table" and self[key] then
-						key.AllowNil = nil
-						key[1] = nil
-						key.Name = nil
+					key.AllowNil = nil
+					key[1] = nil
+					key.Name = nil
 
-						tinsert(self, key)
-					end
+					tinsert(self, key)
 				else
-					if #self > 0 then
-						return tremove(self, #self)
+					if next(self) then
+						return tremove(self)
 					else
-						local ret = BuildType(nil)
-
-						-- Mark it as recycle table
-						self[ret] = true
-
-						return ret
+						return BuildType(nil)
 					end
 				end
 			end,
@@ -4993,31 +4984,14 @@ do
 		]======]
 
 		-- The cache for constructor parameters
-		_BuildSubNamespaceCache = setmetatable({}, {
-			__call = function(self, key)
-				if type(key) == "table" then
-					wipe(key)
-					tinsert(self, key)
-				else
-					if #self > 0 then
-						return tremove(self)
-					else
-						local ret = {}
-
-						return ret
-					end
-				end
-			end,
-		})
-
 		local function buildSubNamespace(ns)
 			local result = ""
 
-			local _Enums = _BuildSubNamespaceCache()
-			local _Structs = _BuildSubNamespaceCache()
-			local _Classes = _BuildSubNamespaceCache()
-			local _Interfaces = _BuildSubNamespaceCache()
-			local _Namespaces = _BuildSubNamespaceCache()
+			local _Enums = CACHE_TABLE()
+			local _Structs = CACHE_TABLE()
+			local _Classes = CACHE_TABLE()
+			local _Interfaces = CACHE_TABLE()
+			local _Namespaces = CACHE_TABLE()
 
 			local subNS = GetSubNamespace(ns)
 
@@ -5079,11 +5053,11 @@ do
 				end
 			end
 
-			_BuildSubNamespaceCache(_Enums)
-			_BuildSubNamespaceCache(_Structs)
-			_BuildSubNamespaceCache(_Classes)
-			_BuildSubNamespaceCache(_Interfaces)
-			_BuildSubNamespaceCache(_Namespaces)
+			CACHE_TABLE(_Enums)
+			CACHE_TABLE(_Structs)
+			CACHE_TABLE(_Classes)
+			CACHE_TABLE(_Interfaces)
+			CACHE_TABLE(_Namespaces)
 
 			return result
 		end
@@ -5589,27 +5563,13 @@ do
 			@param type the data's type
 			@return string
 		]======]
-		_SerializeDataCache = _SerializeDataCache or setmetatable({}, {
-			__call = function(self, value)
-				if value then
-					wipe(value)
-					tinsert(self, value)
-				else
-					if next(self) then
-						return tremove(self)
-					else
-						return {}
-					end
-				end
-			end
-		})
 		local function SerializeData(data)
 			if type(data) == "string" then
 				return strformat("%q", data)
 			elseif type(data) == "number" or type(data) == "boolean" then
 				return tostring(data)
 			elseif type(data) == "table" then
-				local cache = _SerializeDataCache()
+				local cache = CACHE_TABLE()
 
 				tinsert(cache, "{")
 
@@ -5629,7 +5589,7 @@ do
 
 				local ret = tblconcat(cache, " ")
 
-				_SerializeDataCache(cache)
+				CACHE_TABLE(cache)
 
 				return ret
 			else
@@ -7338,9 +7298,8 @@ do
 		------------------------------------------------------
 		-- Meta-Method
 		------------------------------------------------------
-		local superCall = Super.__call
 		function __call(self)
-			superCall(self)
+			Super.__call(self)
 
 			-- Clear
 			self.__Storage = nil
