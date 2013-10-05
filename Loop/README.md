@@ -1805,9 +1805,9 @@ The last part, let's get a view of the **System** namespace.
 			__Attribute__
 			__Auto__
 			__Cache__
-			__Expandable__
 			__Final__
 			__Flags__
+			__NonExpandable__
 			__NonInheritable__
 			__StructType__
 			__Thread__
@@ -2281,7 +2281,7 @@ So, take a method as the example first :
 	-- Error : Usage : A:Add(Count, ...) - ... must be a string, got number.
 	obj:Add(3, "hi", 2, 3)
 
-So, you can see, the system would do the arguments validation for the method.
+So, you can see, the system would do the arguments validation for the method, since the lua is dynamic type language, this is not recommend.
 
 The `__Arguments__` is very powerful for the constructor part, when talking about *Init the object with a table*, no values should be passed to the constructor, but with the `__Arguments__`, some special vars in the init table should be take to the constructor:
 
@@ -2311,7 +2311,7 @@ The `__Arguments__` is very powerful for the constructor part, when talking abou
 	-- Error : Usage : A(Name = "Anonymous") - Name must be a string, got number.
 	obj = A { Name = 123 }
 
-So, the constructor would take what it need to do the init, and the vars also removed from the init table.
+So, the constructor would take what it need to do the init, and the vars also removed from the init table. So using the **__Arguments__** attribute is a good way to combine the **constructor** and the **init with table** abilities. It's recommended.
 
 
 System.__StructType__
@@ -2382,16 +2382,15 @@ It can be used on the class or methods, when used on the class, all its objects 
 It's would be very useful to mark some most used methods with the attribute.
 
 
-System.__Expandable__
+System.__NonExpandable__
 ----
 
-Sometimes we may want to expand the existed class/interface with a simple way, like set a function to the class/interface directly. To do this, need mark the class/interface with the **System.__Expandable__** attribute.
+Sometimes we may want to expand the existed class/interface with a simple way, like set a function to the class/interface directly. To do this, we can set a function value to the class/interface as a field, if there is no other method with the field name, the function will be added as a method :
 
 	Module "G" ""
 
 	import "System"
 
-	__Expandable__()
 	class "A"
 	endclass "A"
 
@@ -2402,7 +2401,22 @@ Sometimes we may want to expand the existed class/interface with a simple way, l
 	-- Output : Hello World
 	obj:Greet()
 
-BTW, mark a class/interface with `__Final__` and `__Expandable__` attribute, so the class/interface can't be re-defined, but can be expanded.
+If want forbidden those features, the **__NonExpandable__** attribute is used :
+
+	Module "G2" ""
+
+	import "System"
+
+	__NonExpandable__()
+	class "A"
+	endclass "A"
+
+	obj = A()
+
+	-- Error : Can't set value for A, it's readonly.
+	A.Greet = function(self) end
+
+BTW, mark a class/interface with `__Final__` attribute, the class/interface still can be expanded.
 
 
 Custom Attributes
@@ -2588,6 +2602,32 @@ Some points about the function :
 * `__Attribute__._GetClassAttribute(cls, __Table__)` will try to get class attribute of the `__Table__` for the cls, the return value is an object of the `__Table__` if existed. So, then we could get the datatable's name.
 * `Reflector.GetProperties` used to get a sorted name list of the class/interface's all properties, if pass **true** as the second argument, only properties defined in the class/interface will be get, since there is no super class of the **Person**, so get all properties is simple enough. You can use **Help** to see the detail of it.
 * `__Attribute__._GetPropertyAttribute(cls, prop, __Field__)` like **_GetClassAttribute**, only need a more argument : the property's name.
+
+
+
+Thread
+====
+
+In the **System.Object** class, there is methods like **ActiveThread**, **ThreadCall**, also an attribute **System.__Thread__**, those features are used to bring the coroutine system into the Loop system.
+
+System.Object.ThreadCall
+----
+
+	[Class] System.Object - [Method] ThreadCall :
+
+		Description :
+			Call method or function as a thread
+
+		Format :
+			object:ThreadCall(methodname|function, ...)
+
+		Parameter :
+			methodname|function
+			... - the arguments
+
+		Return :
+			nil
+
 
 
 
