@@ -1,3 +1,6 @@
+2013/10/06: IGAS v50
+    1. Fix the scoll position when press enter at the last line of a CodeEditor.
+
 2013/09/16: IGAS v49
     1. New heal absorb features.
 

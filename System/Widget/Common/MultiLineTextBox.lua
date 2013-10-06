@@ -1262,6 +1262,17 @@ class "MultiLineTextBox"
 		end
 	end
 
+	local function Thread_GoLastLine4Enter(self, value, h)
+		local count = 10
+
+		while count > 0 and self:GetVerticalScrollRange() + h < value do
+			count = count - 1
+			Threading.Sleep(0.1)
+		end
+
+		self.Value = value
+	end
+
 	local function Thread_DELETE(self)
 		local first = true
 		local str = self.__Text.Text
@@ -3138,10 +3149,16 @@ class "MultiLineTextBox"
 		if y and h then
 			y = -y
 
+			local value = y + 2*h - self.Height
+
 			if y < self.Value then
-				self.Value = (y > 0) and (y) or 0
-			elseif y + 2*h > self.Value + self.Height then
-				self.Value = y + 2*h - self.Height
+				self.Value = y > 0 and y or 0
+			elseif value > self.Value then
+				if self:GetVerticalScrollRange() + h < value then
+					self:ThreadCall(Thread_GoLastLine4Enter, value, h)
+				else
+					self.Value = value
+				end
 			end
 		end
 
