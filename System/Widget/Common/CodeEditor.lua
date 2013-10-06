@@ -3,7 +3,7 @@
 --               2012.05.14 Fix cursor position after format color
 
 -- Check Version
-local version = 9
+local version = 10
 
 if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
@@ -17,8 +17,6 @@ class "CodeEditor"
 		@type class
 		@desc CodeEditor object is used as a lua code editor
 	]======]
-
-	_G = _G
 
 	_IndentNone = 0
 	_IndentRight = 1
@@ -126,19 +124,20 @@ class "CodeEditor"
 		["true"] = _IndentNone,
 		["until"] = _IndentLeft,
 		["while"] = _IndentNone,
-		-- IGAS
+		-- Loop
 		["class"] = _IndentRight,
 		["partclass"] = _IndentRight,
 		["inherit"] = _IndentNone,
 		["import"] = _IndentNone,
 		["endclass"] = _IndentLeft,
-		["script"] = _IndentNone,
+		["event"] = _IndentNone,
 		["property"] = _IndentNone,
 		["namespace"] = _IndentNone,
 		["enum"] = _IndentNone,
 		["struct"] = _IndentRight,
 		["endstruct"] = _IndentLeft,
 		["interface"] = _IndentRight,
+		["partinterface"] = _IndentRight,
 		["endinterface"] = _IndentLeft,
 		["extend"] = _IndentNone,
 	}
@@ -255,8 +254,9 @@ class "CodeEditor"
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
 
+	local superAdjustCursorPosition = MultiLineTextBox.AdjustCursorPosition
 	local function AdjustCursorPosition(self, pos)
-		MultiLineTextBox.AdjustCursorPosition(self, pos)
+		superAdjustCursorPosition(self, pos)
 	end
 
 	local function InitDefinition(self)
