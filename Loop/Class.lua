@@ -416,7 +416,7 @@ do
 		local info = cls and _NSInfo[cls]
 		local parent = cls
 
-		for name in namelist:gmatch("[^%.]+") do
+		for name in namelist:gmatch("[_%w]+") do
 			name = name:match("[_%w]+")
 
 			if not name or name == "" then
@@ -461,7 +461,7 @@ do
 
 		local cls = ns
 
-		for name in namelist:gmatch("[^%.]+") do
+		for name in namelist:gmatch("[_%w]+") do
 			name = name:match("[_%w]+")
 
 			if not name or name == "" then
@@ -945,14 +945,14 @@ do
 			end
 
 			-- Check Base
-			if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-				value = info[self][key]
+			-- if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
+			value = info[self][key]
 
-				if value ~= nil then
-					rawset(self, key, value)
-					return value
-				end
+			if value ~= nil then
+				rawset(self, key, value)
+				return value
 			end
+			-- end
 		end
 
 		_MetaIFEnv.__newindex = function(self, key, value)
@@ -1180,8 +1180,7 @@ do
 			IF = GetNameSpace(info.NameSpace, name) or env[name]
 
 			if not IF then
-				for subname in name:gmatch("[^%.]+") do
-					subname = subname:match("[_%w]+")
+				for subname in name:gmatch("[_%w]+") do
 
 					if not subname or subname == "" then
 						error("the namespace's name must be composed with number, string or '_'.", 2)
@@ -1660,14 +1659,14 @@ do
 			end
 
 			-- Check Base
-			if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-				value = info[self][key]
+			--if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
+			value = info[self][key]
 
-				if value ~= nil then
-					rawset(self, key, value)
-					return value
-				end
+			if value ~= nil then
+				rawset(self, key, value)
+				return value
 			end
+			--end
 		end
 
 		_MetaClsEnv.__newindex = function(self, key, value)
@@ -2352,8 +2351,7 @@ do
 			superCls = GetNameSpace(info.NameSpace, name) or env[name]
 
 			if not superCls then
-				for subname in name:gmatch("[^%.]+") do
-					subname = subname:match("[_%w]+")
+				for subname in name:gmatch("[_%w]+") do
 
 					if not subname or subname == "" then
 						error("the namespace's name must be composed with number, string or '_'.", 2)
@@ -2438,8 +2436,7 @@ do
 			IF = GetNameSpace(info.NameSpace, name) or env[name]
 
 			if not IF then
-				for subname in name:gmatch("[^%.]+") do
-					subname = subname:match("[_%w]+")
+				for subname in name:gmatch("[_%w]+") do
 
 					if not subname or subname == "" then
 						error("the namespace's name must be composed with number, string or '_'.", 2)
@@ -2833,14 +2830,14 @@ do
 			end
 
 			-- Check Base
-			if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-				value = info[self][key]
+			--if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
+			value = info[self][key]
 
-				if value ~= nil then
-					rawset(self, key, value)
-					return value
-				end
+			if value ~= nil then
+				rawset(self, key, value)
+				return value
 			end
+			--end
 		end
 
 		_MetaStrtEnv.__newindex = function(self, key, value)

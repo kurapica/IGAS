@@ -962,7 +962,7 @@ The **inherit** keyword can only be used in the class definition. In the previou
 
 * Like the object methods, override the metamethods is the same, take **__call** as example, **super.__call** can be used to retrieve the superclass's **__call** metamethod.
 
-* When the class create an object, the object should passed to its super class's constructor first, and then send to the class's constructor, unlike oop system in the other languages, the child-class can't acess any vars defined in super-class's definition environment, it's simple that the child-class focus on how to manipulate the object that created from the super-class.
+* When the class create an object, the object should passed to its super class's constructor first, and then send to the class's constructor, unlike oop system in the other languages, the child-class can't acess any variables defined in super-class's definition environment, it's simple that the child-class focus on how to manipulate the object that created from the super-class.
 
 		class "A"
 			function A(self)
@@ -1120,7 +1120,7 @@ partclass & re-define
 		-- Error : attempt to call method 'Hi' (a nil value)
 		obj:Hi()
 
-* Any global vars with no function values should be kept in the class definition's environment, so we can used it again :
+* Any global variables with no function values should be kept in the class definition's environment, so we can used it again :
 
 		class "A"
 			_Objs = _Objs or {}
@@ -1883,31 +1883,23 @@ Beside the definition, the private environment also provide a simple way to acce
 * Any root namespace can be accessed directly in the private environment, so we can access the **System** and **Windows** directly.
 * When import a namespace, any namespace in it can be accessed directly in the private environment.
 
-Since it's a private environment, so, why **print** and other global vars can be accessed in the environment. As a simple example, the things works like :
+Since it's a private environment, so, why **print** and other global variables can be accessed in the environment. As a simple example, the things works like :
 
 	local base = getfenv( 1 )
 
 	env = setmetatable ( {}, { __index = function (self, key)
 		local value = base[ key ]
 
-		if value ~=  nil and type(key) == "string" and ( key == "_G" or not key:match("^_")) then
+		if value ~=  nil then
 			rawset(self, key, value)
 		end
 
 		return value
 	end })
 
-When access anything not defined in the private environment, the **__index** would try to get the value from its base environment ( normally _G ), and if the value is not nil, and the key is a string not started with "_" or the key is "_G", the value would be stored in the private environment.
+When access anything not defined in the private environment, the **__index** would try to get the value from its base environment ( normally _G ), and if the value is not nil, the value would be stored in the private environment.
 
-Why the key can't be started with "_", its because sometimes we need a global vars that used to stored datas between different version class (interface .etc), like :
-
-	class "A"
-		_Names = _Names or {}
-	endclass "A"
-
-But if there is a **_Names** that defined in the _G, the value'll be used and it's not what we wanted.
-
-And when using the class/interface in the program, as the time passed, all vars that needed from the outside will be stored into the private environment, and since then the private environment will be steady, so no need to call the **__index** again and again, it's useful to reduce the cpu cost.
+When using the class/interface in the program, as the time passed, all variables that needed from the outside will be stored into the private environment, and since then the private environment will be steady, so no need to call the **__index** again and again, it's useful to reduce the cpu cost.
 
 
 System.Module
@@ -1964,7 +1956,25 @@ Take an example as the start (Don't forget **do ... end** if using in the intera
 
 As you can see, it's special to use the properties of the object, in the module environment, all properties can be used directly, the **_M** is just like the **_G** in the **_G** table.
 
-When the environment changed to the private environment, you can do whatever you'll do in the _G, any global vars defined in it will only be stored in the private environment, and you can access the namespaces just like in a definition environment.
+When the environment changed to the private environment, you can do whatever you'll do in the _G, any global variables defined in it will only be stored in the private environment, and you can access the namespaces just like in a definition environment. There is only one more rule for the module environment :
+
+* Global variables with the name started with "_" can't be accessed by the module environment except the "_G". Take an example to see :
+
+	do
+		_Names = {}
+
+		-- Output : table: 0x7fe1e9483500
+		print( _Names )
+
+		Module "A" ""
+
+		_Names = _Names or {}
+
+		-- Output : table: 0x7fe1e9483530
+		print( _Names )
+	end
+
+So, the **_Names** in the Module "A" is a private table not the one in the **_G**, it's a good way to define some private variables, just mark the variables with a name started with "_".
 
 
 Version Check
@@ -2015,6 +2025,7 @@ Sometimes you may want an anonymous module, that used once. Just keep the name a
 	end
 
 So, the anonymous modules can't be reused, it's better to use anonymous modules to create features that you don't want anybody touch it.
+
 
 
 
@@ -2283,7 +2294,7 @@ So, take a method as the example first :
 
 So, you can see, the system would do the arguments validation for the method, since the lua is dynamic type language, this is not recommend.
 
-The `__Arguments__` is very powerful for the constructor part, when talking about *Init the object with a table*, no values should be passed to the constructor, but with the `__Arguments__`, some special vars in the init table should be take to the constructor:
+The `__Arguments__` is very powerful for the constructor part, when talking about *Init the object with a table*, no values should be passed to the constructor, but with the `__Arguments__`, some special variables in the init table should be take to the constructor:
 
 	Module "E" ""
 
@@ -2311,7 +2322,7 @@ The `__Arguments__` is very powerful for the constructor part, when talking abou
 	-- Error : Usage : A(Name = "Anonymous") - Name must be a string, got number.
 	obj = A { Name = 123 }
 
-So, the constructor would take what it need to do the init, and the vars also removed from the init table. So using the **__Arguments__** attribute is a good way to combine the **constructor** and the **init with table** abilities. It's recommended.
+So, the constructor would take what it need to do the init, and the variables also removed from the init table. So using the **__Arguments__** attribute is a good way to combine the **constructor** and the **init with table** abilities. It's recommended.
 
 
 System.__StructType__
