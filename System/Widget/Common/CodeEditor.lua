@@ -2006,16 +2006,16 @@ class "CodeEditor"
 
 	local function OnChar(self, char)
 		-- Keep change to operation list
-		if char == "." then
+		--if char == "." then
 			-- check property
-			local obj = GetPrevObject(self)
-		elseif char == ":" then
+		--	local obj = GetPrevObject(self)
+		--elseif char == ":" then
 			-- check method
-			local obj = GetPrevObject(self)
-		else
-			-- Color the line
-			return FormatColor4Line(self)
-		end
+		--	local obj = GetPrevObject(self)
+		--else
+		-- Color the line
+		return FormatColor4Line(self)
+		--end
 	end
 
 	local function OnCursorChanged(self, x, y, w, h)
