@@ -302,6 +302,11 @@ do
 
 		local th = THREAD_POOL()
 
+		-- Keep safe from unexpected resume
+		while status(th) == "dead"  then
+			th = THREAD_POOL()
+		end
+
 		-- Register the function
 		resume(th, func)
 
