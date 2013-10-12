@@ -261,9 +261,9 @@ do
 		return retValueWithRecycle( func(...) )
 	end
 
-	local function newRycThread(func)
-		while type(func) == "function" do
-			func = yield( callFunc ( func, yield() ) )
+	local function newRycThread(pool, func)
+		while pool == THREAD_POOL and type(func) == "function" do
+			pool, func = yield( callFunc ( func, yield() ) )
 		end
 	end
 
@@ -303,12 +303,12 @@ do
 		local th = THREAD_POOL()
 
 		-- Keep safe from unexpected resume
-		while status(th) == "dead"  then
+		while status(th) == "dead" do
 			th = THREAD_POOL()
 		end
 
 		-- Register the function
-		resume(th, func)
+		resume(th, THREAD_POOL, func)
 
 		-- Call and return the result
 		return chkValue( resume(th, ...) )
