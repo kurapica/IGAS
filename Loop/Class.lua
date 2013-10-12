@@ -249,16 +249,16 @@ do
 	THREAD_POOL_SIZE = 100
 	THREAD_POINT = 0
 
-	local function retValueWithRecycle(...)
+	local function retValueAndRecycle(...)
 		-- Here means the function call is finished successful
-		-- so, we need send the co back to the pool
+		-- so, we need send the running thread back to the pool
 		THREAD_POOL( running() )
 
 		return ...
 	end
 
 	local function callFunc(func, ...)
-		return retValueWithRecycle( func(...) )
+		return retValueAndRecycle( func(...) )
 	end
 
 	local function newRycThread(pool, func)
