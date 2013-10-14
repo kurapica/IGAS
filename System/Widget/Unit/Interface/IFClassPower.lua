@@ -2,9 +2,10 @@
 -- Create Date : 2012/11/14
 -- Change Log  :
 --               2012/12/01 Update for PLAYER_LEVEL_UP, UnitLevel("player") need +1
+--               2013/10/15 _PlayerActivePower can't be nil, so stop look the parent environment
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassPower", version) then
 	return
 end
@@ -12,7 +13,7 @@ end
 _IFClassPowerUnitList = _IFClassPowerUnitList or UnitList(_Name)
 
 _PlayerClass = select(2, UnitClass("player"))
-_PlayerActivePower = nil
+_PlayerActivePower = false
 
 _MinMax = MinMax(0, 1)
 SPEC_ALL = 0
@@ -116,7 +117,7 @@ function RefreshActivePower(trueLevel)
 	_IFClassPowerUnitList:UnregisterEvent("SPELLS_CHANGED")
 
 	if map then
-		_PlayerActivePower = nil
+		_PlayerActivePower = false
 
 		if map.ShowLevel then
 			trueLevel = trueLevel or UnitLevel("player")
@@ -149,7 +150,7 @@ function RefreshActivePower(trueLevel)
 			_IFClassPowerUnitList:EachK("player", "MinMaxValue", _MinMax)
 		end
 	else
-		_PlayerActivePower = nil
+		_PlayerActivePower = false
 		_IFClassPowerUnitList:EachK("player", "Visible", false)
 		_IFClassPowerUnitList:EachK("player", "ClassPowerType", nil)
 		_IFClassPowerUnitList:EachK("player", "Value", 0)

@@ -1,3 +1,7 @@
+2013/10/07: IGAS v51
+    1. Using thread pool to reduce cost of the thread usage.
+    2. Fix memory cost for IFClassPower for no use nil var search, resuce memory increment.
+
 2013/10/06: IGAS v50
     1. Fix the scoll position when press enter at the last line of a CodeEditor.
 
