@@ -38,7 +38,7 @@ class "TotalAbsorbBar"
 		@desc The target health bar the prediction bar should attach to
 	]======]
 	property "HealthBar" {
-		Storage = "__HealthBar",
+		Field = "__HealthBar",
 		Set = function(self, value)
 			if self.__HealthBar ~= value then
 				if self.__HealthBar then
@@ -65,7 +65,7 @@ class "TotalAbsorbBar"
 	}
 
 	property "OverAbsorb" {
-		Storage = "__OverAbsorb",
+		Field = "__OverAbsorb",
 		Set = function(self, value)
 			if self.__OverAbsorb ~= value then
 				self.__OverAbsorb = value

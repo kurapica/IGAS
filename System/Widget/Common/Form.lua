@@ -522,7 +522,7 @@ class "Form"
 		@desc true if the form should not be shown in combat with DockMode on
 	]======]
 	property "HideForCombat" {
-		Storage = "__HideForCombat",
+		Field = "__HideForCombat",
 		Type = System.Boolean,
 	}
 

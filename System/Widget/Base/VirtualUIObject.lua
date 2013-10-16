@@ -307,7 +307,7 @@ class "VirtualUIObject"
 		@type property
 		@desc The virtual widget object's name, it's parent can use the name to access it by parent[self.Name]
 	]======]
-	__Auto__{ Storage = "__Name", Type = String + nil }
+	__Auto__{ Field = "__Name", Type = String + nil }
 	property "Name" { Set = SetName }
 
 	doc [======[

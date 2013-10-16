@@ -64,7 +64,7 @@ class "HealAbsorbBar"
 		@desc The target health bar the prediction bar should attach to
 	]======]
 	property "HealthBar" {
-		Storage = "__HealthBar",
+		Field = "__HealthBar",
 		Set = function(self, value)
 			if self.__HealthBar ~= value then
 				if self.__HealthBar then
@@ -91,7 +91,7 @@ class "HealAbsorbBar"
 	}
 
 	property "OverAbsorb" {
-		Storage = "__OverAbsorb",
+		Field = "__OverAbsorb",
 		Set = function(self, value)
 			if self.__OverAbsorb ~= value then
 				self.__OverAbsorb = value
@@ -101,7 +101,7 @@ class "HealAbsorbBar"
 	}
 
 	property "HasIncomingHeal" {
-		Storage = "__HasIncomingHeal",
+		Field = "__HasIncomingHeal",
 		Set = function(self, value)
 			if self.__Value == 0 then
 				value = true
@@ -115,7 +115,7 @@ class "HealAbsorbBar"
 	}
 
 	property "HasAbsorb" {
-		Storage = "__HasAbsorb",
+		Field = "__HasAbsorb",
 		Set = function(self, value)
 			if self.__HasAbsorb ~= value then
 				self.__HasAbsorb = value

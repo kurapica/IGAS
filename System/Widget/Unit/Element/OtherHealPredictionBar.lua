@@ -38,7 +38,7 @@ class "OtherHealPredictionBar"
 		@desc The target health bar the prediction bar should attach to
 	]======]
 	property "HealthBar" {
-		Storage = "__HealthBar",
+		Field = "__HealthBar",
 		Set = function(self, value)
 			if self.__HealthBar ~= value then
 				if self.__HealthBar then

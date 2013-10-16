@@ -18,7 +18,7 @@ Module "System.Addon" "1.16.0"
 namespace "System"
 
 ------------------------------------------------------
--- Storage Definition
+-- Global Definition
 ------------------------------------------------------
 _MetaWK = _MetaWK or {__mode = "k"}
 

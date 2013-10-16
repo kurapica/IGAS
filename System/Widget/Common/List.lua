@@ -880,7 +880,7 @@ class "List"
 		@desc the display count in the list
 	]======]
 	property "DisplayItemCount" {
-		Storage = "__DisplayItemCount",
+		Field = "__DisplayItemCount",
 		Set = function(self, cnt)
 			if cnt and type(cnt) == "number" and cnt > 3 and cnt ~= self.__DisplayItemCount then
 				self.__DisplayItemCount = cnt
@@ -987,7 +987,7 @@ class "List"
 		@desc the list's horizontal text alignment style
 	]======]
 	property "JustifyH" {
-		Storage = "__JustifyH",
+		Field = "__JustifyH",
 		Set = function(self, justifyH)
 			self.__JustifyH = justifyH
 			local i = 1
@@ -1035,7 +1035,7 @@ class "List"
 		@desc whether show tooltip or not
 	]======]
 	property "ShowTootip" {
-		Storage = "__ShowTootip",
+		Field = "__ShowTootip",
 		Type = Boolean,
 	}
 

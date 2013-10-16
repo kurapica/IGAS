@@ -587,7 +587,7 @@ partclass "Texture"
 		@desc the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
 	]======]
 	property "PortraitTexture" {
-		Storage = "__Portrait",
+		Field = "__Portrait",
 		SetMethod = "SetPortraitTexture",
 		Type = String + nil,
 	}

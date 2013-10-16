@@ -216,7 +216,7 @@ class "NormalButton"
 		@desc Whether should auto change the button's size when text is changed
 	]======]
 	property "AutoSize" {
-		Storage = "__AutoSize",
+		Field = "__AutoSize",
 		Set = function(self, value)
 			self.__AutoSize = value
 

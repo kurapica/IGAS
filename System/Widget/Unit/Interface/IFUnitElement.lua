@@ -151,7 +151,7 @@ interface "IFUnitElement"
 		@desc The object's unit
 	]======]
 	property "Unit" {
-		Storage = "__IFUnitElement_Unit",
+		Field = "__IFUnitElement_Unit",
 		Set = function(self, unit)
 			unit = unit and unit:lower()
 

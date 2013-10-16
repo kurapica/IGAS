@@ -84,7 +84,7 @@ class "GroupBox"
 		@desc the groupbox's style
 	]======]
 	property "Style" {
-		Storage = "__Style",
+		Field = "__Style",
 		Set = function(self, style)
 			if self.__Style ~= style then
 				self.__Style = style

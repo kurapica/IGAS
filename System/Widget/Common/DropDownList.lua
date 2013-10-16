@@ -646,7 +646,7 @@ class "DropDownList"
 			@desc whether the dropDownMenuButton is a checkButton
 		]======]
 		property "IsCheckButton" {
-			Storage = "__IsCheckButton",
+			Field = "__IsCheckButton",
 			Set = function(self, flag)
 				self.__IsCheckButton = (flag and true) or false
 				if not flag then

@@ -69,7 +69,7 @@ interface "IFUnitName"
 		@desc Whether show the server name
 	]======]
 	property "WithServerName" {
-		Storage = "__WithServerName",
+		Field = "__WithServerName",
 		Set = function(self, value)
 			self.__WithServerName = value
 			self:Refresh()

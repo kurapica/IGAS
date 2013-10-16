@@ -95,7 +95,7 @@ class "Timer"
 		@desc Gets or sets the interval at which to fire the Elapsed event
 	]======]
 	property "Interval" {
-		Storage = "__Interval",
+		Field = "__Interval",
 		Set = function(self, int)
 			if int >= 0 then
 				if int == 0 then
@@ -138,7 +138,7 @@ class "Timer"
 		@desc Whether the timer is enabled or disabled, default true
 	]======]
 	property "Enabled" {
-		Storage = "__Enabled",
+		Field = "__Enabled",
 		Set = function(self, flag)
 			if self.__Enabled == flag then
 				return

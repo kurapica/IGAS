@@ -436,7 +436,7 @@ class "PopupDialog"
 		@desc whether show while player is dead
 	]======]
 	property "ShowWhileDead" {
-		Storage = "__ShowWhileDead",
+		Field = "__ShowWhileDead",
 		Type = Boolean,
 	}
 
@@ -446,7 +446,7 @@ class "PopupDialog"
 		@desc whether show while player is in cinematic
 	]======]
 	property "ShowWhileCinematic" {
-		Storage = "__ShowWhileCinematic",
+		Field = "__ShowWhileCinematic",
 		Type = Boolean,
 	}
 
