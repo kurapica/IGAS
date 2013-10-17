@@ -3982,23 +3982,9 @@ do
 			@desc This interface contains much methodes to get the running object-oriented system's informations.
 		]======]
 
-		_NSInfo = _NSInfo
-
-		TYPE_CLASS = TYPE_CLASS
-		TYPE_STRUCT = TYPE_STRUCT
-		TYPE_ENUM = TYPE_ENUM
-		TYPE_INTERFACE = TYPE_INTERFACE
-
-		_STRUCT_TYPE_MEMBER = _STRUCT_TYPE_MEMBER
-		_STRUCT_TYPE_ARRAY = _STRUCT_TYPE_ARRAY
-		_STRUCT_TYPE_CUSTOM = _STRUCT_TYPE_CUSTOM
-
-		local sort = table.sort
-
 		doc [======[
 			@name FireObjectEvent
 			@type method
-			@method interface
 			@desc Fire an object's event, to trigger the object's event handlers
 			@param object the object
 			@param event the event name
@@ -4027,7 +4013,6 @@ do
 		doc [======[
 			@name GetCurrentNameSpace
 			@type method
-			@method interface
 			@desc Get the namespace used by the environment
 			@param env table
 			@param rawOnly boolean, rawget data from the env if true
@@ -4042,7 +4027,6 @@ do
 		doc [======[
 			@name SetCurrentNameSpace
 			@type method
-			@method interface
 			@desc set the namespace used by the environment
 			@param ns the namespace that set for the environment
 			@param env table
@@ -4057,7 +4041,6 @@ do
 		doc [======[
 			@name ForName
 			@type method
-			@method interface
 			@desc Get the namespace for the name
 			@param name the namespace's name, split by "."
 			@return namespace the namespace
@@ -4070,7 +4053,6 @@ do
 		doc [======[
 			@name GetType
 			@type method
-			@method interface
 			@desc Get the class|enum|struct|interface for the namespace
 			@param name the namespace
 			@return type
@@ -4085,7 +4067,6 @@ do
 		doc [======[
 			@name GetName
 			@type method
-			@method interface
 			@desc Get the name for the namespace
 			@param namespace the namespace to query
 			@return name
@@ -4100,7 +4081,6 @@ do
 		doc [======[
 			@name GetFullName
 			@type method
-			@method interface
 			@desc Get the full name for the namespace
 			@param namespace the namespace to query
 			@return fullname
@@ -4115,7 +4095,6 @@ do
 		doc [======[
 			@name GetSuperClass
 			@type method
-			@method interface
 			@desc Get the superclass for the class
 			@param class the class object to query
 			@return superclass
@@ -4130,7 +4109,6 @@ do
 		doc [======[
 			@name IsNameSpace
 			@type method
-			@method interface
 			@desc Check if the object is a NameSpace
 			@param object the object to query
 			@return boolean true if the object is a NameSpace
@@ -4145,7 +4123,6 @@ do
 		doc [======[
 			@name IsClass
 			@type method
-			@method interface
 			@desc Check if the namespace is a class
 			@param object
 			@return boolean true if the object is a class
@@ -4160,7 +4137,6 @@ do
 		doc [======[
 			@name IsStruct
 			@type method
-			@method interface
 			@desc Check if the namespace is a struct
 			@param object
 			@return boolean true if the object is a struct
@@ -4175,7 +4151,6 @@ do
 		doc [======[
 			@name IsEnum
 			@type method
-			@method interface
 			@desc Check if the namespace is an enum
 			@param object
 			@return boolean true if the object is a enum
@@ -4190,7 +4165,6 @@ do
 		doc [======[
 			@name IsInterface
 			@type method
-			@method interface
 			@desc Check if the namespace is an interface
 			@param object
 			@return boolean true if the object is an Interface
@@ -4205,7 +4179,6 @@ do
 		doc [======[
 			@name IsFinal
 			@type method
-			@method interface
 			@desc Check if the class|interface is final, can't be re-defined
 			@param object
 			@return boolean true if the class|interface is final
@@ -4220,7 +4193,6 @@ do
 		doc [======[
 			@name IsNonInheritable
 			@type method
-			@method interface
 			@desc Check if the class|interface is non-inheritable
 			@param object
 			@return boolean true if the class|interface is non-inheritable
@@ -4235,7 +4207,6 @@ do
 		doc [======[
 			@name IsNonExpandable
 			@type method
-			@method interface
 			@desc Check if the class|interface is non-expandable
 			@param object
 			@return boolean true if the class|interface is non-expandable
@@ -4250,7 +4221,6 @@ do
 		doc [======[
 			@name GetSubNamespace
 			@type method
-			@method interface
 			@desc Get the sub namespace of the namespace
 			@param namespace
 			@return table the sub-namespace list
@@ -4277,7 +4247,6 @@ do
 		doc [======[
 			@name GetExtendInterfaces
 			@type method
-			@method interface
 			@desc Get the extend interfaces of the class
 			@param class
 			@return table the extend interface list
@@ -4302,7 +4271,6 @@ do
 		doc [======[
 			@name GetAllExtendInterfaces
 			@type method
-			@method interface
 			@desc Get all the extend interfaces of the class
 			@param class
 			@return table the full extend interface list in the inheritance tree
@@ -4327,7 +4295,6 @@ do
 		doc [======[
 			@name GetChildClasses
 			@type method
-			@method interface
 			@desc Get the child classes of the class
 			@param class
 			@return table the child class list
@@ -4352,7 +4319,6 @@ do
 		doc [======[
 			@name GetEvents
 			@type method
-			@method interface
 			@desc Get the events of the class
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
@@ -4383,7 +4349,6 @@ do
 		doc [======[
 			@name GetProperties
 			@type method
-			@method interface
 			@desc Get the properties of the class
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
@@ -4414,7 +4379,6 @@ do
 		doc [======[
 			@name GetMethods
 			@type method
-			@method interface
 			@desc Get the methods of the class
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
@@ -4451,7 +4415,6 @@ do
 		doc [======[
 			@name GetPropertyType
 			@type method
-			@method interface
 			@desc Get the property type of the class
 			@param class|interface
 			@param propName the property name
@@ -4473,7 +4436,6 @@ do
 		doc [======[
 			@name HasProperty
 			@type method
-			@method interface
 			@desc whether the property is existed
 			@param class|interface
 			@param propName
@@ -4495,7 +4457,6 @@ do
 		doc [======[
 			@name IsPropertyReadable
 			@type method
-			@method interface
 			@desc whether the property is readable
 			@param class|interface
 			@param propName
@@ -4516,7 +4477,6 @@ do
 		doc [======[
 			@name IsPropertyWritable
 			@type method
-			@method interface
 			@desc whether the property is writable
 			@param class|interface
 			@param propName
@@ -4537,7 +4497,6 @@ do
 		doc [======[
 			@name GetEnums
 			@type method
-			@method interface
 			@desc Get the enums of the enum
 			@param enum
 			@return table the enum index list
@@ -4585,7 +4544,6 @@ do
 		doc [======[
 			@name ParseEnum
 			@type method
-			@method interface
 			@desc Get the enum index of the enum value
 			@param enum
 			@param value
@@ -4627,7 +4585,6 @@ do
 		doc [======[
 			@name ValidateFlags
 			@type method
-			@method interface
 			@desc  hether the value is contains on the target value
 			@param checkValue like 1, 2, 4, 8, ...
 			@param targetValue like 3 : (1 + 2)
@@ -4641,7 +4598,6 @@ do
 		doc [======[
 			@name HasEvent
 			@type method
-			@method interface
 			@desc Check if the class|interface has that event
 			@param class|interface
 			@param event the event handler name
@@ -4661,7 +4617,6 @@ do
 		doc [======[
 			@name GetStructType
 			@type method
-			@method interface
 			@desc Get the type of the struct
 			@param struct
 			@return string
@@ -4679,7 +4634,6 @@ do
 		doc [======[
 			@name GetStructArrayElement
 			@type method
-			@method interface
 			@desc Get the array element type of the struct
 			@param ns
 			@return type the array element's type
@@ -4697,7 +4651,6 @@ do
 		doc [======[
 			@name GetStructParts
 			@type method
-			@method interface
 			@desc Get the parts of the struct
 			@param struct
 			@return table struct part name list
@@ -4738,7 +4691,6 @@ do
 		doc [======[
 			@name GetStructPart
 			@type method
-			@method interface
 			@desc Get the part's type of the struct
 			@param struct
 			@param part the part's name
@@ -4770,7 +4722,6 @@ do
 		doc [======[
 			@name IsSuperClass
 			@type method
-			@method interface
 			@desc Check if this first arg is a child class of the next arg
 			@param childclass
 			@param superclass
@@ -4787,7 +4738,6 @@ do
 		doc [======[
 			@name IsExtendedInterface
 			@type method
-			@method interface
 			@desc Check if the class is extended from the interface
 			@param class|interface
 			@param interface
@@ -4804,7 +4754,6 @@ do
 		doc [======[
 			@name GetObjectClass
 			@type method
-			@method interface
 			@desc Get the class type of this object
 			@param object
 			@return class the object's class
@@ -4817,7 +4766,6 @@ do
 		doc [======[
 			@name ObjectIsClass
 			@type method
-			@method interface
 			@desc Check if this object is an instance of the class
 			@param object
 			@param class
@@ -4832,7 +4780,6 @@ do
 		doc [======[
 			@name ObjectIsInterface
 			@type method
-			@method interface
 			@desc Check if this object is an instance of the interface
 			@param object
 			@param interface
@@ -4847,7 +4794,6 @@ do
 		doc [======[
 			@name ActiveThread
 			@type method
-			@method interface
 			@desc Active thread mode for special events.
 			@param object
 			@param ... event handler name list
@@ -4872,7 +4818,6 @@ do
 		doc [======[
 			@name IsThreadActivated
 			@type method
-			@method interface
 			@desc Whether the thread mode is activated for special events.
 			@param obect
 			@param event
@@ -4893,7 +4838,6 @@ do
 		doc [======[
 			@name InactiveThread
 			@type method
-			@method interface
 			@desc Inactive thread mode for special events.
 			@param object
 			@param ... event name list
@@ -4918,7 +4862,6 @@ do
 		doc [======[
 			@name BlockEvent
 			@type method
-			@method interface
 			@desc Block event for object
 			@param object
 			@param ... the event handler name list
@@ -4943,7 +4886,6 @@ do
 		doc [======[
 			@name IsEventBlocked
 			@type method
-			@method interface
 			@desc Whether the event is blocked for object
 			@param object
 			@param event
@@ -4964,7 +4906,6 @@ do
 		doc [======[
 			@name UnBlockEvent
 			@type method
-			@method interface
 			@desc Un-Block event for object
 			@param object
 			@param ... event handler name list
@@ -5008,7 +4949,6 @@ do
 		doc [======[
 			@name Validate
 			@type method
-			@method interface
 			@desc Validating the value to the given type.
 			@format type, value, name[, prefix[, stacklevel]]
 			@param type such like Object+String+nil
@@ -5081,7 +5021,6 @@ do
 		doc [======[
 			@name EnableDocumentSystem
 			@type method
-			@method interface
 			@desc Enable or disbale the document system, only effect later created document
 			@param enabled true to enable the document system
 			@return nil
@@ -5094,7 +5033,6 @@ do
 		doc [======[
 			@name IsDocumentSystemEnabled
 			@type method
-			@method interface
 			@desc Whether the document system is enabled
 			@return boolean
 		]======]
@@ -5105,7 +5043,6 @@ do
 		doc [======[
 			@name GetDocument
 			@type method
-			@method interface
 			@desc Get the document settings
 			@format namespace, docType, name[, part]
 			@param namespace
@@ -5125,7 +5062,6 @@ do
 		doc [======[
 			@name HasDocument
 			@type method
-			@method interface
 			@desc Check if has the document
 			@param namespace
 			@param doctype
@@ -5139,7 +5075,6 @@ do
 		doc [======[
 			@name Help
 			@type method
-			@method interface
 			@desc Get the document detail
 			@format class|interface[, event|property|method, name]
 			@format class|interface, name
@@ -5649,8 +5584,7 @@ do
 							if name:match("^_") then
 								isGlobal = true
 							else
-								desc = hasDocument and GetDocumentPart(ns, doctype, name, "method")
-								if desc and desc() == "interface" then
+								if info.Type == TYPE_INTERFACE and info.NonInheritable then
 									isGlobal = true
 								end
 							end
@@ -5791,7 +5725,6 @@ do
 		doc [======[
 			@name Serialize
 			@type method
-			@method interface
 			@desc Serialize the data
 			@format data[, type]
 			@param data the data
@@ -5945,14 +5878,14 @@ do
 		end
 
 		doc [======[
-			@name CallAsThread
+			@name ThreadCall
 			@type method
 			@desc Call the function in a thread from the thread pool of the system
 			@param func the function
 			@param ... the parameters
 			@return any
 		]======]
-		function CallAsThread(func, ...)
+		function ThreadCall(func, ...)
 			return CallThread(func, ...)
 		end
 	endinterface "Reflector"
