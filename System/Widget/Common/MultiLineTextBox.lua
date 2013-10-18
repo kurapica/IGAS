@@ -9,9 +9,10 @@
 --              2013/05/15 Auto complete function added
 --              2013/05/19 Auto pairs function added
 --              2013/06/16 Fix undo/redo for tab and shift-tab
+--              2013/10/18 Fix the arrow key disabled
 
 -- Check Version
-local version = 22
+local version = 23
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -3753,7 +3754,7 @@ class "MultiLineTextBox"
 
 					if key == "UP" then
 						if _List.Visible then
-							self.FocusEditor.AltArrowKeyMode = true
+							editor.AltArrowKeyMode = true
 
 							if _List.SelectedIndex > 1 then
 								_List.SelectedIndex = _List.SelectedIndex - 1
@@ -3761,7 +3762,7 @@ class "MultiLineTextBox"
 
 							return
 						else
-							self.FocusEditor.AltArrowKeyMode = false
+							editor.AltArrowKeyMode = false
 						end
 
 						local _, _, _, line = GetPrevLinesByReturn(editor.__Text.Text, cursorPos, 1)
@@ -3782,7 +3783,7 @@ class "MultiLineTextBox"
 
 					if key == "DOWN" then
 						if _List.Visible then
-							self.FocusEditor.AltArrowKeyMode = true
+							editor.AltArrowKeyMode = true
 
 							if _List.SelectedIndex < _List.ItemCount then
 								_List.SelectedIndex = _List.SelectedIndex + 1
@@ -3790,7 +3791,7 @@ class "MultiLineTextBox"
 
 							return
 						else
-							self.FocusEditor.AltArrowKeyMode = false
+							editor.AltArrowKeyMode = false
 						end
 
 						local _, _, _, line = GetLinesByReturn(editor.__Text.Text, cursorPos, 1)
@@ -3810,6 +3811,10 @@ class "MultiLineTextBox"
 					end
 
 					if key == "RIGHT" then
+						if editor.AltArrowKeyMode then
+							editor.AltArrowKeyMode = false
+						end
+
 						if cursorPos < editor.__Text.Text:len() then
                             EndPrevKey(editor)
 
@@ -3825,6 +3830,10 @@ class "MultiLineTextBox"
 					end
 
 					if key == "LEFT" then
+						if editor.AltArrowKeyMode then
+							editor.AltArrowKeyMode = false
+						end
+
 						if cursorPos > 0 then
                             EndPrevKey(editor)
 

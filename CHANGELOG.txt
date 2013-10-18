@@ -1,3 +1,6 @@
+2013/10/18: IGAS v52
+    1. Fix the problem that can't use left & right arrow keys when using up & down arrow in a auto-complete list for the MultiLineTextBox
+
 2013/10/07: IGAS v51
     1. Using thread pool to reduce cost of the thread usage.
     2. Fix memory cost for IFClassPower for no use nil var search, resuce memory increment.
