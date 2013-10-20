@@ -4,9 +4,10 @@
 --               2013/07/05 IFGroup now extend from IFElementPanel
 --               2013/07/22 ShadowGroupHeader added to refresh the unit panel
 --               2013/07/23 IFSecurePanel instead of IFElementPanel to do the resize job
+--               2013/10/19 Support unit panel only contains dead people
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroup", version) then
 	return
 end
@@ -103,10 +104,88 @@ interface "IFGroup"
 
 		_InitHeader = [=[
 			Manager = self
-			UnitPanel = Manager:GetFrameRef("UnitPanel")
+			-- UnitPanel = Manager:GetFrameRef("UnitPanel")
 
 			UnitFrames = newtable()
 			ShadowFrames = newtable()
+			DeadFrames = newtable()
+
+			refreshDeadPlayer = [[
+				for i = 1, #DeadFrames do
+					local unitFrame = UnitFrames[i]
+
+					if unitFrame then
+						unitFrame:SetAttribute("unit", DeadFrames[i]:GetAttribute("unit"))
+					else
+						break
+					end
+				end
+
+				for i = #DeadFrames + 1, #UnitFrames do
+					local unitFrame = UnitFrames[i]
+
+					if unitFrame:GetAttribute("unit") then
+						unitFrame:SetAttribute("unit", nil)
+					else
+						break
+					end
+				end
+			]]
+
+			Manager:SetAttribute("newDeadPlayer", [[
+				local id = ...
+
+				if id then
+					-- Follow the order
+					for i = 1, #DeadFrames + 1 do
+						if DeadFrames[i] then
+							local oid = DeadFrames[i]:GetID()
+
+							if oid > id then
+								tinsert(DeadFrames, i, ShadowFrames[id])
+								break
+							elseif oid == id then
+								break
+							end
+						else
+							tinsert(DeadFrames, i, ShadowFrames[id])
+						end
+					end
+
+					return self:Run(refreshDeadPlayer)
+				end
+			]])
+
+			Manager:SetAttribute("removeDeadPlayer", [[
+				local id = ...
+
+				if id then
+					local shadow = ShadowFrames[id]
+
+					for i = 1, #DeadFrames do
+						if DeadFrames[i] == shadow then
+							tremove(DeadFrames, i)
+							return self:Run(refreshDeadPlayer)
+						end
+					end
+				end
+			]])
+
+			Manager:SetAttribute("updateStateForChild", [[
+				local id = ...
+
+				if id then
+					local shadow = ShadowFrames[id]
+					local unit = shadow:GetAttribute("unit")
+
+					UnregisterAttributeDriver(shadow, "isdead")
+					shadow:SetAttribute("isdead", nil)
+
+					if unit then
+						RegisterAttributeDriver(shadow, "isdead", format("[@%s,dead]true;false;", unit))
+					end
+				end
+			]])
 
 			refreshUnitChange = [[
 				local unit = self:GetAttribute("unit")
@@ -114,6 +193,9 @@ interface "IFGroup"
 
 				if frame then
 					frame:SetAttribute("unit", unit)
+				elseif self:GetAttribute("Manager"):GetAttribute("showDeadOnly") then
+					self:GetAttribute("Manager"):RunAttribute("removeDeadPlayer", self:GetID())
+					self:GetAttribute("Manager"):RunAttribute("updateStateForChild", self:GetID())
 				end
 			]]
 		]=]
@@ -130,6 +212,15 @@ interface "IFGroup"
 
 				if frame then
 					frame:SetAttribute("unit", value)
+				elseif self:GetAttribute("Manager"):GetAttribute("showDeadOnly") then
+					self:GetAttribute("Manager"):RunAttribute("removeDeadPlayer", self:GetID())
+					self:GetAttribute("Manager"):RunAttribute("updateStateForChild", self:GetID())
+				end
+			elseif name == "isdead" then
+				if value == "true" then
+					self:GetAttribute("Manager"):RunAttribute("newDeadPlayer", self:GetID())
+				else
+					self:GetAttribute("Manager"):RunAttribute("removeDeadPlayer", self:GetID())
 				end
 			end
 		]]
@@ -139,11 +230,14 @@ interface "IFGroup"
 
 			self:SetWidth(0)
 			self:SetHeight(0)
+			self:SetID(#ShadowFrames)
 
 			-- Binding
 			local frame = UnitFrames[#ShadowFrames]
 
-			if frame then
+			self:SetAttribute("Manager", Manager)
+
+			if frame and not Manager:GetAttribute("showDeadOnly") then
 				self:SetAttribute("UnitFrame", frame)
 			end
 
@@ -161,18 +255,55 @@ interface "IFGroup"
 				tinsert(UnitFrames, frame)
 
 				-- Binding
-				local shadow = ShadowFrames[#UnitFrames]
+				if not Manager:GetAttribute("showDeadOnly") then
+					local shadow = ShadowFrames[#UnitFrames]
 
-				if shadow then
-					shadow:SetAttribute("UnitFrame", frame)
-					frame:SetAttribute("unit", shadow:GetAttribute("unit"))
+					if shadow then
+						shadow:SetAttribute("UnitFrame", frame)
+						frame:SetAttribute("unit", shadow:GetAttribute("unit"))
+					end
+				else
+					if #DeadFrames >= #UnitFrames then
+						frame:SetAttribute("unit", DeadFrames[#UnitFrames]:GetAttribute("unit"))
+					end
 				end
 			end
 		]=]
 
 		_Hide = [[
-			for i = 1, #ShadowFrames do
+			for i = #ShadowFrames, 1, -1 do
 				ShadowFrames[i]:SetAttribute("unit", nil)
+			end
+		]]
+
+		_ToggleShowOnlyPlayer = [[
+			if self:GetAttribute("showDeadOnly") then
+				for i = 1, #ShadowFrames do
+					ShadowFrames[i]:SetAttribute("UnitFrame", nil)
+				end
+				for i = 1, #UnitFrames do
+					UnitFrames[i]:SetAttribute("unit", nil)
+				end
+				for i = 1, #ShadowFrames do
+					self:RunAttribute("updateStateForChild", i)
+				end
+			else
+				wipe(DeadFrames)
+
+				for i = 1, #ShadowFrames do
+					local shadow = ShadowFrames[i]
+					local frame = UnitFrames[i]
+
+					UnregisterAttributeDriver(shadow, "isdead")
+
+					if frame then
+						ShadowFrames[i]:SetAttribute("UnitFrame", frame)
+						frame:SetAttribute("unit", ShadowFrames[i]:GetAttribute("unit"))
+					end
+				end
+				for i = #ShadowFrames + 1, #UnitFrames do
+					UnitFrames[i]:SetAttribute("unit", nil)
+				end
 			end
 		]]
 
@@ -181,6 +312,7 @@ interface "IFGroup"
 			local child = self:GetAttribute("child"..count)
 
 			child:SetAttribute("refreshUnitChange", nil)	-- only used for the entering game combat
+			child:SetAttribute("isdead", nil)
 			child:SetAttribute("_onattributechanged", _Onattributechanged)
 
 			-- Init the panel
@@ -221,7 +353,7 @@ interface "IFGroup"
 			@return nil
 		]======]
 		function Refresh(self)
-			if self.Visible then
+			if self.Visible and not InCombatLockdown() then
 				-- Well, it's ugly
 				self:Hide()
 				self:Show()
@@ -267,6 +399,35 @@ interface "IFGroup"
 			end
 		end
 
+		doc [======[
+			@name SetShowDeadOnly
+			@type method
+			@desc Set whether only show dead players
+			@param flag
+			@return nil
+		]======]
+		function SetShowDeadOnly(self, flag)
+			flag = flag and true or false
+
+			if flag ~= self.ShowDeadOnly then
+				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+					self:SetAttribute("showDeadOnly", flag)
+
+					self:Execute(_ToggleShowOnlyPlayer)
+				end)
+			end
+		end
+
+		doc [======[
+			@name IsShowDeadOnly
+			@type method
+			@desc Whether only show the dead players
+			@return boolean true if only show dead players
+		]======]
+		function IsShowDeadOnly(self)
+			return self:GetAttribute("showDeadOnly") and true or false
+		end
+
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
@@ -289,6 +450,17 @@ interface "IFGroup"
 			Type = Boolean,
 		}
 
+		doc [======[
+			@name ShowDeadOnly
+			@type property
+			@desc Whether only show the dead players
+		]======]
+		property "ShowDeadOnly" {
+			Get = "IsShowDeadOnly",
+			Set = "SetShowDeadOnly",
+			Type = System.Boolean,
+		}
+
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
@@ -297,7 +469,7 @@ interface "IFGroup"
 
 			self.Visible = false
 
-			self:SetFrameRef("UnitPanel", parent)
+			-- self:SetFrameRef("UnitPanel", parent)
     		self:Execute(_InitHeader)
 
     		self:SetAttribute("template", "SecureHandlerAttributeTemplate")
@@ -411,10 +583,6 @@ interface "IFGroup"
 	function InitWithCount(self, count)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 			self.Count = count
-
-			self:Each("SetAttribute", "unit", nil)
-
-			self:Refresh()
 		end)
 	end
 
@@ -636,10 +804,28 @@ interface "IFGroup"
 		end,
 	}
 
+	doc [======[
+		@name ShowDeadOnly
+		@type property
+		@desc Whether only show the dead players
+	]======]
+	property "ShowDeadOnly" {
+		Get = function(self)
+			return self.GroupHeader.ShowDeadOnly
+		end,
+		Set = function(self, value)
+			self.GroupHeader.ShowDeadOnly = value
+		end,
+		Type = System.Boolean,
+	}
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnElementAdd(self, element)
+		element.NoUnitWatch = true
+		element:SetAttribute("unit", nil)
+
 		self.GroupHeader:RegisterUnitFrame(element)
 	end
 

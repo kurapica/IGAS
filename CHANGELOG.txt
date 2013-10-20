@@ -1,3 +1,7 @@
+2013/10/20: IGAS v53
+    1. New NoUnitWatch property for UnitFrame, resuce cost for the SecureStateDriver.
+    2. IFGroup support a mode only show dead players.
+
 2013/10/18: IGAS v52
     1. Fix the problem that can't use left & right arrow keys when using up & down arrow in a auto-complete list for the MultiLineTextBox
 

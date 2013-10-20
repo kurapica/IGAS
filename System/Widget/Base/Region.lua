@@ -415,7 +415,7 @@ class "Region"
 	]======]
 	property "Visible" {
 		Get = function(self)
-			return self:IsShown()
+			return self:IsShown() and true or false
 		end,
 		Set = function(self, visible)
 			if visible then

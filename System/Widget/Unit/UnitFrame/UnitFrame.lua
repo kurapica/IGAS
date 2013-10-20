@@ -5,9 +5,10 @@
 --               2013/07/04 UnitFrame can handle the change of attribute "unit"
 --               2013/07/05 Use attribute "deactivated" instead of "__Deactivated"
 --               2013/08/03 Add same unit check, reduce cost
+--               2013/10/20 NoUnitWatch property added, used for unitframes on a unit panel, reduce cost for the SecureStateDriver
 
 -- Check Version
-local version = 9
+local version = 10
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
@@ -238,6 +239,23 @@ class "UnitFrame"
 		Type = Boolean,
 	}
 
+	doc [======[
+		@name NoUnitWatch
+		@type property
+		@desc Whether need unit watch, enable this when using on a raid panel
+	]======]
+	property "NoUnitWatch" {
+		Get = function(self)
+			return self:GetAttribute("nounitwatch") and true or false
+		end,
+		Set = function(self, value)
+			if self.NoUnitWatch ~= value then
+				self:SetAttribute("nounitwatch", value)
+			end
+		end,
+		Type = Boolean,
+	}
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -334,17 +352,37 @@ class "UnitFrame"
 				value = nil
 			end
 
+			local nounitwatch = self:GetAttribute("nounitwatch")
+
 			if value == "player" then
-				UnregisterUnitWatch(self)
+				if not nounitwatch then
+					UnregisterUnitWatch(self)
+				end
 				self:Show()
 			elseif value then
-				RegisterUnitWatch(self)
+				if not nounitwatch then
+					RegisterUnitWatch(self)
+				else
+					self:Show()
+				end
 			else
-				UnregisterUnitWatch(self)
+				if not nounitwatch then
+					UnregisterUnitWatch(self)
+				end
 				self:Hide()
 			end
 
 			self:CallMethod("UnitFrame_UpdateUnitFrame", value)
+		elseif name == "nounitwatch" then
+			local unit = self:GetAttribute("unit")
+
+			if unit and unit ~= "player" then
+				if value then
+					UnregisterUnitWatch(self)
+				else
+					RegisterUnitWatch(self)
+				end
+			end
 		end
 	]]
 
