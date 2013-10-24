@@ -5243,7 +5243,7 @@ do
 							result = result .. "[__Final__]\n"
 						end
 
-						if info.IsNonInheritable then
+						if info.NonInheritable then
 							result = result .. "[__NonInheritable__]\n"
 						end
 
