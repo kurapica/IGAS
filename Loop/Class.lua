@@ -5888,6 +5888,39 @@ do
 		function ThreadCall(func, ...)
 			return CallThread(func, ...)
 		end
+
+		doc [======[
+			@name IsEqual
+			@type method
+			@desc Whether the two objects are objects with same settings
+			@param obj1 object, the object used to compare
+			@param obj2 object, the object used to compare to
+			@return boolean
+		]======]
+		function IsEqual(obj1, obj2)
+			if obj1 == obj2 then return true end
+			if type(obj1) ~= "table" then return false end
+			if type(obj2) ~= "table" then return false end
+
+			local cls = getmetatable(obj1)
+			local info = cls and rawget(_NSInfo, cls)
+
+			if not info then return false end
+			if cls ~= getmetatable(obj2) then return false end
+
+			for name, prop in pairs(info.Cache4Property) do
+				if prop.Get or prop.GetMethod or prop.Field then
+					local value1 = obj1[name]
+					local value2 = obj2[name]
+
+					if not IsEqual(value1, value2) then
+						return false
+					end
+				end
+			end
+
+			return true
+		end
 	endinterface "Reflector"
 
 	------------------------------------------------------
