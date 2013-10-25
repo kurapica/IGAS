@@ -5905,17 +5905,29 @@ do
 			local cls = getmetatable(obj1)
 			local info = cls and rawget(_NSInfo, cls)
 
-			if not info then return false end
-			if cls ~= getmetatable(obj2) then return false end
+			if info then
+				if cls ~= getmetatable(obj2) then return false end
 
-			for name, prop in pairs(info.Cache4Property) do
-				if prop.Get or prop.GetMethod or prop.Field then
-					local value1 = obj1[name]
-					local value2 = obj2[name]
-
-					if not IsEqual(value1, value2) then
-						return false
+				-- Check properties
+				for name, prop in pairs(info.Cache4Property) do
+					if prop.Get or prop.GetMethod or prop.Field then
+						if not IsEqual(obj1[name], obj2[name]) then
+							return false
+						end
 					end
+				end
+			end
+
+			-- Check fields
+			for k, v in pairs(obj1) do
+				if not IsEqual(v, rawget(obj2, k)) then
+					return false
+				end
+			end
+
+			for k, v in pairs(obj2) do
+				if rawget(obj1, k) == nil then
+					return false
 				end
 			end
 
@@ -6401,7 +6413,7 @@ do
 			@param name the target's name
 			@return target
 		]======]
-		local function _ApplyAttributes(target, targetType, owner, name)
+		local function _ApplyAttributes(target, targetType, owner, name, start)
 			-- Apply the attributes
 			local config = _AttributeCache[targetType][target]
 			local usage
@@ -6456,7 +6468,9 @@ do
 						end
 					end
 				else
-					for i = #config, 1, -1 do
+					start = start or 1
+
+					for i = #config, start, -1 do
 						ok, ret = pcall(config[i].ApplyAttribute, config[i], arg1, arg2, arg3, arg4)
 
 						if not ok then
@@ -6572,18 +6586,66 @@ do
 
 			local newAttributeCount = prepared and #prepared or 0
 
-			-- No attribute declaration again
+			-- Check if already existed
 			if _AttributeCache[targetType][target] then
-				if prepared and #prepared > 0 then
-					errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
+				if newAttributeCount > 0 then
+					local config = _AttributeCache[targetType][target]
+					local noUseAttr = _AttributeCache4Dispose()
+					local noMultiCls = _AttributeCache4Dispose()
+					local usage
+
+					-- remove used attributes
+					for i = #prepared, 1, -1 do
+						if getmetatable(config) then
+							if Reflector.IsEqual(config, prepared[i]) then
+								noUseAttr[prepared[i]] = true
+								tremove(prepared, i)
+							end
+						else
+							for j = 1, #config do
+								if Reflector.IsEqual(config[j], prepared[i]) then
+									noUseAttr[prepared[i]] = true
+									tremove(prepared, i)
+									break
+								end
+							end
+						end
+					end
+
+					-- remove no multi attributes
+					if #prepared > 0 then
+						if getmetatable(config) then
+							usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+
+							if not usage or not usage.AllowMultiple then
+								noMultiCls[cls] = true
+							end
+						else
+							for _, attr in ipairs(config) do
+								usage = _GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
+
+								if not usage or not usage.AllowMultiple then
+									noMultiCls[cls] = true
+								end
+							end
+						end
+
+						for i = #prepared, 1, -1 do
+							if noMultiCls[getmetatable(prepared[i])] then
+								noUseAttr[prepared[i]] = true
+								tremove(prepared, i)
+							end
+						end
+					end
+
+					wipe(noMultiCls)
+					_AttributeCache4Dispose(noUseAttr)
+					_AttributeCache4Dispose(noMultiCls)
+
+					newAttributeCount = #prepared
 				end
-
-				_ClearPreparedAttributes()
-				return target
-			end
-
-			-- get inheritable attributes from superTarget
-			if superTarget then
+			elseif superTarget then
+				-- get inheritable attributes from superTarget
 				local config = _AttributeCache[targetType][superTarget]
 				local usage
 
@@ -6648,17 +6710,33 @@ do
 
 			-- Save & apply the attributes for target
 			if #prepared > 0 then
-				if #prepared == 1 then
-					_AttributeCache[targetType][target] = prepared[1]
+				local start = 1
+
+				if _AttributeCache[targetType][target] then
+					local config = _AttributeCache[targetType][target]
+
+					if getmetatable(config) then
+						config = { config }
+					end
+
+					start = #config + 1
+
+					for _, attr in ipairs(prepared) do
+						tinsert(config, attr)
+					end
+
+					_AttributeCache[targetType][target] = config
 				else
-					_AttributeCache[targetType][target] = {unpack(prepared)}
+					if #prepared == 1 then
+						_AttributeCache[targetType][target] = prepared[1]
+					else
+						_AttributeCache[targetType][target] = { unpack(prepared) }
+					end
 				end
 
 				wipe(prepared)
 
-				_ClearPreparedAttributes()
-
-				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
+				local ret =  _ApplyAttributes(target, targetType, owner, name, start) or target
 
 				if target ~= ret then
 					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
@@ -6667,6 +6745,8 @@ do
 					target = ret
 				end
 			end
+
+			_ClearPreparedAttributes()
 
 			return target
 		end
