@@ -94,6 +94,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/09/24 No single class/interface environment limit
 --               2013/10/02 __Expandable__ attribute removed, __NonExpandable__ attribute added, now expandable is default attribute to all classes/interfaces
 --               2013/10/11 Attribute can apply to the struct's field now.
+--               2013/10/25 Redesign the definition environment, partclass & partinterface removed
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -217,7 +218,7 @@ end
 -- GLOBAL Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 81
+	LUA_OOP_VERSION = 82
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -232,6 +233,12 @@ do
 
 	-- Namespace field
 	NAMESPACE_FIELD = "__LOOP_NameSpace"
+
+	-- Owner field
+	OWNER_FIELD = "__LOOP_OWNER"
+
+	-- Base env field
+	BASE_ENV_FIELD = "__LOOP_BASE_ENV"
 
 	WEAK_KEY = {__mode = "k"}
 
@@ -742,7 +749,8 @@ do
 		if not _EnableDocument or type(documentation) ~= "string" then return end
 
 		local env = getfenv(2)
-		local info = _IFEnv2Info[env] or _ClsEnv2Info[env]
+		local owner = rawget(env, OWNER_FIELD)
+		local info = owner and rawget(_NSInfo, owner)
 
 		if not info then return end
 
@@ -822,8 +830,6 @@ end
 -- Interface
 ------------------------------------------------------
 do
-	_IFEnv2Info = _IFEnv2Info or setmetatable({}, {__mode = "kv",})
-
 	_KeyWord4IFEnv = _KeyWord4IFEnv or {}
 
 	do
@@ -920,7 +926,6 @@ do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
-
 			-- Cache for objects
 			if __Attribute__ and __Cache__ and info.Type == TYPE_CLASS then
 				local cache = {}
@@ -981,7 +986,7 @@ do
 	_MetaIFEnv = _MetaIFEnv or {}
 	do
 		_MetaIFEnv.__index = function(self, key)
-			local info = _IFEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 			local value
 
 			-- Check owner
@@ -1030,18 +1035,16 @@ do
 			end
 
 			-- Check Base
-			-- if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-			value = info[self][key]
+			value = self[BASE_ENV_FIELD][key]
 
 			if value ~= nil then
 				rawset(self, key, value)
 				return value
 			end
-			-- end
 		end
 
 		_MetaIFEnv.__newindex = function(self, key, value)
-			local info = _IFEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4IFEnv[key] then
 				error(("'%s' is a keyword."):format(key), 2)
@@ -1099,15 +1102,16 @@ do
 		return false
 	end
 
-	function BuildInterface(name, asPart)
+	------------------------------------
+	--- Create interface in currect environment's namespace or default namespace
+	-- @param name the interface's name
+	-- @usage interface "IFSocket"
+	------------------------------------
+	function interface(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
-			if asPart then
-				error([[Usage: partinterface "interfacename"]], 3)
-			else
-				error([[Usage: interface "interfacename"]], 3)
-			end
+			error([[Usage: interface "interfacename"]], 2)
 		end
-		local fenv = getfenv(3)
+		local fenv = getfenv(2)
 		local ns = GetNameSpace4Env(fenv)
 
 		-- Create interface or get it
@@ -1118,24 +1122,19 @@ do
 
 			if _NSInfo[IF] then
 				if _NSInfo[IF].Type and _NSInfo[IF].Type ~= TYPE_INTERFACE then
-					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), 3)
-				end
-
-				if _NSInfo[IF].BaseEnv and _NSInfo[IF].BaseEnv ~= fenv then
-					-- Other environment can't do the clearance
-					asPart = true
+					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), 2)
 				end
 			end
 		else
 			IF = fenv[name]
 
-			if not (IF and _NSInfo[IF] and _NSInfo[IF].BaseEnv == fenv and _NSInfo[IF].NameSpace == nil and _NSInfo[IF].Type == TYPE_INTERFACE ) then
+			if not (IF and _NSInfo[IF] and _NSInfo[IF].NameSpace == nil and _NSInfo[IF].Type == TYPE_INTERFACE ) then
 				IF = BuildNameSpace(nil, name)
 			end
 		end
 
 		if not IF then
-			error("no interface is created.", 3)
+			error("No interface is created.", 2)
 		end
 
 		-- Build interface
@@ -1143,12 +1142,11 @@ do
 
 		-- Check if the class is final
 		if info.IsFinal then
-			error("The interface is final, can't be re-defined.", 3)
+			error("The interface is final, can't be re-defined.", 2)
 		end
 
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = ns
-		info.BaseEnv = info.BaseEnv or fenv
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
@@ -1157,30 +1155,10 @@ do
 		rawset(fenv, name, IF)
 
 		-- Generate the interface environment
-		local interfaceEnv
-
-		for env, base in pairs(info) do
-			if type(env) == "table" and base == fenv then
-				interfaceEnv = env
-				break
-			end
-		end
-		interfaceEnv = interfaceEnv or setmetatable({}, _MetaIFEnv)
-		_IFEnv2Info[interfaceEnv] = info
-		info[interfaceEnv] = fenv
-
-		-- Clear
-		if not asPart then
-			info.Initializer = nil
-			wipe(info.Property)
-			wipe(info.Event)
-			wipe(info.Method)
-			for i, v in pairs(interfaceEnv) do
-				if type(v) == "function" then
-					interfaceEnv[i] = nil
-				end
-			end
-		end
+		local interfaceEnv = setmetatable({
+			[OWNER_FIELD] = IF,
+			[BASE_ENV_FIELD] = fenv,
+		}, _MetaIFEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(interfaceEnv, IF)
@@ -1194,26 +1172,8 @@ do
 		-- ExtendInterface
 		info.ExtendInterface = info.ExtendInterface or {}
 
-		if not asPart then
-			for _, pIF in ipairs(info.ExtendInterface) do
-				if _NSInfo[pIF].ExtendClass then
-					_NSInfo[pIF].ExtendClass[info.Owner] = nil
-				end
-			end
-			wipe(info.ExtendInterface)
-		end
-
 		-- Import
 		info.Import4Env = info.Import4Env or {}
-
-		if not asPart then
-			wipe(info.Import4Env)
-		end
-
-		-- Clear dispose method
-		if not asPart then
-			info[DISPOSE_METHOD] = nil
-		end
 
 		if __Attribute__ then
 			-- No super target for interface
@@ -1221,22 +1181,7 @@ do
 		end
 
 		-- Set the environment to interface's environment
-		setfenv(3, interfaceEnv)
-	end
-
-	------------------------------------
-	--- Create interface in currect environment's namespace or default namespace
-	-- @name interface
-	-- @class function
-	-- @param name the interface's name
-	-- @usage interface "IFSocket"
-	------------------------------------
-	function interface(name)
-		BuildInterface(name)
-	end
-
-	function partinterface(name)
-		BuildInterface(name, true)
+		setfenv(2, interfaceEnv)
 	end
 
 	------------------------------------
@@ -1252,17 +1197,11 @@ do
 		end
 
 		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
+			error("The namespace 's name can't have empty string between dots.", 2)
 		end
 
 		local env = getfenv(2)
-
-		if rawget(_IFEnv2Info, env) == nil then
-			error("can't using extend here.", 2)
-		end
-
-		local info = _IFEnv2Info[env]
-
+		local info = _NSInfo[env[OWNER_FIELD]]
 		local IF
 
 		if type(name) == "string" then
@@ -1272,17 +1211,17 @@ do
 				for subname in name:gmatch("[_%w]+") do
 
 					if not subname or subname == "" then
-						error("the namespace's name must be composed with number, string or '_'.", 2)
+						error("The namespace's name must be composed with number, string or '_'.", 2)
 					end
 
 					if not IF then
-						IF = info.BaseEnv[subname]
+						IF = env[subname]
 					else
 						IF = IF[subname]
 					end
 
 					if not IsNameSpace(IF) then
-						error(("no interface is found with the name : %s"):format(name), 2)
+						error(("No interface is found with the name : %s"):format(name), 2)
 					end
 				end
 			end
@@ -1339,17 +1278,11 @@ do
 		end
 
 		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
+			error("The namespace 's name can't have empty string between dots.", 2)
 		end
 
 		local env = getfenv(2)
-
-		local info = _IFEnv2Info[env]
-
-		if not info then
-			error("can't use import here.", 2)
-		end
-
+		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
 		if type(name) == "string" then
@@ -1359,7 +1292,7 @@ do
 		end
 
 		if not ns then
-			error(("no namespace is found with name : %s"):format(name), 2)
+			error(("No namespace is found with name : %s"):format(name), 2)
 		end
 
 		info.Import4Env = info.Import4Env or {}
@@ -1386,12 +1319,7 @@ do
 		end
 
 		local env = getfenv(2)
-
-		local info = _IFEnv2Info[env]
-
-		if not info then
-			error("can't use event here.", 2)
-		end
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		info.Event[name] = info.Event[name] or Event(name)
 
@@ -1512,12 +1440,7 @@ do
 		name = name:match("[_%w]+")
 
 		local env = getfenv(2)
-
-		local info = _IFEnv2Info[env]
-
-		if not info then
-			error("can't use property here.", 2)
-		end
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		return function(set)
 			return SetPropertyWithSet(info, name, set)
@@ -1537,11 +1460,10 @@ do
 		end
 
 		local env = getfenv(2)
-
-		local info = _IFEnv2Info[env]
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
-			setfenv(2, info[env])
+			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
@@ -1566,8 +1488,6 @@ end
 ------------------------------------------------------
 do
 	_SuperIndex = "Super"
-
-	_ClsEnv2Info = _ClsEnv2Info or setmetatable({}, {__mode = "kv",})
 
 	_KeyWord4ClsEnv = _KeyWord4ClsEnv or {}
 
@@ -1697,7 +1617,7 @@ do
 	_MetaClsEnv = _MetaClsEnv or {}
 	do
 		_MetaClsEnv.__index = function(self, key)
-			local info = _ClsEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 			local value
 
 			-- Check owner
@@ -1756,18 +1676,16 @@ do
 			end
 
 			-- Check Base
-			--if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-			value = info[self][key]
+			value = self[BASE_ENV_FIELD][key]
 
 			if value ~= nil then
 				rawset(self, key, value)
 				return value
 			end
-			--end
 		end
 
 		_MetaClsEnv.__newindex = function(self, key, value)
-			local info = _ClsEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4ClsEnv[key] then
 				error(("'%s' is a keyword."):format(key), 2)
@@ -2078,15 +1996,16 @@ do
 		return obj
 	end
 
-	function BuildClass(name, asPart)
+	------------------------------------
+	--- Create class in currect environment's namespace or default namespace
+	-- @param name the class's name
+	-- @usage class "Form"
+	------------------------------------
+	function class(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
-			if asPart then
-				error([[Usage: partclass "classname"]], 3)
-			else
-				error([[Usage: class "classname"]], 3)
-			end
+			error([[Usage: class "classname"]], 2)
 		end
-		local fenv = getfenv(3)
+		local fenv = getfenv(2)
 		local ns = GetNameSpace4Env(fenv)
 
 		-- Create class or get it
@@ -2097,24 +2016,19 @@ do
 
 			if _NSInfo[cls] then
 				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_CLASS then
-					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 3)
-				end
-
-				if _NSInfo[cls].BaseEnv and _NSInfo[cls].BaseEnv ~= fenv then
-					-- Other environment can't do the clearance
-					asPart = true
+					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 2)
 				end
 			end
 		else
 			cls = fenv[name]
 
-			if not ( cls and _NSInfo[cls] and _NSInfo[cls].BaseEnv == fenv and _NSInfo[cls].NameSpace == nil and _NSInfo[cls].Type == TYPE_CLASS ) then
+			if not ( cls and _NSInfo[cls] and _NSInfo[cls].NameSpace == nil and _NSInfo[cls].Type == TYPE_CLASS ) then
 				cls = BuildNameSpace(nil, name)
 			end
 		end
 
 		if not cls then
-			error("no class is created.", 3)
+			error("No class is created.", 2)
 		end
 
 		-- Build class
@@ -2122,12 +2036,11 @@ do
 
 		-- Check if the class is final
 		if info.IsFinal then
-			error("The class is final, can't be re-defined.", 3)
+			error("The class is final, can't be re-defined.", 2)
 		end
 
 		info.Type = TYPE_CLASS
 		info.NameSpace = ns
-		info.BaseEnv = info.BaseEnv or fenv
 		info.Event = info.Event or {}
 		info.Property = info.Property or {}
 		info.Method = info.Method or {}
@@ -2135,31 +2048,10 @@ do
 		-- save class to the environment
 		rawset(fenv, name, cls)
 
-		local classEnv
-
-		for env, base in pairs(info) do
-			if type(env) == "table" and base == fenv then
-				classEnv = env
-				break
-			end
-		end
-
-		classEnv = classEnv or setmetatable({}, _MetaClsEnv)
-		_ClsEnv2Info[classEnv] = info
-		info[classEnv] = fenv
-
-		-- Clear
-		if not asPart then
-			info.Constructor = nil
-			wipe(info.Property)
-			wipe(info.Event)
-			wipe(info.Method)
-			for i, v in pairs(classEnv) do
-				if type(v) == "function" then
-					classEnv[i] = nil
-				end
-			end
-		end
+		local classEnv = setmetatable({
+			[OWNER_FIELD] = cls,
+			[BASE_ENV_FIELD] = fenv,
+		}, _MetaClsEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(classEnv, cls)
@@ -2170,40 +2062,11 @@ do
 		info.Cache4Method = info.Cache4Method or {}
 		info.Cache4Interface = info.Cache4Interface or {}
 
-		-- SuperClass
-		if not asPart then
-			local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
-
-			if prevInfo and prevInfo.ChildClass then
-				prevInfo.ChildClass[info.Owner] = nil
-			end
-
-			info.SuperClass = nil
-		end
-
 		-- ExtendInterface
 		info.ExtendInterface = info.ExtendInterface or {}
 
-		if not asPart then
-			for _, IF in ipairs(info.ExtendInterface) do
-				if _NSInfo[IF].ExtendClass then
-					_NSInfo[IF].ExtendClass[info.Owner] = nil
-				end
-			end
-			wipe(info.ExtendInterface)
-		end
-
 		-- Import
 		info.Import4Env = info.Import4Env or {}
-
-		if not asPart then
-			wipe(info.Import4Env)
-		end
-
-		-- Clear dispose method
-		if not asPart then
-			info[DISPOSE_METHOD] = nil
-		end
 
 		local isCached = false
 
@@ -2228,16 +2091,6 @@ do
 		info.MetaTable = info.MetaTable or {}
 		do
 			local MetaTable = info.MetaTable
-			local rMeta
-
-			-- Clear
-			if not asPart then
-				for meta, flag in pairs(_KeyMeta) do
-					rMeta = flag and meta or "_"..meta
-					SetMetaFunc(rMeta, info.ChildClass, MetaTable[rMeta], nil)
-					MetaTable[rMeta] = nil
-				end
-			end
 
 			local Cache4Event = info.Cache4Event
 			local Cache4Property = info.Cache4Property
@@ -2249,8 +2102,6 @@ do
 			local rawset = rawset
 			local error = error
 			local tostring = tostring
-			local getmetatable = getmetatable
-			local setmetatable = setmetatable
 
 			MetaTable.__metatable = cls
 
@@ -2352,7 +2203,7 @@ do
 					elseif oper.Field then
 						return rawset(self, oper.Field, value)
 					else
-						error(("%s can't be written."):format(tostring(key)),2)
+						error(("%s can't be written."):format(tostring(key)), 2)
 					end
 				end
 
@@ -2376,7 +2227,7 @@ do
 					elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
 						oper:Copy(value)
 					else
-						error("can't set this value to the event handler.", 2)
+						error("Can't set this value to the event handler.", 2)
 					end
 
 					return
@@ -2393,29 +2244,7 @@ do
 		end
 
 		-- Set the environment to class's environment
-		setfenv(3, classEnv)
-	end
-
-	------------------------------------
-	--- Create class in currect environment's namespace or default namespace
-	-- @name class
-	-- @class function
-	-- @param name the class's name
-	-- @usage class "Form"
-	------------------------------------
-	function class(name)
-		BuildClass(name)
-	end
-
-	------------------------------------
-	--- Part class definition
-	-- @name partclass
-	-- @type function
-	-- @param name the class's name
-	-- @usage partclass "Form"
-	------------------------------------
-	function partclass(name)
-		BuildClass(name, true)
+		setfenv(2, classEnv)
 	end
 
 	------------------------------------
@@ -2430,25 +2259,9 @@ do
 			error([[Usage: inherit "namespace.classname"]], 2)
 		end
 
-		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local env = getfenv(2)
-
-		if rawget(_ClsEnv2Info, env) == nil then
-			error("can't using inherit here.", 2)
-		end
-
-		local info = _ClsEnv2Info[env]
-
+		local info = _NSInfo[env[OWNER_FIELD]]
 		local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
-
-		if prevInfo and prevInfo.ChildClass then
-			prevInfo.ChildClass[info.Owner] = nil
-		end
-
-		info.SuperClass = nil
 
 		local superCls
 
@@ -2457,20 +2270,14 @@ do
 
 			if not superCls then
 				for subname in name:gmatch("[_%w]+") do
-
-					if not subname or subname == "" then
-						error("the namespace's name must be composed with number, string or '_'.", 2)
-					end
-
 					if not superCls then
-						-- superCls = info.BaseEnv[subname]
 						superCls = env[subname]
 					else
 						superCls = superCls[subname]
 					end
 
 					if not IsNameSpace(superCls) then
-						error(("no class is found with the name : %s"):format(name), 2)
+						error(("No class is found with the name : %s"):format(name), 2)
 					end
 				end
 			end
@@ -2491,6 +2298,25 @@ do
 		if IsChildClass(info.Owner, superCls) then
 			error(("%s is inherited from %s, can't be used as super class."):format(tostring(superCls), tostring(info.Owner)), 2)
 		end
+
+		if info.SuperClass == superCls then return end
+
+		if prevInfo and prevInfo.ChildClass then
+			prevInfo.ChildClass[info.Owner] = nil
+
+			-- Clear Metatable
+			local rMeta
+			for meta, flag in pairs(_KeyMeta) do
+				rMeta = flag and meta or "_"..meta
+
+				if info.MetaTable[rMeta] == prevInfo.MetaTable[rMeta] then
+					SetMetaFunc(rMeta, info.ChildClass, info.MetaTable[rMeta], nil)
+					info.MetaTable[rMeta] = nil
+				end
+			end
+		end
+
+		info.SuperClass = nil
 
 		superInfo.ChildClass = superInfo.ChildClass or {}
 		superInfo.ChildClass[info.Owner] = true
@@ -2523,17 +2349,8 @@ do
 			error([[Usage: extend "namespace.interfacename"]], 2)
 		end
 
-		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local env = getfenv(2)
-
-		if rawget(_ClsEnv2Info, env) == nil then
-			error("can't using extend here.", 2)
-		end
-
-		local info = _ClsEnv2Info[env]
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		local IF
 
@@ -2542,19 +2359,14 @@ do
 
 			if not IF then
 				for subname in name:gmatch("[_%w]+") do
-
-					if not subname or subname == "" then
-						error("the namespace's name must be composed with number, string or '_'.", 2)
-					end
-
 					if not IF then
-						IF = info.BaseEnv[subname]
+						IF = env[subname]
 					else
 						IF = IF[subname]
 					end
 
 					if not IsNameSpace(IF) then
-						error(("no interface is found with the name : %s"):format(name), 2)
+						error(("No interface is found with the name : %s"):format(name), 2)
 					end
 				end
 			end
@@ -2605,18 +2417,8 @@ do
 			error([[Usage: import "namespaceA.namespaceB"]], 2)
 		end
 
-		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local env = getfenv(2)
-
-		local info = _ClsEnv2Info[env]
-
-		if not info then
-			error("can't use import here.", 2)
-		end
-
+		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
 		if type(name) == "string" then
@@ -2626,7 +2428,7 @@ do
 		end
 
 		if not ns then
-			error(("no namespace is found with name : %s"):format(name), 2)
+			error(("No namespace is found with name : %s"):format(name), 2)
 		end
 
 		info.Import4Env = info.Import4Env or {}
@@ -2653,8 +2455,7 @@ do
 		end
 
 		local env = getfenv(2)
-
-		local info = _ClsEnv2Info[env]
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if not info then
 			error("can't use event here.", 2)
@@ -2698,12 +2499,7 @@ do
 		name = name:match("[_%w]+")
 
 		local env = getfenv(2)
-
-		local info = _ClsEnv2Info[env]
-
-		if not info then
-			error("can't use property here.", 2)
-		end
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		return function(set)
 			return SetPropertyWithSet(info, name, set)
@@ -2723,11 +2519,10 @@ do
 		end
 
 		local env = getfenv(2)
-
-		local info = _ClsEnv2Info[env]
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
-			setfenv(2, info[env])
+			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 
 			if not info.Constructor then
@@ -2843,7 +2638,7 @@ do
 		end
 
 		if not enm then
-			error("no enumeration is created.", 2)
+			error("No enumeration is created.", 2)
 		end
 
 		-- save class to the environment
@@ -2854,7 +2649,7 @@ do
 
 		-- Check if the enum is final
 		if info.IsFinal then
-			error("The enum is final, can't be re-defined.", 3)
+			error("The enum is final, can't be re-defined.", 2)
 		end
 
 		info.Type = TYPE_ENUM
@@ -2870,8 +2665,6 @@ end
 -- Struct
 ------------------------------------------------------
 do
-	_StructEnv2Info = _StructEnv2Info or setmetatable({}, {__mode = "kv",})
-
 	_KeyWord4StrtEnv = _KeyWord4StrtEnv or {}
 
 	_STRUCT_TYPE_MEMBER = "MEMBER"
@@ -2882,7 +2675,7 @@ do
 	_MetaStrtEnv = _MetaStrtEnv or {}
 	do
 		_MetaStrtEnv.__index = function(self, key)
-			local info = _StructEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 			local value
 
 			-- Check owner
@@ -2935,25 +2728,22 @@ do
 			end
 
 			-- Check Base
-			--if info[self] ~= _G or type(key) ~= "string" or key == "_G" or not strfind(key, "^_") then
-			value = info[self][key]
+			value = self[BASE_ENV_FIELD][key]
 
 			if value ~= nil then
 				rawset(self, key, value)
 				return value
 			end
-			--end
 		end
 
 		_MetaStrtEnv.__newindex = function(self, key, value)
-			local info = _StructEnv2Info[self]
+			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4StrtEnv[key] then
 				error(("'%s' is a keyword."):format(key), 2)
 			end
 
 			if key == info.Name then
-				-- error(("the '%s' is the struct name, can't be used."):format(key), 2)
 				if type(value) == "function" then
 					info.Constructor = value
 					return
@@ -3260,13 +3050,13 @@ do
 		else
 			strt = fenv[name]
 
-			if not ( strt and _NSInfo[strt] and _NSInfo[strt].BaseEnv == fenv and _NSInfo[strt].NameSpace == nil and _NSInfo[strt].Type == TYPE_STRUCT ) then
+			if not ( strt and _NSInfo[strt] and _NSInfo[strt].NameSpace == nil and _NSInfo[strt].Type == TYPE_STRUCT ) then
 				strt = BuildNameSpace(nil, name)
 			end
 		end
 
 		if not strt then
-			error("no struct is created.", 2)
+			error("No struct is created.", 2)
 		end
 
 		-- save class to the environment
@@ -3277,27 +3067,24 @@ do
 
 		-- Check if the struct is final
 		if info.IsFinal then
-			error("The struct is final, can't be re-defined.", 3)
+			error("The struct is final, can't be re-defined.", 2)
 		end
 
 		info.Type = TYPE_STRUCT
+		info.SubType = _STRUCT_TYPE_MEMBER
 		info.NameSpace = ns
 		info.Members = nil
 		info.ArrayElement = nil
 		info.UserValidate = nil
 		info.Validate = nil
-		info.SubType = _STRUCT_TYPE_MEMBER
 		info.Cache4Method = nil
-
-		info.BaseEnv = fenv
-		info.StructEnv = info.StructEnv or setmetatable({}, _MetaStrtEnv)
-		_StructEnv2Info[info.StructEnv] = info
-		info[info.StructEnv] = fenv
-
-		-- Clear
 		info.Constructor = nil
+		info.Import4Env = nil
 
-		wipe(info.StructEnv)
+		info.StructEnv = setmetatable({
+			[OWNER_FIELD] = strt,
+			[BASE_ENV_FIELD] = fenv,
+		}, _MetaStrtEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(info.StructEnv, strt)
@@ -3322,18 +3109,8 @@ do
 			error([[Usage: import "namespaceA.namespaceB"]], 2)
 		end
 
-		if type(name) == "string" and name:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local env = getfenv(2)
-
-		local info = _StructEnv2Info[env]
-
-		if not info then
-			error("Can't use import here.", 2)
-		end
-
+		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
 		if type(name) == "string" then
@@ -3370,27 +3147,22 @@ do
 		end
 
 		local env = getfenv(2)
+		local info = _NSInfo[env[OWNER_FIELD]]
 
-		if __Attribute__ then
-			__Attribute__._ClearPreparedAttributes()
-		end
-
-		while _StructEnv2Info[env] do
-			local info = _StructEnv2Info[env]
-
-			if info.Name == name then
-				setfenv(2, info.BaseEnv)
-				return
+		if info.Name == name then
+			if __Attribute__ then
+				__Attribute__._ClearPreparedAttributes()
 			end
 
-			env = info.BaseEnv
+			setfenv(2, env[BASE_ENV_FIELD])
+		else
+			error(("%s is not closed."):format(info.Name), 2)
 		end
-
-		error(("No struct is found with name: %s"):format(name), 2)
 	end
 
 	function structtype(_type_)
-		local info = _StructEnv2Info[getfenv(2)]
+		local env = getfenv(2)
+		local info = _NSInfo[env[OWNER_FIELD]]
 
 		_type_ = _type_:upper()
 
@@ -3421,8 +3193,6 @@ end
 ------------------------------------------------------
 do
 	function Install_KeyWord(env)
-		env.partinterface = partinterface
-		env.partclass = partclass
 		env.interface = interface
 		env.class = class
 		env.enum = enum
@@ -6564,7 +6334,7 @@ do
 				prepared = _PreparedAttributes
 			end
 
-			-- Filite with the usage
+			-- Filter with the usage
 			if prepared and #prepared > 0 then
 				local cls, usage
 				local noUseAttr = _AttributeCache4Dispose()
@@ -6618,14 +6388,14 @@ do
 							usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 							if not usage or not usage.AllowMultiple then
-								noMultiCls[cls] = true
+								noMultiCls[getmetatable(config)] = true
 							end
 						else
 							for _, attr in ipairs(config) do
 								usage = _GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
 
 								if not usage or not usage.AllowMultiple then
-									noMultiCls[cls] = true
+									noMultiCls[getmetatable(attr)] = true
 								end
 							end
 						end
@@ -8238,12 +8008,10 @@ do
 
 		_ModuleEnv = _ModuleEnv or {}
 
-		_ModuleEnv.partclass = partclass
 		_ModuleEnv.class = class
 		_ModuleEnv.enum = enum
 		_ModuleEnv.namespace = namespace
 		_ModuleEnv.struct = struct
-		_ModuleEnv.partinterface = partinterface
 		_ModuleEnv.interface = interface
 		_ModuleEnv.import = function(name)
 			local ns = name
@@ -8781,8 +8549,6 @@ do
 
 	function Install_OOP(env)
 		if type(env) == "table" then
-			env.partinterface = env.partinterface or partinterface
-			env.partclass = env.partclass or partclass
 			env.interface = env.interface or interface
 			env.class = env.class or class
 			env.enum = env.enum or enum
