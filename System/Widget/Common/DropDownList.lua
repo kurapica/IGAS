@@ -34,7 +34,7 @@ class "DropDownList"
 	-- Container & ColorPicker
     _DropDownListContainer = Frame("IGAS_GUI_ListContainer", WorldFrame)
     _DropDownListContainer.__ShowList = _DropDownListContainer.__ShowList or nil
-print("ColorPicker", ColorPicker)
+
 	_DropDownColorPicker = ColorPicker("DropDownColorPicker", _DropDownListContainer)
 	_DropDownColorPicker:ClearAllPoints()
 	_DropDownColorPicker:SetPoint("CENTER", WorldFrame, "CENTER")
