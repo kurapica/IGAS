@@ -36,6 +36,19 @@ class "Model"
 	event "OnUpdateModel"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Model", nil, parent, ...)
+	end
+endclass "Model"
+
+class "Model"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -251,19 +264,6 @@ class "Model"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Model", nil, parent, ...)
-	end
-endclass "Model"
-
-partclass "Model"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Model)
@@ -291,31 +291,27 @@ partclass "Model"
 		@type property
 		@desc the far clipping distance for the model's fog
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "FogFar" {}
+	property "FogFar" { Type = Number }
 
 	doc [======[
 		@name FogNear
 		@type property
 		@desc the near clipping distance for the model's fog
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "FogNear" {}
+	property "FogNear" { Type = Number }
 
 	doc [======[
 		@name ModelScale
 		@type property
 		@desc the scale factor determining the size at which the 3D model appears
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "ModelScale" {}
+	property "ModelScale" { Type = Number }
 
 	doc [======[
 		@name Model
 		@type property
 		@desc the model file to be displayed
 	]======]
-	__Auto__{ Method = true, Type = String + nil }
 	property "Model" {
 		Set = function(self, file)
 			if file and type(file) == "string" and file ~= "" then
@@ -324,6 +320,8 @@ partclass "Model"
 				self:ClearModel()
 			end
 		end,
+		Get = "GetModel",
+		Type = String + nil,
 	}
 
 	doc [======[

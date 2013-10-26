@@ -98,6 +98,60 @@ class "GameTooltip"
 	event "OnTooltipSetUnit"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		local name = self:GetName()
+		local index, chkName
+
+		self:ClearLines()
+
+		if name and _G[name] and IGAS:GetWrapper(_G[name]) == self then
+			-- remove lefttext
+			index = 1
+
+			while _G[name.."TextLeft"..index] do
+				_G[name.."TextLeft"..index] = nil
+				index = index + 1
+			end
+
+			-- remove righttext
+			index = 1
+
+			while _G[name.."TextRight"..index] do
+				_G[name.."TextRight"..index] = nil
+				index = index + 1
+			end
+
+			-- remove texture
+			index = 1
+
+			while _G[name.."Texture"..index] do
+				_G[name.."Texture"..index] = nil
+				index = index + 1
+			end
+
+			-- remove self
+			_G[name] = nil
+		end
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		local fullname = (parent:GetName() or "").."."..name
+
+		return CreateFrame("GameTooltip", fullname, parent, ...)
+	end
+endclass "GameTooltip"
+
+class "GameTooltip"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -853,60 +907,6 @@ class "GameTooltip"
 	end
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		local name = self:GetName()
-		local index, chkName
-
-		self:ClearLines()
-
-		if name and _G[name] and IGAS:GetWrapper(_G[name]) == self then
-			-- remove lefttext
-			index = 1
-
-			while _G[name.."TextLeft"..index] do
-				_G[name.."TextLeft"..index] = nil
-				index = index + 1
-			end
-
-			-- remove righttext
-			index = 1
-
-			while _G[name.."TextRight"..index] do
-				_G[name.."TextRight"..index] = nil
-				index = index + 1
-			end
-
-			-- remove texture
-			index = 1
-
-			while _G[name.."Texture"..index] do
-				_G[name.."Texture"..index] = nil
-				index = index + 1
-			end
-
-			-- remove self
-			_G[name] = nil
-		end
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		local fullname = (parent:GetName() or "").."."..name
-
-		return CreateFrame("GameTooltip", fullname, parent, ...)
-	end
-endclass "GameTooltip"
-
-partclass "GameTooltip"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(GameTooltip)
@@ -919,7 +919,6 @@ partclass "GameTooltip"
 		@type property
 		@desc The owner of this gametooltip
 	]======]
-	__Auto__{ Method = true, Type = UIObject + nil }
-	property "Owner" {}
+	property "Owner" { Type = UIObject + nil }
 
 endclass "GameTooltip"

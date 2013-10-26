@@ -24,6 +24,61 @@ class "Font"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		-- Remove from _G if it exists
+		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
+			_G[self:GetName()] = nil
+		end
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	__Arguments__{ Argument{ Name = "Name" , Type = String + Table } }
+	function Font(self, name)
+		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
+
+		if not fontObject or type(fontObject) ~= "table" or type(fontObject[0]) ~= "userdata" then
+			error("No font is found.", 2)
+		end
+
+		self[0] = fontObject[0]
+		self.__UI = fontObject
+		fontObject.__Wrapper = self
+	end
+
+	------------------------------------------------------
+	-- Exist checking
+	------------------------------------------------------
+	function __exist(fontObject)
+		if type(fontObject) == "string" then
+			fontObject = _G[fontObject] or fontObject
+		end
+
+		if type(fontObject) == "table" and type(fontObject[0]) == "userdata" then
+			-- Do Wrapper the blz's UI element
+
+			-- VirtualUIObject's instance will not be checked here.
+			if Object.IsClass(fontObject, Font) or not fontObject.GetObjectType then
+				-- UIObject's instance will be return here.
+				return fontObject
+			end
+
+			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
+				return fontObject.__Wrapper
+			end
+		end
+	end
+endclass "Font"
+
+class "Font"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -246,61 +301,6 @@ class "Font"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		-- Remove from _G if it exists
-		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
-			_G[self:GetName()] = nil
-		end
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	__Arguments__{ Argument{ Name = "Name" , Type = String + Table } }
-	function Font(self, name)
-		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
-
-		if not fontObject or type(fontObject) ~= "table" or type(fontObject[0]) ~= "userdata" then
-			error("No font is found.", 2)
-		end
-
-		self[0] = fontObject[0]
-		self.__UI = fontObject
-		fontObject.__Wrapper = self
-	end
-
-	------------------------------------------------------
-	-- Exist checking
-	------------------------------------------------------
-	function __exist(fontObject)
-		if type(fontObject) == "string" then
-			fontObject = _G[fontObject] or fontObject
-		end
-
-		if type(fontObject) == "table" and type(fontObject[0]) == "userdata" then
-			-- Do Wrapper the blz's UI element
-
-			-- VirtualUIObject's instance will not be checked here.
-			if Object.IsClass(fontObject, Font) or not fontObject.GetObjectType then
-				-- UIObject's instance will be return here.
-				return fontObject
-			end
-
-			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
-				return fontObject.__Wrapper
-			end
-		end
-	end
-endclass "Font"
-
-partclass "Font"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Font, GameFontNormal)
@@ -367,24 +367,21 @@ partclass "Font"
 		@type property
 		@desc the Font object
 	]======]
-	__Auto__{ Method = true, Type = Font + String + nil }
-	property "FontObject" {}
+	property "FontObject" { Type = Font + String + nil }
 
 	doc [======[
 		@name JustifyH
 		@type property
 		@desc the fontstring's horizontal text alignment style
 	]======]
-	__Auto__{ Method = true, Type = JustifyHType }
-	property "JustifyH" {}
+	property "JustifyH" { Type = JustifyHType }
 
 	doc [======[
 		@name JustifyV
 		@type property
 		@desc the fontstring's vertical text alignment style
 	]======]
-	__Auto__{ Method = true, Type = JustifyVType }
-	property "JustifyV" {}
+	property "JustifyV" { Type = JustifyVType }
 
 	doc [======[
 		@name ShadowColor
@@ -421,8 +418,7 @@ partclass "Font"
 		@type property
 		@desc the fontstring's amount of spacing between lines
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Spacing" {}
+	property "Spacing" { Type = Number }
 
 	doc [======[
 		@name TextColor
@@ -444,15 +440,13 @@ partclass "Font"
 		@type property
 		@desc the opacity for text displayed by the font
 	]======]
-	__Auto__{ Method = true, Type = ColorFloat }
-	property "Alpha" {}
+	property "Alpha" { Type = ColorFloat }
 
 	doc [======[
 		@name IndentedWordWrap
 		@type property
 		@desc whether long lines of text are indented when wrapping
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "IndentedWordWrap" {}
+	property "IndentedWordWrap" { Type = Boolean }
 
 endclass "Font"

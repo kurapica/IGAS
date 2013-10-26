@@ -212,6 +212,29 @@ do
 	errorhandler = errorhandler or function(err)
 		return pcall(geterrorhandler(), err)
 	end
+
+	newproxy = newproxy
+
+	if not newproxy then
+		local _METATABLE_MAP = setmetatable({}, {__mode = "k"})
+
+		function newproxy(prototype)
+			-- mean no userdata can be created in lua
+			-- use the table instead
+			if type(prototype) == "table" then
+				local meta = _METATABLE_MAP[prototype]
+
+				return setmetatable({}, meta)
+			elseif prototype then
+				local meta = {}
+				prototype = setmetatable({}, meta)
+				_METATABLE_MAP[prototype] = meta
+				return prototype
+			else
+				return setmetatable({}, {__metatable = false})
+			end
+		end
+	end
 end
 
 ------------------------------------------------------
@@ -364,6 +387,9 @@ do
 			elseif info.Type == TYPE_STRUCT then
 				-- Create Struct
 				return Struct2Obj(self, ...)
+			elseif info.Type == TYPE_ENUM then
+				-- For short parse
+				return Reflector.ParseEnum(self, ...)
 			end
 
 			error(("%s can't be used as a constructor."):format(tostring(self)), 2)
@@ -487,7 +513,7 @@ do
 
 	-- IsNameSpace
 	function IsNameSpace(ns)
-		return ns and type(ns) == "userdata" and getmetatable(ns) == TYPE_NAMESPACE or false
+		return getmetatable(ns) == TYPE_NAMESPACE or false
 	end
 
 	-- BuildNameSpace
@@ -496,24 +522,14 @@ do
 			return
 		end
 
-		if namelist:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local cls = ns
 		local info = cls and _NSInfo[cls]
 		local parent = cls
 
 		for name in namelist:gmatch("[_%w]+") do
-			name = name:match("[_%w]+")
-
-			if not name or name == "" then
-				error("the namespace's name must be composed with number, string or '_'.", 2)
-			end
-
 			if not info then
 				cls = newproxy(_NameSpace)
-			elseif info.Type == nil or info.Type == TYPE_CLASS or info.Type == TYPE_STRUCT or info.Type == TYPE_INTERFACE then
+			elseif info.Type ~= TYPE_ENUM then
 				info.SubNS = info.SubNS or {}
 				info.SubNS[name] = info.SubNS[name] or newproxy(_NameSpace)
 
@@ -543,19 +559,9 @@ do
 			return
 		end
 
-		if namelist:find("%.%s*%.") then
-			error("the namespace 's name can't have empty string between dots.", 2)
-		end
-
 		local cls = ns
 
 		for name in namelist:gmatch("[_%w]+") do
-			name = name:match("[_%w]+")
-
-			if not name or name == "" then
-				error("the namespace's name must be composed with number, string or '_'.", 2)
-			end
-
 			cls = cls[name]
 			if not cls then
 				return
@@ -633,9 +639,7 @@ do
 			error([[Usage: namespace "namespace"]], 2)
 		end
 
-		local fenv = getfenv(2)
-
-		SetNameSpace4Env(fenv, name)
+		return SetNameSpace4Env(getfenv(2), name)
 	end
 end
 
@@ -643,8 +647,8 @@ end
 -- Type
 ------------------------------------------------------
 do
-	function IsType(tbl)
-		return type(tbl) == "table" and getmetatable(tbl) == Type or false
+	function IsType(self)
+		return getmetatable(self) == Type
 	end
 
 	function BuildType(ns, name, onlyClass)
@@ -748,9 +752,7 @@ do
 	function document(documentation)
 		if not _EnableDocument or type(documentation) ~= "string" then return end
 
-		local env = getfenv(2)
-		local owner = rawget(env, OWNER_FIELD)
-		local info = owner and rawget(_NSInfo, owner)
+		local info = rawget(_NSInfo, getfenv(2)[OWNER_FIELD])
 
 		if not info then return end
 
@@ -863,7 +865,7 @@ do
 			local info = _NSInfo[ns]
 
 			-- Cache4Interface
-			local cache = {}
+			local cache = CACHE_TABLE()
 			wipe(info.Cache4Interface)
 			-- superclass interface
 			if info.SuperClass then
@@ -875,7 +877,7 @@ do
 			end
 			-- self interface
 			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface, cache)
-			wipe(cache)
+			CACHE_TABLE(cache)
 
 			-- Cache4Event
 			wipe(info.Cache4Event)
@@ -914,6 +916,45 @@ do
 				if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then
 					prop.SetMethod = nil
 				end
+
+				if not prop.Set and not prop.Get and not prop.GetMethod and not prop.SetMethod and not prop.Field then
+					-- Auto generate property
+					local name = prop.Name:gsub("^%a", strupper)
+					local useMethod = false
+
+					-- GetMethod
+					if info.Cache4Method["get" .. name] then
+						useMethod = true
+						prop.GetMethod = "get" .. name
+					elseif info.Cache4Method["Get" .. name] then
+						useMethod = true
+						prop.GetMethod = "Get" .. name
+					end
+
+					-- SetMethod
+					if info.Cache4Method["set" .. name] then
+						useMethod = true
+						prop.SetMethod = "set" .. name
+					elseif info.Cache4Method["Set" .. name] then
+						useMethod = true
+						prop.SetMethod = "Set" .. name
+					end
+
+					-- Field
+					if not useMethod then
+						prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
+					end
+
+					if prop.Type and not prop.Type:Is(nil) and prop.Default == nil then
+						if prop.Type:Is(Boolean) then
+							prop.Default = false
+						elseif prop.Type:Is(Number) then
+							prop.Default = 0
+						elseif prop.Type:Is(String) then
+							prop.Default = ""
+						end
+					end
+				end
 			end
 			--- self property
 			CloneWithoutOverride(info.Cache4Property, info.Property)
@@ -928,13 +969,16 @@ do
 
 			-- Cache for objects
 			if __Attribute__ and __Cache__ and info.Type == TYPE_CLASS then
-				local cache = {}
+				local cache = info.Cache4Object
+				if cache then wipe(cache) end
+
 				for key, func in pairs(info.Cache4Method) do
-					if func and __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
+					if __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
+						cache = cache or {}
 						tinsert(cache, key)
 					end
 				end
-				if next(cache) then
+				if cache and next(cache) then
 					info.Cache4Object = cache
 				else
 					info.Cache4Object = nil
@@ -1209,11 +1253,6 @@ do
 
 			if not IF then
 				for subname in name:gmatch("[_%w]+") do
-
-					if not subname or subname == "" then
-						error("The namespace's name must be composed with number, string or '_'.", 2)
-					end
-
 					if not IF then
 						IF = env[subname]
 					else
@@ -1330,18 +1369,7 @@ do
 
 	function SetPropertyWithSet(info, name, set)
 		if type(set) ~= "table" then
-			error([=[Usage: property "XXX" {
-				Get = function(self)
-					-- return the property's value
-				end,
-				Set = function(self, value)
-					-- Set the property's value
-				end,
-				GetMethod = "GetXXX",
-				SetMethod = "SetXXX",
-				Field = "__XXX",
-				Type = Type1 [+ Type2 [+ nil]],	-- set the property's type
-			}]=], 2)
+			error([=[Usage: property "Name" { -- Property Definition }]=], 2)
 		end
 
 		local prop = info.Property[name] or {}
@@ -1426,24 +1454,11 @@ do
 	------------------------------------
 	function property_IF(name)
 		if type(name) ~= "string" or strtrim(name:match("[_%w]+")) == "" then
-			error([=[Usage: property "propertyName" {
-				Get = function(self)
-					-- return the property's value
-				end,
-				Set = function(self, value)
-					-- Set the property's value
-				end,
-				Type = Type1 [+ Type2 [+ nil]],	-- set the property's type
-			}]=], 2)
+			error([=[Usage: property "Name" { -- Property Definition }]=], 2)
 		end
 
-		name = name:match("[_%w]+")
-
-		local env = getfenv(2)
-		local info = _NSInfo[env[OWNER_FIELD]]
-
 		return function(set)
-			return SetPropertyWithSet(info, name, set)
+			return SetPropertyWithSet(_NSInfo[getfenv(2)[OWNER_FIELD]], name:match("[_%w]+"), set)
 		end
 	end
 
@@ -1778,6 +1793,163 @@ do
 		self[name] = value
 	end
 
+	function UpdateMetaTable4Cls(cls)
+		local info = _NSInfo[cls]
+		local MetaTable = info.MetaTable
+
+		local Cache4Event = info.Cache4Event
+		local Cache4Property = info.Cache4Property
+		local Cache4Method = info.Cache4Method
+
+		local DISPOSE_METHOD = DISPOSE_METHOD
+		local type = type
+		local rawget = rawget
+		local rawset = rawset
+		local error = error
+		local tostring = tostring
+
+		local isCached = __Attribute__ and __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
+
+		MetaTable.__metatable = cls
+
+		MetaTable.__index = MetaTable.__index or function(self, key)
+			local oper
+
+			-- Dispose Method
+			if key == DISPOSE_METHOD then
+				return DisposeObject
+			end
+
+			-- Property Get
+			oper = Cache4Property[key]
+			if oper then
+				local value
+
+				if oper.Get then
+					value = oper.Get(self)
+				elseif oper.GetMethod then
+					oper = oper.GetMethod
+					local func = rawget(self, oper)
+					if type(func) == "function" then
+						value = func(self)
+					else
+						value = Cache4Method[oper](self)
+					end
+				elseif oper.Field then
+					value = rawget(self, oper.Field)
+				elseif oper.Default == nil then
+					error(("%s can't be read."):format(tostring(key)),2)
+				end
+
+				if value == nil and oper.Default ~= nil then
+					return oper.Default
+				else
+					return value
+				end
+			end
+
+			-- Method Get
+			oper = Cache4Method[key]
+			if oper then
+				if isCached then
+					rawset(self, key, oper)
+					return oper
+				else
+					return oper
+				end
+			end
+
+			-- Events
+			if Cache4Event[key] then
+				oper = rawget(self, "__Events")
+				if type(oper) ~= "table" then
+					oper = {}
+					rawset(self, "__Events", oper)
+				end
+
+				-- No more check
+				if oper[key] then
+					return oper[key]
+				else
+					oper[key] = EventHandler(Cache4Event[key], self)
+					return oper[key]
+				end
+			end
+
+			-- Custom index metametods
+			oper = MetaTable["___index"]
+			if oper then
+				if type(oper) == "table" then
+					return oper[key]
+				elseif type(oper) == "function" then
+					return oper(self, key)
+				end
+			end
+		end
+
+		MetaTable.__newindex = MetaTable.__newindex or function(self, key, value)
+			local oper
+
+			-- Property Set
+			oper = Cache4Property[key]
+			if oper then
+				if oper.Type then
+					value = oper.Type:Validate(value, key, 2)
+				end
+
+				if oper.Set then
+					return oper.Set(self, value)
+				elseif oper.SetMethod then
+					oper = oper.SetMethod
+					local func = rawget(self, oper)
+					if type(func) == "function" then
+						return func(self, value)
+					else
+						return Cache4Method[oper](self, value)
+					end
+				elseif oper.Field then
+					return rawset(self, oper.Field, value)
+				else
+					error(("%s can't be written."):format(tostring(key)), 2)
+				end
+			end
+
+			-- Events
+			if Cache4Event[key] then
+				oper = rawget(self, "__Events")
+				if type(oper) ~= "table" then
+					oper = {}
+					rawset(self, "__Events", oper)
+				end
+
+				if value == nil and not oper[key] then return end
+
+				if not oper[key] then
+					oper[key] = EventHandler(Cache4Event[key], self)
+				end
+				oper = oper[key]
+
+				if value == nil or type(value) == "function" then
+					oper.Handler = value
+				elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
+					oper:Copy(value)
+				else
+					error("Can't set this value to the event handler.", 2)
+				end
+
+				return
+			end
+
+			-- Custom newindex metametods
+			oper = MetaTable["___newindex"]
+			if oper and type(oper) == "function" then
+				return oper(self, key, value)
+			end
+
+			rawset(self, key, value)			-- Other key can be set as usual
+		end
+	end
+
 	-- The cache for constructor parameters
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
@@ -2068,180 +2240,23 @@ do
 		-- Import
 		info.Import4Env = info.Import4Env or {}
 
-		local isCached = false
+		-- MetaTable
+		info.MetaTable = info.MetaTable or {}
 
-		if __Attribute__ and info.Owner ~= __Attribute__ then
-			if __Cache__ then
-				isCached = __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__)
-			end
+		if __Attribute__ and cls ~= __Attribute__ then
+			local isCached = __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
 
 			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
 
 			if not isCached and __Cache__ then
-				isCached = __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__)
-
-				if isCached and info.MetaTable then
+				if __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) then
 					-- So, the __index need re-build
 					info.MetaTable.__index = nil
 				end
 			end
 		end
 
-		-- MetaTable
-		info.MetaTable = info.MetaTable or {}
-		do
-			local MetaTable = info.MetaTable
-
-			local Cache4Event = info.Cache4Event
-			local Cache4Property = info.Cache4Property
-			local Cache4Method = info.Cache4Method
-
-			local DISPOSE_METHOD = DISPOSE_METHOD
-			local type = type
-			local rawget = rawget
-			local rawset = rawset
-			local error = error
-			local tostring = tostring
-
-			MetaTable.__metatable = cls
-
-			MetaTable.__index = MetaTable.__index or function(self, key)
-				local oper
-
-				-- Dispose Method
-				if key == DISPOSE_METHOD then
-					return DisposeObject
-				end
-
-				-- Property Get
-				oper = Cache4Property[key]
-				if oper then
-					local value
-
-					if oper.Get then
-						value = oper.Get(self)
-					elseif oper.GetMethod then
-						oper = oper.GetMethod
-						local func = rawget(self, oper)
-						if type(func) == "function" then
-							value = func(self)
-						else
-							value = Cache4Method[oper](self)
-						end
-					elseif oper.Field then
-						value = rawget(self, oper.Field)
-					elseif oper.Default == nil then
-						error(("%s can't be read."):format(tostring(key)),2)
-					end
-
-					if value == nil and oper.Default ~= nil then
-						return oper.Default
-					else
-						return value
-					end
-				end
-
-				-- Method Get
-				oper = Cache4Method[key]
-				if oper then
-					if isCached then
-						rawset(self, key, oper)
-						return oper
-					else
-						return oper
-					end
-				end
-
-				-- Events
-				if Cache4Event[key] then
-					oper = rawget(self, "__Events")
-					if type(oper) ~= "table" then
-						oper = {}
-						rawset(self, "__Events", oper)
-					end
-
-					-- No more check
-					if oper[key] then
-						return oper[key]
-					else
-						oper[key] = EventHandler(Cache4Event[key], self)
-						return oper[key]
-					end
-				end
-
-				-- Custom index metametods
-				oper = MetaTable["___index"]
-				if oper then
-					if type(oper) == "table" then
-						return oper[key]
-					elseif type(oper) == "function" then
-						return oper(self, key)
-					end
-				end
-			end
-
-			MetaTable.__newindex = MetaTable.__newindex or function(self, key, value)
-				local oper
-
-				-- Property Set
-				oper = Cache4Property[key]
-				if oper then
-					if oper.Type then
-						value = oper.Type:Validate(value, key, 2)
-					end
-
-					if oper.Set then
-						return oper.Set(self, value)
-					elseif oper.SetMethod then
-						oper = oper.SetMethod
-						local func = rawget(self, oper)
-						if type(func) == "function" then
-							return func(self, value)
-						else
-							return Cache4Method[oper](self, value)
-						end
-					elseif oper.Field then
-						return rawset(self, oper.Field, value)
-					else
-						error(("%s can't be written."):format(tostring(key)), 2)
-					end
-				end
-
-				-- Events
-				if Cache4Event[key] then
-					oper = rawget(self, "__Events")
-					if type(oper) ~= "table" then
-						oper = {}
-						rawset(self, "__Events", oper)
-					end
-
-					if value == nil and not oper[key] then return end
-
-					if not oper[key] then
-						oper[key] = EventHandler(Cache4Event[key], self)
-					end
-					oper = oper[key]
-
-					if value == nil or type(value) == "function" then
-						oper.Handler = value
-					elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
-						oper:Copy(value)
-					else
-						error("Can't set this value to the event handler.", 2)
-					end
-
-					return
-				end
-
-				-- Custom newindex metametods
-				oper = MetaTable["___newindex"]
-				if oper and type(oper) == "function" then
-					return oper(self, key, value)
-				end
-
-				rawset(self, key, value)			-- Other key can be set as usual
-			end
-		end
+		UpdateMetaTable4Cls(cls)
 
 		-- Set the environment to class's environment
 		setfenv(2, classEnv)
@@ -2261,7 +2276,6 @@ do
 
 		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
-		local prevInfo = info.SuperClass and _NSInfo[info.SuperClass]
 
 		local superCls
 
@@ -2301,29 +2315,16 @@ do
 
 		if info.SuperClass == superCls then return end
 
-		if prevInfo and prevInfo.ChildClass then
-			prevInfo.ChildClass[info.Owner] = nil
-
-			-- Clear Metatable
-			local rMeta
-			for meta, flag in pairs(_KeyMeta) do
-				rMeta = flag and meta or "_"..meta
-
-				if info.MetaTable[rMeta] == prevInfo.MetaTable[rMeta] then
-					SetMetaFunc(rMeta, info.ChildClass, info.MetaTable[rMeta], nil)
-					info.MetaTable[rMeta] = nil
-				end
-			end
+		if info.SuperClass then
+			error(("%s is inherited from %s, can't inherit another class."):format(tostring(info.Owner), tostring(info.SuperClass)), 2)
 		end
-
-		info.SuperClass = nil
 
 		superInfo.ChildClass = superInfo.ChildClass or {}
 		superInfo.ChildClass[info.Owner] = true
 		info.SuperClass = superCls
 
 		-- Keep to the environmenet
-		rawset(env, _SuperIndex, superCls)
+		-- rawset(env, _SuperIndex, superCls)
 
 		-- Copy Metatable
 		local rMeta
@@ -2334,6 +2335,11 @@ do
 				SetMetaFunc(rMeta, info.ChildClass, nil, superInfo.MetaTable[rMeta])
 				info.MetaTable[rMeta] = superInfo.MetaTable[rMeta]
 			end
+		end
+
+		-- Clone Attributes
+		if __Attribute__ then
+			__Attribute__._CloneAttributes(superCls, info.Owner, AttributeTargets.Class)
 		end
 	end
 
@@ -2485,24 +2491,11 @@ do
 	------------------------------------
 	function property_Cls(name)
 		if type(name) ~= "string" or strtrim(name:match("[_%w]+")) == "" then
-			error([=[Usage: property "propertyName" {
-				Get = function(self)
-					-- return the property's value
-				end,
-				Set = function(self, value)
-					-- Set the property's value
-				end,
-				Type = Type1 [+ Type2 [+ nil]],	-- set the property's type
-			}]=], 2)
+			error([=[Usage: property "Name" { -- Property Definition }]=], 2)
 		end
 
-		name = name:match("[_%w]+")
-
-		local env = getfenv(2)
-		local info = _NSInfo[env[OWNER_FIELD]]
-
 		return function(set)
-			return SetPropertyWithSet(info, name, set)
+			return SetPropertyWithSet(_NSInfo[getfenv(2)[OWNER_FIELD]], name:match("[_%w]+"), set)
 		end
 	end
 
@@ -6168,6 +6161,30 @@ do
 			end
 		end
 
+		local function ValidateUsable(config, attr, skipMulti)
+			if getmetatable(config) then
+				if Reflector.IsEqual(config, attr) then
+					return false
+				end
+
+				if not skipMulti and getmetatable(config) == getmetatable(attr) then
+					local usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+
+					if not usage or not usage.AllowMultiple then
+						return false
+					end
+				end
+			else
+				for _, v in ipairs(config) do
+					if not ValidateUsable(v, attr, skipMulti) then
+						return false
+					end
+				end
+			end
+
+			return true
+		end
+
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
@@ -6338,81 +6355,68 @@ do
 			if prepared and #prepared > 0 then
 				local cls, usage
 				local noUseAttr = _AttributeCache4Dispose()
+				local usableAttr = _AttributeCache4Dispose()
 
-				for i = #prepared, 1, -1 do
+				for i = 1, #prepared do
 					cls = getmetatable(prepared[i])
 					usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
 
 					if usage and usage.AttributeTarget > 0 and not Reflector.ValidateFlags(targetType, usage.AttributeTarget) then
 						errorhandler("Can't apply the " .. tostring(cls) .. " attribute to the " .. ParseTarget(target, targetType, owner, name))
+					elseif ValidateUsable(usableAttr, prepared[i]) then
+						usableAttr[prepared[i]] = true
+						tinsert(usableAttr, prepared[i])
+					else
+						errorhandler("Can't apply the " .. tostring(cls) .. " attribute for multi-times.")
+					end
+				end
 
+				for i = #prepared, 1, -1 do
+					if not usableAttr[prepared[i]] then
 						noUseAttr[prepared[i]] = true
 						tremove(prepared, i)
 					end
 				end
 
+				wipe(usableAttr)
+				_AttributeCache4Dispose(usableAttr)
 				_AttributeCache4Dispose(noUseAttr)
 			end
 
-			local newAttributeCount = prepared and #prepared or 0
-
 			-- Check if already existed
 			if _AttributeCache[targetType][target] then
-				if newAttributeCount > 0 then
+				if prepared and #prepared > 0 then
 					local config = _AttributeCache[targetType][target]
 					local noUseAttr = _AttributeCache4Dispose()
-					local noMultiCls = _AttributeCache4Dispose()
-					local usage
 
-					-- remove used attributes
+					-- remove equal attributes
 					for i = #prepared, 1, -1 do
-						if getmetatable(config) then
-							if Reflector.IsEqual(config, prepared[i]) then
-								noUseAttr[prepared[i]] = true
-								tremove(prepared, i)
-							end
-						else
-							for j = 1, #config do
-								if Reflector.IsEqual(config[j], prepared[i]) then
-									noUseAttr[prepared[i]] = true
-									tremove(prepared, i)
-									break
-								end
-							end
+						if not ValidateUsable(config, prepared[i], true) then
+							noUseAttr[prepared[i]] = true
+							tremove(prepared, i)
 						end
 					end
 
-					-- remove no multi attributes
-					if #prepared > 0 then
-						if getmetatable(config) then
-							usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
-
-							if not usage or not usage.AllowMultiple then
-								noMultiCls[getmetatable(config)] = true
-							end
-						else
-							for _, attr in ipairs(config) do
-								usage = _GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
-
-								if not usage or not usage.AllowMultiple then
-									noMultiCls[getmetatable(attr)] = true
-								end
-							end
-						end
-
-						for i = #prepared, 1, -1 do
-							if noMultiCls[getmetatable(prepared[i])] then
-								noUseAttr[prepared[i]] = true
-								tremove(prepared, i)
-							end
-						end
-					end
-
-					wipe(noMultiCls)
 					_AttributeCache4Dispose(noUseAttr)
-					_AttributeCache4Dispose(noMultiCls)
 
-					newAttributeCount = #prepared
+					if prepared and #prepared > 0 then
+						-- Erase old no-multi attributes
+						if getmetatable(config) then
+							if not ValidateUsable(prepared, config) then
+								_AttributeCache[targetType][target] = nil
+							end
+						else
+							for i = #config, 1, -1 do
+								if not ValidateUsable(prepared, config[i]) then
+									tremove(config, i)
+								end
+							end
+
+							if #config == 0 then
+								_AttributeCache[targetType][target] = nil
+							end
+						end
+					end
 				end
 			elseif superTarget then
 				-- get inheritable attributes from superTarget
@@ -6426,7 +6430,9 @@ do
 						if not usage or usage.Inherited then
 							prepared = prepared or {}
 
-							tinsert(prepared, config)
+							if ValidateUsable(prepared, config) then
+								tinsert(prepared, config)
+							end
 						end
 					else
 						for _, attr in ipairs(config) do
@@ -6435,47 +6441,13 @@ do
 							if not usage or usage.Inherited then
 								prepared = prepared or {}
 
-								tinsert(prepared, attr)
+								if ValidateUsable(prepared, attr) then
+									tinsert(prepared, attr)
+								end
 							end
 						end
 					end
 				end
-			end
-
-			-- Check multi attributes
-			if prepared and #prepared > 0 then
-				-- Check multi usage
-				local noUseAttr = _AttributeCache4Dispose()
-				local noMultiCls = _AttributeCache4Dispose()
-				local cls, usage
-
-				for _, attr in ipairs(prepared) do
-					cls = getmetatable(attr)
-					usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
-
-					if not usage or not usage.AllowMultiple then
-						if noMultiCls[cls] then
-							noUseAttr[attr] = true
-						else
-							noMultiCls[cls] = true
-						end
-					end
-				end
-
-				for i = #prepared, 1, -1 do
-					if noUseAttr[prepared[i]] then
-						if i > newAttributeCount then
-							noUseAttr[prepared[i]] = nil
-						else
-							errorhandler("No multi attributes be allowed for " .. tostring(getmetatable(prepared[i])))
-						end
-						tremove(prepared, i)
-					end
-				end
-
-				wipe(noMultiCls)
-				_AttributeCache4Dispose(noMultiCls)
-				_AttributeCache4Dispose(noUseAttr)
 			end
 
 			-- Save & apply the attributes for target
@@ -6543,19 +6515,72 @@ do
 
 			if source == target then return end
 
-			-- No attribute declaration again
-			if _AttributeCache[targetType][target] then
-				errorhandler("Can't override the existed attributes for the " .. ParseTarget(target, targetType, own, name))
-				return target
-			end
-
 			local config = _AttributeCache[targetType][source]
 
 			-- Save & apply the attributes for target
 			if config then
-				_AttributeCache[targetType][target] = config
+				local start = 1
 
-				local ret =  _ApplyAttributes(target, targetType, owner, name) or target
+				-- Check existed attributes
+				if _AttributeCache[targetType][target] then
+					local attrs = _AttributeCache[targetType][target]
+
+					if getmetatable(config) then
+						if not ValidateUsable(attrs, config) then
+							if removeSource then
+								_AttributeCache[targetType][source] = nil
+							end
+
+							return target
+						end
+
+						if getmetatable(attrs) then
+							attrs = { attrs }
+							_AttributeCache[targetType][target] = attrs
+						end
+
+						start = #attrs + 1
+
+						tinsert(attrs, config)
+					else
+						local usableAttr = _AttributeCache4Dispose()
+
+						for i = 1, #config do
+							if ValidateUsable(attrs, config[i]) then
+								tinsert(usableAttr, config[i])
+							end
+						end
+
+						if #usableAttr == 0 then
+							if removeSource then
+								_AttributeCache[targetType][source] = nil
+							end
+
+							_AttributeCache4Dispose(usableAttr)
+
+							return target
+						end
+
+						if getmetatable(attrs) then
+							attrs = { attrs }
+							_AttributeCache[targetType][target] = attrs
+						end
+
+						start = #attrs + 1
+
+						for i = 1, #usableAttr do
+							tinsert(attrs, usableAttr[i])
+						end
+
+						wipe(usableAttr)
+
+						_AttributeCache4Dispose(usableAttr)
+					end
+				else
+					_AttributeCache[targetType][target] = config
+				end
+
+				local ret =  _ApplyAttributes(target, targetType, owner, name, start) or target
 
 				if target ~= ret then
 					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
@@ -7102,6 +7127,7 @@ do
 			@desc The attribute target type, default AttributeTargets.All
 		]======]
 		property "AttributeTarget" {
+			Default = AttributeTargets.All,
 			Field = "__AttributeTarget",
 			Type = AttributeTargets,
 		}
@@ -7112,6 +7138,7 @@ do
 			@desc Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true
 		]======]
 		property "Inherited" {
+			Default = true,
 			Field = "__Inherited",
 			Type = Boolean,
 		}
@@ -7135,14 +7162,6 @@ do
 			Field = "__RunOnce",
 			Type = Boolean,
 		}
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __AttributeUsage__(self)
-			self.__Inherited = true
-			self.__AttributeTarget = AttributeTargets.All
-		end
 	endclass "__AttributeUsage__"
 
 	class "__Final__"
@@ -7320,108 +7339,6 @@ do
 			end
 		end
 	endclass "__Thread__"
-
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__()
-	__Unique__()
-	class "__Auto__"
-		inherit "__Attribute__"
-
-		doc [======[
-			@name __Auto__
-			@type class
-			@desc Auto-generated property body
-		]======]
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		function ApplyAttribute(self, name, targetType, owner)
-			local info = _NSInfo[owner]
-			local prop = info.Property[name]
-
-			if prop then
-				prop.Type = prop.Type or self.Type
-
-				if type(self.__Field) == "string" then
-					prop.Field = prop.Field or self.__Field
-				elseif self.__Field then
-					prop.Field = prop.Field or ("__" .. info.Name:match("^_*(.-)$") .. "_" .. name)
-				end
-
-				if self.__Method then
-					if not prop.Set then
-						prop.SetMethod = prop.SetMethod or "Set" .. name
-					end
-
-					if not prop.Get then
-						prop.GetMethod = prop.GetMethod or "Get" .. name
-					end
-				end
-
-				if self.__Default ~= nil and prop.Default == nil and (not prop.Type or prop.Type:GetObjectType(self.__Default) ~= false) then
-					prop.Default = self.__Default
-				end
-			end
-		end
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-		doc [======[
-			@name Field
-			@type property
-			@desc The target field, auto-generated if set to true
-		]======]
-		property "Field" {
-			Field = "__Field",
-			Type = String + Boolean,
-		}
-
-		doc [======[
-			@name Default
-			@type property
-			@desc The default value of the property
-		]======]
-		property "Default" {
-			Field = "__Default",
-		}
-
-		doc [======[
-			@name Method
-			@type property
-			@desc True to use object methods with the name like ('Set/Get' + property's name) as the accessors
-		]======]
-		property "Method" {
-			Field = "__Method",
-			Type = Boolean,
-		}
-
-		doc [======[
-			@name Type
-			@type property
-			@desc The type of the property
-		]======]
-		property "Type" {
-			Field = "__Type",
-			Set = function(self, value)
-				self.__Type = BuildType(value)
-			end,
-		}
-
-		------------------------------------------------------
-		-- Meta-Method
-		------------------------------------------------------
-		function __call(self)
-			Super.__call(self)
-
-			-- Clear
-			self.__Field = nil
-			self.__Default = nil
-			self.__Method = nil
-			self.__Type = nil
-		end
-	endclass "__Auto__"
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Method}
 	__Final__()
@@ -8396,7 +8313,6 @@ do
 			if info.Parent then
 				local value = info.Parent[key]
 
-				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 				if value ~= nil then
 					rawset(self, key, value)
 				end
@@ -8409,7 +8325,6 @@ do
 
 				local value = _G[key]
 
-				--if type(value) == "userdata" or type(value) == "table" or type(value) == "function" then
 				if value ~= nil then
 					rawset(self, key, value)
 				end

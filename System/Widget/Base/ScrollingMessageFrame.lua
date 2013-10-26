@@ -58,6 +58,19 @@ class "ScrollingMessageFrame"
 	event "OnMessageScrollChanged"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
+	end
+endclass "ScrollingMessageFrame"
+
+class "ScrollingMessageFrame"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -309,20 +322,6 @@ class "ScrollingMessageFrame"
 		@return nil
 	]======]
 
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
-	end
-endclass "ScrollingMessageFrame"
-
-partclass "ScrollingMessageFrame"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
@@ -336,46 +335,40 @@ partclass "ScrollingMessageFrame"
 		@type property
 		@desc whether messages added to the frame automatically fade out after a period of time
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "Fading" {}
+	property "Fading" { Type = Boolean }
 
 	doc [======[
 		@name HyperlinksEnabled
 		@type property
 		@desc whether hyperlinks in the frame's text are interactive
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "HyperlinksEnabled" {}
+	property "HyperlinksEnabled" { Type = Boolean }
 
 	doc [======[
 		@name TimeVisible
 		@type property
 		@desc the amount of time for which a message remains visible before beginning to fade out
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "TimeVisible" {}
+	property "TimeVisible" { Type = Number }
 
 	doc [======[
 		@name FadeDuration
 		@type property
 		@desc the duration of the fade-out animation for disappearing messages
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "FadeDuration" {}
+	property "FadeDuration" { Type = Number }
 
 	doc [======[
 		@name InsertMode
 		@type property
 		@desc the position at which new messages are added to the frame
 	]======]
-	__Auto__{ Method = true, Type = InsertMode }
-	property "InsertMode" {}
+	property "InsertMode" { Type = InsertMode }
 
 	doc [======[
 		@name MaxLines
 		@type property
 		@desc the maximum number of messages to be kept in the frame
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "MaxLines" {}
+	property "MaxLines" { Type = Number }
 endclass "ScrollingMessageFrame"

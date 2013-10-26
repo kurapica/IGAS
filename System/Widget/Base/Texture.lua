@@ -32,6 +32,25 @@ class "Texture"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
+			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
+		end
+		return IGAS:GetUI(parent):CreateTexture(nil, ...)
+	end
+
+	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
+endclass "Texture"
+
+class "Texture"
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -488,24 +507,6 @@ class "Texture"
 	end
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
-			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
-		end
-		return IGAS:GetUI(parent):CreateTexture(nil, ...)
-	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
-endclass "Texture"
-
-partclass "Texture"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Texture)
@@ -518,8 +519,7 @@ partclass "Texture"
 		@type property
 		@desc the blend mode of the texture
 	]======]
-	__Auto__{ Method = true, Type = AlphaMode }
-	property "BlendMode" {}
+	property "BlendMode" { Type = AlphaMode }
 
 	doc [======[
 		@name Desaturated
@@ -631,23 +631,20 @@ partclass "Texture"
 		@type property
 		@desc
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "HorizTile" {}
+	property "HorizTile" { Type = Boolean }
 
 	doc [======[
 		@name VertTile
 		@type property
 		@desc
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "VertTile" {}
+	property "VertTile" { Type = Boolean }
 
 	doc [======[
 		@name NonBlocking
 		@type property
 		@desc whether the texture object loads its image file in the background
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "NonBlocking" {}
+	property "NonBlocking" { Type = Boolean }
 
 endclass "Texture"

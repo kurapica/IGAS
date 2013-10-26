@@ -39,6 +39,19 @@ class "Slider"
 	event "OnValueChanged"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Slider", nil, parent, ...)
+	end
+endclass "Slider"
+
+class "Slider"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -135,19 +148,6 @@ class "Slider"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Slider", nil, parent, ...)
-	end
-endclass "Slider"
-
-partclass "Slider"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Slider)
@@ -160,19 +160,19 @@ partclass "Slider"
 		@type property
 		@desc the orientation of the slider
 	]======]
-	__Auto__{ Method = true, Type = Orientation }
-	property "Orientation" {}
+	property "Orientation" { Type = Orientation }
 
 	doc [======[
 		@name ThumbTexture
 		@type property
 		@desc the texture object for the slider thumb
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
 	property "ThumbTexture" {
 		Set = function(self, texture)
 			self:SetThumbTexture(texture, self.Layer)
 		end,
+		Get = "GetThumbTexture",
+		Type = Texture + nil,
 	}
 
 	doc [======[
@@ -210,16 +210,14 @@ partclass "Slider"
 		@type property
 		@desc the value representing the current position of the slider thumb
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Value" {}
+	property "Value" { Type = Number }
 
 	doc [======[
 		@name ValueStep
 		@type property
 		@desc the minimum increment between allowed slider values
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "ValueStep" {}
+	property "ValueStep" { Type = Number }
 
 	doc [======[
 		@name Enabled

@@ -33,80 +33,76 @@ class "ComboBox"
     ------------------------------------------------------
 	---------------------  List   ----------------------
 	------------------------------------------------------
-	_List = _List
-
-	if not _List then
-        local _ComboBoxListContainer = Frame("IGAS_GUI_ListContainer", WorldFrame)
-        _ComboBoxListContainer.__ShowList = _ComboBoxListContainer.__ShowList or nil
-		if not _ComboBoxListContainer.__Timer then
-			local timer = Timer("Timer", _ComboBoxListContainer)
-			timer.Interval = 0
-			timer.OnTimer = function(self)
-				self.Interval = 0
-				if self.Parent.__ShowList then
-					self.Parent.__ShowList.Visible = false
-				end
+    local _ComboBoxListContainer = Frame("IGAS_GUI_ListContainer", WorldFrame)
+    _ComboBoxListContainer.__ShowList = _ComboBoxListContainer.__ShowList or nil
+	if not _ComboBoxListContainer.__Timer then
+		local timer = Timer("Timer", _ComboBoxListContainer)
+		timer.Interval = 0
+		timer.OnTimer = function(self)
+			self.Interval = 0
+			if self.Parent.__ShowList then
+				self.Parent.__ShowList.Visible = false
 			end
-			_ComboBoxListContainer.__Timer = timer
 		end
+		_ComboBoxListContainer.__Timer = timer
+	end
 
-		-- Create List
-		_List = List(nil, _ComboBoxListContainer)
-		_List.FrameStrata = "TOOLTIP"
-		_List.Visible = false
+	-- Create List
+	_List = List("IGAS_ComboBox_List", _ComboBoxListContainer)
+	_List.FrameStrata = "TOOLTIP"
+	_List.Visible = false
 
-		-- Events
-        function _List:OnShow()
-            if _ComboBoxListContainer.__ShowList and _ComboBoxListContainer.__ShowList ~= self then
-                _ComboBoxListContainer.__ShowList.Visible = false
-            end
-
-			_ComboBoxListContainer.__Timer.Interval = 2
-
-            _ComboBoxListContainer.__ShowList = self
+	-- Events
+    function _List:OnShow()
+        if _ComboBoxListContainer.__ShowList and _ComboBoxListContainer.__ShowList ~= self then
+            _ComboBoxListContainer.__ShowList.Visible = false
         end
 
-        function _List:OnHide()
-            if _ComboBoxListContainer.__ShowList and _ComboBoxListContainer.__ShowList == self then
-                _ComboBoxListContainer.__ShowList = nil
-            end
-			_ComboBoxListContainer.__Timer.Interval = 0
-        end
+		_ComboBoxListContainer.__Timer.Interval = 2
 
-		function _List:OnEnter()
-			_ComboBoxListContainer.__Timer.Interval = 0
-		end
-
-		function _List:OnLeave(self)
-			_ComboBoxListContainer.__Timer.Interval = 2
-		end
-
-		function _List:OnItemChoosed(key, text, icon, frame)
-			local parent = self.__ComboBox
-
-			if not parent then return end
-
-			if not self.Visible then return end
-
-			if parent.__Value ~= key then
-				parent.__Value = key
-				parent:GetChild("Text"):SetText(text or "")
-				if icon then
-					parent:GetChild("Icon"):SetTexture(icon)
-					parent:GetChild("Icon").Width = 18
-				else
-					parent:GetChild("Icon"):SetTexture(nil)
-					parent:GetChild("Icon").Width = 1
-				end
-
-				parent:Fire("OnValueChanged", key)
-				parent:Fire("OnTextChanged", text)
-			end
-			self.Visible = false
-		end
-
-		_List.__ComboBox = nil
+        _ComboBoxListContainer.__ShowList = self
     end
+
+    function _List:OnHide()
+        if _ComboBoxListContainer.__ShowList and _ComboBoxListContainer.__ShowList == self then
+            _ComboBoxListContainer.__ShowList = nil
+        end
+		_ComboBoxListContainer.__Timer.Interval = 0
+    end
+
+	function _List:OnEnter()
+		_ComboBoxListContainer.__Timer.Interval = 0
+	end
+
+	function _List:OnLeave(self)
+		_ComboBoxListContainer.__Timer.Interval = 2
+	end
+
+	function _List:OnItemChoosed(key, text, icon, frame)
+		local parent = self.__ComboBox
+
+		if not parent then return end
+
+		if not self.Visible then return end
+
+		if parent.__Value ~= key then
+			parent.__Value = key
+			parent:GetChild("Text"):SetText(text or "")
+			if icon then
+				parent:GetChild("Icon"):SetTexture(icon)
+				parent:GetChild("Icon").Width = 18
+			else
+				parent:GetChild("Icon"):SetTexture(nil)
+				parent:GetChild("Icon").Width = 1
+			end
+
+			parent:Fire("OnValueChanged", key)
+			parent:Fire("OnTextChanged", text)
+		end
+		self.Visible = false
+	end
+
+	_List.__ComboBox = nil
 
     ------------------------------------------------------
 	---------------------   ComboBox   ---------------

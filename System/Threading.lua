@@ -245,7 +245,7 @@ do
 	end
 end
 
-partinterface "Threading"
+interface "Threading"
 	doc [======[
 		@name Sleep
 		@type method
@@ -287,7 +287,7 @@ partinterface "Threading"
 	------------------------------------------------------
 	-- System.Threading.Thread
 	------------------------------------------------------
-	partclass "Thread"
+	class "Thread"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------

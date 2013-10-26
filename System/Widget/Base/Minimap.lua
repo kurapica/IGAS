@@ -22,6 +22,19 @@ class "Minimap"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Minimap", nil, parent, ...)
+	end
+endclass "Minimap"
+
+class "Minimap"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -144,19 +157,6 @@ class "Minimap"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Minimap", nil, parent, ...)
-	end
-endclass "Minimap"
-
-partclass "Minimap"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Minimap)
@@ -169,7 +169,6 @@ partclass "Minimap"
 		@type property
 		@desc the minimap's current zoom level
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Zoom" {}
+	property "Zoom" { Type = Number }
 
 endclass "Minimap"

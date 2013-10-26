@@ -203,6 +203,31 @@ class "Frame"
 	event "OnMaxResizeChanged"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	function OnEvent(self, event, ...)
+		if type(self[event]) == "function" then
+			return self[event](self, ...)
+		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		UnregisterAllEvents(self)
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Frame", nil, parent, ...)
+	end
+endclass "Frame"
+
+class "Frame"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -868,31 +893,6 @@ class "Frame"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	function OnEvent(self, event, ...)
-		if type(self[event]) == "function" then
-			return self[event](self, ...)
-		end
-	end
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		UnregisterAllEvents(self)
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Frame", nil, parent, ...)
-	end
-endclass "Frame"
-
-partclass "Frame"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Frame)
@@ -960,8 +960,7 @@ partclass "Frame"
 		@type property
 		@desc the backdrop graphic for the frame
 	]======]
-	__Auto__{ Method = true, Type = BackdropType }
-	property "Backdrop" {}
+	property "Backdrop" { Type = BackdropType }
 
 	doc [======[
 		@name BackdropBorderColor
@@ -1024,16 +1023,14 @@ partclass "Frame"
 		@type property
 		@desc the level at which the frame is layered relative to others in its strata
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "FrameLevel" {}
+	property "FrameLevel" { Type = Number }
 
 	doc [======[
 		@name FrameStrata
 		@type property
 		@desc the general layering strata of the frame
 	]======]
-	__Auto__{ Method = true, Type = FrameStrata }
-	property "FrameStrata" {}
+	property "FrameStrata" { Type = FrameStrata }
 
 	doc [======[
 		@name HitRectInsets
@@ -1055,8 +1052,7 @@ partclass "Frame"
 		@type property
 		@desc a numeric identifier for the frame
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "ID" {}
+	property "ID" { Type = Number }
 
 	doc [======[
 		@name MaxResize
@@ -1093,8 +1089,7 @@ partclass "Frame"
 		@type property
 		@desc the frame's scale factor
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Scale" {}
+	property "Scale" { Type = Number }
 
 	doc [======[
 		@name Toplevel
@@ -1112,8 +1107,7 @@ partclass "Frame"
 		@type property
 		@desc the 3D depth of the frame (for stereoscopic 3D setups)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Depth" {}
+	property "Depth" { Type = Number }
 
 	doc [======[
 		@name DepthIgnored

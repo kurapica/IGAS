@@ -23,6 +23,19 @@ class "CheckButton"
 	-----------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("CheckButton", nil, parent, ...)
+	end
+endclass "CheckButton"
+
+class "CheckButton"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -81,19 +94,6 @@ class "CheckButton"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("CheckButton", nil, parent, ...)
-	end
-endclass "CheckButton"
-
-partclass "CheckButton"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(CheckButton)
@@ -106,16 +106,14 @@ partclass "CheckButton"
 		@type property
 		@desc true if the checkbutton is checked
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "Checked" {}
+	property "Checked" { Type = Boolean }
 
 	doc [======[
 		@name CheckedTexture
 		@type property
 		@desc the texture object used when the button is checked
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "CheckedTexture" {}
+	property "CheckedTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name CheckedTexturePath
@@ -137,8 +135,7 @@ partclass "CheckButton"
 		@type property
 		@desc the texture object used when the button is disabled and checked
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "DisabledCheckedTexture" {}
+	property "DisabledCheckedTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name DisabledCheckedTexturePath

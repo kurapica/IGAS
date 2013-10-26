@@ -50,6 +50,19 @@ class "SimpleHTML"
 	event "OnHyperlinkLeave"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("SimpleHTML", nil, parent, ...)
+	end
+endclass "SimpleHTML"
+
+class "SimpleHTML"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -292,19 +305,6 @@ class "SimpleHTML"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("SimpleHTML", nil, parent, ...)
-	end
-endclass "SimpleHTML"
-
-partclass "SimpleHTML"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(SimpleHTML)
@@ -317,7 +317,6 @@ partclass "SimpleHTML"
 		@type property
 		@desc Whether hyperlinks in the frame's text are interactive
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "HyperlinksEnabled" {}
+	property "HyperlinksEnabled" { Type = Boolean }
 
 endclass "SimpleHTML"

@@ -20,8 +20,6 @@ class "EditBox"
 		@desc EditBoxes are used to allow the player to type text into a UI component.
 	]======]
 
-	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
-
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
@@ -108,6 +106,22 @@ class "EditBox"
 		@desc Run when the edit box's text is set programmatically
 	]======]
 	event "OnTextSet"
+
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("EditBox", nil, parent, ...)
+	end
+endclass "EditBox"
+
+class "EditBox"
+
+	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
 
 	------------------------------------------------------
 	-- Method
@@ -441,23 +455,6 @@ class "EditBox"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("EditBox", nil, parent, ...)
-	end
-
-	function EditBox(self)
-		_FirstLoadedFix[self] = true
-	end
-endclass "EditBox"
-
-partclass "EditBox"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(EditBox)
@@ -514,8 +511,7 @@ partclass "EditBox"
 		@type property
 		@desc the maximum number of history lines stored by the edit box
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "HistoryLines" {}
+	property "HistoryLines" { Type = Number }
 
 	doc [======[
 		@name Focused
@@ -539,56 +535,49 @@ partclass "EditBox"
 		@type property
 		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "AltArrowKeyMode" {}
+	property "AltArrowKeyMode" { Type = Boolean }
 
 	doc [======[
 		@name BlinkSpeed
 		@type property
 		@desc the rate at which the text insertion blinks when the edit box is focused
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "BlinkSpeed" {}
+	property "BlinkSpeed" { Type = Number }
 
 	doc [======[
 		@name CursorPosition
 		@type property
 		@desc the current cursor position inside edit box
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "CursorPosition" {}
+	property "CursorPosition" { Type = Number }
 
 	doc [======[
 		@name MaxBytes
 		@type property
 		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "MaxBytes" {}
+	property "MaxBytes" { Type = Number }
 
 	doc [======[
 		@name MaxLetters
 		@type property
 		@desc the maximum number of text characters allowed in the edit box
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "MaxLetters" {}
+	property "MaxLetters" { Type = Number }
 
 	doc [======[
 		@name Number
 		@type property
 		@desc the contents of the edit box as a number
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Number" {}
+	property "Number" { Type = Number }
 
 	doc [======[
 		@name Text
 		@type property
 		@desc the edit box's text contents
 	]======]
-	__Auto__{ Method = true, Type = String + Number }
-	property "Text" {}
+	property "Text" { Type = String + Number }
 
 	doc [======[
 		@name TextInsets
@@ -626,4 +615,10 @@ partclass "EditBox"
 		Type = Boolean,
 	}
 
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function EditBox(self)
+		_FirstLoadedFix[self] = true
+	end
 endclass "EditBox"

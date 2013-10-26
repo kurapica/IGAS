@@ -58,6 +58,19 @@ class "Button"
 	event "PreClick"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Button", nil, parent, ...)
+	end
+endclass "Button"
+
+class "Button"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -359,19 +372,6 @@ class "Button"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Button", nil, parent, ...)
-	end
-endclass "Button"
-
-partclass "Button"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Button)
@@ -430,16 +430,14 @@ partclass "Button"
 		@type property
 		@desc the font object used for the button's disabled state
 	]======]
-	__Auto__{ Method = true, Type = Font + String + nil }
-	property "DisabledFontObject" {}
+	property "DisabledFontObject" { Type = Font + String + nil }
 
 	doc [======[
 		@name DisabledTexture
 		@type property
 		@desc the texture object used when the button is disabled
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "DisabledTexture" {}
+	property "DisabledTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name DisabledTexturePath
@@ -459,8 +457,7 @@ partclass "Button"
 		@type property
 		@desc the texture object used when the button is highlighted
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "HighlightTexture" {}
+	property "HighlightTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name HighlightTexturePath
@@ -480,8 +477,7 @@ partclass "Button"
 		@type property
 		@desc the texture object used for the button's normal state
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "NormalTexture" {}
+	property "NormalTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name NormalTexturePath
@@ -501,8 +497,7 @@ partclass "Button"
 		@type property
 		@desc the texture object used when the button is pushed
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
-	property "PushedTexture" {}
+	property "PushedTexture" { Type = Texture + nil }
 
 	doc [======[
 		@name PushedTexturePath
@@ -522,24 +517,21 @@ partclass "Button"
 		@type property
 		@desc the FontString object used for the button's label text
 	]======]
-	__Auto__{ Method = true, Type = FontString }
-	property "FontString" {}
+	property "FontString" { Type = FontString }
 
 	doc [======[
 		@name HighlightFontObject
 		@type property
 		@desc the font object used when the button is highlighted
 	]======]
-	__Auto__{ Method = true, Type = Font + String + nil }
-	property "HighlightFontObject" {}
+	property "HighlightFontObject" { Type = Font + String + nil }
 
 	doc [======[
 		@name NormalFontObject
 		@type property
 		@desc the font object used for the button's normal state
 	]======]
-	__Auto__{ Method = true, Type = Font + String + nil }
-	property "NormalFontObject" {}
+	property "NormalFontObject" { Type = Font + String + nil }
 
 	doc [======[
 		@name PushedTextOffset
@@ -561,8 +553,7 @@ partclass "Button"
 		@type property
 		@desc the text displayed as the button's label
 	]======]
-	__Auto__{ Method = true, Type = LocaleString }
-	property "Text" {}
+	property "Text" { Type = LocaleString }
 
 	doc [======[
 		@name HighlightLocked

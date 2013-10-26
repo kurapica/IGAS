@@ -361,16 +361,14 @@ class "UIObject"
 		@type property
 		@desc The widget object's name, it's parent can use the name to access it by parent[self.Name]
 	]======]
-	__Auto__{ Field = "__Name", Type = String + nil }
-	property "Name" { Set = SetName }
+	property "Name" { Set = SetName, Field = "__Name", Type = String + nil }
 
 	doc [======[
 		@name Parent
 		@type property
 		@desc the widget object's parent widget object, can be virtual or not.
 	]======]
-	__Auto__{ Method = true, Type = UIObject + nil }
-	property "Parent" {}
+	property "Parent" { Type = UIObject + nil }
 
 	------------------------------------------------------
 	-- Dispose

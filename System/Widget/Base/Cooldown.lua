@@ -23,6 +23,19 @@ class "Cooldown"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Cooldown", nil, parent, ...)
+	end
+endclass "Cooldown"
+
+class "Cooldown"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -65,19 +78,6 @@ class "Cooldown"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Cooldown", nil, parent, ...)
-	end
-endclass "Cooldown"
-
-partclass "Cooldown"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Cooldown)
@@ -90,7 +90,6 @@ partclass "Cooldown"
 		@type property
 		@desc true if the cooldown animation "sweeps" an area of darkness over the underlying image; false if the animation darkens the underlying image and "sweeps" the darkened area away
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "Reverse" {}
+	property "Reverse" { Type = Boolean }
 
 endclass "Cooldown"

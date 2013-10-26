@@ -77,6 +77,23 @@ class "AnimationGroup"
 	event "OnUpdate"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not IGAS:GetUI(parent).CreateAnimationGroup then
+			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
+		end
+
+		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
+	end
+endclass "AnimationGroup"
+
+class "AnimationGroup"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -224,23 +241,6 @@ class "AnimationGroup"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not IGAS:GetUI(parent).CreateAnimationGroup then
-			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
-		end
-
-		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
-	end
-endclass "AnimationGroup"
-
-partclass "AnimationGroup"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(AnimationGroup)
@@ -253,8 +253,7 @@ partclass "AnimationGroup"
 		@type property
 		@desc looping type for the animation group: BOUNCE , NONE  , REPEAT
 	]======]
-	__Auto__{ Method = true, Type = AnimLoopType }
-	property "Looping" {}
+	property "Looping" { Type = AnimLoopType }
 
 	doc [======[
 		@name LoopState

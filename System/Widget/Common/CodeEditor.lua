@@ -126,7 +126,6 @@ class "CodeEditor"
 		["while"] = _IndentNone,
 		-- Loop
 		["class"] = _IndentRight,
-		["partclass"] = _IndentRight,
 		["inherit"] = _IndentNone,
 		["import"] = _IndentNone,
 		["endclass"] = _IndentLeft,
@@ -137,7 +136,6 @@ class "CodeEditor"
 		["struct"] = _IndentRight,
 		["endstruct"] = _IndentLeft,
 		["interface"] = _IndentRight,
-		["partinterface"] = _IndentRight,
 		["endinterface"] = _IndentLeft,
 		["extend"] = _IndentNone,
 	}

@@ -39,6 +39,19 @@ class "StatusBar"
 	event "OnValueChanged"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("StatusBar", nil, parent, ...)
+	end
+endclass "StatusBar"
+
+class "StatusBar"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -150,19 +163,6 @@ class "StatusBar"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("StatusBar", nil, parent, ...)
-	end
-endclass "StatusBar"
-
-partclass "StatusBar"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(StatusBar)
@@ -190,8 +190,7 @@ partclass "StatusBar"
 		@type property
 		@desc the orientation of the status bar
 	]======]
-	__Auto__{ Method = true, Type = Orientation }
-	property "Orientation" {}
+	property "Orientation" { Type = Orientation }
 
 	doc [======[
 		@name StatusBarColor
@@ -213,11 +212,12 @@ partclass "StatusBar"
 		@type property
 		@desc the texture used for drawing the filled-in portion of the status bar
 	]======]
-	__Auto__{ Method = true, Type = Texture + nil }
 	property "StatusBarTexture" {
 		Set = function(self, texture)
 			self:SetStatusBarTexture(texture, self.Layer)
 		end,
+		Get = "GetStatusBarTexture",
+		Type = Texture + nil,
 	}
 
 	doc [======[
@@ -255,15 +255,13 @@ partclass "StatusBar"
 		@type property
 		@desc  the value of the status bar
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Value" {}
+	property "Value" { Type = Number }
 
 	doc [======[
 		@name RotatesTexture
 		@type property
 		@desc whether the status bar's texture is rotated to match its orientation
 	]======]
-	__Auto__{ Method = true, Type = Boolean }
-	property "RotatesTexture" {}
+	property "RotatesTexture" { Type = Boolean }
 
 endclass "StatusBar"

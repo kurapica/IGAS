@@ -47,6 +47,19 @@ class "ScrollFrame"
 	event "OnVerticalScroll"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollFrame", nil, parent, ...)
+	end
+endclass "ScrollFrame"
+
+class "ScrollFrame"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -115,20 +128,6 @@ class "ScrollFrame"
 		@return nil
 	]======]
 
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ScrollFrame", nil, parent, ...)
-	end
-endclass "ScrollFrame"
-
-partclass "ScrollFrame"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
@@ -142,14 +141,12 @@ partclass "ScrollFrame"
 		@type property
 		@desc the scroll frame's current horizontal scroll position
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "HorizontalScroll" {}
+	property "HorizontalScroll" { Type = Number }
 
 	doc [======[
 		@name VerticalScroll
 		@type property
 		@desc the scroll frame's vertical scroll position
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "VerticalScroll" {}
+	property "VerticalScroll" { Type = Number }
 endclass "ScrollFrame"

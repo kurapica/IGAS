@@ -23,6 +23,23 @@ class "Rotation"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Rotation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Rotation", nil, ...)
+	end
+endclass "Rotation"
+
+class "Rotation"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -74,23 +91,6 @@ class "Rotation"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Rotation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Rotation", nil, ...)
-	end
-endclass "Rotation"
-
-partclass "Rotation"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Rotation, AnimationGroup)
@@ -103,16 +103,14 @@ partclass "Rotation"
 		@type property
 		@desc the animation's rotation amount (in degrees)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Degrees" {}
+	property "Degrees" { Type = Number }
 
 	doc [======[
 		@name Radians
 		@type property
 		@desc the animation's rotation amount (in radians)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Radians" {}
+	property "Radians" { Type = Number }
 
 	doc [======[
 		@name Origin

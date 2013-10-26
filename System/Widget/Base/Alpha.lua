@@ -23,6 +23,23 @@ class "Alpha"
 	------------------------------------------------------
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Alpha(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...)
+	end
+endclass "Alpha"
+
+class "Alpha"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -41,23 +58,6 @@ class "Alpha"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Alpha(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...)
-	end
-endclass "Alpha"
-
-partclass "Alpha"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Alpha, AnimationGroup)
@@ -70,7 +70,6 @@ partclass "Alpha"
 		@type property
 		@desc the animation's amount of alpha (opacity) change
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Change" {}
+	property "Change" { Type = Number }
 
 endclass "Alpha"

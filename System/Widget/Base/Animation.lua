@@ -71,6 +71,23 @@ class "Animation"
 	event "OnUpdate"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Animation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Animation", nil, ...)
+	end
+endclass "Animation"
+
+class "Animation"
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -276,23 +293,6 @@ class "Animation"
 	]======]
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Animation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Animation", nil, ...)
-	end
-endclass "Animation"
-
-partclass "Animation"
-	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Animation, AnimationGroup)
@@ -305,48 +305,42 @@ partclass "Animation"
 		@type property
 		@desc Amount of time the animation delays before its progress begins (in seconds)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "StartDelay" {}
+	property "StartDelay" { Type = Number }
 
 	doc [======[
 		@name EndDelay
 		@type property
 		@desc Time for the animation to delay after finishing (in seconds)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "EndDelay" {}
+	property "EndDelay" { Type = Number }
 
 	doc [======[
 		@name Duration
 		@type property
 		@desc Time for the animation to progress from start to finish (in seconds)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Duration" {}
+	property "Duration" { Type = Number }
 
 	doc [======[
 		@name MaxFramerate
 		@type property
 		@desc Maximum number of times per second that the animation will update its progress
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "MaxFramerate" {}
+	property "MaxFramerate" { Type = Number }
 
 	doc [======[
 		@name Order
 		@type property
 		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
 	]======]
-	__Auto__{ Method = true, Type = Number }
-	property "Order" {}
+	property "Order" { Type = Number }
 
 	doc [======[
 		@name Smoothing
 		@type property
 		@desc Type of smoothing for the animation, IN, IN_OUT, NONE, OUT
 	]======]
-	__Auto__{ Method = true, Type = AnimSmoothType }
-	property "Smoothing" {}
+	property "Smoothing" { Type = AnimSmoothType }
 
 	doc [======[
 		@name Playing
