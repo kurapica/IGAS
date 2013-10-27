@@ -71,23 +71,6 @@ class "Animation"
 	event "OnUpdate"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Animation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Animation", nil, ...)
-	end
-endclass "Animation"
-
-class "Animation"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -292,6 +275,23 @@ class "Animation"
 		@return nil
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Animation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Animation", nil, ...)
+	end
+endclass "Animation"
+
+class "Animation"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

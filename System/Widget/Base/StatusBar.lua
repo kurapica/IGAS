@@ -39,19 +39,6 @@ class "StatusBar"
 	event "OnValueChanged"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("StatusBar", nil, parent, ...)
-	end
-endclass "StatusBar"
-
-class "StatusBar"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -163,6 +150,19 @@ class "StatusBar"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("StatusBar", nil, parent, ...)
+	end
+endclass "StatusBar"
+
+class "StatusBar"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(StatusBar)
@@ -236,17 +236,16 @@ class "StatusBar"
 	}
 
 	doc [======[
-		@name Layer`
+		@name Layer
 		@type property
 		@desc the layer used for drawing the filled-in portion of the status bar
 	]======]
 	property "Layer" {
-		Get = function(self)
-			return self.__Layer or "ARTWORK"
-		end,
+		Field = "__Layer",
 		Set = function(self, layer)
 			self:SetStatusBarTexture(self:GetStatusBarTexture(), layer)
 		end,
+		Default = "ARTWORK",
 		Type = DrawLayer,
 	}
 

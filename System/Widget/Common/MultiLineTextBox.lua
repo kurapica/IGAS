@@ -2837,11 +2837,11 @@ class "MultiLineTextBox"
 	}
 
 	doc [======[
-		@name NumericOnly
+		@name Numeric
 		@type property
 		@desc true if the edit box only accepts numeric input
 	]======]
-	property "NumericOnly" {
+	property "Numeric" {
 		Set = "SetNumeric",
 		Get = "IsNumeric",
 		Type = Boolean,

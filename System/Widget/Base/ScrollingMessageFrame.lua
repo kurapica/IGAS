@@ -58,19 +58,6 @@ class "ScrollingMessageFrame"
 	event "OnMessageScrollChanged"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
-	end
-endclass "ScrollingMessageFrame"
-
-class "ScrollingMessageFrame"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -322,6 +309,19 @@ class "ScrollingMessageFrame"
 		@return nil
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
+	end
+endclass "ScrollingMessageFrame"
+
+class "ScrollingMessageFrame"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

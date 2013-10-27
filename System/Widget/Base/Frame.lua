@@ -203,31 +203,6 @@ class "Frame"
 	event "OnMaxResizeChanged"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	function OnEvent(self, event, ...)
-		if type(self[event]) == "function" then
-			return self[event](self, ...)
-		end
-	end
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		UnregisterAllEvents(self)
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Frame", nil, parent, ...)
-	end
-endclass "Frame"
-
-class "Frame"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -893,6 +868,31 @@ class "Frame"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	function OnEvent(self, event, ...)
+		if type(self[event]) == "function" then
+			return self[event](self, ...)
+		end
+	end
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		UnregisterAllEvents(self)
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Frame", nil, parent, ...)
+	end
+endclass "Frame"
+
+class "Frame"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Frame)
@@ -905,55 +905,35 @@ class "Frame"
 		@type property
 		@desc whether keyboard interactivity is enabled for the frame
 	]======]
-	property "KeyboardEnabled" {
-		Get = "IsKeyboardEnabled",
-		Set = "EnableKeyboard",
-		Type = Boolean,
-	}
+	property "KeyboardEnabled" { Type = Boolean, }
 
 	doc [======[
 		@name MouseEnabled
 		@type property
 		@desc whether mouse interactivity is enabled for the frame
 	]======]
-	property "MouseEnabled" {
-		Get = "IsMouseEnabled",
-		Set = "EnableMouse",
-		Type = Boolean,
-	}
+	property "MouseEnabled" { Type = Boolean, }
 
 	doc [======[
 		@name Movable
 		@type property
 		@desc whether the frame can be moved by the user
 	]======]
-	property "Movable" {
-		Get = "IsMovable",
-		Set = "SetMovable",
-		Type = Boolean,
-	}
+	property "Movable" { Type = Boolean, }
 
 	doc [======[
 		@name Resizable
 		@type property
 		@desc whether the frame can be resized by the user
 	]======]
-	property "Resizable" {
-		Get = "IsResizable",
-		Set = "SetResizable",
-		Type = Boolean,
-	}
+	property "Resizable" { Type = Boolean, }
 
 	doc [======[
 		@name MouseWheelEnabled
 		@type property
 		@desc whether mouse wheel interactivity is enabled for the frame
 	]======]
-	property "MouseWheelEnabled" {
-		Get = "IsMouseWheelEnabled",
-		Set = "EnableMouseWheel",
-		Type = Boolean,
-	}
+	property "MouseWheelEnabled" { Type = Boolean, }
 
 	doc [======[
 		@name Backdrop
@@ -997,11 +977,7 @@ class "Frame"
 		@type property
 		@desc whether the frame's boundaries are limited to those of the screen
 	]======]
-	property "ClampedToScreen" {
-		Get = "IsClampedToScreen",
-		Set = "SetClampedToScreen",
-		Type = Boolean,
-	}
+	property "ClampedToScreen" { Type = Boolean, }
 
 	doc [======[
 		@name ClampRectInsets
@@ -1096,11 +1072,7 @@ class "Frame"
 		@type property
 		@desc whether the frame should automatically come to the front when clicked
 	]======]
-	property "Toplevel" {
-		Get = "IsToplevel",
-		Set = "SetToplevel",
-		Type = Boolean,
-	}
+	property "Toplevel" { Type = Boolean, }
 
 	doc [======[
 		@name Depth

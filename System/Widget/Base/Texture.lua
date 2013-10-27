@@ -32,25 +32,6 @@ class "Texture"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
-			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
-		end
-		return IGAS:GetUI(parent):CreateTexture(nil, ...)
-	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
-endclass "Texture"
-
-class "Texture"
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -507,6 +488,24 @@ class "Texture"
 	end
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateTexture then
+			error("Usage : Texture(name, parent) : 'parent' - UI element expected.", 2)
+		end
+		return IGAS:GetUI(parent):CreateTexture(nil, ...)
+	end
+
+	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
+endclass "Texture"
+
+class "Texture"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Texture)
@@ -527,9 +526,7 @@ class "Texture"
 		@desc whether the texture image should be displayed with zero saturation
 	]======]
 	property "Desaturated" {
-		Get = function(self)
-			return (self:IsDesaturated() and true) or false
-		end,
+		Get = "IsDesaturated",
 		Set = function(self, desaturation)
 			local shaderSupported = self:SetDesaturated(desaturation);
 			if ( not shaderSupported ) then
@@ -556,9 +553,7 @@ class "Texture"
 				return path
 			end
 		end,
-		Set = function(self, path)
-			return self:SetTexture(path)
-		end,
+		Set = "SetTexture",
 		Type = String + nil,
 	}
 
@@ -575,9 +570,7 @@ class "Texture"
 				return self.__Unit
 			end
 		end,
-		Set = function(self, unit)
-			return self:SetPortraitUnit(unit)
-		end,
+		Set = "SetPortraitUnit",
 		Type = String + nil,
 	}
 

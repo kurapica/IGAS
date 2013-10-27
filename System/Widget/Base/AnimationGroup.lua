@@ -77,23 +77,6 @@ class "AnimationGroup"
 	event "OnUpdate"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not IGAS:GetUI(parent).CreateAnimationGroup then
-			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
-		end
-
-		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
-	end
-endclass "AnimationGroup"
-
-class "AnimationGroup"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -241,6 +224,23 @@ class "AnimationGroup"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not IGAS:GetUI(parent).CreateAnimationGroup then
+			error("Usage : AnimationGroup(name, parent) : 'parent' - can't create AnimationGroup.")
+		end
+
+		return IGAS:GetUI(parent):CreateAnimationGroup(nil, ...)
+	end
+endclass "AnimationGroup"
+
+class "AnimationGroup"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(AnimationGroup)
@@ -260,10 +260,7 @@ class "AnimationGroup"
 		@type property
 		@desc the current loop state of the group: FORWARD , NONE , REVERSE
 	]======]
-	property "LoopState" {
-		Get = "GetLoopState",
-		Type = AnimLoopStateType,
-	}
+	property "LoopState" { Type = AnimLoopStateType	}
 
 	doc [======[
 		@name InitialOffset
@@ -347,8 +344,6 @@ class "AnimationGroup"
 		@type property
 		@desc duration of all child animations (in seconds)
 	]======]
-	property "Duration" {
-		Get = "GetDuration",
-	}
+	property "Duration" { }
 
 endclass "AnimationGroup"

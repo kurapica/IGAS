@@ -22,19 +22,6 @@ class "Path"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Path(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Path", nil, ...)
-	end
-endclass "Path"
-
-class "Path"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -90,6 +77,19 @@ class "Path"
 	]======]
 
 	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Path(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Path", nil, ...)
+	end
+endclass "Path"
+
+class "Path"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Path, AnimationGroup)
@@ -119,18 +119,6 @@ class "ControlPoint"
 	-- Event
 	------------------------------------------------------
 
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, Path) then
-			error("Usage : ControlPoint(name, parent) : 'parent' - Path UI element expected.", 2)
-		end
-		return IGAS:GetUI(parent):CreateControlPoint(nil, ...)
-	end
-endclass "ControlPoint"
-
-class "ControlPoint"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -166,6 +154,18 @@ class "ControlPoint"
 		@return number Position at which the animation will play relative to others in its group (between 0 and 100)
 	]======]
 
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, Path) then
+			error("Usage : ControlPoint(name, parent) : 'parent' - Path UI element expected.", 2)
+		end
+		return IGAS:GetUI(parent):CreateControlPoint(nil, ...)
+	end
+endclass "ControlPoint"
+
+class "ControlPoint"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

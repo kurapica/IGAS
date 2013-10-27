@@ -79,9 +79,9 @@ class "DataGrid"
 			display.DropdownBtn.OnClick = display.DropdownBtn.OnClick - DropdownBtn_OnClick
 
 			display.BackdropColor = cell.BackColor
-			display:GetChild("Text").NumericOnly = false
+			display:GetChild("Text").Numeric = false
 			if cell.CellType == "Number" then
-				display:GetChild("Text").NumericOnly = true
+				display:GetChild("Text").Numeric = true
 				display.Editable = true
 				display:GetChild("DropdownBtn").Visible = false
 			elseif cell.CellType == "String" then

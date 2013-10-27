@@ -23,23 +23,6 @@ class "Scale"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Scale(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Scale", nil, ...)
-	end
-endclass "Scale"
-
-class "Scale"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -76,6 +59,23 @@ class "Scale"
 		@param yFactor number, Vertical scaling factor
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Scale(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Scale", nil, ...)
+	end
+endclass "Scale"
+
+class "Scale"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

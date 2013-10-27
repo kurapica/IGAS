@@ -23,23 +23,6 @@ class "Alpha"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Alpha(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...)
-	end
-endclass "Alpha"
-
-class "Alpha"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -57,6 +40,23 @@ class "Alpha"
 		@return nil
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Alpha(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Alpha", nil, ...)
+	end
+endclass "Alpha"
+
+class "Alpha"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

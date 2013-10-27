@@ -33,23 +33,6 @@ class "ColorSelect"
 	event "OnColorSelect"
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ColorSelect", nil, parent, ...)
-	end
-endclass "ColorSelect"
-
-class "ColorSelect"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -150,13 +133,6 @@ class "ColorSelect"
 		@return nil
 	]======]
 
-	------------------------------------
-	---
-	-- @name ColorSelect:SetColorWheelTexture
-	-- @class function
-	-- @param texture Reference to a Texture object (texture)
-	------------------------------------
-	-- SetColorWheelTexture
 	doc [======[
 		@name SetColorWheelTexture
 		@type method
@@ -177,6 +153,23 @@ class "ColorSelect"
 		@return nil
 	]======]
 
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ColorSelect", nil, parent, ...)
+	end
+endclass "ColorSelect"
+
+class "ColorSelect"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

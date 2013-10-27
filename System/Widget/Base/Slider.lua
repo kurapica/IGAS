@@ -39,19 +39,6 @@ class "Slider"
 	event "OnValueChanged"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Slider", nil, parent, ...)
-	end
-endclass "Slider"
-
-class "Slider"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -148,6 +135,19 @@ class "Slider"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("Slider", nil, parent, ...)
+	end
+endclass "Slider"
+
+class "Slider"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Slider)
@@ -196,12 +196,11 @@ class "Slider"
 		@desc the layer used for drawing the filled-in portion of the slider
 	]======]
 	property "Layer" {
-		Get = function(self)
-			return self.__Layer or "ARTWORK"
-		end,
+		Field = "__Layer",
 		Set = function(self, layer)
 			self:SetThumbTexture(self:GetThumbTexture(), layer)
 		end,
+		Default = "ARTWORK",
 		Type = DrawLayer,
 	}
 
@@ -225,9 +224,7 @@ class "Slider"
 		@desc whether user interaction with the slider is allowed
 	]======]
 	property "Enabled" {
-		Get = function(self)
-			return (self:IsEnabled() and true) or false
-		end,
+		Get = "IsEnabled",
 		Set = function(self, enabled)
 			if enabled then
 				self:Enable()

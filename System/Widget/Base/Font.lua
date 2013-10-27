@@ -24,61 +24,6 @@ class "Font"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Dispose
-	------------------------------------------------------
-	function Dispose(self)
-		-- Remove from _G if it exists
-		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
-			_G[self:GetName()] = nil
-		end
-	end
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	__Arguments__{ Argument{ Name = "Name" , Type = String + Table } }
-	function Font(self, name)
-		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
-
-		if not fontObject or type(fontObject) ~= "table" or type(fontObject[0]) ~= "userdata" then
-			error("No font is found.", 2)
-		end
-
-		self[0] = fontObject[0]
-		self.__UI = fontObject
-		fontObject.__Wrapper = self
-	end
-
-	------------------------------------------------------
-	-- Exist checking
-	------------------------------------------------------
-	function __exist(fontObject)
-		if type(fontObject) == "string" then
-			fontObject = _G[fontObject] or fontObject
-		end
-
-		if type(fontObject) == "table" and type(fontObject[0]) == "userdata" then
-			-- Do Wrapper the blz's UI element
-
-			-- VirtualUIObject's instance will not be checked here.
-			if Object.IsClass(fontObject, Font) or not fontObject.GetObjectType then
-				-- UIObject's instance will be return here.
-				return fontObject
-			end
-
-			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
-				return fontObject.__Wrapper
-			end
-		end
-	end
-endclass "Font"
-
-class "Font"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -301,6 +246,61 @@ class "Font"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		-- Remove from _G if it exists
+		if self:GetName() and IGAS:GetWrapper(_G[self:GetName()]) == self then
+			_G[self:GetName()] = nil
+		end
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	__Arguments__{ Argument{ Name = "Name" , Type = String + Table } }
+	function Font(self, name)
+		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
+
+		if not fontObject or type(fontObject) ~= "table" or type(fontObject[0]) ~= "userdata" then
+			error("No font is found.", 2)
+		end
+
+		self[0] = fontObject[0]
+		self.__UI = fontObject
+		fontObject.__Wrapper = self
+	end
+
+	------------------------------------------------------
+	-- Exist checking
+	------------------------------------------------------
+	function __exist(fontObject)
+		if type(fontObject) == "string" then
+			fontObject = _G[fontObject] or fontObject
+		end
+
+		if type(fontObject) == "table" and type(fontObject[0]) == "userdata" then
+			-- Do Wrapper the blz's UI element
+
+			-- VirtualUIObject's instance will not be checked here.
+			if Object.IsClass(fontObject, Font) or not fontObject.GetObjectType then
+				-- UIObject's instance will be return here.
+				return fontObject
+			end
+
+			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
+				return fontObject.__Wrapper
+			end
+		end
+	end
+endclass "Font"
+
+class "Font"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(Font, GameFontNormal)
@@ -313,9 +313,7 @@ class "Font"
 		@type property
 		@desc the name of the font object
 	]======]
-	property "Name" {
-		Get = "GetName",
-	}
+	property "Name" { }
 
 	doc [======[
 		@name Font

@@ -47,19 +47,6 @@ class "ScrollFrame"
 	event "OnVerticalScroll"
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ScrollFrame", nil, parent, ...)
-	end
-endclass "ScrollFrame"
-
-class "ScrollFrame"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -128,6 +115,19 @@ class "ScrollFrame"
 		@return nil
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("ScrollFrame", nil, parent, ...)
+	end
+endclass "ScrollFrame"
+
+class "ScrollFrame"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

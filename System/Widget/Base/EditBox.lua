@@ -107,20 +107,6 @@ class "EditBox"
 	]======]
 	event "OnTextSet"
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("EditBox", nil, parent, ...)
-	end
-endclass "EditBox"
-
-class "EditBox"
-
 	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
 
 	------------------------------------------------------
@@ -455,6 +441,24 @@ class "EditBox"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		return CreateFrame("EditBox", nil, parent, ...)
+	end
+
+	function EditBox(self)
+		_FirstLoadedFix[self] = true
+	end
+endclass "EditBox"
+
+class "EditBox"
+
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(EditBox)
@@ -467,44 +471,28 @@ class "EditBox"
 		@type property
 		@desc true if the edit box shows more than one line of text
 	]======]
-	property "MultiLine" {
-		Get = "IsMultiLine",
-		Set = "SetMultiLine",
-		Type = Boolean,
-	}
+	property "MultiLine" { Type = Boolean }
 
 	doc [======[
-		@name NumericOnly
+		@name Numeric
 		@type property
 		@desc true if the edit box only accepts numeric input
 	]======]
-	property "NumericOnly" {
-		Get = "IsNumeric",
-		Set = "SetNumeric",
-		Type = Boolean,
-	}
+	property "Numeric" { Type = Boolean }
 
 	doc [======[
 		@name Password
 		@type property
 		@desc true if the text entered in the edit box is masked
 	]======]
-	property "Password" {
-		Get = "IsPassword",
-		Set = "SetPassword",
-		Type = Boolean,
-	}
+	property "Password" { Type = Boolean }
 
 	doc [======[
 		@name AutoFocus
 		@type property
 		@desc true if the edit box automatically acquires keyboard input focus
 	]======]
-	property "AutoFocus" {
-		Get = "IsAutoFocus",
-		Set = "SetAutoFocus",
-		Type = Boolean,
-	}
+	property "AutoFocus" { Type = Boolean }
 
 	doc [======[
 		@name HistoryLines
@@ -614,11 +602,4 @@ class "EditBox"
 		end,
 		Type = Boolean,
 	}
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function EditBox(self)
-		_FirstLoadedFix[self] = true
-	end
 endclass "EditBox"

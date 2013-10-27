@@ -23,23 +23,6 @@ class "Translation"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if not Object.IsClass(parent, AnimationGroup) then
-			error("Usage : Translation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateAnimation("Translation", nil, ...)
-	end
-endclass "Translation"
-
-class "Translation"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -59,6 +42,23 @@ class "Translation"
 		@return yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
 	]======]
 
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, ...)
+		if not Object.IsClass(parent, AnimationGroup) then
+			error("Usage : Translation(name, parent) : 'parent' - AnimationGroup element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateAnimation("Translation", nil, ...)
+	end
+endclass "Translation"
+
+class "Translation"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------

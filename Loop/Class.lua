@@ -929,6 +929,15 @@ do
 					elseif info.Cache4Method["Get" .. name] then
 						useMethod = true
 						prop.GetMethod = "Get" .. name
+					elseif prop.Type and prop.Type:Is(Boolean) then
+						-- FlagEnabled -> IsFlagEnabled
+						if info.Cache4Method["is" .. name] then
+							useMethod = true
+							prop.GetMethod = "is" .. name
+						elseif info.Cache4Method["Is" .. name] then
+							useMethod = true
+							prop.GetMethod = "Is" .. name
+						end
 					end
 
 					-- SetMethod
@@ -938,21 +947,31 @@ do
 					elseif info.Cache4Method["Set" .. name] then
 						useMethod = true
 						prop.SetMethod = "Set" .. name
+					elseif prop.Type and prop.Type:Is(Boolean) then
+						-- FlagEnabled -> EnableFlag
+						name = name:gsub("[Ee][Nn][Aa][Bb][Ll][Ee][Dd]$", "")
+						if info.Cache4Method["enable" .. name] then
+							useMethod = true
+							prop.SetMethod = "enable" .. name
+						elseif info.Cache4Method["Enable" .. name] then
+							useMethod = true
+							prop.SetMethod = "Enable" .. name
+						end
 					end
 
 					-- Field
 					if not useMethod then
 						prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
 					end
+				end
 
-					if prop.Type and not prop.Type:Is(nil) and prop.Default == nil then
-						if prop.Type:Is(Boolean) then
-							prop.Default = false
-						elseif prop.Type:Is(Number) then
-							prop.Default = 0
-						elseif prop.Type:Is(String) then
-							prop.Default = ""
-						end
+				if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
+					if prop.Type:Is(Boolean) then
+						prop.Default = false
+					elseif prop.Type:Is(Number) then
+						prop.Default = 0
+					elseif prop.Type:Is(String) then
+						prop.Default = ""
 					end
 				end
 			end
@@ -1078,6 +1097,15 @@ do
 				return value
 			end
 
+			-- Check method, so definition environment can use existed method
+			-- created by another definition environment for the same interface
+			value = info.Method[key]
+
+			if value then
+				rawset(self, key, value)
+				return value
+			end
+
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
 
@@ -1122,6 +1150,9 @@ do
 				end
 
 				info.Method[key] = value
+
+				-- Don't save to environment until need it
+				value = nil
 			end
 
 			rawset(self, key, value)
@@ -1690,6 +1721,15 @@ do
 				return value
 			end
 
+			-- Check method, so definition environment can use existed method
+			-- created by another definition environment for the same class
+			value = info.Method[key]
+
+			if value then
+				rawset(self, key, value)
+				return value
+			end
+
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
 
@@ -1747,6 +1787,9 @@ do
 				end
 
 				info.Method[key] = value
+
+				-- Don't save to environment until need it
+				value = nil
 			end
 
 			rawset(self, key, value)
@@ -2339,7 +2382,17 @@ do
 
 		-- Clone Attributes
 		if __Attribute__ then
+			local isCached = __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
+
 			__Attribute__._CloneAttributes(superCls, info.Owner, AttributeTargets.Class)
+
+			if not isCached and __Cache__ then
+				if __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) then
+					-- So, the __index need re-build
+					info.MetaTable.__index = nil
+					UpdateMetaTable4Cls(info.Owner)
+				end
+			end
 		end
 	end
 
@@ -2720,6 +2773,13 @@ do
 				return value
 			end
 
+			-- Check Cache4Method
+			value = info.Cache4Method and info.Cache4Method[key]
+			if value then
+				rawset(self, key, value)
+				return value
+			end
+
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
 
@@ -2765,6 +2825,9 @@ do
 					end
 
 					info.Cache4Method[key] = value
+
+					-- Don't save to environment until need it
+					value = nil
 
 				elseif (value == nil or IsType(value) or IsNameSpace(value)) then
 					local ok, ret = pcall(BuildType, value, key)
@@ -4233,7 +4296,11 @@ do
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[propName] then
 				local prop = info.Cache4Property[propName]
-				return (prop.Get or prop.GetMethod or prop.Field) and true or false
+				if prop.Get or prop.GetMethod or prop.Field then
+					return true
+				else
+					return false
+				end
 			end
 		end
 
@@ -4253,7 +4320,11 @@ do
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[propName] then
 				local prop = info.Cache4Property[propName]
-				return (prop.Set or prop.SetMethod or prop.Field) and true or false
+				if prop.Set or prop.SetMethod or prop.Field then
+					return true
+				else
+					return false
+				end
 			end
 		end
 
@@ -7354,13 +7425,13 @@ do
 
 	__Final__()
 	struct "Argument"
-		Name = String
-		Type = Any
-		Default = Any
+		Name = String + nil
+		Type = Any + nil
+		Default = Any + nil
 		IsList = Boolean + nil
 
 		function Validate(value)
-			value.Type = BuildType(value.Type, "Type")
+			value.Type = value.Type and BuildType(value.Type, "Type") or nil
 
 			return value
 		end
@@ -7501,16 +7572,25 @@ do
 			return unpack(ret)
 		end
 
+		local function ValidateArgument(arg)
+			if type(arg) == "table" and ( type(arg.Name) == "string" or IsType(arg.Type) ) then
+				if arg.Name and type(arg.Name) ~= "string" then arg.Name = nil end
+				if arg.Type and not IsType(arg.Type) then arg.Type = nil end
+				arg.IsList = arg.IsList and true or nil
+
+				return true
+			else
+				return false
+			end
+		end
+
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-
 		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Self validation once
-			local max = #self
-
-			for i = max, 1, -1 do
-				if type(self[i]) ~= "table" or not self[i].Name or (i < #self and self[i].IsList) then
+			for i = #self, 1, -1 do
+				if not ValidateArgument(self[i]) or (i < #self and self[i].IsList) then
 					tremove(self, i)
 				end
 			end

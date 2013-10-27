@@ -26,25 +26,6 @@ class "FontString"
 	------------------------------------------------------
 
 	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-	function Constructor(self, name, parent, layer, inheritsFrom, ...)
-		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateFontString then
-			error("Usage : FontString(name, parent) : 'parent' - UI element expected.", 2)
-		end
-
-		return IGAS:GetUI(parent):CreateFontString(nil, layer or "OVERLAY", inheritsFrom or "GameFontNormal", ...)
-	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" } }
-endclass "FontString"
-
-class "FontString"
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	doc [======[
@@ -169,6 +150,25 @@ class "FontString"
 	]======]
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function Constructor(self, name, parent, layer, inheritsFrom, ...)
+		if not Object.IsClass(parent, UIObject) or not IGAS:GetUI(parent).CreateFontString then
+			error("Usage : FontString(name, parent) : 'parent' - UI element expected.", 2)
+		end
+
+		return IGAS:GetUI(parent):CreateFontString(nil, layer or "OVERLAY", inheritsFrom or "GameFontNormal", ...)
+	end
+
+	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" } }
+endclass "FontString"
+
+class "FontString"
+	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
 	StoreBlzMethod(FontString)
@@ -192,18 +192,14 @@ class "FontString"
 		@type property
 		@desc the height of the text displayed in the font string
 	]======]
-	property "StringHeight" {
-		Get = "GetStringHeight",
-	}
+	property "StringHeight" { }
 
 	doc [======[
 		@name StringWidth
 		@type property
 		@desc the width of the text displayed in the font string
 	]======]
-	property "StringWidth" {
-		Get = "GetStringWidth",
-	}
+	property "StringWidth" { }
 
 	doc [======[
 		@name Text
