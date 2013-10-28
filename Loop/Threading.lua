@@ -2,7 +2,7 @@
 -- Create Date : 2013/08/13
 -- ChangeLog   :
 
-Module "System.Threading" "1.0.0"
+Module "System.Threading" "1.0.1"
 
 namespace "System"
 
@@ -24,6 +24,19 @@ interface "Threading"
 	------------------------------------------------------
 	-- System.Threading.Thread
 	------------------------------------------------------
+	function Iterator(func, ...)
+		return Reflector.ThreadCall(function( ... )
+			local th = Thread()
+
+			th:Yield( th )
+
+			return func( ... )
+		end, ...)
+	end
+
+	------------------------------------------------------
+	-- System.Threading.Thread
+	------------------------------------------------------
 	class "Thread"
 
 		doc [======[
@@ -40,7 +53,21 @@ interface "Threading"
 			<br>
 		]======]
 
-		_Threads = _Threads or setmetatable({}, {__mode = "k"})
+		local function chkValue(flag, ...)
+			if flag then
+				return ...
+			else
+				local value = ...
+
+				if value then
+					value = value:match(":%d+:%s*(.-)$") or value
+
+					error(value, 3)
+				else
+					error(..., 3)
+				end
+			end
+		end
 
 		------------------------------------------------------
 		-- Event
@@ -57,8 +84,11 @@ interface "Threading"
 			@return ... return values from thread
 		]======]
 		function Resume(self, ...)
-			if _Threads[self] then
-				return resume(_Threads[self], ...)
+			if running() then
+				self.Thread = running()
+				return ...
+			elseif self.Thread then
+				return chkValue( resume(self.Thread, ...) )
 			end
 		end
 
@@ -72,7 +102,7 @@ interface "Threading"
 			local co = running()
 
 			if co then
-				_Threads[self] = co
+				self.Thread = co
 
 				return yield(...)
 			end
@@ -85,7 +115,7 @@ interface "Threading"
 			@return boolean true if the thread is running
 		]======]
 		function IsRunning(self)
-			local co = _Threads[self]
+			local co = self.Thread
 			return co and (status(co) == "running" or status(co) == "normal") or false
 		end
 
@@ -96,7 +126,7 @@ interface "Threading"
 			@return boolean true if the thread is suspended
 		]======]
 		function IsSuspended(self)
-			return _Threads[self] and status(_Threads[self]) == "suspended" or false
+			return self.Thread and status(self.Thread) == "suspended" or false
 		end
 
 		doc [======[
@@ -106,7 +136,7 @@ interface "Threading"
 			@return boolean true if the thread is dead
 		]======]
 		function IsDead(self)
-			return (_Threads[self] == nil) or status(_Threads[self]) == "dead" or false
+			return not self.Thread or status(self.Thread) == "dead" or false
 		end
 
 		------------------------------------------------------
@@ -114,8 +144,8 @@ interface "Threading"
 		------------------------------------------------------
 		property "Status" {
 			Get = function(self)
-				if _Threads[self] then
-					return status(_Threads[self])
+				if self.Thread then
+					return status(self.Thread)
 				else
 					return "dead"
 				end
@@ -124,16 +154,16 @@ interface "Threading"
 		}
 
 		property "Thread" {
-			Get = function(self)
-				return _Threads[self]
-			end,
+			Field = "__Thread",
 			Set = function(self, th)
 				if type(th) == "function" then
-					_Threads[self] = create(th)
+					self.__Thread = create(th)
 				elseif type(th) == "thread" then
-					_Threads[self] = th
+					self.__Thread = th
+				elseif th then
+					self.__Thread = th.Thread
 				else
-					_Threads[self] = _Threads[th]
+					self.__Thread = nil
 				end
 			end,
 			Type = System.Function + System.Thread + System.Threading.Thread + nil,
@@ -144,9 +174,9 @@ interface "Threading"
 		------------------------------------------------------
 		function Thread(self, func)
 			if type(func) == "function" then
-				_Threads[self] = create(func)
+				self.Thread = create(func)
 			elseif type(func) == "thread" then
-				_Threads[self] = func
+				self.Thread = func
 			end
 		end
 
@@ -154,7 +184,7 @@ interface "Threading"
 		-- __call for class instance
 		------------------------------------------------------
 		function __call(self, ...)
-			return _Threads[self] and resume(_Threads[self], ...)
+			return Resume(self, ...)
 		end
 	endclass "Thread"
 endinterface "Threading"
