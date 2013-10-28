@@ -22,7 +22,22 @@ interface "Threading"
 	}
 
 	------------------------------------------------------
-	-- System.Threading.Thread
+	-- System.Threading.Iterator
+	--
+	-- Example :
+	--
+	-- function a(start, endp)
+	--   for i = start, endp do
+	--     yield(i, "i_"..i)
+	--   end
+	-- end
+	--
+	-- for k, v in Threading.Iterator(a, 1, 3) do print(k, v) end
+	--
+	-- 1       i_1
+	-- 2       i_2
+	-- 3       i_3
+	--
 	------------------------------------------------------
 	function Iterator(func, ...)
 		return Reflector.ThreadCall(function( ... )
