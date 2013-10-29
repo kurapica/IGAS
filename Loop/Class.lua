@@ -917,46 +917,54 @@ do
 					prop.SetMethod = nil
 				end
 
-				if not prop.Set and not prop.Get and not prop.GetMethod and not prop.SetMethod and not prop.Field then
+				if prop.Set == true or prop.Get == true or ( not prop.Set and not prop.Get and not prop.GetMethod and not prop.SetMethod and not prop.Field ) then
 					-- Auto generate property
 					local name = prop.Name:gsub("^%a", strupper)
 					local useMethod = false
 
-					-- GetMethod
-					if info.Cache4Method["get" .. name] then
-						useMethod = true
-						prop.GetMethod = "get" .. name
-					elseif info.Cache4Method["Get" .. name] then
-						useMethod = true
-						prop.GetMethod = "Get" .. name
-					elseif prop.Type and prop.Type:Is(Boolean) then
-						-- FlagEnabled -> IsFlagEnabled
-						if info.Cache4Method["is" .. name] then
+					if prop.Get == true or not prop.Get then
+						-- GetMethod
+						if info.Cache4Method["get" .. name] then
 							useMethod = true
-							prop.GetMethod = "is" .. name
-						elseif info.Cache4Method["Is" .. name] then
+							prop.GetMethod = "get" .. name
+						elseif info.Cache4Method["Get" .. name] then
 							useMethod = true
-							prop.GetMethod = "Is" .. name
+							prop.GetMethod = "Get" .. name
+						elseif prop.Type and prop.Type:Is(Boolean) then
+							-- FlagEnabled -> IsFlagEnabled
+							if info.Cache4Method["is" .. name] then
+								useMethod = true
+								prop.GetMethod = "is" .. name
+							elseif info.Cache4Method["Is" .. name] then
+								useMethod = true
+								prop.GetMethod = "Is" .. name
+							end
 						end
+					elseif prop.Get then
+						useMethod = true
 					end
 
-					-- SetMethod
-					if info.Cache4Method["set" .. name] then
-						useMethod = true
-						prop.SetMethod = "set" .. name
-					elseif info.Cache4Method["Set" .. name] then
-						useMethod = true
-						prop.SetMethod = "Set" .. name
-					elseif prop.Type and prop.Type:Is(Boolean) then
-						-- FlagEnabled -> EnableFlag
-						name = name:gsub("[Ee][Nn][Aa][Bb][Ll][Ee][Dd]$", "")
-						if info.Cache4Method["enable" .. name] then
+					if prop.Set == true or not prop.Set then
+						-- SetMethod
+						if info.Cache4Method["set" .. name] then
 							useMethod = true
-							prop.SetMethod = "enable" .. name
-						elseif info.Cache4Method["Enable" .. name] then
+							prop.SetMethod = "set" .. name
+						elseif info.Cache4Method["Set" .. name] then
 							useMethod = true
-							prop.SetMethod = "Enable" .. name
+							prop.SetMethod = "Set" .. name
+						elseif prop.Type and prop.Type:Is(Boolean) then
+							-- FlagEnabled -> EnableFlag
+							name = name:gsub("[Ee][Nn][Aa][Bb][Ll][Ee][Dd]$", "")
+							if info.Cache4Method["enable" .. name] then
+								useMethod = true
+								prop.SetMethod = "enable" .. name
+							elseif info.Cache4Method["Enable" .. name] then
+								useMethod = true
+								prop.SetMethod = "Enable" .. name
+							end
 						end
+					elseif prop.Set then
+						useMethod = true
 					end
 
 					-- Field
@@ -1419,12 +1427,16 @@ do
 						prop.Get = v
 					elseif type(v) == "string" then
 						prop.GetMethod = v
+					elseif v == true then
+						prop.Get = true
 					end
 				elseif k == "set" then
 					if type(v) == "function" then
 						prop.Set = v
 					elseif type(v) == "string" then
 						prop.SetMethod = v
+					elseif v == true then
+						prop.Set = true
 					end
 				elseif k == "getmethod" then
 					if type(v) == "string" then
