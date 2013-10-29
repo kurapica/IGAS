@@ -21,6 +21,34 @@ interface "Threading"
 		"dead",
 	}
 
+	ITER_POOL_SIZE = 100
+	ITER_POINT = 0
+
+	ITER_CACHE = setmetatable({}, { __mode = "k" })
+	ITER_POOL = setmetatable({}, {
+		__call = function(self, value)
+			if value then
+				if ITER_POINT < ITER_POOL_SIZE then
+					ITER_POINT = ITER_POINT + 1
+					tinsert(self, value)
+				end
+			else
+				local th
+
+				if ITER_POINT > 0 then
+					ITER_POINT = ITER_POINT - 1
+					th = tremove(self, ITER_POINT + 1)
+				else
+					th = Thread()
+
+					ITER_CACHE[th] = true
+				end
+
+				return th
+			end
+		end,
+	})
+
 	------------------------------------------------------
 	-- System.Threading.Iterator
 	--
@@ -39,14 +67,12 @@ interface "Threading"
 	-- 3       i_3
 	--
 	------------------------------------------------------
-	function Iterator(func, ...)
-		return Reflector.ThreadCall(function( ... )
-			local th = Thread()
+	function Iterator(func)
+		return Reflector.ThreadCall(function()
+			local th = ITER_POOL()
 
-			th:Yield( th )
-
-			return func( ... )
-		end, ...)
+			return func( th:Yield( th ) )
+		end)
 	end
 
 	------------------------------------------------------
@@ -68,8 +94,11 @@ interface "Threading"
 			<br>
 		]======]
 
-		local function chkValue(flag, ...)
+		local function chkValue(self, flag, ...)
 			if flag then
+				if ITER_CACHE[self] and select('#', ...) == 0 then
+					ITER_POOL(self)
+				end
 				return ...
 			else
 				local value = ...
@@ -103,7 +132,7 @@ interface "Threading"
 				self.Thread = running()
 				return ...
 			elseif self.Thread then
-				return chkValue( resume(self.Thread, ...) )
+				return chkValue( self, resume(self.Thread, ...) )
 			end
 		end
 
@@ -203,3 +232,8 @@ interface "Threading"
 		end
 	endclass "Thread"
 endinterface "Threading"
+
+------------------------------------------------------
+-- Global settings
+------------------------------------------------------
+_G.tpairs = _G.tpairs or Threading.Iterator

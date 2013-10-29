@@ -310,12 +310,17 @@ do
 					resume(value)
 				end
 			else
-				if THREAD_POINT > 0 then
-					THREAD_POINT = THREAD_POINT - 1
-					return tremove(self, THREAD_POINT + 1)
-				else
-					return create(newRycThread)
+				local th
+				-- Keep safe from unexpected resume
+				while not th or status(th) == "dead" do
+					if THREAD_POINT > 0 then
+						THREAD_POINT = THREAD_POINT - 1
+						th = tremove(self, THREAD_POINT + 1)
+					else
+						th = create(newRycThread)
+					end
 				end
+				return th
 			end
 		end,
 	})
@@ -342,11 +347,6 @@ do
 		end
 
 		local th = THREAD_POOL()
-
-		-- Keep safe from unexpected resume
-		while status(th) == "dead" do
-			th = THREAD_POOL()
-		end
 
 		-- Register the function
 		resume(th, THREAD_POOL, func)
