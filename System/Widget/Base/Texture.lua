@@ -581,7 +581,7 @@ class "Texture"
 	]======]
 	property "PortraitTexture" {
 		Field = "__Portrait",
-		SetMethod = "SetPortraitTexture",
+		Set = "SetPortraitTexture",
 		Type = String + nil,
 	}
 

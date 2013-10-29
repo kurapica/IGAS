@@ -262,23 +262,14 @@ do
 
 	-- Base env field
 	BASE_ENV_FIELD = "__LOOP_BASE_ENV"
+end
 
+------------------------------------------------------
+-- Thread Pool & Cache
+------------------------------------------------------
+do
 	WEAK_KEY = {__mode = "k"}
 
-	CACHE_TABLE = setmetatable({}, {
-		__call = function(self, key)
-			if key then
-				wipe(key)
-				tinsert(self, key)
-			elseif next(self) then
-				return tremove(self)
-			else
-				return {}
-			end
-		end,
-	})
-
-	-- Thread Pool
 	THREAD_POOL_SIZE = 100
 
 	local function retValueAndRecycle(...)
@@ -347,6 +338,19 @@ do
 		-- Call and return the result
 		return chkValue( resume(th, ...) )
 	end
+
+	CACHE_TABLE = setmetatable({}, {
+		__call = function(self, key)
+			if key then
+				wipe(key)
+				tinsert(self, key)
+			elseif next(self) then
+				return tremove(self)
+			else
+				return {}
+			end
+		end,
+	})
 end
 
 ------------------------------------------------------
@@ -1416,20 +1420,16 @@ do
 				k = k:lower()
 
 				if k == "get" then
-					if type(v) == "function" then
+					if type(v) == "function" or type(v) == "boolean" then
 						prop.Get = v
 					elseif type(v) == "string" then
 						prop.GetMethod = v
-					elseif v == true then
-						prop.Get = true
 					end
 				elseif k == "set" then
-					if type(v) == "function" then
+					if type(v) == "function" or type(v) == "boolean" then
 						prop.Set = v
 					elseif type(v) == "string" then
 						prop.SetMethod = v
-					elseif v == true then
-						prop.Set = true
 					end
 				elseif k == "getmethod" then
 					if type(v) == "string" then
@@ -1440,7 +1440,7 @@ do
 						prop.SetMethod = v
 					end
 				elseif k == "field" then
-					if type(v) == "string" then
+					if type(v) == "string" and v ~= name then
 						prop.Field = v
 					end
 				elseif k == "type" then
@@ -1465,8 +1465,8 @@ do
 		end
 
 		-- Clear
-		if prop.Get then prop.GetMethod = nil end
-		if prop.Set then prop.SetMethod = nil end
+		if prop.Get ~= nil then prop.GetMethod = nil end
+		if prop.Set ~= nil then prop.SetMethod = nil end
 
 		if __Attribute__ then
 			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
