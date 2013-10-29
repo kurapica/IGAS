@@ -2,7 +2,7 @@
 -- Create Date : 2013/08/13
 -- ChangeLog   :
 
-Module "System.Threading" "1.0.1"
+Module "System.Threading" "1.0.2"
 
 namespace "System"
 
@@ -22,29 +22,25 @@ interface "Threading"
 	}
 
 	ITER_POOL_SIZE = 100
-	ITER_POINT = 0
 
 	ITER_CACHE = setmetatable({}, { __mode = "k" })
 	ITER_POOL = setmetatable({}, {
 		__call = function(self, value)
 			if value then
-				if ITER_POINT < ITER_POOL_SIZE then
-					ITER_POINT = ITER_POINT + 1
+				if #self < ITER_POOL_SIZE then
 					tinsert(self, value)
+					value.Thread = nil
+				else
+					ITER_CACHE[value] = nil
 				end
 			else
-				local th
+				value = tremove(self) or Thread()
 
-				if ITER_POINT > 0 then
-					ITER_POINT = ITER_POINT - 1
-					th = tremove(self, ITER_POINT + 1)
-				else
-					th = Thread()
-
-					ITER_CACHE[th] = true
+				if not ITER_CACHE[value] then
+					ITER_CACHE[value] = true
 				end
 
-				return th
+				return value
 			end
 		end,
 	})
@@ -101,6 +97,10 @@ interface "Threading"
 				end
 				return ...
 			else
+				if ITER_CACHE[self]  then
+					ITER_POOL(self)
+				end
+
 				local value = ...
 
 				if value then

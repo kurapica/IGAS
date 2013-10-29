@@ -280,7 +280,6 @@ do
 
 	-- Thread Pool
 	THREAD_POOL_SIZE = 100
-	THREAD_POINT = 0
 
 	local function retValueAndRecycle(...)
 		-- Here means the function call is finished successful
@@ -303,24 +302,18 @@ do
 	THREAD_POOL = setmetatable({}, {
 		__call = function(self, value)
 			if value then
-				if THREAD_POINT < THREAD_POOL_SIZE then
-					THREAD_POINT = THREAD_POINT + 1
+				if #self < THREAD_POOL_SIZE then
 					tinsert(self, value)
 				else
+					-- Kill it
 					resume(value)
 				end
 			else
-				local th
 				-- Keep safe from unexpected resume
-				while not th or status(th) == "dead" do
-					if THREAD_POINT > 0 then
-						THREAD_POINT = THREAD_POINT - 1
-						th = tremove(self, THREAD_POINT + 1)
-					else
-						th = create(newRycThread)
-					end
+				while not value or status(value) == "dead" do
+					value = tremove(self) or create(newRycThread)
 				end
-				return th
+				return value
 			end
 		end,
 	})
