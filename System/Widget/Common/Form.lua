@@ -112,7 +112,7 @@ class "Form"
 
 			if self.NeedHideForm then
 				if self.Form.Visible then
-					if instant then
+					if instant or InCombatLockdown() then
 						self.Form.Visible = false
 					else
 						RegisterAutoHide(self.Form, 1.5)

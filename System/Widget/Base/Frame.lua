@@ -905,35 +905,35 @@ class "Frame"
 		@type property
 		@desc whether keyboard interactivity is enabled for the frame
 	]======]
-	property "KeyboardEnabled" { Type = Boolean, }
+	property "KeyboardEnabled" { Type = Boolean }
 
 	doc [======[
 		@name MouseEnabled
 		@type property
 		@desc whether mouse interactivity is enabled for the frame
 	]======]
-	property "MouseEnabled" { Type = Boolean, }
+	property "MouseEnabled" { Type = Boolean }
 
 	doc [======[
 		@name Movable
 		@type property
 		@desc whether the frame can be moved by the user
 	]======]
-	property "Movable" { Type = Boolean, }
+	property "Movable" { Type = Boolean }
 
 	doc [======[
 		@name Resizable
 		@type property
 		@desc whether the frame can be resized by the user
 	]======]
-	property "Resizable" { Type = Boolean, }
+	property "Resizable" { Type = Boolean }
 
 	doc [======[
 		@name MouseWheelEnabled
 		@type property
 		@desc whether mouse wheel interactivity is enabled for the frame
 	]======]
-	property "MouseWheelEnabled" { Type = Boolean, }
+	property "MouseWheelEnabled" { Type = Boolean }
 
 	doc [======[
 		@name Backdrop
@@ -977,7 +977,7 @@ class "Frame"
 		@type property
 		@desc whether the frame's boundaries are limited to those of the screen
 	]======]
-	property "ClampedToScreen" { Type = Boolean, }
+	property "ClampedToScreen" { Type = Boolean }
 
 	doc [======[
 		@name ClampRectInsets
@@ -1072,7 +1072,7 @@ class "Frame"
 		@type property
 		@desc whether the frame should automatically come to the front when clicked
 	]======]
-	property "Toplevel" { Type = Boolean, }
+	property "Toplevel" { Type = Boolean }
 
 	doc [======[
 		@name Depth
@@ -1086,10 +1086,6 @@ class "Frame"
 		@type property
 		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
 	]======]
-	property "DepthIgnored" {
-		Get = "IsIgnoringDepth",
-		Set = "IgnoreDepth",
-		Type = Boolean,
-	}
+	property "DepthIgnored" { Type = Boolean }
 
 endclass "Frame"

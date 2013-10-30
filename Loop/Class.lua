@@ -95,6 +95,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/10/02 __Expandable__ attribute removed, __NonExpandable__ attribute added, now expandable is default attribute to all classes/interfaces
 --               2013/10/11 Attribute can apply to the struct's field now.
 --               2013/10/25 Redesign the definition environment, partclass & partinterface removed
+--               2013/10/30 The property auto-fill system finished
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -832,6 +833,38 @@ do
 	_KeyWord4IFEnv = _KeyWord4IFEnv or {}
 
 	do
+		local Verb2Adj = {
+			"(.+)(ed)$",
+			"(.+)(able)$",
+			"(.+)(ing)$",
+			"(.+)(ive)$",
+			"(.+)(ary)$",
+			"(.+)(al)$",
+			"(.+)(ous)$",
+			"(.+)(ior)$",
+			"(.+)(ful)$",
+		}
+
+		local function ParseAdj(str, useIs)
+			local noun, adj = str:match("^(.-)(%u%l+)$")
+
+			if noun and adj and #noun > 0 and #adj > 0 then
+				for _, pattern in ipairs(Verb2Adj) do
+					local head, tail = adj:match(pattern)
+
+					if head and tail and #head > 0 and #tail > 0 then
+						local c = head:sub(1, 1)
+
+						if useIs then
+							return "^[Ii]s[" .. c:upper() .. c:lower().."]" .. head:sub(2) .. "%w*" .. noun .. "$"
+						else
+							return "^[" .. c:upper() .. c:lower().."]" .. head:sub(2) .. "%w*" .. noun .. "$"
+						end
+					end
+				end
+			end
+		end
+
 		function CloneWithoutOverride(dest, src)
 			for key, value in pairs(src) do
 				if dest[key] == nil then
@@ -905,7 +938,10 @@ do
 			-- Cache4Property
 			wipe(info.Cache4Property)
 			-- Validate the properties
-			for name, prop in pairs(info.Property) do
+			for _, prop in pairs(info.Property) do
+				local name = prop.Name:gsub("^%a", strupper)
+				local useMethod = false
+
 				if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
 					prop.GetMethod = nil
 				end
@@ -914,62 +950,75 @@ do
 					prop.SetMethod = nil
 				end
 
-				if prop.Set == true or prop.Get == true or ( not prop.Set and not prop.Get and not prop.GetMethod and not prop.SetMethod and not prop.Field ) then
-					-- Auto generate property
-					local name = prop.Name:gsub("^%a", strupper)
-					local useMethod = false
+				-- Auto generate GetMethod
+				if ( prop.Get == nil or prop.Get == true ) and not prop.GetMethod and not prop.Field then
+					-- GetMethod
+					if info.Cache4Method["get" .. name] then
+						useMethod = true
+						prop.GetMethod = "get" .. name
+					elseif info.Cache4Method["Get" .. name] then
+						useMethod = true
+						prop.GetMethod = "Get" .. name
+					elseif prop.Type and prop.Type:Is(Boolean) then
+						-- FlagEnabled -> IsFlagEnabled
+						if info.Cache4Method["is" .. name] then
+							useMethod = true
+							prop.GetMethod = "is" .. name
+						elseif info.Cache4Method["Is" .. name] then
+							useMethod = true
+							prop.GetMethod = "Is" .. name
+						else
+							-- FlagEnable -> IsEnableFlag
+							local pattern = ParseAdj(name, true)
 
-					if prop.Get == true or not prop.Get then
-						-- GetMethod
-						if info.Cache4Method["get" .. name] then
-							useMethod = true
-							prop.GetMethod = "get" .. name
-						elseif info.Cache4Method["Get" .. name] then
-							useMethod = true
-							prop.GetMethod = "Get" .. name
-						elseif prop.Type and prop.Type:Is(Boolean) then
-							-- FlagEnabled -> IsFlagEnabled
-							if info.Cache4Method["is" .. name] then
-								useMethod = true
-								prop.GetMethod = "is" .. name
-							elseif info.Cache4Method["Is" .. name] then
-								useMethod = true
-								prop.GetMethod = "Is" .. name
+							if pattern then
+								for mname in pairs(info.Cache4Method) do
+									if mname:match(pattern) then
+										useMethod = true
+										prop.GetMethod = mname
+										break
+									end
+								end
 							end
 						end
-					elseif prop.Get then
-						useMethod = true
 					end
-
-					if prop.Set == true or not prop.Set then
-						-- SetMethod
-						if info.Cache4Method["set" .. name] then
-							useMethod = true
-							prop.SetMethod = "set" .. name
-						elseif info.Cache4Method["Set" .. name] then
-							useMethod = true
-							prop.SetMethod = "Set" .. name
-						elseif prop.Type and prop.Type:Is(Boolean) then
-							-- FlagEnabled -> EnableFlag
-							name = name:gsub("[Ee][Nn][Aa][Bb][Ll][Ee][Dd]$", "")
-							if info.Cache4Method["enable" .. name] then
-								useMethod = true
-								prop.SetMethod = "enable" .. name
-							elseif info.Cache4Method["Enable" .. name] then
-								useMethod = true
-								prop.SetMethod = "Enable" .. name
-							end
-						end
-					elseif prop.Set then
-						useMethod = true
-					end
-
-					-- Field
-					if not useMethod then
-						prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
-					end
+				else
+					useMethod = true
 				end
 
+				-- Auto generate SetMethod
+				if ( prop.Set == nil or prop.Set == true ) and not prop.SetMethod and not prop.Field then
+					-- SetMethod
+					if info.Cache4Method["set" .. name] then
+						useMethod = true
+						prop.SetMethod = "set" .. name
+					elseif info.Cache4Method["Set" .. name] then
+						useMethod = true
+						prop.SetMethod = "Set" .. name
+					elseif prop.Type and prop.Type:Is(Boolean) then
+						-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
+						local pattern = ParseAdj(name)
+
+						if pattern then
+							for mname in pairs(info.Cache4Method) do
+								if mname:match(pattern) then
+									useMethod = true
+									prop.SetMethod = mname
+									break
+								end
+							end
+						end
+					end
+				else
+					useMethod = true
+				end
+
+				-- Auto generate Field
+				if not useMethod and not prop.Field then
+					prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
+				end
+
+				-- Auto generate Default
 				if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
 					if prop.Type:Is(Boolean) then
 						prop.Default = false
@@ -1876,12 +1925,11 @@ do
 				if oper.Get then
 					value = oper.Get(self)
 				elseif oper.GetMethod then
-					oper = oper.GetMethod
-					local func = rawget(self, oper)
+					local func = rawget(self, oper.GetMethod)
 					if type(func) == "function" then
 						value = func(self)
 					else
-						value = Cache4Method[oper](self)
+						value = Cache4Method[oper.GetMethod](self)
 					end
 				elseif oper.Field then
 					value = rawget(self, oper.Field)
