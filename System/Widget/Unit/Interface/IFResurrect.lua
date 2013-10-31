@@ -4,7 +4,7 @@
 --               2013/06/08 Make sure the object will be hidden
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFResurrect", version) then
 	return
 end
@@ -33,7 +33,7 @@ function checkUnitForResurrect(unit)
 		-- Some times the resurrect event don't come when the target select resurrect to the tomb
 		local thread = _Resurrect_CheckThread[unit]
 
-		if thread.IsDead() then
+		if thread:IsDead() then
 			thread.Thread = function()
 				while UnitHasIncomingResurrection(unit) do
 					Threading.Sleep(_RESURRECT_CHECKTIME)

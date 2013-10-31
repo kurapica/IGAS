@@ -1,3 +1,7 @@
+2013/10/20: IGAS v54
+    1. New property auto fill system. new independence definition environment.
+    2. Fix IFResurrect error.
+
 2013/10/20: IGAS v53
     1. New NoUnitWatch property for UnitFrame, resuce cost for the SecureStateDriver.
     2. IFGroup support a mode only show dead players.
