@@ -1802,11 +1802,11 @@ do
 
 			if key == info.Name then
 				if type(value) == "function" then
-					info.Constructor = value
-
 					if __Attribute__ and info.Owner ~= __Attribute__ then
-						__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Constructor, info.SuperClass)
+						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Constructor, info.SuperClass, info.Owner, "Constructor") or value
 					end
+
+					info.Constructor = value
 
 					return
 				else
@@ -7250,42 +7250,28 @@ do
 			@type property
 			@desc The attribute target type, default AttributeTargets.All
 		]======]
-		property "AttributeTarget" {
-			Default = AttributeTargets.All,
-			Field = "__AttributeTarget",
-			Type = AttributeTargets,
-		}
+		property "AttributeTarget" { Default = AttributeTargets.All, Type = AttributeTargets }
 
 		doc [======[
 			@name Inherited
 			@type property
 			@desc Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true
 		]======]
-		property "Inherited" {
-			Default = true,
-			Field = "__Inherited",
-			Type = Boolean,
-		}
+		property "Inherited" { Default = true, Type = Boolean }
 
 		doc [======[
 			@name AllowMultiple
 			@type property
 			@desc whether multiple instances of your attribute can exist on an element. default false
 		]======]
-		property "AllowMultiple" {
-			Field = "__AllowMultiple",
-			Type = Boolean,
-		}
+		property "AllowMultiple" { Type = Boolean }
 
 		doc [======[
 			@name RunOnce
 			@type property
 			@desc Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation
 		]======]
-		property "RunOnce" {
-			Field = "__RunOnce",
-			Type = Boolean,
-		}
+		property "RunOnce" { Type = Boolean }
 	endclass "__AttributeUsage__"
 
 	class "__Final__"
@@ -7490,8 +7476,9 @@ do
 		end
 	endstruct "Argument"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, RunOnce = true }
 	__Final__()
+	__Unique__()
 	class "__Arguments__"
 		inherit "__Attribute__"
 
@@ -7500,6 +7487,57 @@ do
 			@type class
 			@desc The argument definitions of the target method or class's constructor
 		]======]
+
+		class "FixedMethod"
+			doc [======[
+				@name FixedMethod
+				@type class
+				@desc Used to control method with fixed arguments
+			]======]
+
+			------------------------------------------------------
+			-- Event
+			------------------------------------------------------
+
+			------------------------------------------------------
+			-- Method
+			------------------------------------------------------
+			doc [======[
+				@name MatchArgs
+				@type method
+				@desc Whether the fixed method can handler the arguments
+				@param ...
+				@return boolean
+			]======]
+			function MatchArgs(self, ...)
+				local count = select('#', ...)
+
+				if count >= self.MinArgs and count <= self.MaxArgs then
+
+				end
+
+				return false
+			end
+
+			------------------------------------------------------
+			-- Constructor
+			------------------------------------------------------
+
+			------------------------------------------------------
+			-- Meta-methods
+			------------------------------------------------------
+			function __call(self, ...)
+				if MatchArgs(self, ...) then
+
+				else
+					error(self.Usage, "2")
+				end
+			end
+
+			function __tostring(self)
+				return self.Usage
+			end
+		endclass "FixedMethod"
 
 		_Validate_Header = [[
 			return function (self, %s, ...)
@@ -7539,6 +7577,11 @@ do
 				return %s, ...
 			end
 		]]
+
+		_Error_Header = [[Usage : __Arguments__{ arg1[, arg2[, ...] ] } : ]]
+		_Error_NotArgument = [[arg%d must be System.Argument]]
+		_Error_NotOptional = [[arg%d must also be optional]]
+		_Error_NotList = [[arg%d can't be a list]]
 
 		local function buildValidate(count)
 			local args = ""
@@ -7625,15 +7668,49 @@ do
 			return unpack(ret)
 		end
 
-		local function ValidateArgument(arg)
-			if type(arg) == "table" and ( type(arg.Name) == "string" or IsType(arg.Type) ) then
-				if arg.Name and type(arg.Name) ~= "string" then arg.Name = nil end
-				if arg.Type and not IsType(arg.Type) then arg.Type = nil end
-				arg.IsList = arg.IsList and true or nil
+		local function ValidateArgument(self, i)
+			local isLast = i == #self
 
-				return true
+			local flag, arg = pcall( Argument.Validate, self[i] )
+
+			if flag then
+				-- Init table need name to match
+				if not arg.Name then self.NoInitTable = true end
+
+				-- Check optional args
+				if not arg.Type or arg.Type:Is(nil) then
+					if not self.MinArgs then
+						self.MinArgs = i - 1
+					end
+				elseif self.MinArgs then
+					-- Only optional args can be defined after optional args
+					error(_Error_Header .. _Error_NotOptional:format(i))
+				end
+
+				-- Check ... args
+				if arg.IsList then
+					if isLast then
+						if self.MinArgs then
+							error(_Error_Header .. _Error_NotList:format(i))
+						else
+							if not arg.Type or arg.Type:Is(nil) then
+								self.MinArgs = i - 1
+							else
+								-- Must have one parameter at least
+								self.MinArgs = i
+							end
+
+							-- Just big enough
+							self.MaxArgs = 9999
+
+							arg.Name = "..."
+						end
+					else
+						error(_Error_Header .. _Error_NotList:format(i))
+					end
+				end
 			else
-				return false
+				error(_Error_Header .. _Error_NotArgument:format(i))
 			end
 		end
 
@@ -7642,125 +7719,119 @@ do
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Self validation once
-			for i = #self, 1, -1 do
-				if not ValidateArgument(self[i]) or (i < #self and self[i].IsList) then
-					tremove(self, i)
-				end
+			for i = 1, #self do
+				ValidateArgument(self, i)
 			end
 
-			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner) or Reflector.IsStruct(owner)) then
-				local useList = false
-				local count = 0
-				local isObjectMethod = not name:match("^_")
+			-- Quick match
+			if not self.MinArgs then self.MinArgs = #self end
+			if not self.MaxArgs then self.MaxArgs = #self end
 
+			-- Generate usage message
+			local usage = CACHE_TABLE()
+
+			if targetType == AttributeTargets.Method then
+				self.IsConstructor = false
+
+				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+					self.IsObjectMethod = false
+
+					tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. "." .. name .. "( ")
+				else
+					self.IsObjectMethod = true
+
+					tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "( ")
+				end
+			else
+				self.IsConstructor = true
+
+				tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. "( ")
+			end
+
+			for i = 1, #self do
+				local arg = self[i]
+				local str = ""
+
+				if i > 1 then
+					tinsert(usage, ", ")
+				end
+
+				-- [name As type = default]
+				if arg.Name then
+					str = str .. arg.Name
+
+					if arg.Type then
+						str = str .. " As "
+					end
+				end
+
+				if arg.Type then
+					str = str .. tostring(arg.Type)
+				end
+
+				if arg.Default ~= nil then
+					local serialize = Reflector.Serialize(arg.Default, arg.Type)
+
+					if serialize then
+						str = str .. " = " .. serialize
+					end
+				end
+
+				if not arg.Type or arg.Type:Is(nil) then
+					str = "[" .. str .. "]"
+				end
+
+				tinsert(usage, str)
+			end
+
+			tinset(usage, " )")
+
+			self.Usage = tblconcat(usage, "")
+
+			CACHE_TABLE(usage)
+
+			--[[
+			if useList then
+				self.ValidateArguments = _ValidateArgumentsCache[0]
+			elseif count > 0 then
+				self.ValidateArguments = _ValidateArgumentsCache[count]
+			end
+
+			if self.ValidateArguments then
 				if isObjectMethod then
-					self.Usage = "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "("
-				else
-					self.Usage = "Usage : " .. _NSInfo[owner].Name .. "." .. name .. "("
-				end
-
-				for i = 1, #self do
-					local arg = self[i]
-					local str = ""
-
-					if i > 1 then
-						self.Usage = self.Usage .. ", "
-					end
-
-					if i == #self and arg.IsList then
-						self.Usage = self.Usage .. "..."
-						useList = true
-					else
-						local serialize
-
-						if arg.Default ~= nil then
-							serialize = Reflector.Serialize(arg.Default, arg.Type)
-						end
-
-						if serialize then
-							serialize = arg.Name .. " = " .. serialize
-						else
-							serialize = arg.Name
-						end
-
-						if arg.Type and arg.Type:Is(nil) then
-							serialize = "[" .. serialize .. "]"
-						end
-
-						self.Usage = self.Usage .. serialize
-						count = count + 1
-					end
-				end
-
-				self.Usage = self.Usage .. ") - "
-
-				if useList then
-					self.ValidateArguments = _ValidateArgumentsCache[0]
-				elseif count > 0 then
-					self.ValidateArguments = _ValidateArgumentsCache[count]
-				end
-
-				if self.ValidateArguments then
-					if isObjectMethod then
-						return function(obj, ...)
-							return target(obj, self:ValidateArguments(...))
-						end
-					else
-						return function(...)
-							return target(self:ValidateArguments(...))
-						end
+					return function(obj, ...)
+						return target(obj, self:ValidateArguments(...))
 					end
 				else
-					return target
-				end
-			elseif Reflector.IsClass(target) and targetType == AttributeTargets.Constructor then
-				local useList = false
-				local count = 0
-
-				if self.Usage and self.ValidateArguments then return end
-
-				self.Usage = "Usage : " .. _NSInfo[target].Name .. "("
-
-				for i = 1, #self do
-					local arg = self[i]
-
-					if i > 1 then
-						self.Usage = self.Usage .. ", "
-					end
-
-					if i == #self and arg.IsList then
-						self.Usage = self.Usage .. "..."
-						useList = true
-					else
-						local serialize
-
-						if arg.Default ~= nil then
-							serialize = Reflector.Serialize(arg.Default, arg.Type)
-						end
-
-						if serialize then
-							serialize = arg.Name .. " = " .. serialize
-						else
-							serialize = arg.Name
-						end
-
-						if arg.Type and arg.Type:Is(nil) then
-							serialize = "[" .. serialize .. "]"
-						end
-
-						self.Usage = self.Usage .. serialize
-						count = count + 1
+					return function(...)
+						return target(self:ValidateArguments(...))
 					end
 				end
+			else
+				return target
+			end--]]
 
-				self.Usage = self.Usage .. ") - "
+			-- Save self to fixedmethod object
+			local fixedObj = FixedMethod()
 
-				if useList then
-					self.ValidateArguments = _ValidateArgumentsCache[0]
-				elseif count > 0 then
-					self.ValidateArguments = _ValidateArgumentsCache[count]
-				end
+			for k, v in pairs(self) do
+				fixedObj[k] = v
 			end
+
+			fixedObj.Method = target
+
+			wipe(self)
+
+			return fixedObj
+		end
+
+		------------------------------------------------------
+		-- Meta-methods
+		------------------------------------------------------
+		function __call(self)
+			wipe(self)
+
+			return Super.__call(self)
 		end
 	endclass "__Arguments__"
 
