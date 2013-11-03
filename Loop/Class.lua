@@ -1040,24 +1040,6 @@ do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
-			-- Cache for objects
-			if __Attribute__ and __Cache__ and info.Type == TYPE_CLASS then
-				local cache = info.Cache4Object
-				if cache then wipe(cache) end
-
-				for key, func in pairs(info.Cache4Method) do
-					if __Attribute__._IsDefined(func, AttributeTargets.Method, __Cache__) then
-						cache = cache or {}
-						tinsert(cache, key)
-					end
-				end
-				if cache and next(cache) then
-					info.Cache4Object = cache
-				else
-					info.Cache4Object = nil
-				end
-			end
-
 			-- Clear branch
 			if info.ChildClass then
 				for subcls in pairs(info.ChildClass) do
@@ -1196,10 +1178,6 @@ do
 
 			if type(key) == "string" and type(value) == "function" then
 				if __Attribute__ then
-					if not key:match("^_") and __Attribute__._IsDefined(info.Owner, AttributeTargets.Interface, __Cache__) then
-						__Cache__()
-					end
-
 					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, GetSuperMethod(info.Owner, key), info.Owner, key) or value
 				end
 
@@ -2248,15 +2226,6 @@ do
 			end
 		end
 
-		-- Auto cache methods in object
-		if info.Cache4Object then
-			for _, key in ipairs(info.Cache4Object) do
-				if not rawget(obj, key) then
-					rawset(obj,  key, info.Cache4Method[key])
-				end
-			end
-		end
-
 		if obj and isUnique then
 			info.UniqueObject = obj
 		end
@@ -2826,8 +2795,8 @@ do
 				return value
 			end
 
-			-- Check Cache4Method
-			value = info.Cache4Method and info.Cache4Method[key]
+			-- Check Method
+			value = info.Method and info.Method[key]
 			if value then
 				rawset(self, key, value)
 				return value
@@ -2870,14 +2839,14 @@ do
 			if type(key) == "string"  then
 				if type(value) == "function" then
 					-- Cache the method for the struct data
-					info.Cache4Method = info.Cache4Method or {}
+					info.Method = info.Method or {}
 
 					-- keep function in env, just register the method
 					if __Attribute__ then
 						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
 					end
 
-					info.Cache4Method[key] = value
+					info.Method[key] = value
 
 					-- Don't save to environment until need it
 					value = nil
@@ -2975,8 +2944,8 @@ do
 			local ok, value = pcall(ValidateStruct, strt, init)
 
 			if ok then
-				if info.Cache4Method and type(value) == "table" then
-					for k, v in pairs(info.Cache4Method) do
+				if info.Method and type(value) == "table" then
+					for k, v in pairs(info.Method) do
 						value[k] = v
 					end
 				end
@@ -3014,8 +2983,8 @@ do
 		if type(info.Constructor) == "function" then
 			local ok, ret = pcall(info.Constructor, ...)
 			if ok then
-				if info.Cache4Method and type(ret) == "table" then
-					for k, v in pairs(info.Cache4Method) do
+				if info.Method and type(ret) == "table" then
+					for k, v in pairs(info.Method) do
 						ret[k] = v
 					end
 				end
@@ -3039,8 +3008,8 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				if info.Cache4Method then
-					for k, v in pairs(info.Cache4Method) do
+				if info.Method then
+					for k, v in pairs(info.Method) do
 						value[k] = v
 					end
 				end
@@ -3078,8 +3047,8 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				if info.Cache4Method then
-					for k, v in pairs(info.Cache4Method) do
+				if info.Method then
+					for k, v in pairs(info.Method) do
 						value[k] = v
 					end
 				end
@@ -3186,7 +3155,7 @@ do
 		info.ArrayElement = nil
 		info.UserValidate = nil
 		info.Validate = nil
-		info.Cache4Method = nil
+		info.Method = nil
 		info.Constructor = nil
 		info.Import4Env = nil
 
@@ -3860,34 +3829,6 @@ do
 			@type interface
 			@desc This interface contains much methodes to get the running object-oriented system's informations.
 		]======]
-
-		doc [======[
-			@name FireObjectEvent
-			@type method
-			@desc Fire an object's event, to trigger the object's event handlers
-			@param object the object
-			@param event the event name
-			@param ... the event's arguments
-			@return nil
-		]======]
-		function FireObjectEvent(self, sc, ...)
-			-- No more check , just fire the event as quick as we can
-			local handler = rawget(self, "__Events")
-			handler = handler and handler[sc]
-			return handler and handler(self, ...)
-
-			--[[if not GetObjectClass(self) then
-				error("Usage : Reflector.FireObjectEvent(object, event[, ...]) : 'object' - object expected.")
-			end
-
-			if type(sc) ~= "string" then
-				error(("Usage : Reflector.FireObjectEvent(object, event [, args, ...]) : 'event' - string expected, got %s."):format(type(sc)), 2)
-			end
-
-			if rawget(self, "__Events") and rawget(self.__Events, sc) then
-				return rawget(self.__Events, sc)(self, ...)
-			end--]]
-		end
 
 		doc [======[
 			@name GetCurrentNameSpace
@@ -4679,6 +4620,22 @@ do
 		end
 
 		doc [======[
+			@name FireObjectEvent
+			@type method
+			@desc Fire an object's event, to trigger the object's event handlers
+			@param object the object
+			@param event the event name
+			@param ... the event's arguments
+			@return nil
+		]======]
+		function FireObjectEvent(obj, sc, ...)
+			-- No more check , just fire the event as quick as we can
+			local handler = rawget(obj, "__Events")
+			handler = handler and handler[sc]
+			if handler then return handler(obj, ...) end
+		end
+
+		doc [======[
 			@name ActiveThread
 			@type method
 			@desc Active thread mode for special events.
@@ -4696,7 +4653,12 @@ do
 					name = select(i, ...)
 
 					if HasEvent(cls, name) then
-						obj[name].__ThreadActivated = true
+						local handler = rawget(obj, "__Events")
+						handler = handler and handler[name]
+
+						if handler or not IsThreadActivated(cls, name) then
+							obj[name].ThreadActivated = true
+						end
 					end
 				end
 			end
@@ -4712,11 +4674,16 @@ do
 			@usage System.Reflector.IsThreadActivated(obj, "OnClick")
 		]======]
 		function IsThreadActivated(obj, sc)
-			local cls = GetObjectClass(obj)
-			local name
+			if IsClass(obj) then
+				local evt = _NSInfo[obj].Cache4Event[sc]
 
-			if cls and HasEvent(cls, sc) then
-				return obj[sc].__ThreadActivated or false
+				return evt and evt.ThreadActivated or false
+			else
+				local cls = GetObjectClass(obj)
+
+				if cls and HasEvent(cls, sc) then
+					return obj[sc].ThreadActivated or false
+				end
 			end
 
 			return false
@@ -4740,7 +4707,12 @@ do
 					name = select(i, ...)
 
 					if HasEvent(cls, name) then
-						obj[name].__ThreadActivated = nil
+						local handler = rawget(obj, "__Events")
+						handler = handler and handler[name]
+
+						if handler or IsThreadActivated(cls, name) then
+							obj[name].ThreadActivated = false
+						end
 					end
 				end
 			end
@@ -5139,10 +5111,6 @@ do
 						end
 
 						if info.Type == TYPE_INTERFACE then
-							if __Attribute__._IsDefined(ns, AttributeTargets.Interface, __Cache__) then
-								result = result .. "[__Cache__]\n"
-							end
-
 							result = result .. "[Interface] " .. GetFullName(ns) .. " :"
 
 							if HasDocumentPart(ns, "interface", GetName(ns)) then
@@ -5409,7 +5377,7 @@ do
 
 						if querytype == "event" then
 							-- __Thread__
-							if __Attribute__._IsEventAttributeDefined(ns, name, __Thread__) then
+							if IsThreadActivated(ns, name) then
 								result = result .. "\n\n  [__Thread__]"
 							end
 
@@ -5474,11 +5442,6 @@ do
 								if info.Type == TYPE_INTERFACE and info.NonInheritable then
 									isGlobal = true
 								end
-							end
-
-							-- __Thread__
-							if __Attribute__._IsMethodAttributeDefined(ns, name, __Thread__) then
-								result = result .. "\n\n  [__Thread__]"
 							end
 
 							-- Format
@@ -5784,10 +5747,19 @@ do
 			@param obj2 object, the object used to compare to
 			@return boolean
 		]======]
-		function IsEqual(obj1, obj2)
+		local function checkEqual(obj1, obj2, cache)
 			if obj1 == obj2 then return true end
 			if type(obj1) ~= "table" then return false end
 			if type(obj2) ~= "table" then return false end
+
+			if cache[obj1] and cache[obj2] then
+				return true
+			elseif cache[obj1] or cache[obj2] then
+				return false
+			else
+				cache[obj1] = true
+				cache[obj2] = true
+			end
 
 			local cls = getmetatable(obj1)
 			local info = cls and rawget(_NSInfo, cls)
@@ -5798,7 +5770,7 @@ do
 				-- Check properties
 				for name, prop in pairs(info.Cache4Property) do
 					if prop.Get or prop.GetMethod or prop.Field then
-						if not IsEqual(obj1[name], obj2[name]) then
+						if not checkEqual(obj1[name], obj2[name], cache) then
 							return false
 						end
 					end
@@ -5807,7 +5779,7 @@ do
 
 			-- Check fields
 			for k, v in pairs(obj1) do
-				if not IsEqual(v, rawget(obj2, k)) then
+				if not checkEqual(v, rawget(obj2, k), cache) then
 					return false
 				end
 			end
@@ -5819,6 +5791,16 @@ do
 			end
 
 			return true
+		end
+
+		function IsEqual(obj1, obj2)
+			local cache = CACHE_TABLE()
+
+			local result = checkEqual(obj1, obj2, cache)
+
+			CACHE_TABLE(cache)
+
+			return result
 		end
 	endinterface "Reflector"
 
@@ -5837,25 +5819,25 @@ do
 			@type property
 			@desc The event's name
 		]======]
-		property "Name" {
-			Field = "__Name",
-			Type = String,
-		}
+		property "Name" { Type = String }
+
+		doc [======[
+			@name ThreadActivated
+			@type property
+			@desc Whether the event is thread activated
+		]======]
+		property "ThreadActivated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 		function Event(self, name)
-			self.__Name = type(name) == "string" and name or "anonymous"
+			self.Name = type(name) == "string" and name or "anonymous"
 		end
 
 		------------------------------------------------------
 		-- Meta-Method
 		------------------------------------------------------
-		function __call(self)
-			-- Pass
-		end
-
 		function __tostring(self)
 			return ("%s( %q )"):format(tostring(Event), self.__Name)
 		end
@@ -5869,9 +5851,7 @@ do
 		]======]
 
 		local function FireOnEventHandlerChanged(self)
-			if self.__Owner and self.__Event then
-				Reflector.FireObjectEvent(self.__Owner, "OnEventHandlerChanged", self.__Event.Name)
-			end
+			return Reflector.FireObjectEvent(self.Owner, "OnEventHandlerChanged", self.Event.Name)
 		end
 
 		------------------------------------------------------
@@ -5902,7 +5882,7 @@ do
 			end
 
 			if flag then
-				FireOnEventHandlerChanged(self)
+				return FireOnEventHandlerChanged(self)
 			end
 		end
 
@@ -5916,7 +5896,7 @@ do
 		function Copy(self, src)
 			local flag = false
 
-			if Reflector.ObjectIsClass(src, EventHandler) and self ~= src then
+			if Reflector.ObjectIsClass(src, EventHandler) and self.Event == src.Event and self ~= src then
 				for i = #self, 0, -1 do
 					flag = true
 					self[i] = nil
@@ -5929,7 +5909,7 @@ do
 			end
 
 			if flag then
-				FireOnEventHandlerChanged(self)
+				return FireOnEventHandlerChanged(self)
 			end
 		end
 
@@ -5941,42 +5921,28 @@ do
 			@type property
 			@desc The owner of the event handler
 		]======]
-		property "Owner" {
-			Get = function(self)
-				return self.__Owner
-			end,
-		}
+		property "Owner" { Type = Table }
 
 		doc [======[
 			@name Event
 			@type property
 			@desc The event type of the handler
 		]======]
-		property "Event" {
-			Get = function(self)
-				return self.__Event
-			end,
-		}
+		property "Event" { Type = Event }
 
 		doc [======[
 			@name Blocked
 			@type property
 			@desc Whether the event handler is blocked
 		]======]
-		property "Blocked" {
-			Field = "__Blocked",
-			Type = Boolean,
-		}
+		property "Blocked" { Type = Boolean }
 
 		doc [======[
 			@name ThreadActivated
 			@type property
 			@desc Whether the event handler is thread activated
 		]======]
-		property "ThreadActivated" {
-			Field = "__ThreadActivated",
-			Type = Boolean,
-		}
+		property "ThreadActivated" { Type = Boolean }
 
 		doc [======[
 			@name Handler
@@ -5990,7 +5956,7 @@ do
 			Set = function(self, value)
 				if self[0] ~= value then
 					self[0] = value
-					FireOnEventHandlerChanged(self)
+					return FireOnEventHandlerChanged(self)
 				end
 			end,
 			Type = Function + nil,
@@ -6008,12 +5974,12 @@ do
 	    		error("Usage : EventHandler(event, owner) - 'owner' must be an object.")
 	    	end
 
-	    	self.__Event = evt
-	    	self.__Owner = owner
+	    	self.Event = evt
+	    	self.Owner = owner
 
 	    	-- Active the thread status based on the attribute setting
-	    	if __Attribute__._IsDefined(evt, AttributeTargets.Event, __Thread__) then
-	    		self.__ThreadActivated = true
+	    	if evt.ThreadActivated then
+	    		self.ThreadActivated = true
 	    	end
 	    end
 
@@ -6061,18 +6027,18 @@ do
 		local pcall = pcall
 		local ipairs = ipairs
 		local errorhandler = errorhandler
+		local CallThread = CallThread
 
 		function __call(self, obj, ...)
 			-- The event call is so frequent
 			-- keep local for optimization
-			if self.__Blocked then return end
+			if self.Blocked then return end
 
-			local owner = self.__Owner
+			local owner = self.Owner
 			local asParam, useThread, ret
 
 			asParam = (obj ~= owner)
-
-			useThread = self.__ThreadActivated
+			useThread = self.ThreadActivated
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
@@ -6121,7 +6087,7 @@ do
 		end
 
 		function __tostring(self)
-			return tostring(EventHandler) .. "( " .. tostring(self.__Event) .. " )"
+			return tostring(EventHandler) .. "( " .. tostring(self.Event) .. " )"
 		end
 	endclass "EventHandler"
 
@@ -7426,7 +7392,7 @@ do
 	end
 
 	-- More usable attributes
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, RunOnce = true}
 	__Final__()
 	__Unique__()
 	class "__Thread__"
@@ -7441,16 +7407,28 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			if type(target) == "function" and (Reflector.IsClass(owner) or Reflector.IsInterface(owner) or Reflector.IsStruct(owner)) then
-				-- Wrap the target method
-				return function (self, ...)
-					return CallThread(target, self, ...)
+			local CallThread = CallThread
+
+			if targetType == AttributeTargets.Method then
+				if type(target) == "function" then
+					-- Wrap the target method
+					return function (...)
+						return CallThread(target, ...)
+					end
+				elseif Reflector.ObjectIsClass(target, __Arguments__.FixedMethod) then
+					local func = target.Method
+
+					target.Method = function (...)
+						return CallThread(func, ...)
+					end
 				end
+			elseif targetType == AttributeTargets.Event then
+				_NSInfo[owner].Event[target].ThreadActivated = true
 			end
 		end
 	endclass "__Thread__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Method}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class}
 	__Final__()
 	__Unique__()
 	class "__Cache__"
@@ -7511,13 +7489,32 @@ do
 			]======]
 			function MatchArgs(self, ...)
 				local count = select('#', ...)
+				local init = select(1, ...)
 
+				-- Check if is an init table
+				if not self.NoInitTable and count == 1 and type(init) == "table" and getmetatable(init) == nil then
+					for i = 1, self.MinArgs do
+
+					end
+				end
+
+				-- Check argument settings
 				if count >= self.MinArgs and count <= self.MaxArgs then
 
 				end
 
 				return false
 			end
+
+			------------------------------------------------------
+			-- Property
+			------------------------------------------------------
+			doc [======[
+				@name Next
+				@type property
+				@desc The next fixed method
+			]======]
+			property "Next" { Type = FixedMethod + nil }
 
 			------------------------------------------------------
 			-- Constructor
@@ -7528,9 +7525,11 @@ do
 			------------------------------------------------------
 			function __call(self, ...)
 				if MatchArgs(self, ...) then
-
+					return self.Method( ... )
+				elseif self.Next then
+					return self.Next( ... )
 				else
-					error(self.Usage, "2")
+					return error(self.Usage, 2)
 				end
 			end
 
@@ -7718,21 +7717,17 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
+			if #self == 0 then return target end
+
 			-- Self validation once
 			for i = 1, #self do
 				ValidateArgument(self, i)
 			end
 
-			-- Quick match
-			if not self.MinArgs then self.MinArgs = #self end
-			if not self.MaxArgs then self.MaxArgs = #self end
-
 			-- Generate usage message
 			local usage = CACHE_TABLE()
 
 			if targetType == AttributeTargets.Method then
-				self.IsConstructor = false
-
 				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 					self.IsObjectMethod = false
 
@@ -7743,7 +7738,7 @@ do
 					tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "( ")
 				end
 			else
-				self.IsConstructor = true
+				self.IsObjectMethod = true
 
 				tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. "( ")
 			end
@@ -7790,26 +7785,9 @@ do
 
 			CACHE_TABLE(usage)
 
-			--[[
-			if useList then
-				self.ValidateArguments = _ValidateArgumentsCache[0]
-			elseif count > 0 then
-				self.ValidateArguments = _ValidateArgumentsCache[count]
-			end
-
-			if self.ValidateArguments then
-				if isObjectMethod then
-					return function(obj, ...)
-						return target(obj, self:ValidateArguments(...))
-					end
-				else
-					return function(...)
-						return target(self:ValidateArguments(...))
-					end
-				end
-			else
-				return target
-			end--]]
+			-- Quick match
+			if not self.MinArgs then self.MinArgs = #self end
+			if not self.MaxArgs then self.MaxArgs = #self end
 
 			-- Save self to fixedmethod object
 			local fixedObj = FixedMethod()
@@ -7821,6 +7799,13 @@ do
 			fixedObj.Method = target
 
 			wipe(self)
+
+			-- Check existed fiexedMethod for the same name
+			local methodSet = _NSInfo[owner].Method
+
+			if methodSet and methodSet[name] then
+				fixedObj.Next = methodSet[name]
+			end
 
 			return fixedObj
 		end
