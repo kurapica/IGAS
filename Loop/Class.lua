@@ -7613,6 +7613,28 @@ do
 				elseif self.Next then
 					return self.Next( ... )
 				else
+					local next
+
+					-- Check super
+					local info = _NSInfo[self.Owner]
+					local name = self.Name
+
+					next = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
+
+					if next then
+						return next( ... )
+					end
+
+					if info.ExtendInterface then
+						for _, IF in ipairs(info.ExtendInterface) do
+							next = _NSInfo[IF].Cache4Method[name]
+
+							if next then
+								return next( ... )
+							end
+						end
+					end
+
 					return error(self.Usage, 2)
 				end
 			end
