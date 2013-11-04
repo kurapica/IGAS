@@ -435,6 +435,10 @@ do
 
 			if info.Type == TYPE_CLASS and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
 				if not info.Cache4Method[key] then
+					if __Attribute__ then
+						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
+					end
+
 					info.Method[key] = value
 
 					return RefreshCache(self)
@@ -443,6 +447,10 @@ do
 				end
 			elseif info.Type == TYPE_INTERFACE and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
 				if not info.Cache4Method[key] then
+					if __Attribute__ then
+						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
+					end
+
 					info.Method[key] = value
 
 					return RefreshCache(self)
@@ -1781,7 +1789,7 @@ do
 			if key == info.Name then
 				if type(value) == "function" then
 					if __Attribute__ and info.Owner ~= __Attribute__ then
-						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Constructor, info.SuperClass, info.Owner, "Constructor") or value
+						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Constructor, nil, info.Owner, "Constructor") or value
 					end
 
 					info.Constructor = value
@@ -2592,12 +2600,6 @@ do
 		if info.Name == name then
 			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
-
-			if not info.Constructor then
-				if __Attribute__ and info.Owner ~= __Attribute__ then
-					__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Constructor, info.SuperClass)
-				end
-			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -6232,7 +6234,7 @@ do
 			if targetType == AttributeTargets.Class then
 				return Reflector.IsClass(target)
 			elseif targetType == AttributeTargets.Constructor then
-				return Reflector.IsClass(target)
+				return type(target) == "function"
 			elseif targetType == AttributeTargets.Enum then
 				return Reflector.IsEnum(target)
 			elseif targetType == AttributeTargets.Event then
@@ -6316,6 +6318,11 @@ do
 					arg1 = name
 					arg2 = targetType
 					arg3 = owner
+				elseif targetType == AttributeTargets.Constructor then
+					arg1 = target
+					arg2 = targetType
+					arg3 = owner
+					arg4 = name
 				else
 					arg1 = target
 					arg2 = targetType
@@ -7506,6 +7513,76 @@ do
 				return false
 			end
 
+			doc [======[
+				@name GetUsage
+				@type method
+				@desc Get the usage of the fixed method
+				@return string
+			]======]
+			function GetUsage(self)
+				if self.__Usage then return self.__Usage end
+
+				-- Generate usage message
+				local usage = CACHE_TABLE()
+				local targetType = self.TargetType
+				local name = self.Name
+				local owner = self.Owner
+
+				if targetType == AttributeTargets.Method then
+					if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+						tinsert(usage, "Usage : " .. tostring(owner) .. "." .. name .. "( ")
+					else
+						tinsert(usage, "Usage : " .. tostring(owner) .. ":" .. name .. "( ")
+					end
+				else
+					tinsert(usage, "Usage : " .. tostring(owner) .. "( ")
+				end
+
+				for i = 1, #self do
+					local arg = self[i]
+					local str = ""
+
+					if i > 1 then
+						tinsert(usage, ", ")
+					end
+
+					-- [name As type = default]
+					if arg.Name then
+						str = str .. arg.Name
+
+						if arg.Type then
+							str = str .. " As "
+						end
+					end
+
+					if arg.Type then
+						str = str .. tostring(arg.Type)
+					end
+
+					if arg.Default ~= nil then
+						local serialize = Reflector.Serialize(arg.Default, arg.Type)
+
+						if serialize then
+							str = str .. " = " .. serialize
+						end
+					end
+
+					if not arg.Type or arg.Type:Is(nil) then
+						str = "[" .. str .. "]"
+					end
+
+					tinsert(usage, str)
+				end
+
+				tinset(usage, " )")
+
+				self.__Usage = tblconcat(usage, "")
+
+				CACHE_TABLE(usage)
+
+				return self.__Usage
+			end
+
 			------------------------------------------------------
 			-- Property
 			------------------------------------------------------
@@ -7514,7 +7591,14 @@ do
 				@type property
 				@desc The next fixed method
 			]======]
-			property "Next" { Type = FixedMethod + nil }
+			property "Next" { Type = FixedMethod + Function + nil }
+
+			doc [======[
+				@name Usage
+				@type property
+				@desc The usage of the fixed method
+			]======]
+			property "Usage" { }
 
 			------------------------------------------------------
 			-- Constructor
@@ -7534,7 +7618,7 @@ do
 			end
 
 			function __tostring(self)
-				return self.Usage
+				return GetUsage(self)
 			end
 		endclass "FixedMethod"
 
@@ -7724,66 +7808,9 @@ do
 				ValidateArgument(self, i)
 			end
 
-			-- Generate usage message
-			local usage = CACHE_TABLE()
-
-			if targetType == AttributeTargets.Method then
-				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
-					self.IsObjectMethod = false
-
-					tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. "." .. name .. "( ")
-				else
-					self.IsObjectMethod = true
-
-					tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. ":" .. name .. "( ")
-				end
-			else
-				self.IsObjectMethod = true
-
-				tinsert(usage, "Usage : " .. _NSInfo[owner].Name .. "( ")
-			end
-
-			for i = 1, #self do
-				local arg = self[i]
-				local str = ""
-
-				if i > 1 then
-					tinsert(usage, ", ")
-				end
-
-				-- [name As type = default]
-				if arg.Name then
-					str = str .. arg.Name
-
-					if arg.Type then
-						str = str .. " As "
-					end
-				end
-
-				if arg.Type then
-					str = str .. tostring(arg.Type)
-				end
-
-				if arg.Default ~= nil then
-					local serialize = Reflector.Serialize(arg.Default, arg.Type)
-
-					if serialize then
-						str = str .. " = " .. serialize
-					end
-				end
-
-				if not arg.Type or arg.Type:Is(nil) then
-					str = "[" .. str .. "]"
-				end
-
-				tinsert(usage, str)
-			end
-
-			tinset(usage, " )")
-
-			self.Usage = tblconcat(usage, "")
-
-			CACHE_TABLE(usage)
+			self.Owner = owner
+			self.TargetType = targetType
+			self.Name = name
 
 			-- Quick match
 			if not self.MinArgs then self.MinArgs = #self end
@@ -7801,10 +7828,16 @@ do
 			wipe(self)
 
 			-- Check existed fiexedMethod for the same name
-			local methodSet = _NSInfo[owner].Method
+			if targetType == AttributeTargets.Method then
+				local methodSet = _NSInfo[owner].Method
 
-			if methodSet and methodSet[name] then
-				fixedObj.Next = methodSet[name]
+				if methodSet and methodSet[name] then
+					fixedObj.Next = methodSet[name]
+				end
+			elseif targetType == AttributeTargets.Constructor then
+				if _NSInfo[owner].Constructor then
+					fixedObj.Next = _NSInfo[owner].Constructor
+				end
 			end
 
 			return fixedObj

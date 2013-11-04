@@ -3,9 +3,10 @@
 -- ChangeLog
 --				2011/03/12	Recode as class
 --              2012/09/04  Rotate & Shear method added
+--              2013/11/04  Reduce memory cost
 
 -- Check Version
-local version = 13
+local version = 14
 if not IGAS:NewAddon("IGAS.Widget.Texture", version) then
 	return
 end
@@ -214,6 +215,19 @@ class "Texture"
 		@return nil
 	]======]
 
+	COLOR_TABLE = setmetatable({}, {
+		__call = function(self, key)
+			if key then
+				wipe(key)
+				tinsert(self, key)
+			elseif next(self) then
+				return tremove(self)
+			else
+				return {}
+			end
+		end,
+	})
+
 	doc [======[
 		@name SetTexture
 		@type method
@@ -226,6 +240,10 @@ class "Texture"
 		@return boolean 1 if the texture was successfully changed; otherwise nil (1nil)
 	]======]
 	function SetTexture(self, ...)
+		if self.__Color then
+			COLOR_TABLE(self.__Color)
+		end
+
 		self.__Color = nil
 		self.__Unit = nil
 		self.__OriginTexCoord = nil
@@ -243,7 +261,13 @@ class "Texture"
 				b = (b and type(b) == "number" and ((b < 0 and 0) or (b > 1 and 1) or b)) or 0
 				a = (a and type(a) == "number" and ((a < 0 and 0) or (a > 1 and 1) or a)) or 1
 
-				self.__Color = ColorType(r, g, b, a)
+				local color = COLOR_TABLE()
+				color.r = r
+				color.g = g
+				color.b = b
+				color.a = a
+
+				self.__Color = color
 				return self.__UI:SetTexture(r, g, b, a)
 			end
 		end
@@ -266,6 +290,10 @@ class "Texture"
 		@return nil
 	]======]
 	function SetPortraitUnit(self, ...)
+		if self.__Color then
+			COLOR_TABLE(self.__Color)
+		end
+
 		self.__Color = nil
 		self.__Unit = nil
 		self.__OriginTexCoord = nil
