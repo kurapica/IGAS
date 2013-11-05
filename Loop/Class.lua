@@ -951,7 +951,7 @@ do
 								--- extend method
 								for _, IF in ipairs(info.ExtendInterface) do
 									if _NSInfo[IF].Cache4Method[name] == method.Next then
-										method.Next == nil
+										method.Next = nil
 										break
 									end
 								end
@@ -7673,7 +7673,7 @@ do
 					if not value or
 						( Reflector.IsInterface(owner) and not Reflector.ObjectIsInterface(value, owner) ) or
 						( Reflector.IsClass(owner) and not Reflector.ObjectIsClass(value, owner)) or
-						( Reflector.IsStruct(owner) and not pcall(owner.Validate, value) then
+						( Reflector.IsStruct(owner) and not pcall(owner.Validate, value)) then
 
 						error(self.Usage, 2)
 					end
