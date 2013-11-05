@@ -932,6 +932,34 @@ do
 
 			-- Cache4Method
 			wipe(info.Cache4Method)
+			-- Validate fixedMethods, remove link to parent
+			for name, method in pairs(info.Method) do
+				if getmetatable(method) then
+					while method.Next do
+						if getmetatable(method.Next) then
+							if method.Next.Owner ~= info.Owner then
+								method.Next = nil
+								break
+							else
+								method = method.Next
+							end
+						else
+							--- superclass method
+							if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] == method.Next then
+								method.Next = nil
+							elseif info.ExtendInterface then
+								--- extend method
+								for _, IF in ipairs(info.ExtendInterface) do
+									if _NSInfo[IF].Cache4Method[name] == method.Next then
+										method.Next == nil
+										break
+									end
+								end
+							end
+						end
+					end
+				end
+			end
 			--- self method
 			CloneWithoutOverride4Method(info.Cache4Method, info.Method)
 			--- superclass method
@@ -7457,6 +7485,12 @@ do
 		function Validate(value)
 			value.Type = value.Type and BuildType(value.Type, "Type") or nil
 
+			if value.Type and value.Default ~= nil then
+				if value.Type:GetObjectType(value.Default) == false then
+					value.Default = nil
+				end
+			end
+
 			return value
 		end
 	endstruct "Argument"
@@ -7480,6 +7514,17 @@ do
 				@desc Used to control method with fixed arguments
 			]======]
 
+			-- Reduce cache table cost
+			local function keepArgs(...)
+				local flag = yield( running() )
+
+				while flag do
+					flag = yield( ... )
+				end
+
+				return ...
+			end
+
 			------------------------------------------------------
 			-- Event
 			------------------------------------------------------
@@ -7495,14 +7540,26 @@ do
 				@return boolean
 			]======]
 			function MatchArgs(self, ...)
-				local count = select('#', ...)
-				local init = select(1, ...)
+				local start = self.HasSelf and 2 or 1
+				local count = select('#', ...) + 1 - start
+				local init = select(start, ...)
+				local matchInit = true
 
 				-- Check if is an init table
 				if not self.NoInitTable and count == 1 and type(init) == "table" and getmetatable(init) == nil then
 					for i = 1, self.MinArgs do
+						local arg = self[i]
+						local value = init[arg.Name]
 
+						if value == nil then value = arg.Default end
+
+						if arg.Type and arg.Type:GetObjectType(value) == false then
+							matchInit = false
+							break
+						end
 					end
+				else
+					matchInit = false
 				end
 
 				-- Check argument settings
@@ -7608,35 +7665,52 @@ do
 			-- Meta-methods
 			------------------------------------------------------
 			function __call(self, ...)
+				-- Validation self once, maybe no need to waste time
+				if false and self.HasSelf then
+					local value = select(1, ...)
+					local owner = self.Owner
+
+					if not value or
+						( Reflector.IsInterface(owner) and not Reflector.ObjectIsInterface(value, owner) ) or
+						( Reflector.IsClass(owner) and not Reflector.ObjectIsClass(value, owner)) or
+						( Reflector.IsStruct(owner) and not pcall(owner.Validate, value) then
+
+						error(self.Usage, 2)
+					end
+				end
+
 				if MatchArgs(self, ...) then
 					return self.Method( ... )
 				elseif self.Next then
 					return self.Next( ... )
 				else
-					local next
-
 					-- Check super
 					local info = _NSInfo[self.Owner]
 					local name = self.Name
 
-					next = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
+					local handler = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
 
-					if next then
-						return next( ... )
-					end
+					if not handler then
+						if info.ExtendInterface then
+							for _, IF in ipairs(info.ExtendInterface) do
+								handler = _NSInfo[IF].Cache4Method[name]
 
-					if info.ExtendInterface then
-						for _, IF in ipairs(info.ExtendInterface) do
-							next = _NSInfo[IF].Cache4Method[name]
-
-							if next then
-								return next( ... )
+								if handler then
+									break
+								end
 							end
 						end
 					end
 
-					return error(self.Usage, 2)
+					if handler then
+						-- Keep link for a quick inheritance
+						self.Next = handler
+
+						return handler( ... )
+					end
 				end
+
+				return error(self.Usage, 2)
 			end
 
 			function __tostring(self)
@@ -7803,6 +7877,7 @@ do
 							else
 								-- Must have one parameter at least
 								self.MinArgs = i
+								self.NoInitTable = true
 							end
 
 							-- Just big enough
@@ -7823,8 +7898,6 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			if #self == 0 then return target end
-
 			-- Self validation once
 			for i = 1, #self do
 				ValidateArgument(self, i)
@@ -7833,6 +7906,16 @@ do
 			self.Owner = owner
 			self.TargetType = targetType
 			self.Name = name
+
+			if targetType == AttributeTargets.Method then
+				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+					self.HasSelf = false
+				else
+					self.HasSelf = true
+				end
+			else
+				self.HasSelf = true
+			end
 
 			-- Quick match
 			if not self.MinArgs then self.MinArgs = #self end
