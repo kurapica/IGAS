@@ -7736,7 +7736,7 @@ do
 					tinsert(usage, str)
 				end
 
-				tinset(usage, " )")
+				tinsert(usage, " )")
 
 				self.__Usage = tblconcat(usage, "")
 
