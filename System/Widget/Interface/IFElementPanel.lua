@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.IFElementPanel", version) then
 	return
 end
@@ -23,14 +23,21 @@ interface "IFElementPanel"
 		element.Width = self.ElementWidth
 		element.Height = self.ElementHeight
 
-		if self.Orientation == Orientation.HORIZONTAL then
-			-- Row first
-			--element:SetPoint("TOPLEFT", (element.ID - 1) % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft, -floor((element.ID - 1) / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop)
-			element:SetPoint("CENTER", self, "TOPLEFT", (element.ID - 1) % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -floor((element.ID - 1) / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+		local posX = (self.Orientation == Orientation.HORIZONTAL and (element.ID - 1) % self.ColumnCount or floor((element.ID - 1) / self.RowCount)) * (self.ElementWidth + self.HSpacing)
+		local posY = (self.Orientation == Orientation.HORIZONTAL and floor((element.ID - 1) / self.ColumnCount) or (element.ID - 1) % self.RowCount) * (self.ElementHeight + self.VSpacing)
+
+		element:ClearAllPoints()
+
+		if self.TopToBottom then
+			element:SetPoint("TOP", 0, - posY)
 		else
-			-- Column first
-			--element:SetPoint("TOPLEFT", floor((element.ID - 1) / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft, -((element.ID - 1) % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop)
-			element:SetPoint("CENTER", self, "TOPLEFT", floor((element.ID - 1) / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -((element.ID - 1) % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+			element:SetPoint("BOTTOM", 0, posY)
+		end
+
+		if self.LeftToRight then
+			element:SetPoint("LEFT", posX, 0)
+		else
+			element:SetPoint("RIGHT", - posX, 0)
 		end
 	end
 
@@ -204,9 +211,8 @@ interface "IFElementPanel"
 		@desc The columns's count
 	]======]
 	property "ColumnCount" {
-		Get = function(self)
-			return self.__ElementPanel_ColumnCount or 99
-		end,
+		Field = "__ElementPanel_ColumnCount",
+		Default = 99,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
@@ -230,9 +236,8 @@ interface "IFElementPanel"
 		@desc The row's count
 	]======]
 	property "RowCount" {
-		Get = function(self)
-			return self.__ElementPanel_RowCount or 99
-		end,
+		Field = "__ElementPanel_RowCount",
+		Default = 99,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
@@ -257,7 +262,7 @@ interface "IFElementPanel"
 	]======]
 	property "MaxCount" {
 		Get = function(self)
-			return self.__ElementPanel_ColumnCount * self.__ElementPanel_RowCount
+			return self.ColumnCount * self.RowCount
 		end,
 	}
 
@@ -267,9 +272,8 @@ interface "IFElementPanel"
 		@desc The element's width
 	]======]
 	property "ElementWidth" {
-		Get = function(self)
-			return self.__ElementPanel_Width or 16
-		end,
+		Field = "__ElementPanel_Width",
+		Default = 16,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
@@ -292,9 +296,8 @@ interface "IFElementPanel"
 		@desc The element's height
 	]======]
 	property "ElementHeight" {
-		Get = function(self)
-			return self.__ElementPanel_Height or 16
-		end,
+		Field = "__ElementPanel_Height",
+		Default = 16,
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
@@ -317,9 +320,7 @@ interface "IFElementPanel"
 		@desc The element's count
 	]======]
 	property "Count" {
-		Get = function(self)
-			return self.__ElementPanel_Count or 0
-		end,
+		Field = "__ElementPanel_Count",
 		Set = function(self, cnt)
 			cnt = floor(cnt)
 
@@ -348,9 +349,8 @@ interface "IFElementPanel"
 		@desc The orientation for elements
 	]======]
 	property "Orientation" {
-		Get = function(self)
-			return self.__ElementPanel_Orientation or Orientation.HORIZONTAL
-		end,
+		Field = "__ElementPanel_Orientation",
+		Default = Orientation.HORIZONTAL,
 		Set = function(self, orientation)
 			if orientation ~= self.Orientation then
 				self.__ElementPanel_Orientation = orientation
@@ -359,6 +359,42 @@ interface "IFElementPanel"
 			end
 		end,
 		Type = Orientation,
+	}
+
+	doc [======[
+		@name LeftToRight
+		@type property
+		@desc Whether the elements start from left to right
+	]======]
+	property "LeftToRight" {
+		Field = "__ElementPanel_LeftToRight",
+		Default = true,
+		Set = function(self, flag)
+			if flag ~= self.LeftToRight then
+				self.__ElementPanel_LeftToRight = flag
+
+				self:Each(AdjustElement, self)
+			end
+		end,
+		Type = Boolean,
+	}
+
+	doc [======[
+		@name TopToBottom
+		@type property
+		@desc Whether the elements start from top to bottom
+	]======]
+	property "TopToBottom" {
+		Field = "__ElementPanel_TopToBottom",
+		Default = true,
+		Set = function(self, flag)
+			if flag ~= self.TopToBottom then
+				self.__ElementPanel_TopToBottom = flag
+
+				self:Each(AdjustElement, self)
+			end
+		end,
+		Type = Boolean,
 	}
 
 	doc [======[
@@ -384,9 +420,7 @@ interface "IFElementPanel"
 		@desc The horizontal spacing
 	]======]
 	property "HSpacing" {
-		Get = function(self)
-			return self.__ElementPanel_HSpacing or 0
-		end,
+		Field = "__ElementPanel_HSpacing",
 		Set = function(self, spacing)
 			if self.__ElementPanel_HSpacing == spacing then return end
 
@@ -403,9 +437,7 @@ interface "IFElementPanel"
 		@desc The vertical spacing
 	]======]
 	property "VSpacing" {
-		Get = function(self)
-			return self.__ElementPanel_VSpacing or 0
-		end,
+		Field = "__ElementPanel_VSpacing",
 		Set = function(self, spacing)
 			if self.__ElementPanel_VSpacing == spacing then return end
 
@@ -421,15 +453,7 @@ interface "IFElementPanel"
 		@type property
 		@desc Whether the elementPanel is autosize
 	]======]
-	property "AutoSize" {
-		Get = function(self)
-			return self.__ElementPanel_AutoSize and true or false
-		end,
-		Set = function(self, flag)
-			self.__ElementPanel_AutoSize = flag
-		end,
-		Type = Boolean,
-	}
+	property "AutoSize" { Type = Boolean }
 
 	doc [======[
 		@name MarginTop
@@ -437,9 +461,7 @@ interface "IFElementPanel"
 		@desc The top margin
 	]======]
 	property "MarginTop" {
-		Get = function(self)
-			return self.__ElementPanel_MarginTop or 0
-		end,
+		Field = "__ElementPanel_MarginTop",
 		Set = function(self, spacing)
 			if self.__ElementPanel_MarginTop == spacing then return end
 
@@ -456,9 +478,7 @@ interface "IFElementPanel"
 		@desc The bottom margin
 	]======]
 	property "MarginBottom" {
-		Get = function(self)
-			return self.__ElementPanel_MarginBottom or 0
-		end,
+		Field = "__ElementPanel_MarginBottom",
 		Set = function(self, spacing)
 			if self.__ElementPanel_MarginBottom == spacing then return end
 
@@ -475,9 +495,7 @@ interface "IFElementPanel"
 		@desc The left margin
 	]======]
 	property "MarginLeft" {
-		Get = function(self)
-			return self.__ElementPanel_MarginLeft or 0
-		end,
+		Field = "__ElementPanel_MarginLeft",
 		Set = function(self, spacing)
 			if self.__ElementPanel_MarginLeft == spacing then return end
 
@@ -494,9 +512,7 @@ interface "IFElementPanel"
 		@desc The right margin
 	]======]
 	property "MarginRight" {
-		Get = function(self)
-			return self.__ElementPanel_MarginRight or 0
-		end,
+		Field = "__ElementPanel_MarginRight",
 		Set = function(self, spacing)
 			if self.__ElementPanel_MarginRight == spacing then return end
 
@@ -526,12 +542,7 @@ interface "IFElementPanel"
 		@desc The prefix for the element's name
 	]======]
 	property "ElementPrefix" {
-		Get = function(self)
-			return self.__ElementPrefix or "Element"
-		end,
-		Set = function(self, value)
-			self.__ElementPrefix = value
-		end,
+		Default = "Element",
 		Type = System.String + nil,
 	}
 
@@ -541,9 +552,7 @@ interface "IFElementPanel"
 		@desc Whether the elementPanel should keep it's max size
 	]======]
 	property "KeepMaxSize" {
-		Get = function(self)
-			return self.__KeepMaxSize or false
-		end,
+		Field = "__KeepMaxSize",
 		Set = function(self, value)
 			self.__KeepMaxSize = value
 			return AdjustPanel(self)

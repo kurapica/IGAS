@@ -1226,8 +1226,44 @@ do
 
 					fixedMethod.Next = value
 				elseif info.Method[key] and getmetatable(value) then
-					value.Next = info.Method[key]
-					info.Method[key] = value
+					local existed = info.Method[key]
+					local prev = nil
+
+					while getmetatable(existed) do
+						-- Replace fixed method with same argument settings
+						if #existed == #value then
+							local isEqual = true
+
+							for i = 1, #existed do
+								if not Reflector.IsEqual(existed[i], value[i]) then
+									isEqual = false
+									break
+								end
+							end
+
+							if isEqual then
+								if prev then
+									value.Next = existed.Next
+									prev.Next = value
+									value = nil
+								else
+									value.Next = existed.Next
+									info.Method[key] = value
+									value = nil
+								end
+
+								break
+							end
+						end
+
+						prev = existed
+						existed = existed.Next
+					end
+
+					if value then
+						value.Next = info.Method[key]
+						info.Method[key] = value
+					end
 				else
 					info.Method[key] = value
 				end
@@ -1875,8 +1911,44 @@ do
 
 					fixedMethod.Next = value
 				elseif info.Method[key] and getmetatable(value) then
-					value.Next = info.Method[key]
-					info.Method[key] = value
+					local existed = info.Method[key]
+					local prev = nil
+
+					while getmetatable(existed) do
+						-- Replace fixed method with same argument settings
+						if #existed == #value then
+							local isEqual = true
+
+							for i = 1, #existed do
+								if not Reflector.IsEqual(existed[i], value[i]) then
+									isEqual = false
+									break
+								end
+							end
+
+							if isEqual then
+								if prev then
+									value.Next = existed.Next
+									prev.Next = value
+									value = nil
+								else
+									value.Next = existed.Next
+									info.Method[key] = value
+									value = nil
+								end
+
+								break
+							end
+						end
+
+						prev = existed
+						existed = existed.Next
+					end
+
+					if value then
+						value.Next = info.Method[key]
+						info.Method[key] = value
+					end
 				else
 					info.Method[key] = value
 				end
@@ -2909,8 +2981,44 @@ do
 
 						fixedMethod.Next = value
 					elseif info.Method[key] and getmetatable(value) then
-						value.Next = info.Method[key]
-						info.Method[key] = value
+						local existed = info.Method[key]
+						local prev = nil
+
+						while getmetatable(existed) do
+							-- Replace fixed method with same argument settings
+							if #existed == #value then
+								local isEqual = true
+
+								for i = 1, #existed do
+									if not Reflector.IsEqual(existed[i], value[i]) then
+										isEqual = false
+										break
+									end
+								end
+
+								if isEqual then
+									if prev then
+										value.Next = existed.Next
+										prev.Next = value
+										value = nil
+									else
+										value.Next = existed.Next
+										info.Method[key] = value
+										value = nil
+									end
+
+									break
+								end
+							end
+
+							prev = existed
+							existed = existed.Next
+						end
+
+						if value then
+							value.Next = info.Method[key]
+							info.Method[key] = value
+						end
 					else
 						info.Method[key] = value
 					end

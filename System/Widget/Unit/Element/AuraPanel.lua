@@ -131,6 +131,12 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
+		doc [======[
+			@name Index
+			@type property
+			@desc The aura index
+		]======]
+		property "Index" { Type = Number }
 
 		------------------------------------------------------
 		-- Event Handler
