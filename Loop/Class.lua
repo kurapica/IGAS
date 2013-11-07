@@ -956,6 +956,7 @@ do
 									end
 								end
 							end
+							break
 						end
 					end
 				end
@@ -1217,7 +1218,19 @@ do
 					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, GetSuperMethod(info.Owner, key), info.Owner, key) or value
 				end
 
-				info.Method[key] = value
+				if getmetatable(info.Method[key]) and type(value) == "function" then
+					-- Special settings for the fixed methods
+					local fixedMethod = info.Method[key]
+
+					while fixedMethod.Next do fixedMethod = fixedMethod.Next end
+
+					fixedMethod.Next = value
+				elseif info.Method[key] and getmetatable(value) then
+					value.Next = info.Method[key]
+					info.Method[key] = value
+				else
+					info.Method[key] = value
+				end
 
 				-- Don't save to environment until need it
 				value = nil
@@ -1854,7 +1867,19 @@ do
 					value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, GetSuperMethod(info.Owner, key), info.Owner, key) or value
 				end
 
-				info.Method[key] = value
+				if getmetatable(info.Method[key]) and type(value) == "function" then
+					-- Special settings for the fixed methods
+					local fixedMethod = info.Method[key]
+
+					while getmetatable(fixedMethod.Next) do fixedMethod = fixedMethod.Next end
+
+					fixedMethod.Next = value
+				elseif info.Method[key] and getmetatable(value) then
+					value.Next = info.Method[key]
+					info.Method[key] = value
+				else
+					info.Method[key] = value
+				end
 
 				-- Don't save to environment until need it
 				value = nil
@@ -2876,7 +2901,19 @@ do
 						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
 					end
 
-					info.Method[key] = value
+					if getmetatable(info.Method[key]) and type(value) == "function" then
+						-- Special settings for the fixed methods
+						local fixedMethod = info.Method[key]
+
+						while fixedMethod.Next do fixedMethod = fixedMethod.Next end
+
+						fixedMethod.Next = value
+					elseif info.Method[key] and getmetatable(value) then
+						value.Next = info.Method[key]
+						info.Method[key] = value
+					else
+						info.Method[key] = value
+					end
 
 					-- Don't save to environment until need it
 					value = nil
@@ -6374,7 +6411,7 @@ do
 
 						if targetType == AttributeTargets.Method then
 							-- The method may be wrapped in the apply operation
-							if type(ret) == "function" then
+							if ret then
 								target = ret
 							end
 						end
@@ -6398,7 +6435,7 @@ do
 							end
 
 							if targetType == AttributeTargets.Method then
-								if type(ret) == "function" then
+								if ret then
 									target = ret
 									arg1 = ret
 								end
@@ -7540,34 +7577,102 @@ do
 				@return boolean
 			]======]
 			function MatchArgs(self, ...)
-				local start = self.HasSelf and 2 or 1
-				local count = select('#', ...) + 1 - start
-				local init = select(start, ...)
-				local matchInit = true
+				local base = self.HasSelf and 1 or 0
+				local count = select('#', ...) - base
+				local argsCount = #self
 
-				-- Check if is an init table
-				if not self.NoInitTable and count == 1 and type(init) == "table" and getmetatable(init) == nil then
-					for i = 1, self.MinArgs do
-						local arg = self[i]
-						local value = init[arg.Name]
-
-						if value == nil then value = arg.Default end
-
-						if arg.Type and arg.Type:GetObjectType(value) == false then
-							matchInit = false
-							break
-						end
+				-- Empty methods won't accept any arguments
+				if argsCount == 0 then
+					if count > 0 then
+						return false
+					else
+						return true
 					end
-				else
-					matchInit = false
 				end
 
 				-- Check argument settings
 				if count >= self.MinArgs and count <= self.MaxArgs then
+					local cache = CACHE_TABLE()
 
+					-- Cache first
+					for i = 1, count do
+						cache[i] = select(i + base, ...)
+					end
+
+					-- required
+					for i = 1, self.MinArgs do
+						local arg = self[i]
+						local value = cache[i]
+						local ok
+
+						if value == nil then
+							-- No check
+							if arg.Default ~= nil then
+								value = arg.Default
+							else
+								CACHE_TABLE(cache)
+
+								return false
+							end
+						elseif arg.Type then
+							-- Validate the value
+							ok, value = pcall(arg.Type.Validate, arg.Type, value)
+
+							if not ok then
+								CACHE_TABLE(cache)
+
+								return false
+							end
+						end
+
+						cache[i] = value
+					end
+
+					-- optional
+					for i = self.MinArgs + 1, count do
+						local arg = self[i] or self[argsCount]
+						local value = cache[i]
+						local ok
+
+						if value == nil then
+							-- No check
+							if arg.Default ~= nil then
+								value = arg.Default
+							end
+						elseif arg.Type then
+							-- Validate the value
+							ok, value = pcall(arg.Type.Validate, arg.Type, value)
+
+							if not ok then
+								CACHE_TABLE(cache)
+
+								return false
+							end
+						end
+
+						cache[i] = value
+					end
+
+					-- Keep arguments in thread, so cache can be recycled
+					self.Thread = CallThread(keepArgs, unpack(cache, 1, count))
+
+					CACHE_TABLE(cache)
+
+					return true
 				end
 
 				return false
+			end
+
+			doc [======[
+				@name MatchInitTable
+				@type method
+				@desc Whether the fixed method can handler the init table
+				@param init
+				@return boolean
+			]======]
+			function MatchInitTable(self, init)
+
 			end
 
 			doc [======[
@@ -7665,8 +7770,14 @@ do
 			-- Meta-methods
 			------------------------------------------------------
 			function __call(self, ...)
+				-- Constructor can't be called
+				if self.TargetType == AttributeTargets.Constructor then return end
+
+				-- Clear the thread
+				self.Thread = nil
+
 				-- Validation self once, maybe no need to waste time
-				if false and self.HasSelf then
+				if true and self.HasSelf then
 					local value = select(1, ...)
 					local owner = self.Owner
 
@@ -7680,11 +7791,23 @@ do
 				end
 
 				if MatchArgs(self, ...) then
-					return self.Method( ... )
-				elseif self.Next then
+					if self.Thread then
+						return self.Method( resume(self.Thread, false) )
+					else
+						return self.Method( ... )
+					end
+				end
+
+				-- Remove argument container
+				if self.Thread then
+					resume(self.Thread, false)
+					self.Thread = nil
+				end
+
+				if self.Next then
 					return self.Next( ... )
-				else
-					-- Check super
+				elseif self.HasSelf then
+					-- Check super for object method
 					local info = _NSInfo[self.Owner]
 					local name = self.Name
 
@@ -7908,6 +8031,8 @@ do
 			self.Name = name
 
 			if targetType == AttributeTargets.Method then
+				self.NoInitTable = true
+
 				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 					self.HasSelf = false
 				else
@@ -7931,19 +8056,6 @@ do
 			fixedObj.Method = target
 
 			wipe(self)
-
-			-- Check existed fiexedMethod for the same name
-			if targetType == AttributeTargets.Method then
-				local methodSet = _NSInfo[owner].Method
-
-				if methodSet and methodSet[name] then
-					fixedObj.Next = methodSet[name]
-				end
-			elseif targetType == AttributeTargets.Constructor then
-				if _NSInfo[owner].Constructor then
-					fixedObj.Next = _NSInfo[owner].Constructor
-				end
-			end
 
 			return fixedObj
 		end
