@@ -402,6 +402,8 @@ do
 						BuildStructValidate(self)
 					end
 					return info.Validate
+				elseif info.Method[key] then
+					return info.Method[key]
 				else
 					return info.SubNS and info.SubNS[key]
 				end
@@ -6468,7 +6470,6 @@ do
 		local function _ApplyAttributes(target, targetType, owner, name, start)
 			-- Apply the attributes
 			local config = _AttributeCache[targetType][target]
-			local usage
 
 			if config then
 				local ok, ret, arg1, arg2, arg3, arg4
@@ -6509,7 +6510,7 @@ do
 
 						_AttributeCache[targetType][target] = nil
 					else
-						usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+						local usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 						if usage and not usage.Inherited and usage.RunOnce then
 							_AttributeCache[targetType][target] = nil
@@ -6517,14 +6518,16 @@ do
 							config:Dispose()
 						end
 
-						if targetType == AttributeTargets.Method then
+						if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
 							-- The method may be wrapped in the apply operation
-							if ret then
+							if type(ret) == "function" or getmetatable(ret) == __Arguments__.FixedMethod then
 								target = ret
 							end
 						end
 					end
 				else
+					local oldTarget = target
+
 					start = start or 1
 
 					for i = #config, start, -1 do
@@ -6535,26 +6538,33 @@ do
 
 							tremove(config, i)
 						else
-							usage = _GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
+							local usage = _GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
 
 							if usage and not usage.Inherited and usage.RunOnce then
 								config[i]:Dispose()
 								tremove(config, i)
 							end
 
-							if targetType == AttributeTargets.Method then
-								if ret then
-									target = ret
+							if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
+								if type(ret) == "function" then
+									if type(target) == "function" then
+										target = ret
+									else
+										target.Method = ret
+									end
 									arg1 = ret
+								elseif getmetatable(ret) == __Arguments__.FixedMethod then
+									target = ret
+									arg1 = target.Method
 								end
 							end
 						end
 					end
 
 					if #config == 0 then
-						_AttributeCache[targetType][target] = nil
+						_AttributeCache[targetType][oldTarget] = nil
 					elseif #config == 1 then
-						_AttributeCache[targetType][target] = config[1]
+						_AttributeCache[targetType][oldTarget] = config[1]
 					end
 				end
 			end
@@ -6976,12 +6986,18 @@ do
 			@return boolean true if the target contains attribute with the type
 		]======]
 		function _IsMethodAttributeDefined(target, method, type)
-			local info = rawget(_NSInfo, target)
-
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Method[method] then
-				return _IsDefined(info.Cache4Method[method], AttributeTargets.Method, type)
-			elseif type(target) == "function" then
+			if type(target) == "function" then
 				return _IsDefined(target, AttributeTargets.Method, method)
+			elseif getmetatable(target) == __Arguments__.FixedMethod then
+				while target do
+					if _IsDefined(target, AttributeTargets.Method, method) then
+						return true
+					end
+
+					target = getmetatable(target) and target.Next
+				end
+			elseif (Reflector.IsClass(target) or Reflector.IsInterface(target) or Reflector.IsStruct(target)) and type(method) == "string" then
+				return _IsMethodAttributeDefined(target[method], type)
 			end
 		end
 
@@ -7172,12 +7188,21 @@ do
 			@return ... the attribute objects
 		]======]
 		function _GetMethodAttribute(target, method, type)
-			local info = rawget(_NSInfo, target)
-
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Method[method] then
-				return _GetCustomAttribute(info.Cache4Method[method], AttributeTargets.Method, type)
-			elseif type(target) == "function" then
+			if type(target) == "function" then
 				return _GetCustomAttribute(target, AttributeTargets.Method, method)
+			elseif getmetatable(target) == __Arguments__.FixedMethod then
+				local result
+
+				while target do
+					result = _GetCustomAttribute(target, AttributeTargets.Method, method)
+					if result then
+						return result
+					end
+
+					target = getmetatable(target) and target.Next
+				end
+			elseif (Reflector.IsClass(target) or Reflector.IsInterface(target) or Reflector.IsStruct(target)) and type(method) == "string" then
+				return _GetMethodAttribute(target[method], type)
 			end
 		end
 
@@ -7595,12 +7620,6 @@ do
 					return function (...)
 						return CallThread(target, ...)
 					end
-				elseif Reflector.ObjectIsClass(target, __Arguments__.FixedMethod) then
-					local func = target.Method
-
-					target.Method = function (...)
-						return CallThread(func, ...)
-					end
 				end
 			elseif targetType == AttributeTargets.Event then
 				_NSInfo[owner].Event[target].ThreadActivated = true
@@ -7761,8 +7780,12 @@ do
 						cache[i] = value
 					end
 
+					if base == 1 then
+						tinsert(cache, 1, (select(1, ...)))
+					end
+
 					-- Keep arguments in thread, so cache can be recycled
-					self.Thread = CallThread(keepArgs, unpack(cache, 1, count))
+					self.Thread = CallThread(keepArgs, unpack(cache, 1, base + count))
 
 					CACHE_TABLE(cache)
 
@@ -7790,67 +7813,7 @@ do
 				@return string
 			]======]
 			function GetUsage(self)
-				if self.__Usage then return self.__Usage end
 
-				-- Generate usage message
-				local usage = CACHE_TABLE()
-				local targetType = self.TargetType
-				local name = self.Name
-				local owner = self.Owner
-
-				if targetType == AttributeTargets.Method then
-					if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
-						tinsert(usage, "Usage : " .. tostring(owner) .. "." .. name .. "( ")
-					else
-						tinsert(usage, "Usage : " .. tostring(owner) .. ":" .. name .. "( ")
-					end
-				else
-					tinsert(usage, "Usage : " .. tostring(owner) .. "( ")
-				end
-
-				for i = 1, #self do
-					local arg = self[i]
-					local str = ""
-
-					if i > 1 then
-						tinsert(usage, ", ")
-					end
-
-					-- [name As type = default]
-					if arg.Name then
-						str = str .. arg.Name
-
-						if arg.Type then
-							str = str .. " As "
-						end
-					end
-
-					if arg.Type then
-						str = str .. tostring(arg.Type)
-					end
-
-					if arg.Default ~= nil then
-						local serialize = Reflector.Serialize(arg.Default, arg.Type)
-
-						if serialize then
-							str = str .. " = " .. serialize
-						end
-					end
-
-					if not arg.Type or arg.Type:Is(nil) then
-						str = "[" .. str .. "]"
-					end
-
-					tinsert(usage, str)
-				end
-
-				tinsert(usage, " )")
-
-				self.__Usage = tblconcat(usage, "")
-
-				CACHE_TABLE(usage)
-
-				return self.__Usage
 			end
 
 			------------------------------------------------------
@@ -7861,14 +7824,109 @@ do
 				@type property
 				@desc The next fixed method
 			]======]
-			property "Next" { Type = FixedMethod + Function + nil }
+			property "Next" {
+				Field = "__Next",
+				Get = function (self)
+					if not self.__Next and self.HasSelf and self.TargetType == AttributeTargets.Method then
+						-- Check super for object method
+						local info = _NSInfo[self.Owner]
+						local name = self.Name
+
+						local handler = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
+
+						if not handler then
+							if info.ExtendInterface then
+								for _, IF in ipairs(info.ExtendInterface) do
+									handler = _NSInfo[IF].Cache4Method[name]
+
+									if handler then
+										break
+									end
+								end
+							end
+						end
+
+						if handler then
+							-- Keep link for a quick inheritance
+							self.__Next = handler
+						end
+					end
+
+					return self.__Next
+				end,
+				Type = FixedMethod + Function + nil,
+			}
 
 			doc [======[
 				@name Usage
 				@type property
 				@desc The usage of the fixed method
 			]======]
-			property "Usage" { }
+			property "Usage" {
+				Get = function (self)
+					if self.__Usage then return self.__Usage end
+
+					-- Generate usage message
+					local usage = CACHE_TABLE()
+					local targetType = self.TargetType
+					local name = self.Name
+					local owner = self.Owner
+
+					if targetType == AttributeTargets.Method then
+						if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+							tinsert(usage, "Usage : " .. tostring(owner) .. "." .. name .. "( ")
+						else
+							tinsert(usage, "Usage : " .. tostring(owner) .. ":" .. name .. "( ")
+						end
+					else
+						tinsert(usage, "Usage : " .. tostring(owner) .. "( ")
+					end
+
+					for i = 1, #self do
+						local arg = self[i]
+						local str = ""
+
+						if i > 1 then
+							tinsert(usage, ", ")
+						end
+
+						-- [name As type = default]
+						if arg.Name then
+							str = str .. arg.Name
+
+							if arg.Type then
+								str = str .. " As "
+							end
+						end
+
+						if arg.Type then
+							str = str .. tostring(arg.Type)
+						end
+
+						if arg.Default ~= nil then
+							local serialize = Reflector.Serialize(arg.Default, arg.Type)
+
+							if serialize then
+								str = str .. " = " .. serialize
+							end
+						end
+
+						if not arg.Type or arg.Type:Is(nil) then
+							str = "[" .. str .. "]"
+						end
+
+						tinsert(usage, str)
+					end
+
+					tinsert(usage, " )")
+
+					self.__Usage = tblconcat(usage, "")
+
+					CACHE_TABLE(usage)
+
+					return self.__Usage
+				end
+			}
 
 			------------------------------------------------------
 			-- Constructor
@@ -7900,7 +7958,7 @@ do
 
 				if MatchArgs(self, ...) then
 					if self.Thread then
-						return self.Method( resume(self.Thread, false) )
+						return self.Method( select(2, resume(self.Thread, false)) )
 					else
 						return self.Method( ... )
 					end
@@ -7914,169 +7972,20 @@ do
 
 				if self.Next then
 					return self.Next( ... )
-				elseif self.HasSelf then
-					-- Check super for object method
-					local info = _NSInfo[self.Owner]
-					local name = self.Name
-
-					local handler = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
-
-					if not handler then
-						if info.ExtendInterface then
-							for _, IF in ipairs(info.ExtendInterface) do
-								handler = _NSInfo[IF].Cache4Method[name]
-
-								if handler then
-									break
-								end
-							end
-						end
-					end
-
-					if handler then
-						-- Keep link for a quick inheritance
-						self.Next = handler
-
-						return handler( ... )
-					end
 				end
 
 				return error(self.Usage, 2)
 			end
 
 			function __tostring(self)
-				return GetUsage(self)
+				return self.Usage
 			end
 		endclass "FixedMethod"
-
-		_Validate_Header = [[
-			return function (self, %s, ...)
-				local ok, value, objArg
-				local index = 0
-
-		]]
-
-		_Validate_Body = [[
-				index = index + 1
-				objArg = self[index]
-				if objArg then
-					if arg@ == nil and objArg.Default ~= nil then
-						arg@ = objArg.Default
-					end
-
-					if objArg.Type then
-						ok, value = pcall(objArg.Type.Validate, objArg.Type, arg@)
-
-						if not ok then
-							value = value:match(":%d+:%s*(.-)$") or value
-
-							if value:find("%%s") then
-								value = value:gsub("%%s[_%w]*", objArg.Name)
-							end
-
-							error(self.Usage .. value, 3)
-						else
-							arg@ = value
-						end
-					end
-				end
-
-		]]
-
-		_Validate_Tail = [[
-				return %s, ...
-			end
-		]]
 
 		_Error_Header = [[Usage : __Arguments__{ arg1[, arg2[, ...] ] } : ]]
 		_Error_NotArgument = [[arg%d must be System.Argument]]
 		_Error_NotOptional = [[arg%d must also be optional]]
 		_Error_NotList = [[arg%d can't be a list]]
-
-		local function buildValidate(count)
-			local args = ""
-
-			for i = 1, count do
-				if i > 1 then
-					args = args .. ", arg" .. i
-				else
-					args = "arg1"
-				end
-			end
-
-			local func = _Validate_Header:format(args)
-
-			for i = 1, count do
-				func = func .. _Validate_Body:gsub("@", tostring(i))
-			end
-
-			func = func .. _Validate_Tail:format(args)
-
-			func = func:gsub("\n%s+", "\n"):gsub("^%s+", "")
-
-			return func
-		end
-
-		_ValidateArgumentsCache = setmetatable({}, {__index = function(self, key)
-			if type(key) == "number" and key >= 1 then
-				key = floor(key)
-
-				rawset(self, key, loadstring(buildValidate(key))())
-				return rawget(self, key)
-			end
-		end})
-
-		_ValidateArgumentsCache[0] = function (self, ...)
-			local ret = {...}
-			local max = #self
-			local ok, value
-
-			for i = 1, max do
-				local arg = self[i]
-
-				if i < max or not arg.IsList then
-					if ret[i] == nil and arg.Default ~= nil then
-						ret[i] = arg.Default
-					end
-
-					if arg.Type then
-						ok, value = pcall(arg.Type.Validate, arg.Type, ret[i])
-
-						if not ok then
-							value = strtrim(value:match(":%d+:%s*(.-)$") or value)
-
-							if value:find("%%s") then
-								value = value:gsub("%%s[_%w]*", arg.Name)
-							end
-
-							error(self.Usage .. value, 3)
-						elseif ret[i] ~= nil then
-							ret[i] = value
-						end
-					end
-				else
-					if arg.Type then
-						for j = i, #ret do
-							ok, value = pcall(arg.Type.Validate, arg.Type, ret[j])
-
-							if not ok then
-								value = strtrim(value:match(":%d+:%s*(.-)$") or value)
-
-								if value:find("%%s") then
-									value = value:gsub("%%s[_%w]*", "...")
-								end
-
-								error(self.Usage .. value, 3)
-							elseif ret[j] ~= nil then
-								ret[j] = value
-							end
-						end
-					end
-				end
-			end
-
-			return unpack(ret)
-		end
 
 		local function ValidateArgument(self, i)
 			local isLast = i == #self
@@ -8084,9 +7993,6 @@ do
 			local flag, arg = pcall( Argument.Validate, self[i] )
 
 			if flag then
-				-- Init table need name to match
-				if not arg.Name then self.NoInitTable = true end
-
 				-- Check optional args
 				if not arg.Type or arg.Type:Is(nil) then
 					if not self.MinArgs then
@@ -8108,7 +8014,6 @@ do
 							else
 								-- Must have one parameter at least
 								self.MinArgs = i
-								self.NoInitTable = true
 							end
 
 							-- Just big enough
@@ -8120,9 +8025,33 @@ do
 						error(_Error_Header .. _Error_NotList:format(i))
 					end
 				end
-			else
-				error(_Error_Header .. _Error_NotArgument:format(i))
+
+				return
 			end
+
+			-- Convert to type
+			if Reflector.IsNameSpace(self[i]) then
+				self[i] = BuildType(self[i])
+			end
+
+			-- Convert type to Argument
+			if IsType(self[i]) then
+				self[i] = { Type = self[i] }
+
+				-- Check optional args
+				if self[i].Type:Is(nil) then
+					if not self.MinArgs then
+						self.MinArgs = i - 1
+					end
+				elseif self.MinArgs then
+					-- Only optional args can be defined after optional args
+					error(_Error_Header .. _Error_NotOptional:format(i))
+				end
+
+				return
+			end
+
+			error(_Error_Header .. _Error_NotArgument:format(i))
 		end
 
 		------------------------------------------------------
@@ -8139,8 +8068,6 @@ do
 			self.Name = name
 
 			if targetType == AttributeTargets.Method then
-				self.NoInitTable = true
-
 				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 					self.HasSelf = false
 				else

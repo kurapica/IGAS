@@ -160,6 +160,9 @@ class "AuraPanel"
 		-- Constructor
 		------------------------------------------------------
 		function AuraIcon(self, name, parent)
+			self.MouseEnabled = false
+			self.MouseWheelEnabled = false
+
 			local icon = Texture("Icon", self, "BORDER")
 			icon:SetPoint("TOPLEFT", 1, -1)
 			icon:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -293,6 +296,8 @@ class "AuraPanel"
 		self.ElementHeight = 16
 		self.HSpacing = 2
 		self.VSpacing = 2
+		self.MouseEnabled = false
+		self.MouseWheelEnabled = false
 		self.ElementType = AuraIcon
 	end
 endclass "AuraPanel"
