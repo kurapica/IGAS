@@ -355,7 +355,30 @@ do
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
 		if __Attribute__ and owner ~= __Attribute__ then
-			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, GetSuperMethod(owner, key), owner, key) or value
+			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
+		end
+
+		if _KeyMeta[key] then
+			-- No need for ___index & ___newindex
+			local rKey = "_" .. key
+
+			if storage[rKey] then
+				if type(value) == "function" and (not getmetatable(storage[rKey]) or storage[rKey].Owner ~= owner) then
+					-- roll back to normal meta-methods
+					storage[key] = value
+					storage[rKey] = nil
+					return
+				end
+			elseif getmetatable(value) then
+				storage[rKey] = storage[key]
+
+				-- table can't be meta-methods
+				storage[key] = function(...)
+					return storage[rKey](...)
+				end
+			end
+
+			key = rkey
 		end
 
 		if getmetatable(storage[key]) then
@@ -1015,6 +1038,7 @@ do
 									end
 								end
 							end
+
 							break
 						end
 					end
@@ -1034,8 +1058,9 @@ do
 			-- Cache4Property
 			wipe(info.Cache4Property)
 			-- Validate the properties
-			for _, prop in pairs(info.Property) do
-				local name = prop.Name:gsub("^%a", strupper)
+			for name, prop in pairs(info.Property) do
+				name = name:gsub("^%a", strupper)
+
 				local useMethod = false
 
 				if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
@@ -1136,7 +1161,7 @@ do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
-			-- Clear branch
+			-- Refresh branch
 			if info.ChildClass then
 				for subcls in pairs(info.ChildClass) do
 					RefreshCache(subcls)
@@ -1277,10 +1302,8 @@ do
 			end
 
 			if type(key) == "string" and type(value) == "function" then
-				SaveFixedMethod(info.Method, key, value, info.Owner)
-
 				-- Don't save to environment until need it
-				value = nil
+				return SaveFixedMethod(info.Method, key, value, info.Owner)
 			end
 
 			rawset(self, key, value)
@@ -1876,13 +1899,7 @@ do
 
 			if key == info.Name then
 				if type(value) == "function" then
-					if __Attribute__ and info.Owner ~= __Attribute__ then
-						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Constructor, nil, info.Owner, "Constructor") or value
-					end
-
-					info.Constructor = value
-
-					return
+					return SaveFixedMethod(info, "Constructor", value, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
 				else
 					error(("'%s' must be a function as constructor."):format(key), 2)
 				end
@@ -1900,19 +1917,19 @@ do
 			if _KeyMeta[key] ~= nil then
 				if type(value) == "function" then
 					local rMeta = _KeyMeta[key] and key or "_"..key
-					SetMetaFunc(rMeta, info.ChildClass, info.MetaTable[rMeta], value)
-					info.MetaTable[rMeta] = value
-					return
+					local oldValue = info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta]
+
+					SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
+
+					return SetMetaFunc(rMeta, info.ChildClass, oldValue, info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta])
 				else
 					error(("'%s' must be a function."):format(key), 2)
 				end
 			end
 
 			if type(key) == "string" and type(value) == "function" then
-				SaveFixedMethod(info.Method, key, value, info.Owner)
-
 				-- Don't save to environment until need it
-				value = nil
+				return SaveFixedMethod(info.Method, key, value, info.Owner)
 			end
 
 			rawset(self, key, value)
@@ -1945,11 +1962,27 @@ do
 		if sub and pre ~= now then
 			for cls in pairs(sub) do
 				local info = _NSInfo[cls]
+				local rMeta = "_" .. meta
 
-				if info.MetaTable[meta] == pre then
-					info.MetaTable[meta] = now
+				if info.MetaTable[rMeta] then
 
-					SetMetaFunc(meta, info.ChildClass, pre, now)
+				else
+					if info.MetaTable[meta] == pre then
+						info.MetaTable[meta] = now
+
+						SetMetaFunc(meta, info.ChildClass, pre, now)
+					elseif getmetatable(info.MetaTable[meta]) then
+						-- Handle the fixed method link
+						local fixedMethod = info.MetaTable[meta]
+
+						while getmetatable(fixedMethod) and fixedMethod.Next ~= pre do
+							fixedMethod = fixedMethod.Next
+						end
+
+						if getmetatable(fixedMethod) and fixedMethod.Next == pre then
+							fixedMethod.Next = now
+						end
+					end
 				end
 			end
 		end
@@ -2044,10 +2077,10 @@ do
 			-- Custom index metametods
 			oper = MetaTable["___index"]
 			if oper then
-				if type(oper) == "table" then
-					return oper[key]
-				elseif type(oper) == "function" then
+				if type(oper) == "function" or getmetatable(oper) == FixedMethod then
 					return oper(self, key)
+				elseif type(oper) == "table" then
+					return oper[key]
 				end
 			end
 		end
@@ -2107,7 +2140,7 @@ do
 
 			-- Custom newindex metametods
 			oper = MetaTable["___newindex"]
-			if oper and type(oper) == "function" then
+			if oper and (type(oper) == "function" or getmetatable(oper) == FixedMethod) then
 				return oper(self, key, value)
 			end
 
@@ -2483,13 +2516,25 @@ do
 		-- rawset(env, _SuperIndex, superCls)
 
 		-- Copy Metatable
-		local rMeta
 		for meta, flag in pairs(_KeyMeta) do
-			rMeta = flag and meta or "_"..meta
+			local rMeta = flag and meta or "_"..meta
 
-			if info.MetaTable[rMeta] == nil and superInfo.MetaTable[rMeta] then
-				SetMetaFunc(rMeta, info.ChildClass, nil, superInfo.MetaTable[rMeta])
-				info.MetaTable[rMeta] = superInfo.MetaTable[rMeta]
+			if superInfo.MetaTable[rMeta] then
+				if info.MetaTable[rMeta] == nil then
+					info.MetaTable[rMeta] = superInfo.MetaTable[rMeta]
+					SetMetaFunc(rMeta, info.ChildClass, nil, superInfo.MetaTable[rMeta])
+				elseif getmetatable(info.MetaTable[rMeta]) then
+					-- Just for safe, inherit at the last line, how can somebody do this
+					local fixedMethod = info.MetaTable[rMeta]
+
+					while getmetatable(fixedMethod) and fixedMethod.Next and fixedMethod.Next ~= superInfo.MetaTable[rMeta] do
+						fixedMethod = fixedMethod.Next
+					end
+
+					if getmetatable(fixedMethod) then
+						fixedMethod.Next = superInfo.MetaTable[rMeta]
+					end
+				end
 			end
 		end
 
@@ -6220,13 +6265,7 @@ do
 			local argsCount = #self
 
 			-- Empty methods won't accept any arguments
-			if argsCount == 0 then
-				if count > 0 then
-					return false
-				else
-					return true
-				end
-			end
+			if argsCount == 0 then return count == 0 end
 
 			-- Check argument settings
 			if count >= self.MinArgs and count <= self.MaxArgs then
@@ -6252,7 +6291,7 @@ do
 
 							return false
 						end
-					elseif arg.Type then
+					else
 						-- Validate the value
 						ok, value = pcall(arg.Type.Validate, arg.Type, value)
 
@@ -6381,7 +6420,8 @@ do
 				local owner = self.Owner
 
 				if targetType == AttributeTargets.Method then
-					if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+					if (name:match("^_") and not (Reflector.IsClass(owner) and (_KeyMeta[name] or _KeyMeta[name:sub(2)] == false))) or
+						( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 						tinsert(usage, "Usage : " .. tostring(owner) .. "." .. name .. "( ")
 					else
 						tinsert(usage, "Usage : " .. tostring(owner) .. ":" .. name .. "( ")
@@ -6444,9 +6484,6 @@ do
 		-- Meta-methods
 		------------------------------------------------------
 		function __call(self, ...)
-			-- Constructor can't be called
-			if self.TargetType == AttributeTargets.Constructor then return end
-
 			-- Clear the thread
 			self.Thread = nil
 
@@ -7991,7 +8028,8 @@ do
 			self.Name = name
 
 			if targetType == AttributeTargets.Method then
-				if name:match("^_") or ( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
+				if (name:match("^_") and not (Reflector.IsClass(owner) and (_KeyMeta[name] or _KeyMeta[name:sub(2)] == false))) or
+					( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 					self.HasSelf = false
 				else
 					self.HasSelf = true
