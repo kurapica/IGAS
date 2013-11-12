@@ -2239,18 +2239,13 @@ do
 	-- The cache for constructor parameters
 	function Class2Obj(cls, ...)
 		local info = _NSInfo[cls]
-		local isUnique = false
 
 		-- Check if the class is unique and already created one object to be return
-		if __Attribute__ and __Unique__ then
-			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
+		if getmetatable(info.UniqueObject) then
+			-- Init the obj with new arguments
+			Class1Obj(cls, info.UniqueObject, ...)
 
-			if isUnique and info.UniqueObject then
-				-- Init the obj with new arguments
-				cls(info.UniqueObject, ...)
-
-				return info.UniqueObject
-			end
+			return info.UniqueObject
 		end
 
 		-- Check if this class has __exist so no need to create again.
@@ -2268,215 +2263,7 @@ do
 		Class1Obj(cls, obj, ...)
 		InitObjectWithInterface(cls, obj)
 
-		if isUnique then
-			info.UniqueObject = obj
-		end
-
-		return obj
-	end
-
-	function Class2ObjBak(cls, ...)
-		local info = _NSInfo[cls]
-		local obj, isUnique
-		local ok, msg, args
-		local cache = CACHE_TABLE()
-		local max = select('#', ...)
-		local init = select(1, ...)
-
-		if __Attribute__ and __Arguments__ then
-			args = __Attribute__._GetCustomAttribute(cls, AttributeTargets.Constructor, __Arguments__)
-		end
-
-		if max == 1 and type(init) == "table" and getmetatable(init) == nil then
-			-- Check if the init table should be the argument
-			if args and #args == 1 then
-				local arg = args[1]
-
-				if arg.Type and arg.Type:GetObjectType(init) then
-					init = nil
-				end
-			end
-		else
-			init = nil
-		end
-
-		if init then
-			-- With the init table
-			if args then
-				max = #args
-
-				for i = 1, max do
-					local arg = args[i]
-
-					if i < max or not arg.IsList then
-						local value = init[arg.Name]
-						if value == nil then value = arg.Default end
-						init[arg.Name] = nil
-
-						if arg.Type then
-							ok, value = pcall(arg.Type.Validate, arg.Type, value)
-
-							if not ok then
-								CACHE_TABLE(cache)
-
-								value = strtrim(value:match(":%d+:%s*(.-)$") or value)
-
-								if value:find("%%s") then
-									value = value:gsub("%%s[_%w]*", arg.Name)
-								end
-
-								error(args.Usage .. value, 3)
-							end
-						end
-
-						cache[i] = value
-					end
-				end
-			end
-		else
-			-- Without the init table
-			for i = 1, max do
-				cache[i] = select(i, ...)
-			end
-
-			if args then
-				local maxArgs = #args
-
-				if maxArgs > max then
-					max = maxArgs
-				end
-
-				for i = 1, maxArgs do
-					local arg = args[i]
-
-					if i < maxArgs or not arg.IsList then
-						local value = cache[i]
-						if value == nil then value = arg.Default end
-
-						if arg.Type then
-							ok, value = pcall(arg.Type.Validate, arg.Type, value)
-
-							if not ok then
-								CACHE_TABLE(cache)
-
-								value = strtrim(value:match(":%d+:%s*(.-)$") or value)
-
-								if value:find("%%s") then
-									value = value:gsub("%%s[_%w]*", arg.Name)
-								end
-
-								error(args.Usage .. value, 3)
-							end
-						end
-
-						cache[i] = value
-					else
-						for j = maxArgs, max do
-							local value = cache[j]
-
-							if arg.Type then
-								ok, value = pcall(arg.Type.Validate, arg.Type, value)
-
-								if not ok then
-									CACHE_TABLE(cache)
-
-									value = strtrim(value:match(":%d+:%s*(.-)$") or value)
-
-									if value:find("%%s") then
-										value = value:gsub("%%s[_%w]*", "...")
-									end
-
-									error(args.Usage .. value, 3)
-								end
-							end
-
-							cache[j] = value
-						end
-					end
-				end
-			end
-		end
-
-		-- No tail nil
-		for i = max, 1, -1 do
-			if cache[i] ~= nil then
-				max = i
-				break
-			elseif i == 1 then
-				max = 0
-			end
-		end
-
-		-- Check if the class is unique and already created one object to be return
-		if __Attribute__ and __Unique__ then
-			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
-
-			if isUnique and info.UniqueObject then
-				obj = info.UniqueObject
-
-				pcall(obj, unpack(cache, 1, max))
-				CACHE_TABLE(cache)
-
-				-- Try set properties
-				if type(init) == "table" then
-					for name, value in pairs(init) do
-						ok, msg = pcall(TrySetProperty, obj, name, value)
-
-						if not ok then
-							msg = strtrim(msg:match(":%d+:%s*(.-)$") or msg)
-
-							errorhandler(msg)
-						end
-					end
-				end
-
-				return obj
-			end
-		else
-			isUnique = false
-		end
-
-		-- Check if this class has __exist so no need to create again.
-		if type(info.MetaTable.__exist) == "function" then
-			ok, obj = pcall(info.MetaTable.__exist, unpack(cache, 1, max))
-
-			if type(obj) == "table" then
-				CACHE_TABLE(cache)
-				if getmetatable(obj) == cls then
-					return obj
-				else
-					error(("There is an existed object as type '%s'."):format(Reflector.GetName(Reflector.GetObjectClass(obj)) or ""), 2)
-				end
-			end
-		end
-
-		-- Create new object
-		obj = setmetatable({}, info.MetaTable)
-
-		if InitObjectWithClass(cls, obj, unpack(cache, 1, max)) then
-			InitObjectWithInterface(cls, obj)
-		else
-			obj = nil
-		end
-
-		CACHE_TABLE(cache)
-
-		if not obj then return nil end
-
-		-- Try set properties
-		if type(init) == "table" then
-			for name, value in pairs(init) do
-				ok, msg = pcall(TrySetProperty, obj, name, value)
-
-				if not ok then
-					msg = strtrim(msg:match(":%d+:%s*(.-)$") or msg)
-
-					errorhandler(msg)
-				end
-			end
-		end
-
-		if obj and isUnique then
+		if info.UniqueObject then
 			info.UniqueObject = obj
 		end
 
@@ -3829,6 +3616,20 @@ do
 		end
 
 		doc [======[
+			@name IsUniqueClass
+			@type method
+			@desc Check if the class is unique, can only have one object
+			@param object
+			@return boolean true if the class is unique
+			@usage System.Reflector.IsUniqueClass(System.Object)
+		]======]
+		function IsUniqueClass(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].UniqueObject and true or false
+		end
+
+		doc [======[
 			@name IsNonExpandable
 			@type method
 			@desc Check if the class|interface is non-expandable
@@ -4127,6 +3928,20 @@ do
 		end
 
 		doc [======[
+			@name IsFlagsEnum
+			@type method
+			@desc Whether the enum is flags or not
+			@param object
+			@return boolean
+			@usage System.Reflector.IsFlagsEnum(System.Object)
+		]======]
+		function IsFlagsEnum(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFlags or false
+		end
+
+		doc [======[
 			@name GetEnums
 			@type method
 			@desc Get the enums of the enum
@@ -4140,7 +3955,7 @@ do
 			local info = ns and _NSInfo[ns]
 
 			if info and info.Type == TYPE_ENUM then
-				if __Attribute__._IsDefined(ns, AttributeTargets.Enum, __Flags__) then
+				if info.IsFlags then
 					local tmp = {}
 					local zero = nil
 
@@ -4186,7 +4001,7 @@ do
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			if ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_ENUM and _NSInfo[ns].Enum then
-				if __Attribute__._IsDefined(ns, AttributeTargets.Enum, __Flags__) and type(value) == "number" then
+				if _NSInfo[ns].IsFlags and type(value) == "number" then
 					local ret = {}
 
 					if value == 0 then
@@ -4842,7 +4657,7 @@ do
 						result = result .. "[__Final__]\n"
 					end
 
-					if __Attribute__._IsDefined(ns, AttributeTargets.Enum, __Flags__) then
+					if info.IsFlags then
 						result = result .. "[__Flags__]\n"
 					end
 
@@ -5437,7 +5252,7 @@ do
 
 			if ns and rawget(_NSInfo, ns) then
 				if Reflector.IsEnum(ns) then
-					if __Attribute__._IsDefined(ns, AttributeTargets.Enum, __Flags__) and type(data) == "number" then
+					if _NSInfo[ns].IsFlags and type(data) == "number" then
 						local ret = {Reflector.ParseEnum(ns, data)}
 
 						local result = ""
@@ -7656,16 +7471,10 @@ do
 		function __Attribute__(self)
 			SendToPrepared(self)
 		end
-
-		function __call(self)
-			SendToPrepared(self)
-		end
 	endclass "__Attribute__"
 
 	class "__Unique__"
 		inherit "__Attribute__"
-
-		local _UniqueObj
 
 		doc [======[
 			@name __Unique__
@@ -7676,29 +7485,13 @@ do
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) then
 				_NSInfo[target].NonInheritable = true
+				_NSInfo[target].UniqueObject = true
 			end
-		end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __Unique__(self)
-			_UniqueObj = self
-		end
-
-		function __exist()
-			if _UniqueObj then
-				_UniqueObj()
-			end
-
-			return _UniqueObj
 		end
 	endclass "__Unique__"
 
 	class "__Flags__"
 		inherit "__Attribute__"
-
-		local _UniqueObj
 
 		doc [======[
 			@name __Flags__
@@ -7708,6 +7501,8 @@ do
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsEnum(target) then
+				_NSInfo[target].IsFlags = true
+
 				local enums = _NSInfo[target].Enum
 
 				local cache = {}
@@ -7762,20 +7557,6 @@ do
 				end
 			end
 		end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __Flags__(self)
-			_UniqueObj = self
-		end
-
-		function __exist()
-			if _UniqueObj then
-				_UniqueObj()
-			end
-			return _UniqueObj
-		end
 	endclass "__Flags__"
 
 	class "__AttributeUsage__"
@@ -7822,8 +7603,6 @@ do
 	class "__Final__"
 		inherit "__Attribute__"
 
-		local _UniqueObj
-
 		doc [======[
 			@name __Final__
 			@type class
@@ -7835,26 +7614,10 @@ do
 				_NSInfo[target].IsFinal = true
 			end
 		end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __Final__(self)
-			_UniqueObj = self
-		end
-
-		function __exist()
-			if _UniqueObj then
-				_UniqueObj()
-			end
-			return _UniqueObj
-		end
 	endclass "__Final__"
 
 	class "__NonInheritable__"
 		inherit "__Attribute__"
-
-		local _UniqueObj
 
 		doc [======[
 			@name __NonInheritable__
@@ -7867,20 +7630,6 @@ do
 				_NSInfo[target].NonInheritable = true
 			end
 		end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __NonInheritable__(self)
-			_UniqueObj = self
-		end
-
-		function __exist()
-			if _UniqueObj then
-				_UniqueObj()
-			end
-			return _UniqueObj
-		end
 	endclass "__NonInheritable__"
 
 	-- Apply Attribute to the previous definitions, since I can't use them before definition
@@ -7888,8 +7637,6 @@ do
 		------------------------------------------------------
 		-- For Attribute system
 		------------------------------------------------------
-		local objFinal = __Final__()
-		local objNonInheritable = __NonInheritable__()
 		__Attribute__._ClearPreparedAttributes()
 
 		------------------------------------------------------
@@ -7897,82 +7644,74 @@ do
 		------------------------------------------------------
 		_KeyWord4StrtEnv.structtype = nil
 
-		objFinal:ApplyAttribute(Boolean, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(String, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Number, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Function, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Table, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Userdata, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Thread, AttributeTargets.Struct)
-		objFinal:ApplyAttribute(Any, AttributeTargets.Struct)
+		__Final__:ApplyAttribute(Boolean)
+		__Final__:ApplyAttribute(String)
+		__Final__:ApplyAttribute(Number)
+		__Final__:ApplyAttribute(Function)
+		__Final__:ApplyAttribute(Table)
+		__Final__:ApplyAttribute(Userdata)
+		__Final__:ApplyAttribute(Thread)
+		__Final__:ApplyAttribute(Any)
 
 		-- System.AttributeTargets
-		__Flags__()
-		__Attribute__._ConsumePreparedAttributes(AttributeTargets, AttributeTargets.Enum)
-		objFinal:ApplyAttribute(AttributeTargets, AttributeTargets.Enum)
+		__Flags__:ApplyAttribute(AttributeTargets)
+		__Final__:ApplyAttribute(AttributeTargets)
 
 		-- System.__Attribute__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.All}
-		__Attribute__._ConsumePreparedAttributes(__Attribute__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__Attribute__, AttributeTargets.Class)
+		__Final__:ApplyAttribute(__Attribute__)
 
 		-- System.__Unique__
-		__Unique__()
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
 		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__Unique__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Unique__)
+		__Final__:ApplyAttribute(__Unique__)
 
 		-- System.__Flags__
-		__Unique__()
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
 		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__Flags__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Flags__)
+		__Final__:ApplyAttribute(__Flags__)
 
 		-- System.__AttributeUsage__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
 		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
-		objNonInheritable:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
+		__Final__:ApplyAttribute(__AttributeUsage__)
+		__NonInheritable__:ApplyAttribute(__AttributeUsage__)
 
 		-- System.__Final__
-		__Unique__()
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
 		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__Final__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Final__)
+		__Final__:ApplyAttribute(__Final__)
 
 		-- System.__NonInheritable__
-		__Unique__()
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
 		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
-		objFinal:ApplyAttribute(__NonInheritable__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__NonInheritable__)
+		__Final__:ApplyAttribute(__NonInheritable__)
 
 		------------------------------------------------------
 		-- For other classes
 		------------------------------------------------------
 		-- System.Reflector
-		__Final__()
-		__NonInheritable__()
-		__Attribute__._ConsumePreparedAttributes(Reflector, AttributeTargets.Interface)
+		__Final__:ApplyAttribute(Reflector)
+		__NonInheritable__:ApplyAttribute(Reflector)
 
 		-- Type
-		__Final__()
-		__NonInheritable__()
-		__Attribute__._ConsumePreparedAttributes(Type, AttributeTargets.Class)
+		__Final__:ApplyAttribute(Type)
+		__NonInheritable__:ApplyAttribute(Type)
 
 		-- Event
-		__Final__()
-		__NonInheritable__()
-		__Attribute__._ConsumePreparedAttributes(Event, AttributeTargets.Class)
+		__Final__:ApplyAttribute(Event)
+		__NonInheritable__:ApplyAttribute(Event)
 
 		-- EventHandler
-		__Final__()
-		__NonInheritable__()
-		__Attribute__._ConsumePreparedAttributes(EventHandler, AttributeTargets.Class)
+		__Final__:ApplyAttribute(EventHandler)
+		__NonInheritable__:ApplyAttribute(EventHandler)
 
 		-- FixedMethod
-		__Final__()
-		__NonInheritable__()
-		__Attribute__._ConsumePreparedAttributes(FixedMethod, AttributeTargets.Class)
+		__Final__:ApplyAttribute(FixedMethod)
+		__NonInheritable__:ApplyAttribute(FixedMethod)
 	end
 
 	-- More usable attributes
@@ -8165,12 +7904,12 @@ do
 		end
 
 		------------------------------------------------------
-		-- Meta-methods
+		-- Constructor
 		------------------------------------------------------
-		function __call(self)
+		function __Arguments__(self)
 			wipe(self)
 
-			return Super.__call(self)
+			return Super(self)
 		end
 	endclass "__Arguments__"
 
@@ -8182,7 +7921,7 @@ do
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
 	__Final__()
-	__NonInheritable__()
+	__Unique__()
 	class "__StructType__"
 		inherit "__Attribute__"
 
@@ -8191,10 +7930,6 @@ do
 			@type class
 			@desc Mark the struct's type, default 'Member'
 		]======]
-
-		_STRUCT_TYPE_MEMBER = _STRUCT_TYPE_MEMBER
-		_STRUCT_TYPE_ARRAY = _STRUCT_TYPE_ARRAY
-		_STRUCT_TYPE_CUSTOM = _STRUCT_TYPE_CUSTOM
 
 		------------------------------------------------------
 		-- Method
@@ -8228,17 +7963,17 @@ do
 			@type property
 			@desc The struct's type
 		]======]
-		property "Type" {
-			Field = "__Type",
-			Type = StructType,
-		}
+		property "Type" { Type = StructType }
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		__Arguments__{ Argument{ Name = "Type", Type = StructType, Default = StructType.Member } }
 		function __StructType__(self, type)
-			self.__Type = type
+			Super(self)
+
+			if not pcall(TrySetProperty, self, "Type", type) then
+				self.Type = StructType.Member
+			end
 		end
 	endclass "__StructType__"
 
