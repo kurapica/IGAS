@@ -358,7 +358,7 @@ do
 			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
 		end
 
-		if _KeyMeta[key] then
+		if _NSInfo[owner].Type == TYPE_CLASS and _KeyMeta[key] then
 			-- No need for ___index & ___newindex
 			local rKey = "_" .. key
 
@@ -369,6 +369,8 @@ do
 					storage[rKey] = nil
 					return
 				end
+
+				key = rkey
 			elseif getmetatable(value) then
 				storage[rKey] = storage[key]
 
@@ -376,9 +378,9 @@ do
 				storage[key] = function(...)
 					return storage[rKey](...)
 				end
-			end
 
-			key = rkey
+				key = rkey
+			end
 		end
 
 		if getmetatable(storage[key]) then
@@ -388,6 +390,8 @@ do
 			while getmetatable(fixedMethod) and fixedMethod.Owner == owner do
 				if getmetatable(value) and #fixedMethod == #value then
 					local isEqual = true
+
+					if fixedMethod == value then return end
 
 					for i = 1, #fixedMethod do
 						if not Reflector.IsEqual(fixedMethod[i], value[i]) then
@@ -460,8 +464,15 @@ do
 			local info = _NSInfo[self]
 
 			if info.Type == TYPE_CLASS then
-				-- Create Class object
-				return Class2Obj(self, ...)
+				local obj = select(1, ...)
+
+				if getmetatable(obj) and Reflector.ObjectIsClass(obj, self) then
+					-- Init the class object
+					return Class1Obj(self, obj, select(2, ...))
+				else
+					-- Create Class object
+					return Class2Obj(self, ...)
+				end
 			elseif info.Type == TYPE_STRUCT then
 				-- Create Struct
 				return Struct2Obj(self, ...)
@@ -517,11 +528,7 @@ do
 
 			if info.Type == TYPE_CLASS and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
 				if not info.Cache4Method[key] then
-					if __Attribute__ then
-						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
-					end
-
-					info.Method[key] = value
+					SaveFixedMethod(info.Method, key, value, info.Owner)
 
 					return RefreshCache(self)
 				else
@@ -529,11 +536,7 @@ do
 				end
 			elseif info.Type == TYPE_INTERFACE and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
 				if not info.Cache4Method[key] then
-					if __Attribute__ then
-						value = __Attribute__._ConsumePreparedAttributes(value, AttributeTargets.Method, nil, info.Owner, key) or value
-					end
-
-					info.Method[key] = value
+					SaveFixedMethod(info.Method, key, value, info.Owner)
 
 					return RefreshCache(self)
 				else
@@ -1285,6 +1288,7 @@ do
 
 			if key == info.Name then
 				if type(value) == "function" then
+					-- No attribute for the initializer
 					info.Initializer = value
 					return
 				else
@@ -1921,7 +1925,7 @@ do
 
 					SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
 
-					return SetMetaFunc(rMeta, info.ChildClass, oldValue, info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta])
+					return UpdateMeta4Children(rMeta, info.ChildClass, oldValue, info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta])
 				else
 					error(("'%s' must be a function."):format(key), 2)
 				end
@@ -1958,32 +1962,50 @@ do
 		return false
 	end
 
-	function SetMetaFunc(meta, sub, pre, now)
+	function UpdateMeta4Child(meta, cls, pre, now)
+		if pre == now then return end
+
+		local info = _NSInfo[cls]
+		local rMeta = "_" .. meta
+
+		if not info.MetaTable[meta] then
+			-- simple clone
+			SaveFixedMethod(info.MetaTable, meta, now, cls)
+
+			UpdateMeta4Children(meta, info.ChildClass, pre, now)
+		elseif not info.MetaTable[rMeta] then
+			-- mean not fixed method, can't make link on it
+			if info.MetaTable[meta] == pre then
+				info.MetaTable[meta] = nil
+
+				SaveFixedMethod(info.MetaTable, meta, now, cls)
+
+				UpdateMeta4Children(meta, info.ChildClass, pre, now)
+			end
+		else
+			-- Update the fixed method link
+			local fixedMethod = info.MetaTable[rMeta]
+
+			if fixedMethod == pre then
+				info.MetaTable[rMeta] = now
+
+				UpdateMeta4Children(meta, info.ChildClass, pre, now)
+			else
+				while getmetatable(fixedMethod) and fixedMethod.Owner == cls and fixedMethod.Next ~= pre do
+					fixedMethod = fixedMethod.Next
+				end
+
+				if getmetatable(fixedMethod) and fixedMethod.Next == pre then
+					fixedMethod.Next = now
+				end
+			end
+		end
+	end
+
+	function UpdateMeta4Children(meta, sub, pre, now)
 		if sub and pre ~= now then
 			for cls in pairs(sub) do
-				local info = _NSInfo[cls]
-				local rMeta = "_" .. meta
-
-				if info.MetaTable[rMeta] then
-
-				else
-					if info.MetaTable[meta] == pre then
-						info.MetaTable[meta] = now
-
-						SetMetaFunc(meta, info.ChildClass, pre, now)
-					elseif getmetatable(info.MetaTable[meta]) then
-						-- Handle the fixed method link
-						local fixedMethod = info.MetaTable[meta]
-
-						while getmetatable(fixedMethod) and fixedMethod.Next ~= pre do
-							fixedMethod = fixedMethod.Next
-						end
-
-						if getmetatable(fixedMethod) and fixedMethod.Next == pre then
-							fixedMethod.Next = now
-						end
-					end
-				end
+				UpdateMeta4Child(meta, cls, pre, now)
 			end
 		end
 	end
@@ -2148,8 +2170,112 @@ do
 		end
 	end
 
+	-- Init the object with class's constructor
+	function Class1Obj(cls, obj, ...)
+		local info = _NSInfo[cls]
+		local count = select('#', ...)
+		local initTable = select(1, ...)
+
+		if not ( count == 1 and type(initTable) == "table" and getmetatable(initTable) == nil ) then
+			initTable = nil
+		end
+
+		while info do
+			if not info.Constructor then
+				info = info.SuperClass and _NSInfo[info.SuperClass]
+			elseif type(info.Constructor) == "function" then
+				return info.Constructor(obj, ...)
+			elseif getmetatable(info.Constructor) == FixedMethod then
+				local fixedMethod = info.Constructor
+				local noArgMethod = nil
+
+				while getmetatable(fixedMethod) do
+					fixedMethod.Thread = nil
+
+					if #fixedMethod == 0 and initTable then
+						noArgMethod = fixedMethod
+					elseif fixedMethod:MatchArgs(obj, ...) then
+						if fixedMethod.Thread then
+							return fixedMethod.Method(select(2, resume(fixedMethod.Thread, false)))
+						else
+							return fixedMethod.Method(obj, ...)
+						end
+					elseif fixedMethod.Thread then
+						-- Remove argument container
+						resume(fixedMethod.Thread, false)
+						fixedMethod.Thread = nil
+					end
+
+					fixedMethod = fixedMethod.Next
+				end
+
+				if noArgMethod then
+					noArgMethod.Method(obj)
+					break
+				end
+
+				if type(fixedMethod) == "function" then
+					return fixedMethod(obj, ...)
+				else
+					error(("%s has no constructor support such arguments"):format(tostring(cls)), 2)
+				end
+			end
+		end
+
+		-- No constructor or constructor with no arguments, so try init table
+		if initTable then
+			for name, value in pairs(initTable) do
+				local ok, msg = pcall(TrySetProperty, obj, name, value)
+
+				if not ok then
+					msg = strtrim(msg:match(":%d+:%s*(.-)$") or msg)
+
+					errorhandler(msg)
+				end
+			end
+		end
+	end
+
 	-- The cache for constructor parameters
 	function Class2Obj(cls, ...)
+		local info = _NSInfo[cls]
+		local isUnique = false
+
+		-- Check if the class is unique and already created one object to be return
+		if __Attribute__ and __Unique__ then
+			isUnique = __Attribute__._IsDefined(cls, AttributeTargets.Class, __Unique__)
+
+			if isUnique and info.UniqueObject then
+				-- Init the obj with new arguments
+				cls(info.UniqueObject, ...)
+
+				return info.UniqueObject
+			end
+		end
+
+		-- Check if this class has __exist so no need to create again.
+		if info.MetaTable.__exist then
+			local ok, obj = pcall(info.MetaTable.__exist, ...)
+
+			if ok and getmetatable(obj) == cls then
+				return obj
+			end
+		end
+
+		-- Create new object
+		local obj = setmetatable({}, info.MetaTable)
+
+		Class1Obj(cls, obj, ...)
+		InitObjectWithInterface(cls, obj)
+
+		if isUnique then
+			info.UniqueObject = obj
+		end
+
+		return obj
+	end
+
+	function Class2ObjBak(cls, ...)
 		local info = _NSInfo[cls]
 		local obj, isUnique
 		local ok, msg, args
@@ -2516,25 +2642,13 @@ do
 		-- rawset(env, _SuperIndex, superCls)
 
 		-- Copy Metatable
+		if __Attribute__ then __Attribute__._ClearPreparedAttributes() end
+
 		for meta, flag in pairs(_KeyMeta) do
-			local rMeta = flag and meta or "_"..meta
+			local rMeta = flag and meta or "_" .. meta
 
 			if superInfo.MetaTable[rMeta] then
-				if info.MetaTable[rMeta] == nil then
-					info.MetaTable[rMeta] = superInfo.MetaTable[rMeta]
-					SetMetaFunc(rMeta, info.ChildClass, nil, superInfo.MetaTable[rMeta])
-				elseif getmetatable(info.MetaTable[rMeta]) then
-					-- Just for safe, inherit at the last line, how can somebody do this
-					local fixedMethod = info.MetaTable[rMeta]
-
-					while getmetatable(fixedMethod) and fixedMethod.Next and fixedMethod.Next ~= superInfo.MetaTable[rMeta] do
-						fixedMethod = fixedMethod.Next
-					end
-
-					if getmetatable(fixedMethod) then
-						fixedMethod.Next = superInfo.MetaTable[rMeta]
-					end
-				end
+				UpdateMeta4Child(rMeta, info.Owner, nil, superInfo.MetaTable["_" .. rMeta] or superInfo.MetaTable[rMeta])
 			end
 		end
 
@@ -6382,19 +6496,13 @@ do
 						end
 					elseif self.TargetType == AttributeTargets.Constructor then
 						local info = _NSInfo[self.Owner]
-						local handler
 
 						while info and info.SuperClass do
 							info = _NSInfo[info.SuperClass]
 
 							if info.Constructor then
-								handler = info.Constructor
-								break
+								return info.Constructor
 							end
-						end
-
-						if handler then
-							self.__Next = handler
 						end
 					end
 				end
@@ -6683,7 +6791,7 @@ do
 			elseif targetType == AttributeTargets.Interface then
 				return Reflector.IsInterface(target)
 			elseif targetType == AttributeTargets.Method then
-				return type(target) == "function"
+				return type(target) == "function" or getmetatable(target) == FixedMethod
 			elseif targetType == AttributeTargets.Property then
 				-- Normally, this only be called by the system
 				return type(target) == "table" and type(target.Name) == "string"
@@ -6746,7 +6854,7 @@ do
 					arg2 = targetType
 					arg3 = owner
 				elseif targetType == AttributeTargets.Method then
-					arg1 = target
+					arg1 = getmetatable(target) and target.Method or target
 					arg2 = targetType
 					arg3 = owner
 					arg4 = name
@@ -8028,7 +8136,7 @@ do
 			self.Name = name
 
 			if targetType == AttributeTargets.Method then
-				if (name:match("^_") and not (Reflector.IsClass(owner) and (_KeyMeta[name] or _KeyMeta[name:sub(2)] == false))) or
+				if (name:match("^_") and not (Reflector.IsClass(owner) and name ~= "__exist" and (_KeyMeta[name] or _KeyMeta[name:sub(2)] == false))) or
 					( Reflector.IsInterface(owner) and Reflector.IsNonInheritable(owner) ) then
 					self.HasSelf = false
 				else
