@@ -1042,7 +1042,9 @@ class "List"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function List(self, name, parent)
+	function List(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.MouseWheelEnabled = true
 		self.Visible = true
 		self:ClearAllPoints()

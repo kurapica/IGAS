@@ -726,7 +726,9 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-        function DropDownMenuButton(self, name, parent)
+        function DropDownMenuButton(self, name, parent, ...)
+        	Super(self, name, parent, ...)
+
 			parent = parent.__DdList or parent
 
             local maxID = parent.__ItemCount or 0
@@ -1849,7 +1851,9 @@ class "DropDownList"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DropDownList(self, name, parent)
+	function DropDownList(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
         local frame = Button(nil, _DropDownListContainer)
 		frame.__Mask = self
 		self.__DdList = frame

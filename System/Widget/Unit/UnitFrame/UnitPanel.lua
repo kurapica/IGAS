@@ -37,7 +37,9 @@ class "UnitPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function UnitPanel(self)
+    function UnitPanel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.ElementType = UnitFrame	-- Default Element, need override
 
 		self.RowCount = MEMBERS_PER_RAID_GROUP

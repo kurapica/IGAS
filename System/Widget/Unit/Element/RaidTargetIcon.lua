@@ -21,7 +21,9 @@ class "RaidTargetIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RaidTargetIcon(self)
+	function RaidTargetIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 16
 		self.Width = 16
 	end

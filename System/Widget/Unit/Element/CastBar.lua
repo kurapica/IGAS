@@ -283,7 +283,9 @@ class "CastBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CastBar(self, name, parent)
+	function CastBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 16
 		self.Width = 200
 

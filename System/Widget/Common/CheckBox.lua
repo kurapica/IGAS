@@ -270,7 +270,9 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function CheckBox(self, name, parent)
+	function CheckBox(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
         self.Height = 24
         self.Width = 100
         self.MouseEnabled = true

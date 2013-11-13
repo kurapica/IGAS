@@ -731,7 +731,9 @@ class "LayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function LayoutPanel(self, name, parent)
+	function LayoutPanel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.__LayoutItems = self.__LayoutItems or {}
 
 		self.OnSizeChanged = self.OnSizeChanged + OnSizeChanged

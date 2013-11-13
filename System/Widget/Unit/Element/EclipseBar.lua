@@ -222,7 +222,9 @@ class "EclipseBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function EclipseBar(self, name, parent)
+	function EclipseBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self:SetSize(140, 38)
 		self:SetHitRectInsets(4, 4, 6, 6)
 

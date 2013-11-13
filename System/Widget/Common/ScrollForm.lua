@@ -249,7 +249,9 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function ScrollForm(self, name, parent)
+    function ScrollForm(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
         self:SetBackdrop(_FrameBackdrop)
 		self:SetBackdropColor(0, 0, 0)
 		self:SetBackdropBorderColor(0.4, 0.4, 0.4)

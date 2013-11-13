@@ -127,7 +127,9 @@ class "HealAbsorbBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function HealAbsorbBar(self)
+    function HealAbsorbBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
     	self.__MaxHealth = 0
 
     	self.StatusBarTexturePath = [[Interface\RaidFrame\Absorb-Fill]]

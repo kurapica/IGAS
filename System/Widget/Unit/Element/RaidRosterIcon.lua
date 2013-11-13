@@ -45,7 +45,9 @@ class "RaidRosterIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RaidRosterIcon(self)
+	function RaidRosterIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 16
 		self.Width = 16
 	end

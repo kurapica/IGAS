@@ -3,12 +3,13 @@
 --				2011/03/07	Recode as class
 
 -- Check Version
-local version = 12
+local version = 13
 
 if not IGAS:NewAddon("IGAS.Widget.VirtualUIObject", version) then
 	return
 end
 
+__InitTable__()
 class "VirtualUIObject"
 	inherit "Object"
 
@@ -353,7 +354,6 @@ class "VirtualUIObject"
 		return name..i
 	end
 
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" } }
 	function VirtualUIObject(self, name, parent)
 		parent = parent or IGAS.UIParent
 

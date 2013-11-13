@@ -21,7 +21,9 @@ class "HiddenManaBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function HiddenManaBar(self)
+	function HiddenManaBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.FrameStrata = "LOW"
 	end
 endclass "HiddenManaBar"

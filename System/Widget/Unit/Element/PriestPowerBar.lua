@@ -101,7 +101,9 @@ class "PriestPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function ShadowOrb(self)
+	    function ShadowOrb(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			self:SetSize(38, 37)
 
 			-- BACKGROUND
@@ -241,7 +243,9 @@ class "PriestPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PriestPowerBar(self, name, parent)
+	function PriestPowerBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.__Value = 0
 
 		self.FrameStrata = "LOW"

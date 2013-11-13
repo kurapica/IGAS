@@ -77,7 +77,9 @@ class "TotalAbsorbBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function TotalAbsorbBar(self)
+    function TotalAbsorbBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
     	local overGlow = Texture("OverGlow", self)
 
     	overGlow.BlendMode = "ADD"

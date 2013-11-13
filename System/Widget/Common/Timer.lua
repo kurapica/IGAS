@@ -175,7 +175,9 @@ class "Timer"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Timer(self)
+	function Timer(self, ...)
+		Super(self, ...)
+
 		self.__Interval = 0
 		self.__Enabled = true
 	end

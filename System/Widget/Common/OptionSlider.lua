@@ -297,7 +297,9 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function OptionSlider(self, name, parent)
+    function OptionSlider(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self.Width = 144
 		self.Height = 26
 

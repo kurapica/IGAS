@@ -6,11 +6,12 @@
 --				2011/03/01	Recode as class
 
 -- Check Version
-local version = 15
+local version = 16
 if not IGAS:NewAddon("IGAS.Widget.UIObject", version) then
 	return
 end
 
+__InitTable__()
 class "UIObject"
 	inherit "Object"
 
@@ -418,7 +419,6 @@ class "UIObject"
 
 	end
 
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Inherit" } }
 	function UIObject(self, name, parent, ...)
 		if type(name) == "table" and type(name[0]) == "userdata" then
 			-- Wrapper blz's element

@@ -162,7 +162,9 @@ class "Form"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function DockHeader(self, name, parent)
+	    function DockHeader(self, name, parent, ...)
+	    	Super(self, name, parent, ...)
+
 			local dockHeader = Frame(nil, _Form_DockHeader)
 
 			self.DockHeader = dockHeader
@@ -538,7 +540,9 @@ class "Form"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Form(self, name, parent)
+	function Form(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Width = 400
 		self.Height = 300
 

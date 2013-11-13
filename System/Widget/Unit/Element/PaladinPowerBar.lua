@@ -145,7 +145,9 @@ class "PaladinPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PaladinPowerBar(self, name, parent)
+	function PaladinPowerBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.__Value = 0
 		self.__Min = 0
 		self.__Max = 0

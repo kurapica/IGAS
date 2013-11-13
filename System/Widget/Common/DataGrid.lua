@@ -344,7 +344,9 @@ class "DataGrid"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Column(self, name, parent)
+		function Column(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			local t = Texture("Left", self, "BACKGROUND")
 			t:SetTexture([[Interface\FriendsFrame\WhoFrame-ColumnTabs]])
 			t.Width = 5
@@ -1983,7 +1985,9 @@ class "DataGrid"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function DataGrid(self, name, parent)
+	function DataGrid(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Visible = true
 		self:ClearAllPoints()
 		self:SetBackdropColor(0, 0, 0, 1)

@@ -355,7 +355,9 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ColorPicker(self, name, parent)
+	function ColorPicker(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Width = 360
 		self.Height = 220
 		self.Movable = true

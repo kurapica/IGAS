@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Font", version) then
 	return
 end
 
+__InitTable__()
 class "Font"
 	inherit "Object"
 
@@ -262,7 +263,6 @@ class "Font"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	__Arguments__{ Argument{ Name = "Name" , Type = String + Table } }
 	function Font(self, name)
 		local fontObject = type(name) == "string" and (_G[name] or CreateFont(name)) or name
 

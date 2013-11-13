@@ -3996,7 +3996,9 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function MultiLineTextBox(self, name, parent)
+    function MultiLineTextBox(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		local container = self.ScrollChild
 
 		local editbox = EditBox("Text", container)

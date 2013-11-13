@@ -248,7 +248,9 @@ class "StatusText"
 		Type = System.String + nil,
 	}
 
-	function StatusText(self)
+	function StatusText(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.FontObject = IGAS.TextStatusBarText
 	end
 endclass "StatusText"

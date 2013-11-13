@@ -528,8 +528,6 @@ class "Texture"
 		end
 		return IGAS:GetUI(parent):CreateTexture(nil, ...)
 	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" }, Argument{ Name = "Sublevel" } }
 endclass "Texture"
 
 class "Texture"

@@ -1059,7 +1059,9 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboBox(self, name, parent)
+	function ComboBox(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
         self:SetWidth(180)
         self:SetHeight(26)
 		self:SetBackdrop(_FrameBackdrop)

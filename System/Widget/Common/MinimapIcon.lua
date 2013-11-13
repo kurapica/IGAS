@@ -364,7 +364,9 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MinimapIcon(self, name, parent)
+	function MinimapIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		local button = Button(nil, Minimap)
 		self.__MiniMapBtn = button
 		button.__Mask = self

@@ -193,7 +193,9 @@ class "RuneBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function RuneButton(self, name, parent)
+		function RuneButton(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			self.Height = 18
 			self.Width = 18
 
@@ -306,7 +308,9 @@ class "RuneBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RuneBar(self, name, parent)
+	function RuneBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		local pct = floor(100 / MAX_RUNES)
 		local margin = (100 - pct * MAX_RUNES + 3) / 2
 

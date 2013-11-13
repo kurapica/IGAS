@@ -451,7 +451,9 @@ class "EditBox"
 		return CreateFrame("EditBox", nil, parent, ...)
 	end
 
-	function EditBox(self)
+	function EditBox(self, ...)
+		Super(self, ...)
+
 		_FirstLoadedFix[self] = true
 	end
 endclass "EditBox"

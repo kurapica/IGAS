@@ -581,7 +581,9 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TabLayoutPanel(self)
+	function TabLayoutPanel(self, ...)
+		Super(self, ...)
+
 		-- Close
 		local btnClose = NormalButton("TabLayoutPanel_Close", self)
         btnClose.Style = "CLOSE"

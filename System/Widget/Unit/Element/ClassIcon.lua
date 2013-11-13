@@ -48,7 +48,9 @@ class "ClassIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ClassIcon(self)
+	function ClassIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.TexturePath = [[Interface\TargetingFrame\UI-Classes-Circles]]
 		self.Height = 16
 		self.Width = 16

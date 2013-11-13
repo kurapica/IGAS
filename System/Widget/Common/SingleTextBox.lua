@@ -140,16 +140,14 @@ class "SingleTextBox"
 		@type property
 		@desc the singletextbox's style
 	]======]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = TextBoxStyle,
-	}
+	property "Style" { Type = TextBoxStyle }
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SingleTextBox(self, name, parent)
+    function SingleTextBox(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self.Height = 25
 		self.FontObject = "GameFontNormal"
 		self:SetTextInsets(4 , -4, 0, 0)

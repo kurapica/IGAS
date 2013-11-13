@@ -320,7 +320,9 @@ class "ActionButton"
     	end
 	end
 
-    function ActionButton(self)
+    function ActionButton(self, ...)
+    	Super(self, ...)
+
 		self.Height = 36
 		self.Width = 36
 

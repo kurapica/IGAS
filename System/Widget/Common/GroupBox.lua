@@ -135,7 +135,9 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function GroupBox(self, name, parent)
+    function GroupBox(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self.__Style = TEMPLATE_CLASSIC
 
         self:SetPoint("CENTER",parent,"CENTER",0,0)

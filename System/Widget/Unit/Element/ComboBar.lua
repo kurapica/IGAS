@@ -72,7 +72,9 @@ class "ComboBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function ComboPoint(self)
+	    function ComboPoint(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			self:SetSize(18, 17)
 
 			-- BACKGROUND
@@ -136,7 +138,9 @@ class "ComboBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboBar(self, name, parent)
+	function ComboBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.__Value = 0
 
 		self.FrameStrata = "LOW"

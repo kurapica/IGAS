@@ -21,7 +21,9 @@ class "ThreatIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ThreatIcon(self)
+	function ThreatIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.TexturePath = [[Interface\Minimap\ObjectIcons]]
 		self:SetTexCoord(1/4, 3/8, 0, 1/4)
 

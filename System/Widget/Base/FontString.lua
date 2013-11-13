@@ -163,8 +163,6 @@ class "FontString"
 
 		return IGAS:GetUI(parent):CreateFontString(nil, layer or "OVERLAY", inheritsFrom or "GameFontNormal", ...)
 	end
-
-	__Arguments__{ Argument{ Name = "Name" }, Argument{ Name = "Parent" }, Argument{ Name = "Layer" }, Argument{ Name = "Inherit" } }
 endclass "FontString"
 
 class "FontString"

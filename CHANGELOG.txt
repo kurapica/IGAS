@@ -1,3 +1,9 @@
+2013/11/13: IGAS v55
+    1. Constructor system rebuild.
+    2. Init-table system rebuild.
+    3. All class files update for the new system.
+    4. Overload system added for methods, constructors and meta-methods.
+
 2013/10/20: IGAS v54
     1. New property auto fill system. new independence definition environment.
     2. Fix IFResurrect error.

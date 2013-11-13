@@ -42,7 +42,9 @@ class "PvpIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PvpIcon(self)
+	function PvpIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 64
 		self.Width = 64
 	end

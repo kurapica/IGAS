@@ -373,7 +373,9 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-   function ScrollBar(self, name, parent)
+   function ScrollBar(self, name, parent, ...)
+   		Super(self, name, parent, ...)
+
         self:SetWidth(18)
         self:ClearAllPoints()
         self:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -8, -8)

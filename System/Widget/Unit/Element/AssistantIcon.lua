@@ -21,7 +21,9 @@ class "AssistantIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function AssistantIcon(self)
+	function AssistantIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 16
 		self.Width = 16
 	end

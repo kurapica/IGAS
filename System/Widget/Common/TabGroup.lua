@@ -323,7 +323,9 @@ class "TabGroup"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-        function TabButton(self, name, parent)
+        function TabButton(self, name, parent, ...)
+        	Super(self, name, parent, ...)
+
 			self:RegisterForClicks("AnyDown")
             self.Width = BUTTON_MINWIDTH
             self.Height = BUTTON_HEIGHT
@@ -653,7 +655,9 @@ class "TabGroup"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function TabGroup(self, name, parent)
+    function TabGroup(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		local closeButton = NormalButton("CloseBtn",self)
 		closeButton:SetPoint("TOPRIGHT",self,"TOPRIGHT")
         closeButton:Hide()

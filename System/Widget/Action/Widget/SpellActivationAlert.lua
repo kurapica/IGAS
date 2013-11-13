@@ -153,7 +153,9 @@ class "SpellActivationAlert"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function SpellActivationAlert(self)
+    function SpellActivationAlert(self, ...)
+    	Super(self, ...)
+
 		self.FrameStrata = "DIALOG"
 		self.Visible = false
 		self.OnUpdate = self.OnUpdate + OnUpdate

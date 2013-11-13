@@ -109,7 +109,9 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Shard(self)
+	    function Shard(self, ...)
+	    	Super(self, ...)
+
 			self:SetSize(52, 29)
 
 			local glow = Texture("Glow", self, "OVERLAY")
@@ -295,7 +297,9 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function BurningEmber(self)
+	    function BurningEmber(self, ...)
+	    	Super(self, ...)
+
 			self:SetSize(36, 39)
 
 			local border = Texture("Border", self, "BORDER")
@@ -626,7 +630,9 @@ class "WarlockPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function WarlockPowerBar(self, name, parent)
+	function WarlockPowerBar(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self.__Value = 0
 		self.__Min, self.__Max = 0, 0
 

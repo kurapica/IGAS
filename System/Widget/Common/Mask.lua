@@ -632,7 +632,9 @@ class "Mask"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function Mask(self, name, parent)
+    function Mask(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self.Visible = false
 
 		self:SetPoint("BOTTOMLEFT")

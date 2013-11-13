@@ -464,12 +464,13 @@ interface "IFGroup"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function ShadowGroupHeader(self, name, parent)
+	    function ShadowGroupHeader(self, ...)
+	    	Super(self, ...)
+
 			IGAS:GetUI(self).ShadowGroupHeader_UpdateUnitCount = UpdateUnitCount
 
 			self.Visible = false
 
-			-- self:SetFrameRef("UnitPanel", parent)
     		self:Execute(_InitHeader)
 
     		self:SetAttribute("template", "SecureHandlerAttributeTemplate")

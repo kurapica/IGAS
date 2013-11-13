@@ -393,7 +393,9 @@ class "UnitFrame"
 		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate, SecureHandlerAttributeTemplate")
 	end
 
-    function UnitFrame(self, name, parent)
+    function UnitFrame(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Layout = DockLayoutPanel
 		self.AutoLayout = true
 

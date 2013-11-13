@@ -20,10 +20,6 @@ class "ComboPointsPanel"
 
 	MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 
-	class "ComboPoint"
-		inherit "System.Object"
-	endclass "ComboPoint"
-
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
@@ -48,7 +44,9 @@ class "ComboPointsPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function ComboPointsPanel(self, name, parent)
+	function ComboPointsPanel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		local pct = floor(10000 / MAX_COMBO_POINTS)
 
 		for i = 1, MAX_COMBO_POINTS do

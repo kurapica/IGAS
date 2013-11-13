@@ -678,7 +678,9 @@ class "TreeView"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function TreeNode(self, name, parent)
+		function TreeNode(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			parent.__ChildNodeCount = (parent.__ChildNodeCount or 0) + 1
 
 			if Object.IsClass(parent, TreeNode) then
@@ -1757,7 +1759,9 @@ class "TreeView"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TreeView(self)
+	function TreeView(self, ...)
+		Super(self, ...)
+
 		self.MouseWheelEnabled = true
 		self.Visible = true
 		self:ClearAllPoints()

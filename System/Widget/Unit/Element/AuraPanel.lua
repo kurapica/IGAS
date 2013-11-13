@@ -159,7 +159,9 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function AuraIcon(self, name, parent)
+		function AuraIcon(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			self.MouseEnabled = false
 			self.MouseWheelEnabled = false
 
@@ -287,7 +289,9 @@ class "AuraPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function AuraPanel(self, name, parent)
+	function AuraPanel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.FrameStrata = "MEDIUM"
 		self.AutoSize = true
 		self.ColumnCount = 7

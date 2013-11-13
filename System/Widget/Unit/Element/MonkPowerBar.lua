@@ -84,7 +84,9 @@ class "MonkPowerBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function LightEnergy(self)
+	    function LightEnergy(self, name, parent, ...)
+			Super(self, name, parent, ...)
+
 			self:SetSize(18, 17)
 
 			-- BACKGROUND
@@ -170,7 +172,9 @@ class "MonkPowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function MonkPowerBar(self, name, parent)
+	function MonkPowerBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.__Value = 0
 		self.__Min, self.__Max = 0, 0
 

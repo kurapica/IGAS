@@ -21,7 +21,9 @@ class "QuestBossIcon"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function QuestBossIcon(self)
+	function QuestBossIcon(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Height = 32
 		self.Width = 32
 	end

@@ -2048,7 +2048,9 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function CodeEditor(self, name, parent)
+    function CodeEditor(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		-- Event Handlers
 		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed
 		--self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged

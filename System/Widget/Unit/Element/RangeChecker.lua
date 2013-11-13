@@ -132,7 +132,9 @@ class "RangeChecker"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function RangeChecker(self)
+	function RangeChecker(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self:SetSize(32, 32)
 		self.Visible = false
 

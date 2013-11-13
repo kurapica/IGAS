@@ -475,7 +475,9 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PopupDialog(self, name, parent)
+	function PopupDialog(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.Width = 320
 		self.Height = 72
 		self.MouseEnabled = true

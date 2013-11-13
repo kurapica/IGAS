@@ -120,7 +120,9 @@ class "AutoCastShine"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function AutoCastShine(self, name, parent)
+    function AutoCastShine(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		self:SetPoint("TOPLEFT", 1, -1)
 		self:SetPoint("BOTTOMRIGHT", -1, 1)
 		self.Visible = false

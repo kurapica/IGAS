@@ -96,7 +96,9 @@ class "NameLabel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function NameLabel(self)
+	function NameLabel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.DrawLayer = "BORDER"
 		self.TextColor = _DefaultColor
 	end

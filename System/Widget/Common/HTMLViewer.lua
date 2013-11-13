@@ -495,7 +495,9 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function HTMLViewer(self, name, parent)
+    function HTMLViewer(self, name, parent, ...)
+    	Super(self, name, parent, ...)
+
 		local html = SimpleHTML("HTMLViewer", self)
 		self.ScrollChild = html
 

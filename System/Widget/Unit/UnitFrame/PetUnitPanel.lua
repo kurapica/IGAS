@@ -37,7 +37,9 @@ class "PetUnitPanel"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function PetUnitPanel(self)
+    function PetUnitPanel(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.ElementType = UnitFrame	-- Default Element, need override
 
 		self.RowCount = MEMBERS_PER_RAID_GROUP

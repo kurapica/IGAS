@@ -96,6 +96,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/10/11 Attribute can apply to the struct's field now.
 --               2013/10/25 Redesign the definition environment, partclass & partinterface removed
 --               2013/10/30 The property auto-fill system finished
+--               2013/11/13 The overload system for method, constructor & meta-method finished
 
 ------------------------------------------------------------------------
 -- Class system is used to provide a object-oriented system in lua.
@@ -242,7 +243,7 @@ end
 -- GLOBAL Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 82
+	LUA_OOP_VERSION = 83
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -354,13 +355,13 @@ do
 	})
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
-		if __Attribute__ and owner ~= __Attribute__ then
+		if __Attribute__ and (owner ~= __Attribute__ or __Attribute__._ConsumePreparedAttributes) then
 			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
 		end
 
-		if _NSInfo[owner].Type == TYPE_CLASS and _KeyMeta[key] then
-			-- No need for ___index & ___newindex
-			local rKey = "_" .. key
+		if __Attribute__ and targetType ~= AttributeTargets.Constructor then
+			-- Hide the real fixed method for method and meta-method, started with '0', strange but useful
+			local rKey = "0" .. key
 
 			if storage[rKey] then
 				if type(value) == "function" and (not getmetatable(storage[rKey]) or storage[rKey].Owner ~= owner) then
@@ -370,16 +371,16 @@ do
 					return
 				end
 
-				key = rkey
+				key = rKey
 			elseif getmetatable(value) then
 				storage[rKey] = storage[key]
 
-				-- table can't be meta-methods
+				-- table can't be meta-methods & hide the details
 				storage[key] = function(...)
 					return storage[rKey](...)
 				end
 
-				key = rkey
+				key = rKey
 			end
 		end
 
@@ -1029,6 +1030,9 @@ do
 								method = method.Next
 							end
 						else
+							-- Remove header 0
+							name = name:match("^%d*(.-)$")
+
 							--- superclass method
 							if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] == method.Next then
 								method.Next = nil
@@ -1778,14 +1782,14 @@ do
 			local objCls = getmetatable(self)
 			local IF, info, disfunc
 
-			if __Attribute__._IsDefined(objCls, AttributeTargets.Class, __Unique__) then
-				-- No dispose to a unique object
-				return
-			end
-
 			info = objCls and rawget(_NSInfo, objCls)
 
 			if not info then return end
+
+			if info.UniqueObject then
+				-- No dispose to a unique object
+				return
+			end
 
 			for i = #(info.Cache4Interface), 1, -1 do
 				IF = info.Cache4Interface[i]
@@ -1921,11 +1925,11 @@ do
 			if _KeyMeta[key] ~= nil then
 				if type(value) == "function" then
 					local rMeta = _KeyMeta[key] and key or "_"..key
-					local oldValue = info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta]
+					local oldValue = info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta]
 
 					SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
 
-					return UpdateMeta4Children(rMeta, info.ChildClass, oldValue, info.MetaTable["_" .. rMeta] or info.MetaTable[rMeta])
+					return UpdateMeta4Children(rMeta, info.ChildClass, oldValue, info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta])
 				else
 					error(("'%s' must be a function."):format(key), 2)
 				end
@@ -1966,7 +1970,7 @@ do
 		if pre == now then return end
 
 		local info = _NSInfo[cls]
-		local rMeta = "_" .. meta
+		local rMeta = "0" .. meta
 
 		if not info.MetaTable[meta] then
 			-- simple clone
@@ -2029,7 +2033,7 @@ do
 		local error = error
 		local tostring = tostring
 
-		local isCached = __Attribute__ and __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
+		local isCached = info.AutoCache or false
 
 		MetaTable.__metatable = cls
 
@@ -2346,15 +2350,13 @@ do
 		info.MetaTable = info.MetaTable or {}
 
 		if __Attribute__ and cls ~= __Attribute__ then
-			local isCached = __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
+			local isCached = info.AutoCache or false
 
 			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
 
-			if not isCached and __Cache__ then
-				if __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) then
-					-- So, the __index need re-build
-					info.MetaTable.__index = nil
-				end
+			if not isCached and info.AutoCache then
+				-- So, the __index need re-build
+				info.MetaTable.__index = nil
 			end
 		end
 
@@ -2435,22 +2437,20 @@ do
 			local rMeta = flag and meta or "_" .. meta
 
 			if superInfo.MetaTable[rMeta] then
-				UpdateMeta4Child(rMeta, info.Owner, nil, superInfo.MetaTable["_" .. rMeta] or superInfo.MetaTable[rMeta])
+				UpdateMeta4Child(rMeta, info.Owner, nil, superInfo.MetaTable["0" .. rMeta] or superInfo.MetaTable[rMeta])
 			end
 		end
 
 		-- Clone Attributes
 		if __Attribute__ then
-			local isCached = __Cache__ and __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) or false
+			local isCached = info.AutoCache or false
 
 			__Attribute__._CloneAttributes(superCls, info.Owner, AttributeTargets.Class)
 
-			if not isCached and __Cache__ then
-				if __Attribute__._IsDefined(info.Owner, AttributeTargets.Class, __Cache__) then
-					-- So, the __index need re-build
-					info.MetaTable.__index = nil
-					UpdateMetaTable4Cls(info.Owner)
-				end
+			if not isCached and info.AutoCache then
+				-- So, the __index need re-build
+				info.MetaTable.__index = nil
+				UpdateMetaTable4Cls(info.Owner)
 			end
 		end
 	end
@@ -3630,6 +3630,20 @@ do
 		end
 
 		doc [======[
+			@name IsAutoCacheClass
+			@type method
+			@desc Whether the class is auto-cache, the objects of the class will keep methods in itself when called
+			@param object
+			@return boolean true if the class is auto-cache
+			@usage System.Reflector.IsAutoCacheClass(System.Object)
+		]======]
+		function IsAutoCacheClass(ns)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].AutoCache or false
+		end
+
+		doc [======[
 			@name IsNonExpandable
 			@type method
 			@desc Check if the class|interface is non-expandable
@@ -4738,11 +4752,11 @@ do
 								desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
 							end
 						else
-							if __Attribute__._IsDefined(ns, AttributeTargets.Class, __Cache__) then
+							if info.AutoCache then
 								result = result .. "[__Cache__]\n"
 							end
 
-							if __Attribute__._IsDefined(ns, AttributeTargets.Class, __Unique__) then
+							if info.UniqueObject then
 								result = result .. "[__Unique__]\n"
 							end
 
@@ -6174,6 +6188,29 @@ do
 			return ...
 		end
 
+		-- Find the real fixed method in class | interface
+		local function getFixedMethod(ns, name)
+			local info = _NSInfo[ns]
+
+			if info.Method[name] then
+				return info.Method["0" .. name] or info.Method[name]
+			end
+
+			if info.SuperClass then
+				local handler = getFixedMethod(info.SuperClass, name)
+
+				if handler then return handler end
+			end
+
+			if info.ExtendInterface then
+				for _, IF in ipairs(info.ExtendInterface) do
+					local handler = getFixedMethod(IF, name)
+
+					if handler then return handler end
+				end
+			end
+		end
+
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
@@ -6290,18 +6327,19 @@ do
 						-- Check super for object method
 						local info = _NSInfo[self.Owner]
 						local name = self.Name
+						local handler
 
-						local handler = info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name]
+						if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] then
+							handler = getFixedMethod(info.SuperClass, name)
+						end
 
-						if not handler then
-							if info.ExtendInterface then
-								for _, IF in ipairs(info.ExtendInterface) do
-									handler = _NSInfo[IF].Cache4Method[name]
-
-									if handler then
-										break
-									end
+						if not handler and info.ExtendInterface then
+							for _, IF in ipairs(info.ExtendInterface) do
+								if _NSInfo[IF].Cache4Method[name] then
+									handler = getFixedMethod(IF, name)
 								end
+
+								if handler then break end
 							end
 						end
 
@@ -6316,6 +6354,7 @@ do
 							info = _NSInfo[info.SuperClass]
 
 							if info.Constructor then
+								-- No link for constructor
 								return info.Constructor
 							end
 						end
@@ -6411,7 +6450,7 @@ do
 			self.Thread = nil
 
 			-- Validation self once, maybe no need to waste time
-			if self.HasSelf then
+			if false and self.HasSelf then
 				local value = select(1, ...)
 				local owner = self.Owner
 
@@ -7632,132 +7671,6 @@ do
 		end
 	endclass "__NonInheritable__"
 
-	-- Apply Attribute to the previous definitions, since I can't use them before definition
-	do
-		------------------------------------------------------
-		-- For Attribute system
-		------------------------------------------------------
-		__Attribute__._ClearPreparedAttributes()
-
-		------------------------------------------------------
-		-- For structs
-		------------------------------------------------------
-		_KeyWord4StrtEnv.structtype = nil
-
-		__Final__:ApplyAttribute(Boolean)
-		__Final__:ApplyAttribute(String)
-		__Final__:ApplyAttribute(Number)
-		__Final__:ApplyAttribute(Function)
-		__Final__:ApplyAttribute(Table)
-		__Final__:ApplyAttribute(Userdata)
-		__Final__:ApplyAttribute(Thread)
-		__Final__:ApplyAttribute(Any)
-
-		-- System.AttributeTargets
-		__Flags__:ApplyAttribute(AttributeTargets)
-		__Final__:ApplyAttribute(AttributeTargets)
-
-		-- System.__Attribute__
-		__Final__:ApplyAttribute(__Attribute__)
-
-		-- System.__Unique__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
-		__Unique__:ApplyAttribute(__Unique__)
-		__Final__:ApplyAttribute(__Unique__)
-
-		-- System.__Flags__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
-		__Unique__:ApplyAttribute(__Flags__)
-		__Final__:ApplyAttribute(__Flags__)
-
-		-- System.__AttributeUsage__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
-		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
-		__Final__:ApplyAttribute(__AttributeUsage__)
-		__NonInheritable__:ApplyAttribute(__AttributeUsage__)
-
-		-- System.__Final__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
-		__Unique__:ApplyAttribute(__Final__)
-		__Final__:ApplyAttribute(__Final__)
-
-		-- System.__NonInheritable__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
-		__Unique__:ApplyAttribute(__NonInheritable__)
-		__Final__:ApplyAttribute(__NonInheritable__)
-
-		------------------------------------------------------
-		-- For other classes
-		------------------------------------------------------
-		-- System.Reflector
-		__Final__:ApplyAttribute(Reflector)
-		__NonInheritable__:ApplyAttribute(Reflector)
-
-		-- Type
-		__Final__:ApplyAttribute(Type)
-		__NonInheritable__:ApplyAttribute(Type)
-
-		-- Event
-		__Final__:ApplyAttribute(Event)
-		__NonInheritable__:ApplyAttribute(Event)
-
-		-- EventHandler
-		__Final__:ApplyAttribute(EventHandler)
-		__NonInheritable__:ApplyAttribute(EventHandler)
-
-		-- FixedMethod
-		__Final__:ApplyAttribute(FixedMethod)
-		__NonInheritable__:ApplyAttribute(FixedMethod)
-	end
-
-	-- More usable attributes
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, RunOnce = true}
-	__Final__()
-	__Unique__()
-	class "__Thread__"
-		inherit "__Attribute__"
-		doc [======[
-			@name __Thread__
-			@type class
-			@desc Whether the event is thread activated by defalut, or wrap the method as coroutine
-		]======]
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		function ApplyAttribute(self, target, targetType, owner, name)
-			local CallThread = CallThread
-
-			if targetType == AttributeTargets.Method then
-				if type(target) == "function" then
-					-- Wrap the target method
-					return function (...)
-						return CallThread(target, ...)
-					end
-				end
-			elseif targetType == AttributeTargets.Event then
-				_NSInfo[owner].Event[target].ThreadActivated = true
-			end
-		end
-	endclass "__Thread__"
-
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class}
-	__Final__()
-	__Unique__()
-	class "__Cache__"
-		inherit "__Attribute__"
-		doc [======[
-			@name __Cache__
-			@type class
-			@desc Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .
-		]======]
-	endclass "__Cache__"
-
-	__Final__()
 	struct "Argument"
 		Name = String + nil
 		Type = Any + nil
@@ -7777,9 +7690,6 @@ do
 		end
 	endstruct "Argument"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, RunOnce = true }
-	__Final__()
-	__Unique__()
 	class "__Arguments__"
 		inherit "__Attribute__"
 
@@ -7913,6 +7823,148 @@ do
 		end
 	endclass "__Arguments__"
 
+	-- Apply Attribute to the previous definitions, since I can't use them before definition
+	do
+		------------------------------------------------------
+		-- For structs
+		------------------------------------------------------
+		_KeyWord4StrtEnv.structtype = nil
+
+		__Final__:ApplyAttribute(Boolean)
+		__Final__:ApplyAttribute(String)
+		__Final__:ApplyAttribute(Number)
+		__Final__:ApplyAttribute(Function)
+		__Final__:ApplyAttribute(Table)
+		__Final__:ApplyAttribute(Userdata)
+		__Final__:ApplyAttribute(Thread)
+		__Final__:ApplyAttribute(Any)
+		__Final__:ApplyAttribute(Argument)
+
+		------------------------------------------------------
+		-- For Attribute system
+		------------------------------------------------------
+		-- System.AttributeTargets
+		__Flags__:ApplyAttribute(AttributeTargets)
+		__Final__:ApplyAttribute(AttributeTargets)
+
+		-- System.__Arguments__
+		__Unique__:ApplyAttribute(__Arguments__)
+		__Final__:ApplyAttribute(__Arguments__)
+
+		-- System.__Attribute__
+		__Final__:ApplyAttribute(__Attribute__)
+		__Arguments__()
+		SaveFixedMethod(_NSInfo[__Attribute__], "Constructor", _NSInfo[__Attribute__].Constructor, __Attribute__, AttributeTargets.Constructor)
+
+		-- System.__Unique__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
+		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Unique__)
+		__Final__:ApplyAttribute(__Unique__)
+
+		-- System.__Flags__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Flags__)
+		__Final__:ApplyAttribute(__Flags__)
+
+		-- System.__AttributeUsage__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
+		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
+		__Final__:ApplyAttribute(__AttributeUsage__)
+		__NonInheritable__:ApplyAttribute(__AttributeUsage__)
+
+		-- System.__Final__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Final__)
+		__Final__:ApplyAttribute(__Final__)
+
+		-- System.__NonInheritable__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
+		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__NonInheritable__)
+		__Final__:ApplyAttribute(__NonInheritable__)
+
+		-- System.__Arguments__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, Inherited = false, RunOnce = true }
+		__Attribute__._ConsumePreparedAttributes(__Arguments__, AttributeTargets.Class)
+		__Arguments__()
+		SaveFixedMethod(_NSInfo[__Arguments__], "Constructor", _NSInfo[__Arguments__].Constructor, __Arguments__, AttributeTargets.Constructor)
+
+		------------------------------------------------------
+		-- For other classes
+		------------------------------------------------------
+		-- System.Reflector
+		__Final__:ApplyAttribute(Reflector)
+		__NonInheritable__:ApplyAttribute(Reflector)
+
+		-- Type
+		__Final__:ApplyAttribute(Type)
+		__NonInheritable__:ApplyAttribute(Type)
+
+		-- Event
+		__Final__:ApplyAttribute(Event)
+		__NonInheritable__:ApplyAttribute(Event)
+
+		-- EventHandler
+		__Final__:ApplyAttribute(EventHandler)
+		__NonInheritable__:ApplyAttribute(EventHandler)
+
+		-- FixedMethod
+		__Final__:ApplyAttribute(FixedMethod)
+		__NonInheritable__:ApplyAttribute(FixedMethod)
+	end
+
+	-- More usable attributes
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__Thread__"
+		inherit "__Attribute__"
+		doc [======[
+			@name __Thread__
+			@type class
+			@desc Whether the event is thread activated by defalut, or wrap the method as coroutine
+		]======]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			local CallThread = CallThread
+
+			if targetType == AttributeTargets.Method then
+				if type(target) == "function" then
+					-- Wrap the target method
+					return function (...)
+						return CallThread(target, ...)
+					end
+				end
+			elseif targetType == AttributeTargets.Event then
+				_NSInfo[owner].Event[target].ThreadActivated = true
+			end
+		end
+	endclass "__Thread__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__Cache__"
+		inherit "__Attribute__"
+		doc [======[
+			@name __Cache__
+			@type class
+			@desc Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .
+		]======]
+
+		function ApplyAttribute(self, target, targetType)
+			if Reflector.IsClass(target) then
+				_NSInfo[target].AutoCache = true
+			end
+		end
+	endclass "__Cache__"
+
 	enum "StructType" {
 		"Member",
 		"Array",
@@ -7968,16 +8020,22 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
+		__Arguments__{ StructType }
 		function __StructType__(self, type)
 			Super(self)
 
-			if not pcall(TrySetProperty, self, "Type", type) then
-				self.Type = StructType.Member
-			end
+			self.Type = type
+		end
+
+		__Arguments__{ }
+		function __StructType__(self)
+			Super(self)
+
+			self.Type = StructType.Member
 		end
 	endclass "__StructType__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class, Inherited = false, RunOnce = true}
 	__Final__()
 	__Unique__()
 	class "__NonExpandable__"
@@ -7996,6 +8054,40 @@ do
 			end
 		end
 	endclass "__NonExpandable__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__InitTable__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __InitTable__
+			@type class
+			@desc Used to mark the class can use init table like: obj = cls(name) { Age = 123 }
+		]======]
+
+		__Arguments__{ RawTable }
+		function InitWithTable(self, initTable)
+			for name, value in pairs(initTable) do
+				local ok, msg = pcall(TrySetProperty, self, name, value)
+
+				if not ok then
+					msg = strtrim(msg:match(":%d+:%s*(.-)$") or msg)
+
+					errorhandler(msg)
+				end
+			end
+
+			return self
+		end
+
+		function ApplyAttribute(self, target, targetType)
+			if rawget(_NSInfo, target) and _NSInfo[target].Type == TYPE_CLASS then
+				SaveFixedMethod(_NSInfo[target].MetaTable, "__call", __InitTable__["0InitWithTable"], target)
+			end
+		end
+	endclass "__InitTable__"
 end
 
 ------------------------------------------------------

@@ -77,7 +77,9 @@ class "TotemBar"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Totem(self)
+	    function Totem(self, name, parent, ...)
+    		Super(self, name, parent, ...)
+
 			self.Visible = false
 			self:SetSize(36, 36)
 
@@ -99,7 +101,9 @@ class "TotemBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function TotemBar(self, name, parent)
+	function TotemBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		local pct = floor(100 / MAX_TOTEMS)
 		local margin = (100 - pct * MAX_TOTEMS) / 2
 

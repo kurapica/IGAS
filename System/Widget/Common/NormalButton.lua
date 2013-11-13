@@ -242,7 +242,9 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function NormalButton(self)
+	function NormalButton(self, ...)
+		Super(self, ...)
+
 		self.__Style = TEMPLATE_NONE
 	end
 endclass "NormalButton"

@@ -921,6 +921,8 @@ class "Addon"
 		-- Constructor
 		------------------------------------------------------
 		function Module(self, parent, name)
+			Super(self, parent, name)
+
 			_Addon_DefaultState[self] = true
 			_Addon_Disabled[self] = _Addon_Disabled[parent]
 		end
@@ -1057,6 +1059,8 @@ class "Addon"
 	-- Constructor
 	------------------------------------------------------
 	function Addon(self, name)
+		Super(self, name)
+
 		_Addon[name] = self
 	end
 

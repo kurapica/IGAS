@@ -193,7 +193,9 @@ class "HealthBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function HealthBar(self)
+	function HealthBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
 		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 
@@ -289,7 +291,9 @@ class "HealthBarFrequent"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function HealthBarFrequent(self)
+	function HealthBarFrequent(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
 		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 

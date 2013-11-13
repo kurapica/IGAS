@@ -21,7 +21,9 @@ class "PowerBar"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PowerBar(self)
+	function PowerBar(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.FrameStrata = "LOW"
 		self.UsePowerColor = true
 	end
@@ -40,7 +42,9 @@ class "PowerBarFrequent"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function PowerBarFrequent(self)
+	function PowerBarFrequent(self, name, parent, ...)
+		Super(self, name, parent, ...)
+
 		self.FrameStrata = "LOW"
 		self.UsePowerColor = true
 	end
