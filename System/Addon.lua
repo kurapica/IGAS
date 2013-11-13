@@ -1059,7 +1059,7 @@ class "Addon"
 	-- Constructor
 	------------------------------------------------------
 	function Addon(self, name)
-		Super(self, name)
+		Super(self, nil, name)
 
 		_Addon[name] = self
 	end

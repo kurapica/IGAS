@@ -251,6 +251,7 @@ do
 	TYPE_INTERFACE = "Interface"
 
 	TYPE_NAMESPACE = "NameSpace"
+	TYPE_SUPERALIAS = "SuperAlias"
 	TYPE_TYPE = "TYPE"
 
 	-- Disposing method name
@@ -440,10 +441,11 @@ do
 end
 
 ------------------------------------------------------
--- NameSpace
+-- NameSpace & Super Alias
 ------------------------------------------------------
 do
 	_NameSpace = _NameSpace or newproxy(true)
+	_SuperAlias = _SuperAlias or newproxy(true)
 
 	_NSInfo = _NSInfo or setmetatable({}, {
 		__index = function(self, key)
@@ -458,22 +460,17 @@ do
 		__mode = "k",
 	})
 
-	-- metatable for class
+	_SuperMap = _SuperMap or setmetatable({}, {__mode = "kv"})
+
+	-- metatable for namespaces
 	_MetaNS = _MetaNS or getmetatable(_NameSpace)
 	do
 		_MetaNS.__call = function(self, ...)
 			local info = _NSInfo[self]
 
 			if info.Type == TYPE_CLASS then
-				local obj = select(1, ...)
-
-				if getmetatable(obj) and Reflector.ObjectIsClass(obj, self) then
-					-- Init the class object
-					return Class1Obj(self, obj, select(2, ...))
-				else
-					-- Create Class object
-					return Class2Obj(self, ...)
-				end
+				-- Create Class object
+				return Class2Obj(self, ...)
 			elseif info.Type == TYPE_STRUCT then
 				-- Create Struct
 				return Struct2Obj(self, ...)
@@ -601,6 +598,42 @@ do
 		end
 
 		_MetaNS.__metatable = TYPE_NAMESPACE
+	end
+
+	-- metatable for super alias
+	_MetaSA = _MetaSA or getmetatable(_SuperAlias)
+	do
+		_MetaSA.__call = function(self, ...)
+			local cls = _SuperMap[self].Owner
+			local obj = select(1, ...)
+
+			if getmetatable(obj) and Reflector.ObjectIsClass(obj, cls) then
+				-- Init the class object
+				return Class1Obj(cls, obj, select(2, ...))
+			end
+		end
+
+		_MetaSA.__index = function(self, key)
+			local info = _SuperMap[self]
+
+			if info.SubNS and info.SubNS[key] then
+				return info.SubNS[key]
+			elseif _KeyMeta[key] ~= nil then
+				if _KeyMeta[key] then
+					return info.MetaTable[key]
+				else
+					return info.MetaTable["_"..key]
+				end
+			else
+				return info.Method[key] or info.Cache4Method[key]
+			end
+		end
+
+		_MetaSA.__tostring = function(self)
+			return GetFullName4NS(_SuperMap[self].Owner)
+		end
+
+		_MetaSA.__metatable = TYPE_SUPERALIAS
 	end
 
 	-- IsNameSpace
@@ -1831,8 +1864,8 @@ do
 			end
 
 			if key == _SuperIndex then
-				value = info.SuperClass
-				if value then
+				if info.SuperClass then
+					value = _NSInfo[info.SuperClass].SuperAlias
 					rawset(self, _SuperIndex, value)
 					return value
 				else
@@ -2425,6 +2458,13 @@ do
 
 		superInfo.ChildClass = superInfo.ChildClass or {}
 		superInfo.ChildClass[info.Owner] = true
+
+		-- Generate super alias
+		if not superInfo.SuperAlias then
+			superInfo.SuperAlias = newproxy(_SuperAlias)
+			_SuperMap[superInfo.SuperAlias] = superInfo
+		end
+
 		info.SuperClass = superCls
 
 		-- Keep to the environmenet

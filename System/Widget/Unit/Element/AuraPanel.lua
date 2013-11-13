@@ -129,22 +129,13 @@ class "AuraPanel"
 		end
 
 		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-		doc [======[
-			@name Index
-			@type property
-			@desc The aura index
-		]======]
-		property "Index" { Type = Number }
-
-		------------------------------------------------------
 		-- Event Handler
 		------------------------------------------------------
 		local function UpdateTooltip(self)
 			self = IGAS:GetWrapper(self)
 			IGAS.GameTooltip:SetUnitAura(self.Parent.Unit, self.Index, self.Parent.Filter)
 		end
+
 		local function OnEnter(self)
 			if self.Visible then
 				IGAS.GameTooltip:SetOwner(self, 'ANCHOR_BOTTOMRIGHT')
@@ -155,6 +146,42 @@ class "AuraPanel"
 		local function OnLeave(self)
 			IGAS.GameTooltip.Visible = false
 		end
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc [======[
+			@name Index
+			@type property
+			@desc The aura index
+		]======]
+		property "Index" { Type = Number }
+
+		doc [======[
+			@name ShowTooltip
+			@type property
+			@desc Whether show the tooltip of the aura
+		]======]
+		property "ShowTooltip" {
+			Field = "__ShowTooltip",
+			Set = function(self, flag)
+				if flag ~= self.ShowTooltip then
+					self.__ShowTooltip = flag
+
+					if flag then
+						self.OnEnter = self.OnEnter + OnEnter
+						self.OnLeave = self.OnLeave + OnLeave
+						self.MouseEnabled = true
+					else
+						self.OnEnter = self.OnEnter - OnEnter
+						self.OnLeave = self.OnLeave - OnLeave
+						self.MouseEnabled = false
+					end
+				end
+			end,
+			Type = Boolean,
+			Default = true,
+		}
 
 		------------------------------------------------------
 		-- Constructor
