@@ -1,7 +1,7 @@
 Loop
 ====
 
-Lua object-oriented program system, also with a special syntax keyword system. Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now.
+Pure lua object-oriented program system, also with a special syntax keyword system. Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now.
 
 
 
@@ -17,11 +17,7 @@ Use loadfile or require to load the class.lua file in the folder. Then you can t
 				print("Hello " .. name .. ", My name is " .. self.Name)
 			end
 
-			property "Name" {
-				Field = "_Name",     -- The real field that used to store the value, explain later
-				Type = System.String,  -- the property's type used to validate the value,
-									   -- System.Sting means the value should be a string, also explain later.
-			}
+			property "Name" { Type = System.String }
 		endclass "MyClass"
 	end
 
@@ -2617,7 +2613,7 @@ We could define a struct used to represent one row of the datatable like :
 		ID = Number
 		Name = String
 		Age = Number
-	endclass "Person"
+	endstruct "Person"
 
 But since the function won't know how to use the **Person** table ( we don't want a function to handle only one data type ), we need use some attributes to describe them.
 

@@ -86,7 +86,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/09/01 Attribute system added
 --               2013/09/07 Init-table system added for class and struct
 --               2013/09/08 Reduce the cpu cost for methods, properties, events system
---               2013/09/09 Improve the property system
+--               2013/09/08 Improve the property system
 --               2013/09/08 New property system
 --               2013/09/09 Improve the cache system to improve performance
 --               2013/09/11 Fix Reflector.Help & ParseEnum
@@ -107,25 +107,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 -- class "MyClass"						-- declare starting to define the class
 --		inherit "Object"					-- declare the class is inherited from System.Object
 --
---		event "OnNameChanged"	-- declare the class have an event named "OnNameChanged"
---
---		function Print(self)				-- the global functions will be treated as the class's methodes, self means the object
---			print(self._Name)
+--		function Greet(self)				-- the global functions will be treated as the class's methodes, self means the object
+--			print("Hello" .. self.Name)
 --		end
 --
---		property "Name" {				-- declare the class have a property named "Name"
---			Get = function(self)		-- the get method for property "Name"
---				return self._Name
---			end,
---			Set = function(self, value)	-- the set method for property "Name"
---				self._Name = value
---				self:OnNameChanged(value)	-- fire the "OnNameChanged" event to trigger it's handler functions.
---			end,
+--		property "Name" {
 --			Type = String,				-- the property "Name"'s type, so when you assign a value to Name, it should be checked.
 --		}
 --
 --		function MyClass(self, name)	-- the function with same name of the class is treated as the Constructor of the class
---			self._Name = name			-- use self to init
+--			self.Name = name			-- use self to init
 --		end
 --	endclass "MyClass"					-- declare the definition of the class is over.
 --
@@ -133,13 +124,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 --
 --	myObj = MyClass("Test")
 --
---	myObj:Print()						-- print out : Test
+--	myObj:Greet()						-- print out : Test
 --
---	function myObj:OnNameChanged(name)	-- define the event handler for 'OnNameChanged'
---		print("The Name is changed to "..name)
---	end
---
---	myObj.Name = "Hello"			-- print out : The Name is changed to Hello
+--	myObj.Name = "Another"				-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -356,7 +343,7 @@ do
 	})
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
-		if __Attribute__ and (owner ~= __Attribute__ or __Attribute__._ConsumePreparedAttributes) then
+		if __Attribute__ and __Attribute__._ConsumePreparedAttributes then
 			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
 		end
 
@@ -441,7 +428,7 @@ do
 end
 
 ------------------------------------------------------
--- NameSpace & Super Alias
+-- NameSpace & SuperAlias
 ------------------------------------------------------
 do
 	_NameSpace = _NameSpace or newproxy(true)
@@ -1002,7 +989,7 @@ do
 
 		function CloneWithoutOverride4Method(dest, src)
 			for key, value in pairs(src) do
-				if not dest[key] and not key:match("^_") then
+				if not dest[key] and not key:match("^[%d_]") then
 					dest[key] = src[key]
 				end
 			end
@@ -1745,7 +1732,7 @@ do
 		__index = false,	-- return a[b]
 		__newindex = false,	-- a[b] = v
 		__call = true,		-- a()
-		__gc = false,		-- dispose a
+		-- __gc = false,		-- dispose a
 		__tostring = true,	-- tostring(a)
 		__exist = true,		-- ClassName(...)	-- return object if existed
 	}
@@ -1754,43 +1741,6 @@ do
 	-- Init & Dispose System
 	--------------------------------------------------
 	do
-		function InitObjectWithClass(cls, obj, ...)
-			local info = _NSInfo[cls]
-			local noError = true
-
-			if info.SuperClass then
-				noError = InitObjectWithClass(info.SuperClass, obj, ...)
-			end
-
-			if noError and type(info.Constructor) == "function" then
-				local ok, ret = pcall(info.Constructor, obj, ...)
-
-				if not ok then
-					errorhandler(ret)
-
-					-- Roll back
-					noError = false
-
-					-- Call Class Dispose
-					while cls and _NSInfo[cls] do
-						local disfunc = _NSInfo[cls][DISPOSE_METHOD]
-
-						if disfunc then
-							pcall(disfunc, obj)
-						end
-
-						cls = _NSInfo[cls].SuperClass
-					end
-
-					wipe(obj)
-
-					rawset(obj, "Disposed", true)
-				end
-			end
-
-			return noError
-		end
-
 		function InitObjectWithInterface(cls, obj)
 			local ok, msg, info
 
@@ -1865,7 +1815,17 @@ do
 
 			if key == _SuperIndex then
 				if info.SuperClass then
-					value = _NSInfo[info.SuperClass].SuperAlias
+					local superInfo = _NSInfo[info.SuperClass]
+					value = superInfo.SuperAlias
+
+					if not value then
+						-- Generate super alias when need
+						superInfo.SuperAlias = newproxy(_SuperAlias)
+						_SuperMap[superInfo.SuperAlias] = superInfo
+
+						value = superInfo.SuperAlias
+					end
+
 					rawset(self, _SuperIndex, value)
 					return value
 				else
@@ -2458,12 +2418,6 @@ do
 
 		superInfo.ChildClass = superInfo.ChildClass or {}
 		superInfo.ChildClass[info.Owner] = true
-
-		-- Generate super alias
-		if not superInfo.SuperAlias then
-			superInfo.SuperAlias = newproxy(_SuperAlias)
-			_SuperMap[superInfo.SuperAlias] = superInfo
-		end
 
 		info.SuperClass = superCls
 
@@ -8124,7 +8078,7 @@ do
 
 		function ApplyAttribute(self, target, targetType)
 			if rawget(_NSInfo, target) and _NSInfo[target].Type == TYPE_CLASS then
-				SaveFixedMethod(_NSInfo[target].MetaTable, "__call", __InitTable__["0InitWithTable"], target)
+				SaveFixedMethod(_NSInfo[target].MetaTable, "__call", __InitTable__["InitWithTable"], target)
 			end
 		end
 	endclass "__InitTable__"
