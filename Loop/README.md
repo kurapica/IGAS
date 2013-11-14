@@ -1,7 +1,17 @@
 Loop
 ====
 
-Pure lua object-oriented program system, also with a special syntax keyword system. Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now.
+Pure lua object-oriented program system with a special sugar syntax system. Several features contains in it:
+
+* Enum system used to define enumeration value types.
+* Struct system used to define structure value types.
+* Class system used to define object types with methods and properties settings, also with object events and meta-methods.
+* Interface system used to define interfaces for class objects.
+
+* Attribute system used to give descriptions for every parts of the system: enum, struct, class, interface, method, property, event.
+* Overload system used to apply several definitions for class's constructor, method or meta-method with the same name.
+
+Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now, or you can provide them in another way.
 
 
 
@@ -13,11 +23,11 @@ Use loadfile or require to load the class.lua file in the folder. Then you can t
 	do
 		-- Define a class
 		class "MyClass"
+			property "Name" { Type = System.String }
+
 			function Greet(self, name)
 				print("Hello " .. name .. ", My name is " .. self.Name)
 			end
-
-			property "Name" { Type = System.String }
 		endclass "MyClass"
 	end
 
@@ -31,54 +41,52 @@ Now we create a class with a **Greet** method and a **Name** property. Then we c
 		-- Call the object's method, Output : Hello Ann, My name is Kurapica
 		ob:Greet("Ann")
 
-		-- Property settings, 123 is not a string, Error : stdin:10: Name must be a string, got number.
+		-- Property settings, 123 is not a string, so Error : Name must be a string, got number.
 		ob.Name = 123
 	end
 
-Here I use **do ... end** because you may try those code in an interactive programming environment, many definitions like class, struct, interface's definitions should be kept in one piece. After here, I'll not use **do ... end** again, but just remember to add it yourself.
+Here I use **do ... end** because you may try those code in an interactive programming environment, many definitions like class, struct, interface's definitions should be kept in one piece. After here, I won't use **do ... end** again, but just remember to add it yourself.
 
 
 
 Features
 ====
 
-There are some keywords that released into the _G :
+There are some keywords that the system will released into the _G :
 
 * namespace
 * import
 * enum
 * struct
 * class
-* part-class
 * interface
-* part-interface
 * Module
 
 The **namespace** & **import** are used to control the namespace system used to store classes, interfaces, structs and enums.
 
-The **enum** is used to define an enum type.
+The **enum** is used to define enum types.
 
-The **struct** is used to start the definition of a struct type. A data of a struct type, is a normal table in lua, without metatable settings or basic lua type data like string, number, thread, function, userdata, boolean. The struct types are used to validate or create the values that follow the explicitly structure that defined in the struct types.
+The **struct** is used to start the definition of a struct type. A data of a struct type, is a normal table in lua, without metatable settings, the basic lua value types like string, number, thread, function, userdata, boolean are also defined in the **Loop** system as struct types. The struct types are used to validate or create the values that follow the explicitly structure that defined in the struct types, like position on a cartesian coordinates, we only need values like { x = 13.4, y = 33 }.
 
-The **class** & **part-class** are used to start the definition of a class. In an object-oriented system, the core part is the objects. One object should have methods that used to tell it do some jobs, also would have properties to store the data used to mark the object's state. A class is an abstract of objects, and can be used to create objects with the same properties and methods settings.
+The **class** is used to start the definition of a class. In an object-oriented system, the core part is the objects. One object should have methods that used to show what jobs the object can do, also should have properties to store the data used to mark the object's state. A class is an abstract from objects of the same type, it can contains the definition of the methods and properties so the object won't do these itself.
 
-The **interface** & **part-interface** are used to start the definition of an interface. Sometimes we may not know the true objects that our program will manipulate, or we want to manipulate objects from different classes, we only want to make sure the objects will have some features that our program needs, like we may need every objects have a **Name** property to used to show all objects's name. So, the interface is bring in to provide such features. Define an interface is the same like define a class, but no objects can be created from an interface.
+The **interface** is used to start the definition of an interface. Sometimes we may not know the true objects that our program will manipulate, or we want to manipulate objects from different classes, we only want to make sure the objects will have some features that our program needs, like objects have a **Name** property. So, the interface is bring in to provide such features. No objects can be created from an interface, the interface can be extended by classes.
 
-The **Module** is used to start a standalone environment with version check, and make the development with the lua-oop system more easily, like we don't need to write down full path of namespaces. This topic will be discussed at last.
+The **Module** is used to start a standalone environment with version check, and make the development with the **Loop** system more easily, like we don't need to write down full path of namespaces. This topic will be discussed at last.
 
 
 
 namespace & import
 ====
 
-In an oop project, there would be hundred or thousand classes or other data types to work together, it's important to manage them in groups. The namespace system is bring in to store the classes and other features.
+In an oop project, there may be hundred or thousand classes or other data types to work together, it's important to manage them in groups. The namespace system is bring in to store the classes and other features.
 
 In the namespace system, we can access those features like classes, interfaces, structs with a path string.
 
 A full path looks like **System.Forms.EditBox**, a combination of words separated by '.', in the example, **System**, **System.Forms** and **System.Forms.EditBox** are all namespaces, the namespace can be a pure namespace used only to contains other namespaces, but also can be classes, interfaces, structs or enums, only eums can't contains other namespaces.
 
 
-The **import** function is used to save the target namespace into current environment, the 1st paramter is a string that contains the full path of the target namespace, so we can share the classes and other features in many lua environments, the 2nd paramter is a boolean, if true, then all the sub-namespace of the target will be saved to the current environment too.
+The **import** function is used to save the target namespace into current environment, the 1st paramter is a string that contains the full path of the target namespace, so we can share the classes and other features in many lua files(environments), the 2nd paramter is a boolean, if true, then all the sub-namespace of the target namespace will be saved to the current environment too.
 
     import (name[, all])
 
@@ -95,7 +103,7 @@ If you already load the class.lua, you can try some example :
 
 	print( Object )          -- Output : System.Object
 
-The System is a root namespace defined in the class.lua file, some basic features are defined in the namespace, such like **System.Object**, used as the super class of other classes.
+The System is a root namespace defined in the class.lua file, some basic features are defined in the namespace, such like **System.Object**, could be used as the super class of other classes(Unlike other oop system, there is no default super class, for lua, simple is good).
 
 Also you can see, **Object** is a sub-namespace in **System**, we can access it just like a field in the **System**.
 
@@ -114,7 +122,7 @@ Here a simple example :
 
 	print( NewClass )            -- Output : MySpace.Example.NewClass
 
-The namespace system is used to share features like class, if you don't declare a namespace for the environment, those features that defined later will be private.
+The namespace system is used to share features like classes, if you don't declare a namespace for the environment, those features that defined later will be private.
 
 
 
@@ -140,16 +148,17 @@ First, an example used to show how to create a new enum type :
 	}
 
 	-- All output : 0
-	-- Acees the values as table field, just case ignored
+	-- Access the values like table field, just case ignored
 	print( Week.sunday )
 	print( Week.Sunday )
-	print( Week.sunDay )
+	print( Week.SunDay )
 
 	-- Output : 'None'
 	print( Week.none )
 
+	-- Call the enum as a function, parse the value to the text
 	-- Output : 'WEDNESDAY'
-	print( System.Reflector.ParseEnum( Week, 3 ) )
+	print( Week( 3 ) )
 
 The true format of the 'enum' function is
 
@@ -159,17 +168,18 @@ The **name** is a common string word, **enum(name)** should return a function to
 
 In the **table**, for each key-value pairs, if the key is **string**, the key would be used as the value's name, if the key is a number and the value is a string, the value should be used as the value's name, so the 'None' is the value's name in the enum **Week**.
 
-In the last line of the example, **System.Reflecotr** is an interface used to provide some internal informations of the system. Here, **ParseEnum** is used to get the key of a enum's value.
+So, you can get the value of an enumeration like a field, and get the enumeration from the value like a function call, it's a simple value type.
 
 ---
 
-Sometimes, we may need use the enum values as a combination, like Week.SUNDAY + Week.SATURDAY as the weekend days. We could use the System.__Flags__ attribute to mark the enum data type as bit flags data type (Attributes are special classes, only one for enums, the detail of the Attribute system will be explained later).
+Sometimes, we may need use the enum values as a combination, like Week.SUNDAY + Week.SATURDAY as the weekend days. We could use the `System.__Flags__` attribute to mark the enum data type as bit flags data type (The Attribute system will be explained later, using `System.__Flags__` is so simple so just remember it).
 
 Here is the full example :
 
-	import "System"
+	-- So, no need use full path like System.__Flags__
+	import ( "System", true )
 
-	System.__Flags__()
+	__Flags__()
 	enum "Week" {
 		SUNDAY = 1,
 		MONDAY = 2,
@@ -185,21 +195,21 @@ Here is the full example :
 	print( Week.SUNDAY + Week.SATURDAY )
 
 	-- Output : SATURDAY	SUNDAY
-	print( System.Reflector.ParseEnum( Week, 65 ) )
+	print( Week( 65 ) )
 
 	-- Output : true
-	print( System.Reflector.ValidateFlags( Week.SATURDAY, 65 ) )
+	print( Reflector.ValidateFlags( Week.SATURDAY, 65 ) )
 
 	-- Output : false
-	print( System.Reflector.ValidateFlags( Week.TUESDAY, 65 ) )
+	print( Reflector.ValidateFlags( Week.TUESDAY, 65 ) )
 
 	-- Ouput : 128
 	print( Week.None )
 
 
-First, the enum values should be 2^n, and the system would provide auto values if no value is set, so the Week.None is 128.
+The enumeration values should be 2^n, and the system would provide auto values if no value is set or not correct, so the Week.None is 128.
 
-The **ParseEnum** function can return multi-values of the combination, and **ValidateFlags** can be used to validate the values.
+So use the enum type as function to parse the value, will return multi-values of the combination. When you want check some bit flags is on for the value, you can check it by yourself(it's only number values), or just use the function **System.Reflector.ValidateFlags** that provided by the system.
 
 
 
@@ -208,7 +218,7 @@ struct
 
 The main purpose of the struct system is used to validate values, for lua, the values can be boolean, number, string, function, userdata, thread and table.
 
-And in the **System** namespace, all basic data type have a struct :
+And in the **System** namespace, each basic data type have a struct type defined for it :
 
 * System.Boolean - The value should be mapped to true or false, no validation
 * System.String  - means the value should match : type(value) == "string"
@@ -217,8 +227,9 @@ And in the **System** namespace, all basic data type have a struct :
 * System.Userdata  - means the value should match : type(value) == "userdata"
 * System.Thread  - means the value should match : type(value) == "thread"
 * System.Table  - means the value should match : type(value) == "table"
+* System.RawTable  - means the value should match : type(value) == "table" and getmetatable(value) == nil
 
-Those are the **basic** struct types, take the **System.Number** as an example to show the basic using :
+Those are the **basic** struct types, take the **System.Number** as an example to show how to use :
 
 	import "System"
 
@@ -230,7 +241,7 @@ Those are the **basic** struct types, take the **System.Number** as an example t
 
 All structs can used to validate values. ( Normally, you won't need to write the 'validation' code yourselves.)
 
-When the value is a table, and we may expect the table contains fields with the expected type values, and the **System.Table** can only be used to check whether the value is a table.
+When the value is a table, and we may expect the table contains fields with expected type values, and the **System.Table** can only be used to check whether the value is a table.
 
 Take a position table as the example, we may expect the table has two fields : **x** - the horizontal position, **y** - the vertical position, and the fields' values should all be numbers. So, we can declare a **member** struct type like :
 
@@ -283,7 +294,7 @@ Normally, the type part can be a combination of lots types seperated by '+', **n
 
 ---
 
-If we want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method, and just remeber to return the value in the **Validate** method.
+If you want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method, and just remeber to return the value in the **Validate** method.
 
 	struct "Position"
 		x = System.Number + nil
