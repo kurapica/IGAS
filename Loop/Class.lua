@@ -99,34 +99,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/11/13 The overload system for method, constructor & meta-method finished
 
 ------------------------------------------------------------------------
--- Class system is used to provide a object-oriented system in lua.
--- With this system, you can created a class like
 --
--- namespace "System"				-- define the namespace
+--     Pure Lua Object-Oriented Program System
 --
--- class "MyClass"						-- declare starting to define the class
---		inherit "Object"					-- declare the class is inherited from System.Object
---
---		function Greet(self)				-- the global functions will be treated as the class's methodes, self means the object
---			print("Hello" .. self.Name)
---		end
---
---		property "Name" {
---			Type = String,				-- the property "Name"'s type, so when you assign a value to Name, it should be checked.
---		}
---
---		function MyClass(self, name)	-- the function with same name of the class is treated as the Constructor of the class
---			self.Name = name			-- use self to init
---		end
---	endclass "MyClass"					-- declare the definition of the class is over.
---
---	Using MyClass:
---
---	myObj = MyClass("Test")
---
---	myObj:Greet()						-- print out : Test
---
---	myObj.Name = "Another"				-- print out : The Name is changed to Hello
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
