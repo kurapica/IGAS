@@ -239,7 +239,7 @@ Those are the **basic** struct types, take the **System.Number** as an example t
 	-- Error : [Number] must be a number, got string.
 	print( System.Number( '123' ))
 
-All structs can used to validate values. ( Normally, you won't need to write the 'validation' code yourselves.)
+All structs can used to validate values. ( Normally, you only need to declare where and what type is needed.)
 
 When the value is a table, and we may expect the table contains fields with expected type values, and the **System.Table** can only be used to check whether the value is a table.
 
@@ -252,7 +252,7 @@ Take a position table as the example, we may expect the table has two fields : *
 		y = System.Number
 	endstruct "Position"
 
-Here, **struct** keyword is used to begin the declaration, and **endstruct** keyword is used to end the declaration. Anything defined between them will be definition of the struct.
+Here, **struct** keyword is used to begin the declaration, and **endstruct** keyword is used to end the declaration. Anything defined between them will be the definition of the struct.
 
 The expression *x = System.Number*, the left part **x** is the member name, the right part **System.Number** is the member's type, the type can be any classes, interfaces, enums or structs :
 
@@ -263,7 +263,7 @@ The expression *x = System.Number*, the left part **x** is the member name, the 
 
 So, we can test the custom struct now :
 
-	-- Short for Position( {x = 123, y = 456} )
+	-- Use the struct type as a validator
 	pos = Position {x = 123, y = 456}
 
 	-- Output : 123	-	456
@@ -272,7 +272,8 @@ So, we can test the custom struct now :
 	-- Error : Usage : Position(x, y) - y must be a number, got nil.
 	pos = Position {x = 111}
 
-	-- Use the struct type as a table constructor
+	-- Use the struct type as a constructor,
+	-- the 'x' member is first defined, it will receive the 1st argument, so the 'y' member take the 2nd.
 	pos = Position(110, 200)
 
 	-- Output : 110	-	200
@@ -294,7 +295,7 @@ Normally, the type part can be a combination of lots types seperated by '+', **n
 
 ---
 
-If you want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method, and just remeber to return the value in the **Validate** method.
+If you want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method, and just remeber to **return the value** in the **Validate** method.
 
 	struct "Position"
 		x = System.Number + nil
@@ -323,11 +324,13 @@ Or you can use a method with the name of the struct, the method should be treate
 
 		-- The constructor should create table itself
 		function Position(x, y)
-			return { x = x or 0, y = y or 0 }
+			-- Don't forget use the struct type to validate the return value
+			-- It may be looks strange, but remember, the Position here is the struct type not the function
+			return Position { x = x or 0, y = y or 0 }
 		end
 	endstruct "Position"
 
-	-- Validate won't go through the constructor
+	-- Use struct type as a validator won't go through the constructor
 	pos = Position {x = 111}
 
 	-- Output : 111	-	nil
@@ -338,13 +341,14 @@ Or you can use a method with the name of the struct, the method should be treate
 	-- Output : 111	-	0
 	print(pos.x, '-', pos.y)
 
-	-- The constructor should do the validate itself
+	-- Error : Usage : Position([x, y]) - x must be a number, got string.(Optional)
 	pos = Position ('X', 'Y')
 
 	-- Output : X	-	Y
 	print(pos.x, '-', pos.y)
 
-There are many disadvantages in using the constructor, so, just leave the table creation to the struct system.
+
+There are not many things can be done in the constructor, so it's better to throw it away and let the struct system do the jobs.
 
 ---
 
@@ -384,15 +388,17 @@ We also may want to validate numeric index table of a same type values, like a t
 
 We can declare a **array** struct for those types (A special attribtue for the struct):
 
-	import "System"
+	import("System", true)
 
-	System.__StructType__( System.StructType.Array )
+	__StructType__( "array" )
 	struct "StringTable"
-		element = System.String
+		element = String
 	endstruct "StringTable"
 
 	-- Error : Usage : StringTable(...) - [3] must be a string, got number.
 	a = StringTable{"Hello", "World", 3}
+
+The **"array"** is enumeration value of System.StructType, so the real code : `System.__StructType__( System.StructType.Array )`, since we import all from **System** namespace, so we can use **String** instead of **System.String** too.
 
 It's looks like the **member** struct, but the member name **element** has no means, it's just used to decalre the element's type, you can use **element**, **ele** or anything else.
 
@@ -419,7 +425,7 @@ The last part about the struct is the struct methods. Any functions that defined
 	-- Output : 1 - 2
 	pos:Print()
 
-Only using the struct to validate a value or create a value, will fill the methods into the value.
+Using the struct to as validator or constructor, will fill the methods into the value.
 
 Normally, creating a class is better than using the struct methods, unless you want do some optimizations.
 
@@ -441,13 +447,13 @@ Let's use an example to show how to create a new class :
 	class "Person"
 	endclass "Person"
 
-Like defining a struct, **class** keyword is used to start the definition of the class, it receive a string word as the class's name, and the **endclass** keyword is used to end the definition of the class, also it need the same name as the parameter, **class**, **endclass** and all keywords in the loop are fake keywords, they are only functions with some lua environment tricks, so we can't use the **end** to do the job for the best.
+Like defining a struct, **class** keyword is used to start the definition of the class, it receive a string word as the class's name, and the **endclass** keyword is used to end the definition of the class, also it need the same name as the parameter, **class**, **endclass** and all keywords in the **Loop system** are fake keywords, they are only functions with some lua environment tricks, so we can't use the **end** to do the job for the best.
 
 Now, we can create an object of the class :
 
 	obj = Person()
 
-Since the **Person** class is a empty class, the **obj** just works like a normal table.
+Since the **Person** class is a empty class, the **obj** just works as a normal table.
 
 
 Method
@@ -538,7 +544,7 @@ Any global functions defined in the class's definition with name start with "_" 
 
 	class "Person"
 
-		_PersonCount = _PersonCount or 0
+		_PersonCount = 0
 
 		-- Class Method
 		function _GetPersonCount()
@@ -571,89 +577,346 @@ Any global functions defined in the class's definition with name start with "_" 
 	print("Person Count : " .. Person._GetPersonCount())
 
 
-Notice a global variable **_PersonCount** is used to count the persons, it can be decalred as local, but keep global is simple, and when re-define the class, the class won't lose informations about the old version objects(run the code again, you should get 6).
+Notice a global variable **_PersonCount** is used to count the persons, it's private to the definition environment, so you won't get it in **_G**.
 
 
-Property & Init with table
+Property
 ----
 
 Properties are used to access the object's state, like **name**, **age** for a person. Normally, we can do this just using the lua table's field, but that lack the value validation and we won't know how and when the states are changed. So, the property system bring in like the other oop system.
 
-So, here is the full definition format for a property :
+Now, as an example, we could define a **Name** property for the **Person** class, so the object don't need to use **GetName** and **SetName** to do the job.
 
-	property "name" {
-		Field = "field",
-		Get = "GetMethod" or function(self) end,
-		Set = "SetMethod" or function(self, value) end,
-		Type = types,
-		Default = value,
-	}
+To avoid conflict, we use a new namespace for a new **Person** class, when learn the class's re-definition, you'll know why.
 
-* Field - optional, the lowest priority, the real field in the object that store the data, can be used to read or write the property.
+	namespace "TestNS"
 
-* Get - optional, the highest priority, if the value is string, the object method with the name same to the value will be used, if the value is a function, the function will be used as the read accessor, can be used to read the property.
-
-* Set - optional, the highest priority, if the value is string, the object method with the name same to the value will be used, if the value is a function, the function will be used as the write accessor, can be used to write the property.
-
-* Type - optional, just like define member types in the struct, if set, when write the property, the value would be validated by the type settings.
-
-* Default - optional, used as the default value if no value existed.
-
-So, re-define the **Person** class with the property :
+	-- Keep the previous class away
+	Person = nil
 
 	class "Person"
+		import "System"
 
-		property "Name" {
-			Field = "__Name",
-			Type = System.String,
-		}
+		property "Name" { Type = String }
+
+		property "Age" { Type = Number }
 
 	endclass "Person"
 
-With the property system, we can create objects with a new format, called *Init with a table* :
+	o = Person()
 
-	obj = Person { Name = "A", Age = 20 }
+	-- Output : string	""
+	print(type(o.Name), ('%q'):format(o.Name))
 
-	-- Output : A	A	20
-	print( obj.Name, obj.__Name, obj.Age )
+	-- Output : 0
+	print(o.Age)
 
-If only a normal table passed to the class to create the object, the object will be created with no parameters, and then any key-value paris in the table will be tried to write to the object (just like obj[key] = value). If you want some parameters be passed into the class's constructor, the features will be added in the **Attribute** system.
+	o.Name = "Kurapica"
 
-With the **Field**, the reading and writing are the quickest, but normally, we need to do more things when the object's properties are accessed, like return a default value when data not existed. So, here is a full example to show **Get** and **Set** :
+	-- Output : Kurapica
+	print(o.Name)
+
+	-- Output : _Person_Name	Kurapica
+	for k, v in pairs(o) do print(k, v) end
+
+	-- Error : Name must be a string, got number.
+	o.Name = 123
+
+First, we can use the **import** in the class's definition(also can be used in the struct's definition and interface's definition), unlike using it outside, we can use **String** to access **System.String**, just because the definition's environment is special, and can be controled by the **Loop system**. Also, you can import many namespaces.
+
+Let's focus on the **property**, it's very simple, started with **property** keyword, then the property's name, a table contains the definitions at the last.
+
+Normally, a property need a type to declare what value it can contains, for the **Name** property, it can only accept string values, so, in the table, we set `Type = String`, also can be `type = String`, the **Type** key is case ignored. So, when we run `o.Name = 123`, the value is not a string, it failed.
+
+In the code `print(type(o.Name), ('%q'):format(o.Name))` and `print(o.Age)`, we can see, the **Name** and **Age** as default values, since the **Name** property can only accept string values, the **Loop system** can give it a default value - the empty string, for the **Age** property, only number can be accepted, so the default value is 0, and if only accept boolean values, the default value is false, for any other types, the default is nil.
+
+It's easy to give default values yourself like :
 
 	class "Person"
+		import "System"
 
-		-- Object method
-		function GetName(self)
-			return self.__Name or "Anonymous"
-		end
+		property "Name" { Type = String, Default = "Anonymous" }
 
-		-- Property
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+Using **default** key to set the default value for the property, case ignored. The value must can pass the validation of the type setting, or it'll be changed to nil.
+
+And in the code `for k, v in pairs(o) do print(k, v) end`, we can find the real field that store the **Name** property's value is **_Person_Name**. Also, you change it like :
+
+	class "Person"
+		import "System"
+
+		property "Name" { Type = String, Default = "Anonymous", Field = "__Name" }
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+	o = Person()
+
+	o.Name = "Kurapica"
+
+	-- Output : __Name	Kurapica
+	for k, v in pairs(o) do print(k, v) end
+
+So, using **Field** (case ignored), you can make sure which field is used to store the values. If you don't care, just leave it to the default settings.
+
+You may ask : If I want to know somebody is access those properties, what should I do. The answer is using **Set** / **Get** to set functions like :
+
+	class "Person"
+		import "System"
+
 		property "Name" {
-			-- Using the object method
-			Get = "GetName",
-
-			-- Using special set function
 			Set = function(self, name)
-				local oldname = self.Name
+				-- the name must pass the type validation, then send to here
+				-- So, I know name is a string
+				if name ~= self.Name then
+					print("Name is changed from " .. self.Name .. " to " .. name)
 
-				self.__Name = name
-
-				print("The name is changed from " .. oldname .. " to " .. self.Name)
+					-- Don't use self.Name = name, it will cause infinite recycle
+					self.__Name = name
+				end
 			end,
 
-			-- So in set method, no need to valdiate the 'name' value
-			Type = System.String + nil,
+			Type = String,
+			Default = "Anonymous",
+			Field = "__Name"
 		}
+
+		property "Age" { Type = Number, default = "99" }
 
 	endclass "Person"
 
-So, the **Get** part is using the object method **GetName**, and the **Set** part is using an anonymous function to do the job.
+	o = Person()
 
-	obj = Person()
+	-- Output : Name is changed from Anonymous to Mary
+	o.Name = "Mary"
 
-	-- Output : The name is changed from Anonymous to A
-	obj.Name = "A"
+It may be strange that define a **Set** method with the **Field** settings, so, we can give it a **Get** method too.
+
+	class "Person"
+		import "System"
+
+		property "Name" {
+			Set = function(self, name)
+				-- the name must pass the type validation, then send to here
+				-- So, I know name is a string
+				if name ~= self.Name then
+					print("Name is changed from " .. self.Name .. " to " .. name)
+
+					-- Don't use self.Name = name, it will cause infinite recycle
+					self.__Name = name
+				end
+			end,
+
+			Get = function(self)
+				return self.__Name
+			end,
+
+			Type = String,
+			Default = "Anonymous",
+		}
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+Some authors may like using **GetName** and **SetName** methods, and if you do, it's very simple to work with the property system, here is an example :
+
+	class "Person"
+
+		function GetName(self)
+			return self.__Name
+		end
+
+		-- It's setName not SetName, that's ok
+		function setName(self, name)
+			if type(name) == "string" and name ~= self.Name then
+				print("Name is changed from " .. self.Name .. " to " .. name)
+
+				self.__Name = name
+			end
+		end
+
+		property "Name" { Type = String, Default = "Anonymous" }
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+	o = Person()
+
+	-- Output : Name is changed from Anonymous to Kite
+	o.Name = "Kite"
+
+So, the **setName** is used as the **Set** method for the **Name** property, and the **GetName** is used as the **Get** method.
+
+If the property has no **Field** settings, and no **Get** method, it'll check **Get** + property's name or **get** + property's name, if the class has such method, it'll be used as the **Get** method, the same thing will be done for the **Set** part.
+
+BTW, the automatically methods scan works a little complex if the property's type is **System.Boolean**, not only **Get** + propert's name and **Set** + property's name should be scanned, **is** / **Is** + property's name also would be scanned for **Get** method. And if the property name is like **noun + adj**, the **adj** is converted from a **verb**, the **Is + verb + noun** will be scanned for **Get**, and the **verb + noun** will be scanned for the **Set**, for an example : property's name is **FlagDisabled**, it can receive **DisableFlag** as the **Set** method and **IsFlagDisabled** or **IsDisableFlag** will be used as the **Get**, it's a little complex and just for lazy guys, you can just ignore it. An example :
+
+	class "Flag"
+		function DisableFlag(self, flag)
+			print("The object is " .. (flag and "disabled" or "enabled" ))
+
+			self.__Flag = flag
+		end
+
+		function IsFlagDisabled(self)
+			return self.__Flag
+		end
+
+		property "FlagDisabled" { Type = System.Boolean }
+	endclass "Flag"
+
+	o = Flag()
+
+	-- Output : The object is disabled
+	o.FlagDisabled = true
+
+You may think those automatically methods scan not steady, so you can set it yourself :
+
+	class "Person"
+
+		function GetName(self)
+			return self.__Name
+		end
+
+		-- It's setName not SetName, that's ok
+		function setName(self, name)
+			if type(name) == "string" and name ~= self.Name then
+				print("Name is changed from " .. self.Name .. " to " .. name)
+
+				self.__Name = name
+			end
+		end
+
+		property "Name" { Type = String, Default = "Anonymous", Get = "GetName", Set = "SetName" }
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+You may ask why not using
+
+	class "Person"
+
+		function GetName(self)
+			return self.__Name
+		end
+
+		-- It's setName not SetName, that's ok
+		function setName(self, name)
+			if type(name) == "string" and name ~= self.Name then
+				print("Name is changed from " .. self.Name .. " to " .. name)
+
+				self.__Name = name
+			end
+		end
+
+		property "Name" { Type = String, Default = "Anonymous", Get = GetName, Set = SetName }
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+Yes, both works, the first definition would use the object's methods as the accessor, and the second definiton use the **GetName** and **setName** function directly, when using another class that inherited from the **Person** class, and override the **GetName** method, in the second definition, the object can't use the newest **GetName** method for it's **Name** property, that would cause some problem.
+
+
+At last, let's see how to declare a read-only or wirte-only property.
+
+* Read-only property : No **Field**, no **Set** (include automatically methods scan) or **Set** is false
+* Write-only property : No **Field**, no **Get**  (include automatically methods scan) or **Get** is false
+
+Set **Get** or **Set** to false will block the automatically methods scan :
+
+	class "Person"
+
+		function GetName(self)
+			return self.__Name
+		end
+
+		-- It's setName not SetName, that's ok
+		function setName(self, name)
+			if type(name) == "string" and name ~= self.Name then
+				print("Name is changed from " .. self.Name .. " to " .. name)
+
+				self.__Name = name
+			end
+		end
+
+		property "Name" { Type = String, Default = "Anonymous", Set = false }
+
+		property "Age" { Type = Number, default = "99" }
+
+	endclass "Person"
+
+	o = Person()
+
+	-- Error : Name can't be written.
+	o.Name = "Mike"
+
+
+Init table
+----
+
+When create an object, and set it's properties like
+
+	o = Person()
+
+	o.Name = "Kite"
+	o.Age = 23
+
+It's weird, and sometimes, we may keep the informations in some table loaded from files, like
+
+	info = {
+		[1] = { Name = "Kite", Age = 23 },
+	}
+
+	o = Person()
+
+	o.Name = info[1].Name
+	o.Age = info[1].Age
+
+It would be better if we can build an object on the info table. Normally, you can do it by give a constructor to the **Person** class to handle it, but when you have many classes, it's weird to write some similar code many times, you can do it with the init table system.
+
+If the class has no constructor, an init table can be used when creating objects :
+
+	namespace "TestInitTableNS"
+
+	-- Keep the previous class away
+	Person = nil
+
+	class "Person"
+		property "Name" { Type = System.String }
+		property "Age" { Type = System.Number }
+	endclass "Person"
+
+	-- Create a person object with init settings
+	o = Person { Name = "Kite", Age = 23, Gender = "Female" }
+
+	-- Output : Kite	23	Female
+	print(o.Name, o.Age, o.Gender)
+
+	info = {
+		[1] = { Name = "Jane", Age = 21 },
+	}
+
+	o2 = Person( info[1] )
+
+	-- Output : Jane	21
+	print(o2.Name, o2.Age)
+
+
+Anything in the init table would be passed into the object like :
+
+	for k, v in pairs(init) do
+		pcall(function(self, name, value) self[name] = value end, obj, k, v)
+	end
+
+ Normally, you can't use init table on a class with constructors, but we'll see how to make it works with the attribtue system in a later chapter.
 
 
 Event
@@ -689,7 +952,14 @@ The **event** keyword is used to declare an event with the event name. So, here 
 		}
 	endclass "Person"
 
-It looks like we just give the object a **OnNameChanged** method, and call it when needed. The truth is the **self.OnNameChanged** is an object created from **System.EventHandler** class. It's used to control all event handlers (functions), there are two type event handlers :
+	o = Person()
+
+	o.OnNameChanged = function(self, old, new) print("The name is changed from " .. old .. " to " .. new) end
+
+	-- Output : The name is changed from Anonymous to Ann
+	o.Name = "Ann"
+
+It looks like we just give the object a **OnNameChanged** method, and call it when needed. The truth is the **self.OnNameChanged** is an object created from **System.EventHandler** class. It's used to control all event handlers (functions), there are two event handler types :
 
 * Stackable event handler
 
@@ -772,9 +1042,9 @@ So, we can get detail from the example :
 * Any handler return true will stop the calling operation, any handlers after it won't be called.
 
 
-It's not good to use the **EventHandler** directly, anytime access the object's **EventHandler**, the object will create the **EventHandler** when not existed. So, fire an event without any handlers will be a greate waste of memeory. There are two ways to do it :
+It's not good to use the **EventHandler** directly, anytime access the object's **EventHandler**, the object will create the **EventHandler** when not existed. So, fire an event without any handlers will be a greate waste of memory. There are two ways to do it :
 
-* Using **System.Reflector.FireObjectEvent**, for the previous example :
+* Using **System.Reflector.FireObjectEvent** API, for the previous example :
 
 		self:OnNameChanged(oldName, self.Name)
 
@@ -808,7 +1078,7 @@ It's not good to use the **EventHandler** directly, anytime access the object's 
 
 		endclass "Person"
 
-The inheritance Systems is a powerful feature in the object-oriented program, it makes the class can using the features in its super class.
+The inheritance Systems is a powerful feature in the object-oriented program, it makes the class can using the features defined in its super class.
 
 Here, the **System.Object** class is a class that should be other classes's super class, contains many useful method, the **Fire** method is used to fire an event, it won't create the **EventHandler** object when not needed.
 
@@ -818,15 +1088,12 @@ Meta-method
 
 In lua, a table can have many metatable settings, like **__call** use the table as a function, more details can be found in [Lua 5.1 Reference Manual](http://www.lua.org/manual/5.1/manual.html#2.8).
 
-Since the objects are lua tables with special metatable set by the Loop system, setmetatable can't be used to the objects. But it's easy to provide meta-method for the objects, take the **__call** as an example :
+Since the objects are lua tables with special metatables set by the Loop system, setmetatable can't be used to the objects. But it's easy to provide meta-method for the objects, take the **__call** as an example :
 
 	class "Person"
 
 		-- Property
-		property "Name" {
-			Field = "__Name",
-			Type = System.String + nil,
-		}
+		property "Name" { Type = System.String, Default = "Anonymous" }
 
 		-- Meta-method
 		function __call(self, name)
@@ -844,12 +1111,12 @@ So, just declare a global function with the meta-method's name, and it can be us
 
 All metamethod can used include the **__index** and **__newindex**. Also a new metamethod used by the Loop system : **__exist**, the **__exist** method receive all parameters passed to the constructor, and decide if there is an existed object, if true, return the object directly.
 
-	class "Person"
+	class "UniquePerson"
 
 		_PersonStorage = setmetatable( {}, { __mode = "v" })
 
 		-- Constructor
-		function Person(self, name)
+		function UniquePerson(self, name)
 			_PersonStorage[name] = self
 		end
 
@@ -858,11 +1125,11 @@ All metamethod can used include the **__index** and **__newindex**. Also a new m
 			return _PersonStorage[name]
 		end
 
-	endclass "Person"
+	endclass "UniquePerson"
 
 So, here is a test :
 
-	print(Person("A"))
+	print(UniquePerson("A"))
 
 Run the test anytimes, the result will be the same.
 
@@ -870,7 +1137,7 @@ Run the test anytimes, the result will be the same.
 Inheritance
 ----
 
-The inheritance system is the most important system in an oop system. In the Loop, it make the classes can gain the object methods, properties, events, metamethods settings from its superclass.
+The inheritance system is the most important system in an oop system. In the Loop, it make the classes can gain the object methods(no class methods), properties, events, meta-methods and constructor settings from its superclass.
 
 The format is
 
@@ -913,7 +1180,7 @@ The **inherit** keyword can only be used in the class definition. In the previou
 		Here is A's Print.
 		Here is B's Print.
 
-	It's all right if you want keep the origin method as a local var like, it's the quickest way to call functions :
+	It's all right if you want keep the origin method as a local var like(don't keep it as global, it'll be considered as class method) :
 
 		class "B"
 			inherit "A"
@@ -930,70 +1197,34 @@ The **inherit** keyword can only be used in the class definition. In the previou
 
 	But when re-define the **A** class, the **oldPrint** would point to an old version **Print** method, it's better to avoid, unless you don't need to re-define any features.
 
-* With the inheritance system, go back to the property definition :
-
-		property "name" {
-			Field = "field",
-			Get = "GetMethod" or function(self) end,
-			Set = "SetMethod" or function(self, value) end,
-			Type = types,
-		}
-
-	Normally, if want the property accessors can be changed in the child-classes, it's better to define the get & set object methods, and using the name of the methods as the **Get** & **Set** part's value in the property definition, so the child-class only need to override the object methods to change the behavior of the property accesses. Like the **Person** class :
-
-		class "Person"
-
-			-- Object method
-			function GetName(self)
-				return self.__Name
-			end
-
-			function SetName(self, name)
-				self.__Name = name
-			end
-
-			-- Property
-			property "Name" {
-				Get = "GetName",
-				Set = "SetName",
-				Type = System.String + nil,
-			}
-
-			-- Meta-method
-			function __call(self, name)
-				print("Hello, " .. name .. ", it's " .. self.Name)
-			end
-
-		endclass "Person"
-
-	So, when a child-class of the **Person** re-define the **GetName** or **SetName**, there is no need to override the property **Name**.
-
-	If override the property definition in the child-class, the superclass's property will be removed from the child-class.
-
 * Like the object methods, override the metamethods is the same, take **__call** as example, **super.__call** can be used to retrieve the superclass's **__call** metamethod.
 
-* When the class create an object, the object should passed to its super class's constructor first, and then send to the class's constructor, unlike oop system in the other languages, the child-class can't acess any variables defined in super-class's definition environment, it's simple that the child-class focus on how to manipulate the object that created from the super-class.
+* If the child class has no constructor, its super class's constructor would be used if existed.If the child has own constructor, the system won't call its super class's constructor, so the child class should call super's constructor itself, the reason will be discussed in the overload system in the later chapter.
 
 		class "A"
-			function A(self)
-				print ("[A]" .. tostring(self))
+			function A(self, ...)
+				print ("[A]" .. tostring(self), ...)
 			end
 		endclass "A"
 
 		class "B"
 			inherit "A"
 
-			function B(self)
+			function B(self, ...)
+				-- call Super to init the object with parameters
+				Super(self, ...) -- Don't use A(self), it would create a new object of class A, Super ~= A
+
 				print("[B]" .. tostring(self))
 			end
 		endclass "B"
 
-		obj = B()
+		obj = B(1, 2, 3)
 
 	Ouput :
 
-		[A]table: 0x7fe080ca4680
-		[B]table: 0x7fe080ca4680
+		[A]table: 0x7feb88628980	1	2	3
+		[B]table: 0x7feb88628980
+
 
 * Focus on the event handlers, so why need two types, take an example first :
 
