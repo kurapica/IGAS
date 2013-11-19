@@ -1068,10 +1068,12 @@ It's not good to use the **EventHandler** directly, anytime access the object's 
 				Set = function(self, name)
 					local oldName = self.Name
 
-					self.__Name = name
+					if oldName ~= name then
+						self.__Name = name
 
-					-- Fire the event with parameters
-					self:Fire("OnNameChanged", oldName, self.Name)
+						-- Fire the event with parameters
+						self:Fire("OnNameChanged", oldName, self.Name)
+					end
 				end,
 				Type = System.String + nil,
 			}
@@ -1081,6 +1083,63 @@ It's not good to use the **EventHandler** directly, anytime access the object's 
 The inheritance Systems is a powerful feature in the object-oriented program, it makes the class can using the features defined in its super class.
 
 Here, the **System.Object** class is a class that should be other classes's super class, contains many useful method, the **Fire** method is used to fire an event, it won't create the **EventHandler** object when not needed.
+
+BTW. **__Events** field in the object is used to keep the event handlers, so don't use this field for other purpose.
+
+
+Propety - Event
+----
+
+In the previous example, we give a Set method for the **Name** property, compare the old and new value, then set it and fire the event when different, it's a common operation that we may do it on many properties, and that's weird we should write them down many times.
+
+Luckly, if we only want to know when the property's value is changed, we can just bind an **Event** to the property, so re-write the previous example :
+
+	class "Person"
+		-- Declare the event
+		event "OnNameChanged"
+
+		-- Bind the event to the property
+		property "Name" { Type = System.String, Default = "Anonymous", Event = "OnNameChanged" }
+
+	endclass "Person"
+
+It's very simple, just using **Event** field point to the event's name. So, let's use it :
+
+	o = Person()
+
+	o.OnNameChanged = function (self, old, new, prop)
+		print(("[%s] %s -> %s "):format(prop, old, new))
+	end
+
+	-- Ouput : [Name] Anonymous -> Ann
+	o.Name = "Ann"
+
+From the result, you can see the parameters of the event, 1st is **old** value, 2nd is **new** value, 3rd is the property's name, so, in some case we can handle all property changes in one event :
+
+	class "Person"
+		-- Declare the event
+		event "OnPropertyChanged"
+
+		-- Bind the event to the property
+		property "Name" { Type = System.String, Default = "Anonymous", Event = "OnPropertyChanged" }
+		property "Age" { Type = System.Number, Default = 1, Event = "OnPropertyChanged" }
+
+	endclass "Person"
+
+	o = Person()
+
+	o.OnPropertyChanged = function (self, old, new, prop)
+		print(("[%s] %s -> %s "):format(prop, old, new))
+	end
+
+	-- Ouput : [Name] Anonymous -> Ann
+	o.Name = "Ann"
+
+	-- Ouput : [Age] 1 -> 22
+	o.Age = 22
+
+And just remember, if the property has a **Set** method, the event won't be fired.
+
 
 
 Meta-method
@@ -1147,7 +1206,7 @@ The format is
 
 	inherit "superclass path"
 
-The **inherit** keyword can only be used in the class definition. In the previous example, the **Person** class inherit from **System.Object** class, so it can use the **Fire** method defined in it. One class can only have one super class.
+The **inherit** keyword can only be used in the class definition. In the previous example, the **Person** class inherit from **System.Object** class, so it can use the **Fire** method. One class can only have one super class.
 
 * In many scene, the class should override its superclass's method, and also want to use the origin method in it. The key features is, in the class definition, a var named **Super** can be used as the superclass, so here is an example :
 
@@ -1163,6 +1222,7 @@ The **inherit** keyword can only be used in the class definition. In the previou
 			inherit "A"
 
 			function Print(self)
+				-- Call the super class's method
 				Super.Print( self )
 
 				print("Here is B's Print.")
@@ -1229,45 +1289,37 @@ The **inherit** keyword can only be used in the class definition. In the previou
 * Focus on the event handlers, so why need two types, take an example first :
 
 		class "Person"
-			inherit "System.Object"
-
 			event "OnNameChanged"
 
-			property "Name" {
-				Field = "__Name",
-				Set = function(self, name)
-					local oldName = self.__Name
-
-					self.__Name = name
-
-					return self:Fire("OnNameChanged", oldName, name)
-				end,
-				Type = System.String,
-			}
+			property "Name" { Type = System.String, Event = "OnNameChanged" }
 
 			property "GUID" {
-				Field = "__ID",
-				Type = System.String,
-			}
+				Field = "__GUID", Type = System.String,
 
-			function Person(self)
-				math.randomseed(os.time())
+				Get = function(self)
+					-- Create a guid if not set
+					if not self.__GUID then
+						math.randomseed(os.time())
 
-				local guid = ""
+						local guid = ""
 
-				for i = 1, 8 do
-					guid = guid .. ("%04X"):format(math.random(0xffff))
+						for i = 1, 8 do
+							guid = guid .. ("%04X"):format(math.random(0xffff))
 
-					if i > 1 and i < 6 then
-						guid = guid .. "-"
+							if i > 1 and i < 6 then
+								guid = guid .. "-"
+							end
+						end
+
+						self.__GUID = guid
 					end
-				end
 
-				self.GUID = guid
-			end
+					return self.__GUID
+				end,
+			}
 		endclass "Person"
 
-	Here is a **Person** class definition, it has two properties, one **Name** used to storage a person's name, a **GUID** used to mark the unique person, so we can diff two person with the same name. When a new person add to the system, we create the object with a new guid like :
+	Here is a **Person** class's definition, it has two properties, one **Name** used to storage a person's name, a **GUID** used to mark the unique person, so we can diff two person with the same name. When a new person add to the system, we create the object with a new guid like :
 
 		person = Person { Name = "Jane" }
 
@@ -1280,6 +1332,8 @@ The **inherit** keyword can only be used in the class definition. In the previou
 		class "Member"
 			inherit "Person"
 
+			import "System"
+
 			_NameCount = {}
 
 			-- Class Method
@@ -1289,7 +1343,8 @@ The **inherit** keyword can only be used in the class definition. In the previou
 
 			-- Event handler
 			local function OnNameChanged(self, old, new)
-				if old then
+				-- Don't forget the Name property has a default value
+				if old and old ~= "" then
 					_NameCount[old] = _NameCount[old] - 1
 				end
 
@@ -1299,7 +1354,9 @@ The **inherit** keyword can only be used in the class definition. In the previou
 			end
 
 			-- Constructor
+			__Arguments__{}  -- This line is used to make class with 0-arguments constructor can still use init table, explained later
 			function Member(self)
+				-- Using stackable event handler in class constructor
 				self.OnNameChanged = self.OnNameChanged + OnNameChanged
 			end
 		endclass "Member"
@@ -1325,119 +1382,33 @@ The **inherit** keyword can only be used in the class definition. In the previou
 
 
 
-part-class & re-define
-----
-
-* The class can be re-defined, and the object that created from the old version class, will use the new version's features.
-
-		class "A"
-		endclass "A"
-
-		obj = A()
-
-		-- Re-define the class A
-		class "A"
-			function Hi(self)
-				print( "Hello" )
-			end
-		endclass "A"
-
-		-- Outout : Hello
-		obj:Hi()
-
-* When re-define a class, its object methods, class methods, events, properties and meta-methods all will be cleared. So :
-
-		class "A"
-			function Hi(self)
-				print( "Hello" )
-			end
-		endclass "A"
-
-		obj = A()
-
-		class "A"
-		endclass "A"
-
-		-- Error : attempt to call method 'Hi' (a nil value)
-		obj:Hi()
-
-* Any global variables with no function values should be kept in the class definition's environment, so we can used it again :
-
-		class "A"
-			_Objs = _Objs or {}
-
-			function A(self, name)
-				_Objs[name] = self
-			end
-
-			function __exist(name)
-				return _Objs[name]
-			end
-		endclass "A"
-
-		print( A("HI") )
-
-		-- Re-define agian
-		class "A"
-			_Objs = _Objs or {}
-
-			function A(self, name)
-				_Objs[name] = self
-			end
-
-			function __exist(name)
-				return _Objs[name]
-			end
-		endclass "A"
-
-		print( A("HI") )
-
-	Output :
-
-		table: 0x7fe080c4a410
-		table: 0x7fe080c4a410
-
-* part-class is used to start the class definition without clearance :
-
-		class "A"
-			function Hi(self)
-				print( "Hello" )
-			end
-		endclass "A"
-
-		obj = A()
-
-		part-class "A"
-		endclass "A"
-
-		-- Output : Hello
-		obj:Hi()
-
-* When re-define the class, any sub-class will receive the new features that inherited from the super class, won't receive if they have their owns.
-
-		class "A"
-		endclass "A"
-
-		class "B"
-			inherit "A"
-		endclass "B"
-
-		obj = B()
-
-		class "A"
-			function Hi(self)
-				print( "Hello" )
-			end
-		endclass "A"
-
-		-- Output : Hello
-		obj:Hi()
-
 
 interface
 ====
 
-Using the interface is like the class, the format is
+In the Loop system, the interface system is used to support multi-inheritance and other design purposes. One class can only inherited from one super class, but can extend from no-limit interfaces, also an interface can extend from other interfaces.
+
+The definition of an interface is started with **interface** and end with **endinterface** :
+
+	-- Define an interface with one property
+	interface "IFName"
+
+		property "Name" { Type = System.String }
+
+	endinterface "IFName"
+
+	-- Define an interface has one method and extend from the "IFName"
+	-- So, the interface know the object should have a Name property of string type
+	interface "IFGreet"
+		extend "IFName"
+
+		function Greet(self)
+			print("Hi, I'm " .. self.Name)
+		end
+
+	endinterface "IFGreet"
+
+Using the interface is like inherit from a class, the format is
 
 	extend ( interface ) ( interface2 ) ( interface3 ) ...
 
@@ -1445,27 +1416,12 @@ Using the interface is like the class, the format is
 
 	extend "interface path" "interface2 path" "interface3 path" ...
 
-The definition of an interface is started with **interface** and end with **endinterface** :
-
-	-- Define an interface has one method
-	interface "IFGreet"
-		function Greet(self)
-			print("Hi, I'm " .. self.Name)
-		end
-	endinterface "IFGreet"
-
-	-- Define an interface with one property
-	interface "IFName"
-		property "Name" {
-			Field = "__Name",
-			Type = System.String,
-		}
-	endinterface "IFName"
-
 	-- Define a class extend from the interfaces
 	class "Person"
 		-- so the Person class have one method and one property from the two interfaces
+		-- Since the IFGreet extend IFName, so also can be : extend "IFGreet"
 		extend "IFName" "IFGreet"
+
 	endclass "Person"
 
 	obj = Person { Name = "Ann" }
@@ -1473,7 +1429,6 @@ The definition of an interface is started with **interface** and end with **endi
 	-- Output : Hi, I'm Ann
 	obj:Greet()
 
-In the Loop system, the interface system is used to support multi-inheritance. One class can only inherited from one super class, but can extend from no-limit interfaces, also an interface can extend from other interfaces.
 
 Define an interface is just like define a class with little different :
 
@@ -1483,13 +1438,9 @@ Define an interface is just like define a class with little different :
 
 * Global method start with "_" are interface methods, can only be called by the interface itself.
 
-* Global method whose name is the interface name, is initializer , will receive object that created from the classes that extend from the interface without any other paramters.
+* Global method whose name is the interface name, is initializer , will receive object that created from the classes that extend from the interface without any other paramters, the initializer will be called by the system when the object is first created and already inited by the constructors of the class.
 
 * No meta-methods can be defined in the interface.
-
-* Re-define interface is like re-define a class, any features would be passed to classes that extend from it.
-
-* like the **part-class**, **part-interface** is used to re-define the interface without clearance.
 
 
 Init & Dispose
@@ -1515,8 +1466,10 @@ Take one class as the first example :
 
 		property "Name" {
 			Get = function(self) return _Name[self] or "Anonymous" end,
+
 			Set = function(self, name) _Name[self] = name end,
-			Type = System.String + nil,
+
+			Type = System.String,
 		}
 	endclass "A"
 
@@ -1568,6 +1521,7 @@ So, that leave one problem, what's the order of the init and dispose in the inhe
 	    function Dispose(self)
 	        print("A <-", self.Name)
 	    end
+
 	    function A(self, name)
 	        self.Name = name
 	        print("A ->", name)
@@ -1583,6 +1537,9 @@ So, that leave one problem, what's the order of the init and dispose in the inhe
 	    end
 
 	    function B(self, name)
+	    	-- Don't forget call the super class's constructor
+	    	Super(self, name)
+
 	        print("B ->", name)
 	    end
 	endclass "B"
@@ -1611,14 +1568,20 @@ So, the rule is :
 
 	* The class's constructor would be called before call the interfaces's initializer.
 
-	* All parameter should be passed into the class and all its superclasses's constructor, and the superclass's constructor will be called first.
+	* The system would try to find the class's constructor, if existed, call it, if not, go to its super class, continue the search. The super class's constructor should be called by the child class's constructor.
 
 	* No other parameter would be passed into the interfaces' initializer, the superclass's interface's initializer would be called first, and if the class has more than one interfaces, first extended will be called first.
 
-* For the dispose : just reversed order of the init.
+* For the dispose :
+
+	* The interface's dispose methods are called first, the order is reversed.
+
+	* The class and its super class's dispose methods can called later, the class's dispose method is called first, then the super class's.
+
+	* There are no parameters for dipose methods.
 
 
-How to use
+How to use the interface
 ----
 
 The oop system is used to describe any real world object into data, using the property to represent the object's state like person's name, birthday, sex, and etc, using the methods to represent what the object can do, like walking, talking and more.
@@ -1663,7 +1626,7 @@ Take the game as an example, to display the health points of the player, we may 
 
 	endinterface "IFHealth"
 
-In the interface, a empty method **SetValue** is defined, it will be override by the classes that extended from the **IFHealth**, so in the **_SetValue** interface method, there is no need to check whether the object has a **SetValue** method.
+In the interface, an empty method **SetValue** is defined, it will be override by the classes that extended from the **IFHealth**, so in the **_SetValue** interface method, there is no need to check whether the object has a **SetValue** method.
 
 And for a text to display the health point, if we have a **Label** class used to display strings with a **SetText** method to display, we can create a new class to do the job like :
 
@@ -1682,6 +1645,105 @@ So, when a **HealthText**'s object is created, it will be stored into the **_IFH
 	IFHealth._SetValue(10000)
 
 The text of the **HealthText** object would be refreshed to the new value.
+
+
+
+Re-define features
+====
+
+For now, we introduced the namespace, enum, struct, class and interface. Let's dig deep to get some more details.
+
+The first thing is about the feature's re-definition.
+
+* Only features defined in the same namespace or the same private environment can be re-defined, so, if there is a class **System.Widget.Frame**, in your program, you import "System.Widget", and define a new class **Frame**, it won't re-define the **System.Widget.Frame**, but if you declare your program in **System.Widget** namespace, you can re-define it.
+
+* For Enum : re-define enums would clear all settings.
+
+		enum "EnumType" {
+			"First",
+			"Second",
+			"Third",
+		}
+
+		-- Output : Third
+		print(EnumType.Third)
+
+		enum "EnumType" {
+			"First",
+			"Second",
+		}
+
+		-- Output : Third is not an enumeration value of EnumType.
+		print(EnumType.Third)
+
+* For Struct : re-define struct would clear all settings.
+
+		struct "Position"
+			x = System.Number
+			y = System.Number
+			z = System.Number
+		endstruct "Position"
+
+		struct "Position"
+			x = System.Number
+			y = System.Number
+		endstruct "Position"
+
+		p = Position(1, 2, 3)
+
+		-- Output : 1	2	nil
+		print(p.x, p.y, p.z)
+
+* For Class : re-define class wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the class is okay.
+
+		class "ClsA"
+			property "Name" { Type = System.String }
+		endclass "ClsA"
+
+		o = ClsA{ Name = "Oliva" }
+
+		-- Re-define the class
+		class "ClsA"
+			function Hi(self)
+				print("Hi, " .. self.Name)
+			end
+		endclass "ClsA"
+
+		-- Output : Hi, Oliva
+		o:Hi()
+
+		-- Give the class a new method
+		ClsA.Walk = function(self)
+			print(self.Name .. " is walking")
+		end
+
+		-- Output : Oliva is walking
+		o:Walk()
+
+
+＊ For Interface : re-define interface wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the interface is okay.
+
+		-- Follow previous example
+		interface "IFAge"
+			property "Age" { Type = System.Number }
+		endinterface "IFAge"
+
+		class "ClsA"
+			extend "IFAge"
+		endclass "ClsA"
+
+		-- Error : Age must be a number, got string.
+		o.Age = "test"
+
+		-- Give a new method to the interface
+		IFAge.HowOld = function(self)
+			print(self.Name .. " is " .. self.Age .. " older.")
+		end
+
+		o.Age = 123
+
+		-- Output : Oliva is 123 older.
+		o:HowOld()
 
 
 

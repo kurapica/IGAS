@@ -97,6 +97,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 --               2013/10/25 Redesign the definition environment, partclass & partinterface removed
 --               2013/10/30 The property auto-fill system finished
 --               2013/11/13 The overload system for method, constructor & meta-method finished
+--               2013/11/19 Event can be defined in property definition, so value changes can be fired when only using field to set
 
 ------------------------------------------------------------------------
 --
@@ -205,7 +206,7 @@ end
 -- GLOBAL Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 83
+	LUA_OOP_VERSION = 84
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -1151,6 +1152,11 @@ do
 						prop.Default = ""
 					end
 				end
+
+				-- Validate the Event
+				if prop.Event and ( prop.Set or prop.SetMethod or not prop.Field or not info.Cache4Event[prop.Event] ) then
+					prop.Event = nil
+				end
 			end
 			--- self property
 			CloneWithoutOverride(info.Cache4Property, info.Property)
@@ -1603,6 +1609,8 @@ do
 					end
 				elseif k == "default" then
 					prop.Default = v
+				elseif k == "event" and type(v) == "string" then
+					prop.Event = v
 				end
 			end
 		end
@@ -2100,7 +2108,22 @@ do
 						return Cache4Method[oper](self, value)
 					end
 				elseif oper.Field then
-					return rawset(self, oper.Field, value)
+					if oper.Event then
+						local old = rawget(self, oper.Field)
+
+						if old == nil then old = oper.Default end
+
+						if old == value then return end
+
+						rawset(self, oper.Field, value)
+
+						-- Fire the event
+						local handler = rawget(self, "__Events")
+						handler = handler and handler[oper.Event]
+						return handler and handler(self, old, value, key)
+					else
+						return rawset(self, oper.Field, value)
+					end
 				else
 					error(("%s can't be written."):format(tostring(key)), 2)
 				end
