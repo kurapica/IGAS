@@ -4560,12 +4560,14 @@ do
 			@name Help
 			@type method
 			@desc Get the document detail
-			@format class|interface[, event|property|method, name]
+			@format class|interface[, 'event'|'property'|'method', name]
 			@format class|interface, name
+			@format class|interface, includeSuper
 			@format enum|struct
 			@param class|interface|enum|struct
 			@param event|property|method
 			@param name the name to query
+			@param includeSuper boolean, whether include all details
 			@return string the detail information
 		]======]
 
@@ -4723,6 +4725,8 @@ do
 						local result = ""
 						local desc
 
+						doctype = doctype and true or false
+
 						if info.IsFinal then
 							result = result .. "[__Final__]\n"
 						end
@@ -4804,7 +4808,7 @@ do
 						-- Event
 						if next(info.Event) then
 							result = result .. "\n\n  Event :"
-							for _, evt in ipairs(GetEvents(ns, true)) do
+							for _, evt in ipairs(GetEvents(ns, not doctype)) do
 								-- Desc
 								desc = HasDocument(ns, "event", evt) and GetDocument(ns, "event", evt, "desc")
 								desc = desc and desc()
@@ -4821,7 +4825,7 @@ do
 						-- Property
 						if next(info.Property) then
 							result = result .. "\n\n  Property :"
-							for _, prop in ipairs(GetProperties(ns, true)) do
+							for _, prop in ipairs(GetProperties(ns, not doctype)) do
 								-- Desc
 								desc = HasDocument(ns, "property", prop) and GetDocument(ns, "property", prop, "desc")
 								desc = desc and desc()
@@ -4838,7 +4842,7 @@ do
 						-- Method
 						if next(info.Method) then
 							result = result .. "\n\n  Method :"
-							for _, method in ipairs(GetMethods(ns, true)) do
+							for _, method in ipairs(GetMethods(ns, not doctype)) do
 								-- Desc
 								desc = HasDocument(ns, "method", method) and GetDocument(ns, "method", method, "desc")
 								desc = desc and desc()
@@ -4872,23 +4876,56 @@ do
 						local isFormat = false
 
 						if info.Type == TYPE_CLASS then
-							-- __Arguments__
-							local args = __Attribute__._GetConstructorAttribute(ns, __Arguments__)
+							-- Check FixedMethod
+							local sinfo = info
 
-							if args and #args > 0 then
-								result = result .. "\n\n  Init table field :"
+							while not sinfo.Constructor and sinfo.SuperClass do
+								sinfo = _NSInfo[sinfo.SuperClass]
+							end
 
-								for i = 1, #args do
-									result = result .. "\n    " .. args[i].Name
+							if getmetatable(sinfo.Constructor) then
+								result = result .. "\n\n Fixed Constructor : "
 
-									if args[i].Type then
-										result = result .. " = " .. tostring(args[i].Type)
+								local cache = CACHE_TABLE()
+								local owner = sinfo.Owner
+								local ctor = sinfo.Constructor
+
+								while getmetatable(ctor) do
+									if ctor.Owner == owner then
+										tinsert(cache, ctor)
+									else
+										local isEqual = false
+
+										for _, ex in ipairs(cache) do
+											if #ex == #ctor then
+												isEqual = true
+
+												for i = 1, #ctor do
+													if not IsEqual(ex[i], ctor[i]) then
+														isEqual = false
+														break
+													end
+												end
+
+												if isEqual then break end
+											end
+										end
+
+										if not isEqual then
+											tinsert(cache, ctor)
+										end
 									end
 
-									if args[i].Default then
-										result = result .. " (Default : " .. Serialize(args[i].Default, args[i].Type) .. " )"
-									end
+									ctor = ctor.Next
 								end
+
+								for _, ctor in ipairs(cache) do
+									local usage = ctor.Usage:match("Usage : (.*)$")
+
+									result = result .. "\n    " .. usage
+								end
+
+								CACHE_TABLE(cache)
 							end
 
 							while ns do
@@ -5069,6 +5106,71 @@ do
 								end
 							end
 
+							-- Fixed Method
+							local sinfo = info
+							local func = info.Cache4Method[name] or info.Method[name]
+
+							while sinfo and not sinfo.Method[name] do
+								if sinfo.SuperClass and _NSInfo[sinfo.SuperClass].Cache4Method[name] == func then
+									sinfo = _NSInfo[sinfo.SuperClass]
+								elseif sinfo.ExtendInterface then
+									for _, IF in ipairs(info.ExtendInterface) do
+										if _NSInfo[IF].Cache4Method[name] == func then
+											sinfo = _NSInfo[IF]
+											break
+										end
+									end
+								else
+									break
+								end
+							end
+
+							if sinfo and sinfo.Method[name] and getmetatable(sinfo.Method["0" .. name]) then
+								local fm = sinfo.Method["0" .. name]
+
+								result = result .. "\n\n Overload Format : "
+
+								local cache = CACHE_TABLE()
+								local owner = sinfo.Owner
+
+								while getmetatable(fm) do
+									if fm.Owner == owner then
+										tinsert(cache, fm)
+									else
+										local isEqual = false
+
+										for _, ex in ipairs(cache) do
+											if #ex == #fm then
+												isEqual = true
+
+												for i = 1, #fm do
+													if not IsEqual(ex[i], fm[i]) then
+														isEqual = false
+														break
+													end
+												end
+
+												if isEqual then break end
+											end
+										end
+
+										if not isEqual then
+											tinsert(cache, fm)
+										end
+									end
+
+									fm = fm.Next
+								end
+
+								for _, fm in ipairs(cache) do
+									local usage = fm.Usage:match("Usage : (.*)$")
+
+									result = result .. "\n    " .. usage
+								end
+
+								CACHE_TABLE(cache)
+							end
+
 							-- Format
 							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
 							result = result .. "\n\n  Format :"
@@ -5114,25 +5216,6 @@ do
 										result = result .. "\n    " .. param .. " - " .. info
 									else
 										result = result .. "\n    " .. param
-									end
-								end
-							else
-								-- __Arguments__
-								local args = __Attribute__._GetMethodAttribute(ns, name, __Arguments__)
-
-								if args and #args > 0 then
-									result = result .. "\n\n  Parameter :"
-
-									for i = 1, #args do
-										result = result .. "\n    " .. args[i].Name
-
-										if args[i].Type then
-											result = result .. " = " .. tostring(args[i].Type)
-										end
-
-										if args[i].Default then
-											result = result .. " (Default : " .. Serialize(args[i].Default, args[i].Type) .. " )"
-										end
 									end
 								end
 							end
