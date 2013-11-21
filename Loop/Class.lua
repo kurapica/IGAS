@@ -3319,10 +3319,10 @@ do
 		structtype "CUSTOM"
 
 		function Validate(value)
-			--[[if type(value) ~= "string" then
+			if type(value) ~= "string" then
 				error(("%s must be a string, got %s."):format("%s", type(value)))
-			end--]]
-			return tostring(value) or error(("%s must be a string, got %s."):format("%s", type(value)))
+			end
+			return value
 		end
 	endstruct "String"
 
@@ -3330,10 +3330,10 @@ do
 		structtype "CUSTOM"
 
 		function Validate(value)
-			--[[if type(value) ~= "number" then
+			if type(value) ~= "number" then
 				error(("%s must be a number, got %s."):format("%s", type(value)))
-			end--]]
-			return tonumber(value) or error(("%s must be a number, got %s."):format("%s", type(value)))
+			end
+			return value
 		end
 	endstruct "Number"
 
