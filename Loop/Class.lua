@@ -23,86 +23,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 --]]
 
--- Class System
--- Author: kurapica.igas@gmail.com
--- Create Date : 2011/02/01
--- ChangeLog   :
---               2011/04/14	System.Reflector added.
---               2011/05/11 Event handlers can run as thread.
---               2011/05/30 System.Reflector.GetParts added.
---               2011/06/24 Property definition ignore case
---               2011/07/04 Struct no longer need Constructor and Validate function
---               2011/07/08 System.Reflector.IsAbstractClass(cls) added
---               2011/07/12 System.Reflector.ParseEnum(enm, value) added
---               2011/07/27 Enum's validation method changed.
---               2011/10/26 Error report update for __index & __newindex
---               2011/10/30 System.Reflector.ConvertClass(obj, cls) added
---               2011/10/31 System.Reflector.InactiveThread added
---               2012/04/10 System.Reflector.IsNameSpace(obj) added
---               2012/05/01 System.Reflector.Validate(type, value) added
---               2012/05/06 System.Reflector.Validate(type, value, name, prefix) mod
---               2012/05/07 System.Reflector.BuildType removed
---               2012/05/14 Type add sub & unm metamethodes
---               2012/05/21 Keyword 'Super' is added to the class environment
---               2012/06/27 Interface system added
---               2012/06/28 Interface can access it's methodes
---               2012/06/29 System.Reflector Update for Interface
---               2012/06/30 BlockEvent, IsEventBlocked, UnBlockEvent added to Reflector
---               2012/07/01 Interface can extend from multi-interface
---               2012/07/08 IFDispose added to support interface disposing
---               2012/07/09 Using cache to keep interface list for class object creation
---               2012/07/26 Fix a stack overflow problem
---               2012/07/31 Improve struct system
---               2012/08/14 Struct namespace object now has Validate method.
---               2012/08/14 Class & Struct env now can access base namespace directly.
---               2012/08/14 Reduce Struct Validate method cost.
---               2012/08/19 Don't block error when create object.
---               2012/08/30 IFDispoe removed, Class system will use Dispose as a system method,
---                          Interface's Dispose will be called first when object call like obj:Dispose(),
---                          then the class's own Dispose will be called,
---                          Class.Dispose will access the class' own Dispose method, not system one.
---               2012/09/07 Fix can't extend interface that defined in the class
---               2012/09/20 class without constructor now will use Super class's constructor.
---                          System.Reflector change to Interface.
---               2012/10/08 Object Method, Property, Event can't start with '_'.
---               2012/10/13 partclass keyword added to support part class definition.
---               2012/11/07 Interface constructor invoking mechanism improved.
---               2012/11/11 Disposing objects when Object created failded.
---               2012/11/14 Fix interface constructor systfem.
---               2012/11/16 Extend interface order system added.
---               2012/12/08 Re-order inherit & extend tree.
---               2012/12/23 Class Constructor system modified.
---               2012/12/24 Dispose system modified.
---               2012/12/25 Doc system added.Interface system improved.
---               2013/01/25 object.Disposed is set to true after calling object:Dispose() as a mark
---               2013/04/07 Lower the memory usage
---               2013/06/24 IGAS:Install([env]) added, used to add keywords into current environment
---               2013/06/26 keyword script -> event
---               2013/08/05 Remove version check, seal the definition environment
---               2013/08/12 System.Module is added to create an environment for oop system
---               2013/08/27 System.Object's method ThreadCall will use the running thread instead of create new one
---               2013/08/28 Now init table can be used to init the objects, like : o = System.Object{Name = "Obj", Type = "Object"}
---               2013/08/28 partinterface is removed(canceled)
---               2013/09/01 Attribute system added
---               2013/09/07 Init-table system added for class and struct
---               2013/09/08 Reduce the cpu cost for methods, properties, events system
---               2013/09/08 Improve the property system
---               2013/09/08 New property system
---               2013/09/09 Improve the cache system to improve performance
---               2013/09/11 Fix Reflector.Help & ParseEnum
---               2013/09/17 The basic structs can validate values like custom structs now
---               2013/09/24 No single class/interface environment limit
---               2013/10/02 __Expandable__ attribute removed, __NonExpandable__ attribute added, now expandable is default attribute to all classes/interfaces
---               2013/10/11 Attribute can apply to the struct's field now.
---               2013/10/25 Redesign the definition environment, partclass & partinterface removed
---               2013/10/30 The property auto-fill system finished
---               2013/11/13 The overload system for method, constructor & meta-method finished
---               2013/11/19 Event can be defined in property definition, so value changes can be fired when only using field to set
-
 ------------------------------------------------------------------------
 --
 --     Pure Lua Object-Oriented Program System
 --
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+-- Author           kurapica.igas@gmail.com
+-- Create Date      2011/02/01
+-- Last Update Date 2013/11/22
+-- Version          r85
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -206,8 +137,6 @@ end
 -- GLOBAL Definition
 ------------------------------------------------------
 do
-	LUA_OOP_VERSION = 84
-
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
 	TYPE_STRUCT = "Struct"
@@ -1062,100 +991,161 @@ do
 			wipe(info.Cache4Property)
 			-- Validate the properties
 			for name, prop in pairs(info.Property) do
-				name = name:gsub("^%a", strupper)
+				if prop.Predefined then
+					local set = prop.Predefined
 
-				local useMethod = false
+					prop.Predefined = nil
 
-				if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
-					prop.GetMethod = nil
-				end
+					for k, v in pairs(set) do
+						if type(k) == "string" then
+							k = k:lower()
 
-				if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then
-					prop.SetMethod = nil
-				end
+							if k == "get" then
+								if type(v) == "function" or type(v) == "boolean" then
+									prop.Get = v
+								elseif type(v) == "string" then
+									prop.GetMethod = v
+								end
+							elseif k == "set" then
+								if type(v) == "function" or type(v) == "boolean" then
+									prop.Set = v
+								elseif type(v) == "string" then
+									prop.SetMethod = v
+								end
+							elseif k == "getmethod" then
+								if type(v) == "string" then
+									prop.GetMethod = v
+								end
+							elseif k == "setmethod" then
+								if type(v) == "string" then
+									prop.SetMethod = v
+								end
+							elseif k == "field" then
+								if type(v) == "string" and v ~= name then
+									prop.Field = v
+								end
+							elseif k == "type" then
+								local ok, ret = pcall(BuildType, v, name)
+								if ok then
+									prop.Type = ret
+								else
+									ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
 
-				-- Auto generate GetMethod
-				if ( prop.Get == nil or prop.Get == true ) and not prop.GetMethod and not prop.Field then
-					-- GetMethod
-					if info.Cache4Method["get" .. name] then
-						useMethod = true
-						prop.GetMethod = "get" .. name
-					elseif info.Cache4Method["Get" .. name] then
-						useMethod = true
-						prop.GetMethod = "Get" .. name
-					elseif prop.Type and prop.Type:Is(Boolean) then
-						-- FlagEnabled -> IsFlagEnabled
-						if info.Cache4Method["is" .. name] then
+									errorhandler(ret)
+								end
+							elseif k == "default" then
+								prop.Default = v
+							elseif k == "event" and type(v) == "string" then
+								prop.Event = v
+							end
+						end
+					end
+
+					if prop.Type and prop.Default ~= nil then
+						if prop.Type:GetObjectType(prop.Default) == false then
+							prop.Default = nil
+						end
+					end
+
+					-- Clear
+					if prop.Get ~= nil then prop.GetMethod = nil end
+					if prop.Set ~= nil then prop.SetMethod = nil end
+
+					name = name:gsub("^%a", strupper)
+
+					local useMethod = false
+
+					if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
+						prop.GetMethod = nil
+					end
+
+					if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then
+						prop.SetMethod = nil
+					end
+
+					-- Auto generate GetMethod
+					if ( prop.Get == nil or prop.Get == true ) and not prop.GetMethod and not prop.Field then
+						-- GetMethod
+						if info.Cache4Method["get" .. name] then
 							useMethod = true
-							prop.GetMethod = "is" .. name
-						elseif info.Cache4Method["Is" .. name] then
+							prop.GetMethod = "get" .. name
+						elseif info.Cache4Method["Get" .. name] then
 							useMethod = true
-							prop.GetMethod = "Is" .. name
-						else
-							-- FlagEnable -> IsEnableFlag
-							local pattern = ParseAdj(name, true)
+							prop.GetMethod = "Get" .. name
+						elseif prop.Type and prop.Type:Is(Boolean) then
+							-- FlagEnabled -> IsFlagEnabled
+							if info.Cache4Method["is" .. name] then
+								useMethod = true
+								prop.GetMethod = "is" .. name
+							elseif info.Cache4Method["Is" .. name] then
+								useMethod = true
+								prop.GetMethod = "Is" .. name
+							else
+								-- FlagEnable -> IsEnableFlag
+								local pattern = ParseAdj(name, true)
+
+								if pattern then
+									for mname in pairs(info.Cache4Method) do
+										if mname:match(pattern) then
+											useMethod = true
+											prop.GetMethod = mname
+											break
+										end
+									end
+								end
+							end
+						end
+					else
+						useMethod = true
+					end
+
+					-- Auto generate SetMethod
+					if ( prop.Set == nil or prop.Set == true ) and not prop.SetMethod and not prop.Field then
+						-- SetMethod
+						if info.Cache4Method["set" .. name] then
+							useMethod = true
+							prop.SetMethod = "set" .. name
+						elseif info.Cache4Method["Set" .. name] then
+							useMethod = true
+							prop.SetMethod = "Set" .. name
+						elseif prop.Type and prop.Type:Is(Boolean) then
+							-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
+							local pattern = ParseAdj(name)
 
 							if pattern then
 								for mname in pairs(info.Cache4Method) do
 									if mname:match(pattern) then
 										useMethod = true
-										prop.GetMethod = mname
+										prop.SetMethod = mname
 										break
 									end
 								end
 							end
 						end
+					else
+						useMethod = true
 					end
-				else
-					useMethod = true
-				end
 
-				-- Auto generate SetMethod
-				if ( prop.Set == nil or prop.Set == true ) and not prop.SetMethod and not prop.Field then
-					-- SetMethod
-					if info.Cache4Method["set" .. name] then
-						useMethod = true
-						prop.SetMethod = "set" .. name
-					elseif info.Cache4Method["Set" .. name] then
-						useMethod = true
-						prop.SetMethod = "Set" .. name
-					elseif prop.Type and prop.Type:Is(Boolean) then
-						-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
-						local pattern = ParseAdj(name)
+					-- Auto generate Field
+					if not useMethod and not prop.Field then
+						prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
+					end
 
-						if pattern then
-							for mname in pairs(info.Cache4Method) do
-								if mname:match(pattern) then
-									useMethod = true
-									prop.SetMethod = mname
-									break
-								end
-							end
+					-- Auto generate Default
+					if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
+						if prop.Type:Is(Boolean) then
+							prop.Default = false
+						elseif prop.Type:Is(Number) then
+							prop.Default = 0
+						elseif prop.Type:Is(String) then
+							prop.Default = ""
 						end
 					end
-				else
-					useMethod = true
-				end
 
-				-- Auto generate Field
-				if not useMethod and not prop.Field then
-					prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
-				end
-
-				-- Auto generate Default
-				if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
-					if prop.Type:Is(Boolean) then
-						prop.Default = false
-					elseif prop.Type:Is(Number) then
-						prop.Default = 0
-					elseif prop.Type:Is(String) then
-						prop.Default = ""
+					-- Validate the Event
+					if prop.Event and ( prop.Set or prop.SetMethod or not prop.Field or not info.Cache4Event[prop.Event] ) then
+						prop.Event = nil
 					end
-				end
-
-				-- Validate the Event
-				if prop.Event and ( prop.Set or prop.SetMethod or not prop.Field or not info.Cache4Event[prop.Event] ) then
-					prop.Event = nil
 				end
 			end
 			--- self property
@@ -1570,60 +1560,7 @@ do
 
 		prop.Name = name
 
-		for k, v in pairs(set) do
-			if type(k) == "string" then
-				k = k:lower()
-
-				if k == "get" then
-					if type(v) == "function" or type(v) == "boolean" then
-						prop.Get = v
-					elseif type(v) == "string" then
-						prop.GetMethod = v
-					end
-				elseif k == "set" then
-					if type(v) == "function" or type(v) == "boolean" then
-						prop.Set = v
-					elseif type(v) == "string" then
-						prop.SetMethod = v
-					end
-				elseif k == "getmethod" then
-					if type(v) == "string" then
-						prop.GetMethod = v
-					end
-				elseif k == "setmethod" then
-					if type(v) == "string" then
-						prop.SetMethod = v
-					end
-				elseif k == "field" then
-					if type(v) == "string" and v ~= name then
-						prop.Field = v
-					end
-				elseif k == "type" then
-					local ok, ret = pcall(BuildType, v, name)
-					if ok then
-						prop.Type = ret
-					else
-						ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
-
-						errorhandler(ret)
-					end
-				elseif k == "default" then
-					prop.Default = v
-				elseif k == "event" and type(v) == "string" then
-					prop.Event = v
-				end
-			end
-		end
-
-		if prop.Type and prop.Default ~= nil then
-			if prop.Type:GetObjectType(prop.Default) == false then
-				prop.Default = nil
-			end
-		end
-
-		-- Clear
-		if prop.Get ~= nil then prop.GetMethod = nil end
-		if prop.Set ~= nil then prop.SetMethod = nil end
+		prop.Predefined = set
 
 		if __Attribute__ then
 			__Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
@@ -6788,9 +6725,10 @@ do
 					arg3 = owner
 					arg4 = name
 				elseif targetType == AttributeTargets.Property then
-					arg1 = target.Name
+					arg1 = target.Predefined
 					arg2 = targetType
 					arg3 = owner
+					arg4 = name
 				elseif targetType == AttributeTargets.Field then
 					arg1 = name
 					arg2 = targetType
