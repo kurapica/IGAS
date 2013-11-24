@@ -87,17 +87,13 @@ class "Texture"
 
 		if not value then return nil end
 
-		if strmatch(value, "^Portrait%d*") then
+		if strmatch(value, "^RTPortrait%d*") then
 			return self.__Unit
-		elseif value == "SolidTexture" then
-			if self.__Color then
-				return self.__Color.r, self.__Color.g, self.__Color.b, self.__Color.a
-			else
-				return nil
-			end
+		elseif strmatch(value, "^Color%-") then
+			return self.__R, self.__G, self.__B, self.__A
 		end
 
-		return self.__UI:GetTexture(...)
+		return value
 	end
 
 	doc [======[
@@ -215,19 +211,6 @@ class "Texture"
 		@return nil
 	]======]
 
-	COLOR_TABLE = setmetatable({}, {
-		__call = function(self, key)
-			if key then
-				wipe(key)
-				tinsert(self, key)
-			elseif next(self) then
-				return tremove(self)
-			else
-				return {}
-			end
-		end,
-	})
-
 	doc [======[
 		@name SetTexture
 		@type method
@@ -240,11 +223,10 @@ class "Texture"
 		@return boolean 1 if the texture was successfully changed; otherwise nil (1nil)
 	]======]
 	function SetTexture(self, ...)
-		if self.__Color then
-			COLOR_TABLE(self.__Color)
-		end
-
-		self.__Color = nil
+		self.__R = nil
+		self.__G = nil
+		self.__B = nil
+		self.__A = nil
 		self.__Unit = nil
 		self.__OriginTexCoord = nil
 
@@ -261,13 +243,11 @@ class "Texture"
 				b = (b and type(b) == "number" and ((b < 0 and 0) or (b > 1 and 1) or b)) or 0
 				a = (a and type(a) == "number" and ((a < 0 and 0) or (a > 1 and 1) or a)) or 1
 
-				local color = COLOR_TABLE()
-				color.r = r
-				color.g = g
-				color.b = b
-				color.a = a
+				self.__R = r
+				self.__G = g
+				self.__B = b
+				self.__A = a
 
-				self.__Color = color
 				return self.__UI:SetTexture(r, g, b, a)
 			end
 		end
@@ -290,11 +270,10 @@ class "Texture"
 		@return nil
 	]======]
 	function SetPortraitUnit(self, ...)
-		if self.__Color then
-			COLOR_TABLE(self.__Color)
-		end
-
-		self.__Color = nil
+		self.__R = nil
+		self.__G = nil
+		self.__B = nil
+		self.__A = nil
 		self.__Unit = nil
 		self.__OriginTexCoord = nil
 
@@ -554,13 +533,8 @@ class "Texture"
 	property "Desaturated" {
 		Get = "IsDesaturated",
 		Set = function(self, desaturation)
-			local shaderSupported = self:SetDesaturated(desaturation);
-			if ( not shaderSupported ) then
-				if ( desaturation ) then
-					self:SetVertexColor(0.5, 0.5, 0.5);
-				else
-					self:SetVertexColor(1.0, 1.0, 1.0);
-				end
+			if ( not self:SetDesaturated(desaturation) ) then
+				return desaturation and self:SetVertexColor(0.5, 0.5, 0.5) or self:SetVertexColor(1.0, 1.0, 1.0)
 			end
 		end,
 		Type = Boolean,
@@ -575,7 +549,7 @@ class "Texture"
 		Get = function(self)
 			local path = self:GetTexture()
 
-			if path and type(path) == "string" and path ~= "SolidTexture" and not strmatch(path, "^Portrait%d*") then
+			if type(path) == "string" and not strmatch(value, "^Color%-") and not strmatch(path, "^RTPortrait%d*") then
 				return path
 			end
 		end,
@@ -592,7 +566,7 @@ class "Texture"
 		Get = function(self)
 			local texture = self:GetTexture()
 
-			if texture and type(texture) == "string" and strmatch(texture, "^Portrait%d*") then
+			if type(texture) == "string" and strmatch(texture, "^RTPortrait%d*") then
 				return self.__Unit
 			end
 		end,
@@ -618,10 +592,8 @@ class "Texture"
 	]======]
 	property "Color" {
 		Get = function(self)
-			local texture = self:GetTexture()
-
-			if texture == "SolidTexture" then
-				return self.__Color or ColorType(0, 0, 0, 1)
+			if self:GetTexture() and strmatch(self:GetTexture(), "^Color%-") then
+				return ColorType(self.__R or 0, self.__G or 0, self.__B or 0, self.__A or 1)
 			end
 		end,
 		Set = function(self, color)

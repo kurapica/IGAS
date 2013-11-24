@@ -16,6 +16,14 @@ _UpdateRangeInterval = 0.2
 
 MAX_SKILLLINE_TABS = _G.MAX_SKILLLINE_TABS
 
+_WorldMarker = {
+	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_6",
+	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_4",
+	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_3",
+	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_7",
+	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_1",
+}
+
 enum "FlyoutDirection" {
 	"UP",
 	"DOWN",
@@ -40,6 +48,7 @@ enum "ActionType" {
 	"companion",
 	"equipmentset",
 	"battlepet",
+	"worldmarker",
 	"custom",
 }
 
@@ -89,10 +98,6 @@ end
 do
 	class "ActionList"
 		extend "IFIterator"
-
-		local ipairs = ipairs
-		local tinsert = tinsert
-		local tremove = tremove
 
 		local function nextLink(data, kind)
 			if type(kind) ~= "table" then
@@ -268,7 +273,8 @@ do
 	_IFActionHandler_EquipSetTemplate = "IFActionHandler_EquipSet[%q] = %d\n"
 	_IFActionHandler_FlyoutSlotTemplate = "IFActionHandler_FlyoutSlot[%d] = %d\n"
 	_IFActionHandler_StanceMapTemplate = "IFActionHandler_StanceMap[%d] = %d\n"
-	_IFActionHandler_MountMapTemplate = "IFActionHandler_MountMap[%d] = %d\nIFActionHandler_MountName[%d] = %q\n"
+	_IFActionHandler_MountMapTemplate = "IFActionHandler_MountMap[%d] = %d\n"
+	_IFActionHandler_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
 
 	_IFActionHandler_EquipSetMap = _IFActionHandler_EquipSetMap or {}
 	_IFActionHandler_FlyoutSlot = _IFActionHandler_FlyoutSlot or {}
@@ -289,7 +295,8 @@ do
 			IFActionHandler_MainPage = newtable()
 			IFActionHandler_StanceMap = newtable()
 			IFActionHandler_MountMap = newtable()
-			IFActionHandler_MountName = newtable()
+
+			IFActionHandler_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
 
 			NUM_ACTIONBAR_BUTTONS = 12
 
@@ -305,13 +312,7 @@ do
 				elseif kind == "pet" then
 					return "petaction", target
 				elseif kind == "companion" then
-					for index, spell in pairs(IFActionHandler_MountMap) do
-						if spell == target then
-							target = index
-							break
-						end
-					end
-					return "clear", kind, "mount", target
+					return "clear", kind, "mount", IFActionHandler_MountMap[target]
 				elseif kind == "spell" or kind == "item" or kind == "macro" or kind == "battlepet" or kind == "flyout" then
 					return "clear", kind, target
 				elseif kind == "equipmentset" then
@@ -345,7 +346,8 @@ do
 					self:SetAttribute("*macrotext*", "/equipset "..target)
 				elseif kind == "companion" then
 					self:SetAttribute("*type*", "macro")
-					self:SetAttribute("*macrotext*", "/cast "..(IFActionHandler_MountName[target] or target))
+					local index = IFActionHandler_MountMap[target]
+					self:SetAttribute("*macrotext*", IFActionHandler_MountCastTemplate:format(index, index))
 				elseif (kind == "pet" or kind == "petaction") and tonumber(target) then
 					-- Use macro to toggle auto cast
 					self:SetAttribute("type2", "macro")
@@ -358,7 +360,7 @@ do
 			DragStart = [=[
 				local kind = self:GetAttribute("type")
 
-				if not kind or kind == "" or kind == "custom" then return false end
+				if not kind or kind == "" or kind == "custom" or kind == "worldmarker" then return false end
 
 				local type = kind == "pet" and "action" or kind == "flyout" and "spell" or kind
 				local target = self:GetAttribute(type)
@@ -396,7 +398,7 @@ do
 				local oldType = oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind
 				local oldTarget = oldType and self:GetAttribute(oldType)
 
-				if oldKind == "custom" then return false end
+				if oldKind == "custom" or oldKind == "worldmarker" then return false end
 
 				if oldKind ~= "action" and oldKind ~= "pet" then
 					if oldKind then
@@ -412,7 +414,14 @@ do
 					elseif kind == "item" and value then
 						value = "item:"..value
 					elseif kind == "companion" then
-						value = IFActionHandler_MountMap[value]
+						local mount
+						for spell, index in pairs(IFActionHandler_MountMap) do
+							if value == index then
+								mount = spell
+								break
+							end
+						end
+						value = mount
 						if not value then
 							kind = nil
 						end
@@ -522,9 +531,12 @@ do
 		local oldKind = self:GetAttribute("type")
 		if oldKind then
 			self:SetAttribute("type", nil)
-			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind, nil)
+			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind == "worldmarker" and "marker" or oldKind, nil)
 			if oldKind == "macro" then
 				self:SetAttribute("macrotext", nil)
+			end
+			if oldKind == "worldmarker" then
+				self:SetAttribute("action", nil)
 			end
 		end
 
@@ -538,7 +550,7 @@ do
 				if kind == "item" then
 					target = tonumber(target) and "item:"..tonumber(target) or target
 				end
-				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind, target)
+				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind == "worldmarker" and "marker" or kind, target)
 			end
 		end
 
@@ -670,6 +682,8 @@ do
 			return _IFActionHandler_EquipSetMap[target] and select(2, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
 		elseif kind == "battlepet" then
 			return select(9, C_PetJournal.GetPetInfoByPetID(target))
+		elseif kind == "worldmarker" then
+			return _WorldMarker[tonumber(target)]
 		else
 			return self.__IFActionHandler_Texture
 		end
@@ -748,6 +762,12 @@ do
 			return IsCurrentItem(target)
 		elseif kind == "equipmentset" then
 			return _IFActionHandler_EquipSetMap[target] and select(4, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
+		elseif kind == "companion" then
+			return _IFActionHandler_MountMap[target] and select(5, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[target]))
+		elseif kind == "worldmarker" then
+			target = tonumber(target)
+			-- No event for world marker, disable it now
+			return false and target and target >= 1 and target <= NUM_WORLD_RAID_MARKERS and IsRaidMarkerActive(target)
 		end
 	end
 
@@ -1119,9 +1139,22 @@ do
 		local oldKind = self:GetAttribute("type")
 		if oldKind then
 			self:SetAttribute("type", nil)
-			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind, nil)
+			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind == "worldmarker" and "marker" or oldKind, nil)
 			if oldKind == "macro" then
 				self:SetAttribute("macrotext", nil)
+			end
+			if oldKind == "worldmarker" then
+				self:SetAttribute("action", nil)
+			end
+		end
+
+		if kind == "spell" then
+			-- Convert to spell id
+			if tonumber(target) then
+				target = tonumber(target)
+			else
+				target = GetSpellLink(target)
+		   		target = tonumber(target and target:match("spell:(%d+)"))
 			end
 		end
 
@@ -1140,7 +1173,7 @@ do
 						target = _IFActionHandler_Profession[GetSpellInfo(target)]
 					end
 				end
-				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind, target)
+				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind == "worldmarker" and "marker" or kind, target)
 			else
 				self.OnClick = type(target) == "function" and target or nil
 				target = nil
@@ -1277,13 +1310,11 @@ do
 		local str = ""
 
 		for i = 1, GetNumCompanions("MOUNT") do
-		    local locname, spellId = select(2, GetCompanionInfo("MOUNT", i))
+		    local _, spellId = select(2, GetCompanionInfo("MOUNT", i))
 
 		    if spellId and _IFActionHandler_MountMap[spellId] ~= i then
-		    	if locname and spellId then
-					str = str.._IFActionHandler_MountMapTemplate:format(i, spellId, spellId, locname)
-					_IFActionHandler_MountMap[spellId] = i
-				end
+				str = str.._IFActionHandler_MountMapTemplate:format(spellId, i)
+				_IFActionHandler_MountMap[spellId] = i
 		    end
 		end
 
@@ -1293,10 +1324,10 @@ do
 				_IFActionHandler_ManagerFrame:Execute(str)
 
 				for _, btn in _IFActionHandler_Buttons("companion") do
-					if _IFActionHandler_MountMap[btn.__IFActionHandler_Action] then
-						local name = select(2, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[btn.__IFActionHandler_Action]))
+					local index = _IFActionHandler_MountMap[btn.__IFActionHandler_Action]
+					if index then
 						btn:SetAttribute("*type*", "macro")
-						btn:SetAttribute("*macrotext*", "/cast "..name)
+						btn:SetAttribute("*macrotext*", _IFActionHandler_MountCastTemplate:format(index, index))
 					end
 				end
 			end)
@@ -1643,8 +1674,8 @@ do
 
 	function _IFActionHandler_ManagerFrame:COMPANION_UPDATE(type)
 		if type == "MOUNT" then
-			_IFActionHandler_Buttons:Each(UpdateButtonState)
 			UpdateMount()
+			_IFActionHandler_Buttons:Each(UpdateButtonState)
 		end
 	end
 
@@ -2354,6 +2385,21 @@ interface "IFActionHandler"
 		end,
 		Set = function(self, value)
 			self:SetAction("battlepet", value)
+		end,
+		Type = System.Number + nil,
+	}
+
+	doc [======[
+		@name WorldMarker
+		@type property
+		@desc The action button's content if its type is 'worldmarker'
+	]======]
+	property "WorldMarker" {
+		Get = function(self)
+			return self:GetAttribute("type") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("worldmarker", value)
 		end,
 		Type = System.Number + nil,
 	}

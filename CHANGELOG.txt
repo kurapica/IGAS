@@ -1,3 +1,8 @@
+2013/11/24: IGAS v56
+    1. Fix some mount can't be used in the action system.
+    2. Now active layout would be displayed correctly for actived mount.
+    3. World marker is added to the action system.
+
 2013/11/13: IGAS v55
     1. Constructor system rebuild.
     2. Init-table system rebuild.
