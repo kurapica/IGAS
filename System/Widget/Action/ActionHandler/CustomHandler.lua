@@ -7,3 +7,32 @@ local version = 1
 if not IGAS:NewAddon("IGAS.Widget.Action.CustomHandler", version) then
 	return
 end
+
+handler = ActionTypeHandler {
+	Type = "custom",
+
+	Action = "custom",
+
+	InitSnippet = [[
+	]],
+
+	PickupSnippet = [[
+	]],
+
+	UpdateSnippet = [[
+	]],
+
+	ReceiveSnippet = [[
+	]],
+}
+
+-- Overwrite methods
+function handler:GetActionTexture()
+	return self.CustomTexture
+end
+
+function handler:SetTooltip(GameTooltip)
+	if self.CustomTooltip then
+		GameTooltip:SetText(self.CustomTooltip)
+	end
+end

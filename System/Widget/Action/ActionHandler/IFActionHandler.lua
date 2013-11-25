@@ -11,27 +11,6 @@ end
 _FlashInterval = 0.4
 _UpdateRangeInterval = 0.2
 
-enum "ActionType" {
-	"action",
-	--"bag",
-	--"bagslot",
-	--"inventory",
-	"item",
-	"macro",
-	"macrotext",
-	--"merchant",
-	"pet",
-	"petaction",
-	--"money",
-	"spell",
-	"flyout",
-	"companion",
-	"equipmentset",
-	"battlepet",
-	"worldmarker",
-	"custom",
-}
-
 ------------------------------------------------------
 -- Module
 --
@@ -354,6 +333,7 @@ endinterface "IFActionTypeHandler"
 -- ActionTypeHandler
 --
 ------------------------------------------------------
+__Cache__()
 class "ActionTypeHandler"
 	extend "IFActionTypeHandler"
 
@@ -548,33 +528,15 @@ do
 
 	_IFActionHandler_FlashingList = {}
 
-	_IFActionHandler_EquipSetTemplate = "IFActionHandler_EquipSet[%q] = %d\n"
-	_IFActionHandler_FlyoutSlotTemplate = "IFActionHandler_FlyoutSlot[%d] = %d\n"
-	_IFActionHandler_StanceMapTemplate = "IFActionHandler_StanceMap[%d] = %d\n"
-	_IFActionHandler_MountMapTemplate = "IFActionHandler_MountMap[%d] = %d\n"
-	_IFActionHandler_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
-
-	_IFActionHandler_EquipSetMap = _IFActionHandler_EquipSetMap or {}
-	_IFActionHandler_FlyoutSlot = _IFActionHandler_FlyoutSlot or {}
-	_IFActionHandler_FlyoutTexture = _IFActionHandler_FlyoutTexture or {}
-	_IFActionHandler_StanceMap = _IFActionHandler_StanceMap or {}
-	_IFActionHandler_Profession = _IFActionHandler_Profession or {}
-	_IFActionHandler_MountMap = _IFActionHandler_MountMap or {}
-
 	------------------------------------------------------
 	-- Snippet Definition
 	------------------------------------------------------
 	-- Init manger frame's enviroment
 	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 		_IFActionHandler_ManagerFrame:Execute[[
-			IFActionHandler_NoDraggable = newtable()
-			IFActionHandler_EquipSet = newtable()
-			IFActionHandler_FlyoutSlot = newtable()
-			IFActionHandler_MainPage = newtable()
-			IFActionHandler_StanceMap = newtable()
-			IFActionHandler_MountMap = newtable()
-
-			IFActionHandler_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
+			_NoDraggable = newtable()
+			_MainPage = newtable()
+			_ActionTypeMap = newtable()
 
 			NUM_ACTIONBAR_BUTTONS = 12
 
@@ -583,22 +545,10 @@ do
 
 			MainPage = newtable()
 
-			PickupAction = [=[
-				local kind, target = ...
-				if kind == "action" then
-					return kind, target
-				elseif kind == "pet" then
-					return "petaction", target
-				elseif kind == "companion" then
-					return "clear", kind, "mount", IFActionHandler_MountMap[target]
-				elseif kind == "spell" or kind == "item" or kind == "macro" or kind == "battlepet" or kind == "flyout" then
-					return "clear", kind, target
-				elseif kind == "equipmentset" then
-					return "clear", kind, IFActionHandler_EquipSet[target]
-				else
-					return "clear"
-				end
-			]=]
+			PickupSnippet = newtable()
+			PickupSnippet[0] = [=[ return "clear" ]=]
+
+			UpdateSnippet = newtable()
 
 			UpdateAction = [=[
 				local kind, target = ...
@@ -611,25 +561,8 @@ do
 				self:SetAttribute("type2", nil)
 				self:SetAttribute("macrotext2", nil)
 
-				if kind == "spell" and IFActionHandler_StanceMap[target] then
-					-- Need this to cancel stance, use spell to replace stance button
-					self:SetAttribute("*type*", "macro")
-					self:SetAttribute("*macrotext*", "/click StanceButton".. IFActionHandler_StanceMap[target])
-				elseif kind == "battlepet" then
-					-- just *type* to keep type to battlepet
-					self:SetAttribute("*type*", "macro")
-					self:SetAttribute("*macrotext*", "/summonpet "..target)
-				elseif kind == "equipmentset" then
-					self:SetAttribute("*type*", "macro")
-					self:SetAttribute("*macrotext*", "/equipset "..target)
-				elseif kind == "companion" then
-					self:SetAttribute("*type*", "macro")
-					local index = IFActionHandler_MountMap[target]
-					self:SetAttribute("*macrotext*", IFActionHandler_MountCastTemplate:format(index, index))
-				elseif (kind == "pet" or kind == "petaction") and tonumber(target) then
-					-- Use macro to toggle auto cast
-					self:SetAttribute("type2", "macro")
-					self:SetAttribute("macrotext2", "/click PetActionButton".. target .. " RightButton")
+				if UpdateSnippet[kind] then
+					Manager:RunFor(self, UpdateSnippet[kind], kind, target)
 				end
 
 				self:CallMethod("IFActionHandler_UpdateAction", kind, target)
@@ -662,7 +595,7 @@ do
 					return false
 				end
 
-				return Manager:Run(PickupAction, kind, target)
+				return Manager:Run(PickupSnippet[kind] or PickupSnippet[0], kind, target)
 			]=]
 
 			ReceiveDrag = [=[
@@ -693,7 +626,7 @@ do
 						value = "item:"..value
 					elseif kind == "companion" then
 						local mount
-						for spell, index in pairs(IFActionHandler_MountMap) do
+						for spell, index in pairs(_MountMap) do
 							if value == index then
 								mount = spell
 								break
@@ -722,7 +655,7 @@ do
 					return false
 				end
 
-				return Manager:Run(PickupAction, oldKind, oldTarget)
+				return Manager:Run(PickupSnippet[kind] or PickupSnippet[0], oldKind, oldTarget)
 			]=]
 
 			UpdateMainActionBar = [=[
@@ -743,7 +676,7 @@ do
 					end
 				end
 				MainPage[0] = page
-				for btn in pairs(IFActionHandler_MainPage) do
+				for btn in pairs(_MainPage) do
 					btn:SetAttribute("actionpage", MainPage[0])
 					Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
 				end
@@ -838,17 +771,17 @@ do
 	]=]
 
 	_IFActionHandler_EnableSnippet = [[
-		IFActionHandler_NoDraggable[%q] = nil
+		_NoDraggable[%q] = nil
 	]]
 
 	_IFActionHandler_DisableSnippet = [[
-		IFActionHandler_NoDraggable[%q] = true
+		_NoDraggable[%q] = true
 	]]
 
 	_IFActionHandler_RegisterMainPage = [[
 		local btn = Manager:GetFrameRef("MainPageButton")
 		if btn then
-			IFActionHandler_MainPage[btn] = true
+			_MainPage[btn] = true
 			btn:SetAttribute("actionpage", MainPage[0] or 1)
 		end
 	]]
@@ -856,14 +789,14 @@ do
 	_IFActionHandler_UnregisterMainPage = [[
 		local btn = Manager:GetFrameRef("MainPageButton")
 		if btn then
-			IFActionHandler_MainPage[btn] = nil
+			_MainPage[btn] = nil
 			btn:SetAttribute("actionpage", nil)
 		end
 	]]
 
 	-- Skip macrotext since this is only for draggable item
 	_IFActionHandler_OnDragStartSnippet = [[
-		if (IsModifierKeyDown() or IFActionHandler_NoDraggable[%q]) and not IsModifiedClick("PICKUPACTION") then return false end
+		if (IsModifierKeyDown() or _NoDraggable[%q]) and not IsModifiedClick("PICKUPACTION") then return false end
 
 		return Manager:RunFor(self, DragStart)
 	]]
@@ -941,23 +874,23 @@ do
 				return isToken and _G[texture] or texture
 			end
 		elseif kind == "spell" then
-			if _IFActionHandler_StanceMap[target] then
-				return (GetShapeshiftFormInfo(_IFActionHandler_StanceMap[target]))
+			if _StanceMap[target] then
+				return (GetShapeshiftFormInfo(_StanceMap[target]))
 			else
 				return GetSpellTexture(target)
 			end
 		elseif kind == "flyout" then
-			return _IFActionHandler_FlyoutTexture[target]
+			return _FlyoutTexture[target]
 		elseif kind == "item" then
 			return GetItemIcon(target)
 		elseif kind == "macro" then
 			return (select(2, GetMacroInfo(target)))
 		elseif kind == "companion" then
-			if _IFActionHandler_MountMap[target] then
-				return select(4, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[target]))
+			if _MountMap[target] then
+				return select(4, GetCompanionInfo("MOUNT", _MountMap[target]))
 			end
 		elseif kind == "equipmentset" then
-			return _IFActionHandler_EquipSetMap[target] and select(2, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
+			return _EquipSetMap[target] and select(2, GetEquipmentSetInfo(_EquipSetMap[target]))
 		elseif kind == "battlepet" then
 			return select(9, C_PetJournal.GetPetInfoByPetID(target))
 		elseif kind == "worldmarker" then
@@ -996,7 +929,7 @@ do
 		elseif kind == "pet" or kind == "petaction" then
 			return GetPetActionCooldown(target)
 		elseif kind == "spell" then
-			if _IFActionHandler_StanceMap[target] then
+			if _StanceMap[target] then
 				if select(2, GetSpellCooldown(target)) > 2 then
 					return GetSpellCooldown(target)
 				end
@@ -1039,9 +972,9 @@ do
 		elseif kind == "item" then
 			return IsCurrentItem(target)
 		elseif kind == "equipmentset" then
-			return _IFActionHandler_EquipSetMap[target] and select(4, GetEquipmentSetInfo(_IFActionHandler_EquipSetMap[target]))
+			return _EquipSetMap[target] and select(4, GetEquipmentSetInfo(_EquipSetMap[target]))
 		elseif kind == "companion" then
-			return _IFActionHandler_MountMap[target] and select(5, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[target]))
+			return _MountMap[target] and select(5, GetCompanionInfo("MOUNT", _MountMap[target]))
 		elseif kind == "worldmarker" then
 			target = tonumber(target)
 			-- No event for world marker, disable it now
@@ -1065,8 +998,8 @@ do
 		elseif kind == "pet" or kind == "petaction" then
 			return GetPetActionSlotUsable(target)
 		elseif kind == "spell" then
-			if _IFActionHandler_StanceMap[target] then
-				return select(4, GetShapeshiftFormInfo(_IFActionHandler_StanceMap[target]))
+			if _StanceMap[target] then
+				return select(4, GetShapeshiftFormInfo(_StanceMap[target]))
 			else
 				return IsUsableSpell(target)
 			end
@@ -1135,12 +1068,12 @@ do
 		elseif kind == "spell" then
 			_GameTooltip:SetSpellByID(target)
 		elseif kind == "flyout" then
-			_GameTooltip:SetSpellBookItem(_IFActionHandler_FlyoutSlot[target], "spell")
+			_GameTooltip:SetSpellBookItem(_FlyoutSlot[target], "spell")
 		elseif kind == "item" then
 			_GameTooltip:SetHyperlink(select(2, GetItemInfo(target)))
 		elseif kind == "companion" then
-			if _IFActionHandler_MountMap[target] then
-				_GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", _IFActionHandler_MountMap[target])))
+			if _MountMap[target] then
+				_GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", _MountMap[target])))
 			end
 		elseif kind == "equipmentset" then
 			_GameTooltip:SetEquipmentSet(target)
@@ -1233,10 +1166,10 @@ do
 		elseif kind == 'spell' then
 			PickupSpell(target)
 		elseif kind == "flyout" then
-			PickupSpellBookItem(_IFActionHandler_FlyoutSlot[target], "spell")
+			PickupSpellBookItem(_FlyoutSlot[target], "spell")
 		elseif kind == 'companion' then
-			if _IFActionHandler_MountMap[target] then
-				PickupCompanion('mount', _IFActionHandler_MountMap[target])
+			if _MountMap[target] then
+				PickupCompanion('mount', _MountMap[target])
 			end
 		elseif kind == 'equipmentset' then
 			local index = 1
@@ -1447,8 +1380,8 @@ do
 					target = tonumber(target) and "item:"..tonumber(target)
 							or select(2, GetItemInfo(target)) and select(2, GetItemInfo(target)):match("item:%d+")
 				elseif kind == "spell" then
-					if target and _IFActionHandler_Profession[GetSpellInfo(target)] then
-						target = _IFActionHandler_Profession[GetSpellInfo(target)]
+					if target and _Profession[GetSpellInfo(target)] then
+						target = _Profession[GetSpellInfo(target)]
 					end
 				end
 				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind == "worldmarker" and "marker" or kind, target)
@@ -1478,14 +1411,14 @@ do
 	-- Update Handler
 	------------------------------------------------------
 	function UpdateEquipmentSet()
-		local str = "for i in pairs(IFActionHandler_EquipSet) do IFActionHandler_EquipSet[i] = nil end\n"
+		local str = "for i in pairs(_EquipSet) do _EquipSet[i] = nil end\n"
 		local index = 1
 
-		wipe(_IFActionHandler_EquipSetMap)
+		wipe(_EquipSetMap)
 
 		while GetEquipmentSetInfo(index) do
-			str = str.._IFActionHandler_EquipSetTemplate:format(GetEquipmentSetInfo(index), index)
-			_IFActionHandler_EquipSetMap[GetEquipmentSetInfo(index)] = index
+			str = str.._EquipSetTemplate:format(GetEquipmentSetInfo(index), index)
+			_EquipSetMap[GetEquipmentSetInfo(index)] = index
 			index = index + 1
 		end
 
@@ -1497,12 +1430,12 @@ do
 	end
 
 	function UpdateFlyoutSlotMap()
-		local str = "for i in pairs(IFActionHandler_FlyoutSlot) do IFActionHandler_FlyoutSlot[i] = nil end\n"
+		local str = "for i in pairs(_FlyoutSlot) do _FlyoutSlot[i] = nil end\n"
 		local type, id
 		local name, texture, offset, numEntries, isGuild, offspecID
 
-		wipe(_IFActionHandler_FlyoutSlot)
-		wipe(_IFActionHandler_FlyoutTexture)
+		wipe(_FlyoutSlot)
+		wipe(_FlyoutTexture)
 
 		for i = 1, MAX_SKILLLINE_TABS do
 			name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo(i)
@@ -1516,10 +1449,10 @@ do
 					type, id = GetSpellBookItemInfo(index, "spell")
 
 					if type == "FLYOUT" then
-						if not _IFActionHandler_FlyoutSlot[id] then
-							str = str.._IFActionHandler_FlyoutSlotTemplate:format(id, index)
-							_IFActionHandler_FlyoutSlot[id] = index
-							_IFActionHandler_FlyoutTexture[id] = GetSpellBookItemTexture(index, "spell")
+						if not _FlyoutSlot[id] then
+							str = str.._FlyoutSlotTemplate:format(id, index)
+							_FlyoutSlot[id] = index
+							_FlyoutTexture[id] = GetSpellBookItemTexture(index, "spell")
 						end
 					end
 				end
@@ -1541,8 +1474,8 @@ do
 		        spell = select(2, GetSpellBookItemInfo(offset, "spell"))
 		        name = GetSpellBookItemName(offset, "spell")
 
-		        if _IFActionHandler_Profession[name] ~= spell then
-		        	_IFActionHandler_Profession[name] = spell
+		        if _Profession[name] ~= spell then
+		        	_Profession[name] = spell
 		        	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 		        		for _, btn in _IFActionHandler_Buttons("spell") do
 		        			if GetSpellInfo(btn.__IFActionHandler_Action) == name then
@@ -1556,17 +1489,17 @@ do
 	end
 
 	function UpdateStanceMap()
-		local str = "for i in pairs(IFActionHandler_StanceMap) do IFActionHandler_StanceMap[i] = nil end\n"
+		local str = "for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
 
-		wipe(_IFActionHandler_StanceMap)
+		wipe(_StanceMap)
 
 		for i = 1, GetNumShapeshiftForms() do
 		    local name = select(2, GetShapeshiftFormInfo(i))
 		    name = GetSpellLink(name)
 		    name = tonumber(name and name:match("spell:(%d+)"))
 		    if name then
-				str = str.._IFActionHandler_StanceMapTemplate:format(name, i)
-		    	_IFActionHandler_StanceMap[name] = i
+				str = str.._StanceMapTemplate:format(name, i)
+		    	_StanceMap[name] = i
 		    end
 		end
 
@@ -1575,9 +1508,9 @@ do
 				_IFActionHandler_ManagerFrame:Execute(str)
 
 				for _, btn in _IFActionHandler_Buttons("spell") do
-					if _IFActionHandler_StanceMap[btn.__IFActionHandler_Action] then
+					if _StanceMap[btn.__IFActionHandler_Action] then
 						btn:SetAttribute("*type*", "macro")
-						btn:SetAttribute("*macrotext*", "/click StanceButton".._IFActionHandler_StanceMap[btn.__IFActionHandler_Action])
+						btn:SetAttribute("*macrotext*", "/click StanceButton".._StanceMap[btn.__IFActionHandler_Action])
 					end
 				end
 			end)
@@ -1590,9 +1523,9 @@ do
 		for i = 1, GetNumCompanions("MOUNT") do
 		    local _, spellId = select(2, GetCompanionInfo("MOUNT", i))
 
-		    if spellId and _IFActionHandler_MountMap[spellId] ~= i then
-				str = str.._IFActionHandler_MountMapTemplate:format(spellId, i)
-				_IFActionHandler_MountMap[spellId] = i
+		    if spellId and _MountMap[spellId] ~= i then
+				str = str.._MountMapTemplate:format(spellId, i)
+				_MountMap[spellId] = i
 		    end
 		end
 
@@ -1602,10 +1535,10 @@ do
 				_IFActionHandler_ManagerFrame:Execute(str)
 
 				for _, btn in _IFActionHandler_Buttons("companion") do
-					local index = _IFActionHandler_MountMap[btn.__IFActionHandler_Action]
+					local index = _MountMap[btn.__IFActionHandler_Action]
 					if index then
 						btn:SetAttribute("*type*", "macro")
-						btn:SetAttribute("*macrotext*", _IFActionHandler_MountCastTemplate:format(index, index))
+						btn:SetAttribute("*macrotext*", _MountCastTemplate:format(index, index))
 					end
 				end
 			end)
@@ -1641,8 +1574,8 @@ do
 	end
 
 	function UpdateButtonState(self)
-		if self.__IFActionHandler_Kind == "spell" and _IFActionHandler_StanceMap[self.__IFActionHandler_Action] then
-			self.Checked = select(3, GetShapeshiftFormInfo(_IFActionHandler_StanceMap[self.__IFActionHandler_Action]))
+		if self.__IFActionHandler_Kind == "spell" and _StanceMap[self.__IFActionHandler_Action] then
+			self.Checked = select(3, GetShapeshiftFormInfo(_StanceMap[self.__IFActionHandler_Action]))
 		elseif self.__IFActionHandler_Kind == "pet" or self.__IFActionHandler_Kind == "petaction" then
 			self.Checked = select(5, GetPetActionInfo(self.__IFActionHandler_Action))
 		else
@@ -2081,7 +2014,7 @@ do
 	function _IFActionHandler_ManagerFrame:PLAYER_ENTERING_WORLD()
 		UpdateEquipmentSet()
 		_IFActionHandler_Buttons:Each(UpdateActionButton)
-		if not next(_IFActionHandler_MountMap) then
+		if not next(_MountMap) then
 			UpdateMount()
 		end
 	end

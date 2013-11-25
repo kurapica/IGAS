@@ -11,6 +11,7 @@ end
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
 
 _StanceMap = {}
+_Profession = {}
 
 function OnEnable(self)
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
@@ -28,9 +29,7 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		local kind, target = ...
-
-		return "clear", kind, target
+		return "clear", ...
 	]],
 
 	UpdateSnippet = [[

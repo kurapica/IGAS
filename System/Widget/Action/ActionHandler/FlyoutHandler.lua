@@ -16,3 +16,41 @@ enum "FlyoutDirection" {
 	"LEFT",
 	"RIGHT",
 }
+
+_FlyoutSlotTemplate = "_FlyoutSlot[%d] = %d\n"
+
+_FlyoutSlot = {}
+_FlyoutTexture = {}
+
+handler = ActionTypeHandler {
+	Type = "flyout",
+
+	Action = "spell",
+
+	InitSnippet = [[
+		_FlyoutSlot = newtable()
+	]],
+
+	PickupSnippet = [[
+		return "clear", ...
+	]],
+
+	UpdateSnippet = [[
+	]],
+
+	ReceiveSnippet = [[
+	]],
+}
+
+-- Overwrite methods
+function handler:GetActionTexture()
+	return _FlyoutTexture[self.ActionTarget]
+end
+
+function handler:SetTooltip(GameTooltip)
+	GameTooltip:SetSpellBookItem(_FlyoutSlot[self.ActionTarget], "spell")
+end
+
+function handler:IsFlyout()
+	return true
+end
