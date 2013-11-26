@@ -13,6 +13,8 @@ handler = ActionTypeHandler {
 
 	Action = "custom",
 
+	DragStyle = "Block",
+
 	InitSnippet = [[
 	]],
 

@@ -14,6 +14,8 @@ handler = ActionTypeHandler {
 
 	Action = "action",
 
+	DragStyle = "Keep",
+
 	InitSnippet = [[
 	]],
 

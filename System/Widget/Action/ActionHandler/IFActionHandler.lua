@@ -62,6 +62,14 @@ interface "IFActionTypeHandler"
 
 	_IFActionTypeHandler = {}
 
+	_RegisterSnippetTemplate = "%s[%q] = %q"
+
+	enum "DragStyle" {
+		"Keep",
+		"Clear",
+		"Block",
+	}
+
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
@@ -290,6 +298,13 @@ interface "IFActionTypeHandler"
 	property "Action" { Type = String }
 
 	doc [======[
+		@name DragStyle
+		@type property
+		@desc The drag style of the action type
+	]======]
+	property "DragStyle" { Type = DragStyle, Default = DragStyle.Clear }
+
+	doc [======[
 		@name InitSnippet
 		@type property
 		@desc The snippet to setup environment for the action type
@@ -324,8 +339,23 @@ interface "IFActionTypeHandler"
     	-- Register the action type handler
     	_IFActionTypeHandler[self.Type] = self
 
+		-- Register action type map
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Type, self.Action) )
+
 		-- Init the environment
 		if self.InitSnippet then self:RunSnippet( self.InitSnippet ) end
+
+		-- Register PickupSnippet
+		if self.PickupSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupSnippet", self.Type, self.PickupSnippet) ) end
+
+		-- Register UpdateSnippet
+		if self.UpdateSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_UpdateSnippet", self.Type, self.UpdateSnippet) ) end
+
+		-- Register ReceiveSnippet
+		if self.ReceiveSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveSnippet", self.Type, self.ReceiveSnippet) ) end
+
+		-- Register DragStyle
+		self:RunSnippet( _RegisterSnippetTemplate:format("_DragStyle", self.Type, self.DragStyle) )
     end
 endinterface "IFActionTypeHandler"
 
@@ -333,8 +363,7 @@ endinterface "IFActionTypeHandler"
 -- ActionTypeHandler
 --
 ------------------------------------------------------
-__Cache__()
-class "ActionTypeHandler"
+__Cache__() class "ActionTypeHandler"
 	extend "IFActionTypeHandler"
 
 	doc [======[
@@ -534,21 +563,22 @@ do
 	-- Init manger frame's enviroment
 	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 		_IFActionHandler_ManagerFrame:Execute[[
+			NUM_ACTIONBAR_BUTTONS = 12
+
 			_NoDraggable = newtable()
 			_MainPage = newtable()
 			_ActionTypeMap = newtable()
+			_PickupSnippet = newtable()
+			_UpdateSnippet = newtable()
+			_ReceiveSnippet = newtable()
+			_DragStyle = newtable()
 
-			NUM_ACTIONBAR_BUTTONS = 12
+			_PickupSnippet[0] = [=[ return "clear" ]=]
 
 			-- to fix blz error, use Manager not control
 			Manager = self
 
 			MainPage = newtable()
-
-			PickupSnippet = newtable()
-			PickupSnippet[0] = [=[ return "clear" ]=]
-
-			UpdateSnippet = newtable()
 
 			UpdateAction = [=[
 				local kind, target = ...
@@ -561,8 +591,8 @@ do
 				self:SetAttribute("type2", nil)
 				self:SetAttribute("macrotext2", nil)
 
-				if UpdateSnippet[kind] then
-					Manager:RunFor(self, UpdateSnippet[kind], kind, target)
+				if _UpdateSnippet[kind] then
+					Manager:RunFor(self, _UpdateSnippet[kind], kind, target)
 				end
 
 				self:CallMethod("IFActionHandler_UpdateAction", kind, target)
@@ -571,19 +601,19 @@ do
 			DragStart = [=[
 				local kind = self:GetAttribute("type")
 
-				if not kind or kind == "" or kind == "custom" or kind == "worldmarker" then return false end
+				if not kind or kind == "" or _DragStyle[kind] == "Block" then return false end
 
-				local type = kind == "pet" and "action" or kind == "flyout" and "spell" or kind
+				local type = _ActionTypeMap[kind]
 				local target = self:GetAttribute(type)
 
 				if not target then return false end
 
-				if kind ~= "action" and kind ~= "pet" then
+				if _DragStyle[kind] == "Clear" then
+					-- Clear the action
 					self:SetAttribute("type", nil)
 					self:SetAttribute(type, nil)
+
 					Manager:RunFor(self, UpdateAction, nil, nil)
-				else
-					Manager:RunFor(self, UpdateAction, kind, target)
 				end
 
 				if kind == "action" and self:GetAttribute("actionpage") and self:GetID() > 0 then
@@ -595,7 +625,7 @@ do
 					return false
 				end
 
-				return Manager:Run(PickupSnippet[kind] or PickupSnippet[0], kind, target)
+				return Manager:Run(_PickupSnippet[kind] or _PickupSnippet[0], kind, target)
 			]=]
 
 			ReceiveDrag = [=[
@@ -655,7 +685,7 @@ do
 					return false
 				end
 
-				return Manager:Run(PickupSnippet[kind] or PickupSnippet[0], oldKind, oldTarget)
+				return Manager:Run(_PickupSnippet[kind] or _PickupSnippet[0], oldKind, oldTarget)
 			]=]
 
 			UpdateMainActionBar = [=[

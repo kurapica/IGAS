@@ -21,6 +21,8 @@ handler = ActionTypeHandler {
 
 	Action = "marker",
 
+	DragStyle = "Block",
+
 	InitSnippet = [[
 	]],
 

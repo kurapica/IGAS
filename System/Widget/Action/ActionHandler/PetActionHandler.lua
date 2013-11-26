@@ -10,7 +10,6 @@ end
 
 handler = ActionTypeHandler {
 	Type = "pet",
-	Type2 = "petaction",
 
 	Action = "action",
 
@@ -36,7 +35,7 @@ handler = ActionTypeHandler {
 	]],
 }
 
--- Overwrite methods
+-- Overwritde methods
 function handler:HasAction()
 	return GetPetActionInfo(self.ActionTarget) and true
 end
