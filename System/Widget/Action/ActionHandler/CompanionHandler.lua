@@ -38,10 +38,36 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
+		local kind, value, detail, extra = ...
+
+		local mount
+		for spell, index in pairs(_MountMap) do
+			if value == index then
+				mount = spell
+				break
+			end
+		end
+		value = mount
+		if not value then
+			kind = nil
+		end
+
+		return kind, value
+	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*macrotext*", nil)
 	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	if _MountMap[target] then
+		return PickupCompanion('mount', _MountMap[target])
+	end
+end
+
 function handler:GetActionTexture()
 	local target = self.ActionTarget
 	if _MountMap[target] then

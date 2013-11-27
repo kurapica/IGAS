@@ -13,6 +13,10 @@ handler = ActionTypeHandler {
 
 	Action = "action",
 
+	DragStyle = "Keep",
+
+	ReceiveStyle = "Keep",
+
 	InitSnippet = [[
 	]],
 
@@ -33,9 +37,18 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("type2", nil)
+		self:SetAttribute("macrotext2", nil)
+	]],
 }
 
 -- Overwritde methods
+function handler:PickupAction(target)
+	return PickupPetAction(target)
+end
+
 function handler:HasAction()
 	return GetPetActionInfo(self.ActionTarget) and true
 end

@@ -15,6 +15,8 @@ handler = ActionTypeHandler {
 
 	DragStyle = "Block",
 
+	ReceiveStyle = "Block",
+
 	InitSnippet = [[
 	]],
 
@@ -25,6 +27,10 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
+	]],
+
+	ValidateSnippet = [[
+		return nil
 	]],
 }
 

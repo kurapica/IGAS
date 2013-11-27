@@ -27,6 +27,10 @@ handler = ActionTypeHandler {
 }
 
 -- Overwrite methods
+function handler:PickupAction(target, detail)
+	return PickupContainerItem(target, detail)
+end
+
 function handler:HasAction()
 	local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
 	if kind == "action" then

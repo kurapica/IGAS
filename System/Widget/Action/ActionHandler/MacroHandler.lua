@@ -25,9 +25,17 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("macrotext", nil)
+	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return PickupMacro(target)
+end
+
 function handler:GetActionText()
 	return (GetMacroInfo(self.ActionTarget))
 end

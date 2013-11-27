@@ -24,10 +24,23 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
+		local kind, value, detail, extra = ...
+
+		return kind, value = "item:"..value
+	]],
+
+	ValidateSnippet = [[
+		local target = ...
+
+		return tonumber(target) and "item:"..tonumber(target) or target
 	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return PickupItem(target)
+end
+
 function handler:GetActionTexture()
 	return GetItemIcon(self.ActionTarget)
 end

@@ -48,9 +48,18 @@ handler = ActionTypeHandler {
 		-- Spell id is stored in extra
 		return kind, extra
 	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*macrotext*", nil)
+	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return PickupSpell(target)
+end
+
 function handler:GetActionTexture()
 	local target = self.ActionTarget
 

@@ -11,6 +11,9 @@ end
 _FlashInterval = 0.4
 _UpdateRangeInterval = 0.2
 
+_IFActionTypeHandler = {}
+_ActionTypeMap = {}
+
 ------------------------------------------------------
 -- Module
 --
@@ -60,11 +63,9 @@ interface "IFActionTypeHandler"
 		@desc Interface for action type handlers
 	]======]
 
-	_IFActionTypeHandler = {}
-
 	_RegisterSnippetTemplate = "%s[%q] = %q"
 
-	enum "DragStyle" {
+	enum "HandleStyle" {
 		"Keep",
 		"Clear",
 		"Block",
@@ -103,6 +104,17 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
+	doc [======[
+		@name PickupAction
+		@type method
+		@desc Custom pick up action
+		@param target
+		@param detail
+		@return nil
+	]======]
+	function PickupAction(self, target, detail)
+	end
+
 	doc [======[
 		@name HasAction
 		@type method
@@ -302,7 +314,14 @@ interface "IFActionTypeHandler"
 		@type property
 		@desc The drag style of the action type
 	]======]
-	property "DragStyle" { Type = DragStyle, Default = DragStyle.Clear }
+	property "DragStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
+
+	doc [======[
+		@name ReceiveStyle
+		@type property
+		@desc The receive style of the action type
+	]======]
+	property "ReceiveStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
 
 	doc [======[
 		@name InitSnippet
@@ -332,6 +351,20 @@ interface "IFActionTypeHandler"
 	]======]
 	property "ReceiveSnippet" { Type = String + nil }
 
+	doc [======[
+		@name ClearSnippet
+		@type property
+		@desc The snippet used to clear action
+	]======]
+	property "ClearSnippet" { Type = String + nil }
+
+	doc [======[
+		@name ValidateSnippet
+		@type property
+		@desc The snippet used to validate the target value
+	]======]
+	property "ValidateSnippet" { Type = String + nil }
+
 	------------------------------------------------------
 	-- Initialize
 	------------------------------------------------------
@@ -340,6 +373,7 @@ interface "IFActionTypeHandler"
     	_IFActionTypeHandler[self.Type] = self
 
 		-- Register action type map
+		_ActionTypeMap[self.Type] = self.Action
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Type, self.Action) )
 
 		-- Init the environment
@@ -354,8 +388,17 @@ interface "IFActionTypeHandler"
 		-- Register ReceiveSnippet
 		if self.ReceiveSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveSnippet", self.Type, self.ReceiveSnippet) ) end
 
+		-- Register ClearSnippet
+		if self.ClearSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ClearSnippet", self.Type, self.ClearSnippet) ) end
+
+		-- Register ValidateSnippet
+		if self.ValidateSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ValidateSnippet", self.Type, self.ValidateSnippet) ) end
+
 		-- Register DragStyle
 		self:RunSnippet( _RegisterSnippetTemplate:format("_DragStyle", self.Type, self.DragStyle) )
+
+		-- Register ReceiveStyle
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveStyle", self.Type, self.ReceiveStyle) )
     end
 endinterface "IFActionTypeHandler"
 
@@ -567,11 +610,16 @@ do
 
 			_NoDraggable = newtable()
 			_MainPage = newtable()
+
 			_ActionTypeMap = newtable()
 			_PickupSnippet = newtable()
 			_UpdateSnippet = newtable()
 			_ReceiveSnippet = newtable()
+			_ClearSnippet = newtable()
+			_ValidateSnippet = newtable()
+
 			_DragStyle = newtable()
+			_ReceiveStyle = newtable()
 
 			_PickupSnippet[0] = [=[ return "clear" ]=]
 
@@ -582,14 +630,6 @@ do
 
 			UpdateAction = [=[
 				local kind, target = ...
-
-				-- Clear prev settings
-				self:SetAttribute("*type*", nil)
-				self:SetAttribute("*macrotext*", nil)
-				self:SetAttribute("type1", nil)
-				self:SetAttribute("macrotext1", nil)
-				self:SetAttribute("type2", nil)
-				self:SetAttribute("macrotext2", nil)
 
 				if _UpdateSnippet[kind] then
 					Manager:RunFor(self, _UpdateSnippet[kind], kind, target)
@@ -603,7 +643,7 @@ do
 
 				if not kind or kind == "" or _DragStyle[kind] == "Block" then return false end
 
-				local type = _ActionTypeMap[kind]
+				local type = _ActionTypeMap[kind] or kind
 				local target = self:GetAttribute(type)
 
 				if not target then return false end
@@ -613,14 +653,20 @@ do
 					self:SetAttribute("type", nil)
 					self:SetAttribute(type, nil)
 
+					-- Custom clear
+					if _ClearSnippet[kind] then
+						Manager:RunFor(self, _ClearSnippet[kind])
+					end
+
 					Manager:RunFor(self, UpdateAction, nil, nil)
 				end
 
+				-- Special for 'action' with actionpage
 				if kind == "action" and self:GetAttribute("actionpage") and self:GetID() > 0 then
 					target = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
 				end
 
-				if kind == "battlepet" or kind == "flyout" then
+				if _PickupSnippet[kind] == "Custom" then
 					Manager:CallMethod("OnPickUp", kind, target)
 					return false
 				end
@@ -633,46 +679,34 @@ do
 
 				if not kind or not value then return false end
 
-				local type = kind == "pet" and "action" or kind == "flyout" and "spell" or kind
+				local type = _ActionTypeMap[kind] or kind
 
 				local oldKind = self:GetAttribute("type")
-				local oldType = oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind
+				local oldType = _ActionTypeMap[oldKind] or oldKind
 				local oldTarget = oldType and self:GetAttribute(oldType)
 
-				if oldKind == "custom" or oldKind == "worldmarker" then return false end
-
-				if oldKind ~= "action" and oldKind ~= "pet" then
+				if _ReceiveStyle[oldKind] == "Block" then
+					return false
+				elseif _ReceiveStyle[oldKind] == "Clear" then
 					if oldKind then
 						self:SetAttribute("type", nil)
 						self:SetAttribute(oldType, nil)
-						if oldKind == "macro" then
-							self:SetAttribute("macrotext", nil)
+
+						-- Custom clear
+						if _ClearSnippet[oldKind] then
+							Manager:RunFor(self, _ClearSnippet[oldKind])
 						end
 					end
 
-					if kind == "spell" then
-						value = extra
-					elseif kind == "item" and value then
-						value = "item:"..value
-					elseif kind == "companion" then
-						local mount
-						for spell, index in pairs(_MountMap) do
-							if value == index then
-								mount = spell
-								break
-							end
-						end
-						value = mount
-						if not value then
-							kind = nil
-						end
+					if _ReceiveSnippet[kind] then
+						kind, value = Manager:RunFor(self, _ReceiveSnippet[kind], kind, value, detail, extra)
 					end
 
 					self:SetAttribute("type", kind)
 					self:SetAttribute(type, value)
 
 					Manager:RunFor(self, UpdateAction, kind, value)
-				else
+				elseif _ReceiveStyle[oldKind] == "Keep" then
 					Manager:RunFor(self, UpdateAction, oldKind, oldTarget)
 				end
 
@@ -680,12 +714,12 @@ do
 					oldTarget = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
 				end
 
-				if oldKind == "battlepet" or oldKind == "flyout" then
+				if _PickupSnippet[oldKind] == "Custom" then
 					Manager:CallMethod("OnPickUp", oldKind, oldTarget)
 					return false
 				end
 
-				return Manager:Run(_PickupSnippet[kind] or _PickupSnippet[0], oldKind, oldTarget)
+				return Manager:Run(_PickupSnippet[oldKind] or _PickupSnippet[0], oldKind, oldTarget)
 			]=]
 
 			UpdateMainActionBar = [=[
@@ -710,6 +744,36 @@ do
 					btn:SetAttribute("actionpage", MainPage[0])
 					Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
 				end
+			]=]
+
+			UpdateActionAttribute = [=[
+				local kind, target = ...
+
+				-- Clear
+				local oldKind = self:GetAttribute("type")
+				if oldKind then
+					self:SetAttribute("type", nil)
+					self:SetAttribute(_ActionTypeMap[oldKind] or oldKind, nil)
+
+					-- Custom clear
+					if _ClearSnippet[oldKind] then
+						Manager:RunFor(self, _ClearSnippet[oldKind])
+					end
+				end
+
+				if not target then kind = nil end
+
+				if kind then
+					self:SetAttribute("type", kind)
+
+					if _ValidateSnippet[kind] then
+						target = Manager:RunFor(self, _ValidateSnippet[kind], target)
+					end
+
+					self:SetAttribute(_ActionTypeMap[kind] or kind, target)
+				end
+
+				Manager:RunFor(self, UpdateAction, kind, target)
 			]=]
 		]]
 
@@ -768,35 +832,8 @@ do
 	_IFActionHandler_UpdateActionAttribute = [=[
 		local kind, target = ...
 
-		-- Clear
-		local oldKind = self:GetAttribute("type")
-		if oldKind then
-			self:SetAttribute("type", nil)
-			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind == "worldmarker" and "marker" or oldKind, nil)
-			if oldKind == "macro" then
-				self:SetAttribute("macrotext", nil)
-			end
-			if oldKind == "worldmarker" then
-				self:SetAttribute("action", nil)
-			end
-		end
-
-		if not target then
-			kind = nil
-		end
-
-		if kind then
-			self:SetAttribute("type", kind == "macrotext" and "macro" or kind)
-			if kind ~= "custom" then
-				if kind == "item" then
-					target = tonumber(target) and "item:"..tonumber(target) or target
-				end
-				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind == "worldmarker" and "marker" or kind, target)
-			end
-		end
-
 		if IFActionHandler_Manager then
-			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateAction, ...)", kind, target)
+			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", kind, target)
 		end
 	]=]
 
@@ -824,7 +861,6 @@ do
 		end
 	]]
 
-	-- Skip macrotext since this is only for draggable item
 	_IFActionHandler_OnDragStartSnippet = [[
 		if (IsModifierKeyDown() or _NoDraggable[%q]) and not IsModifiedClick("PICKUPACTION") then return false end
 
@@ -863,291 +899,9 @@ do
 
 	_IFActionHandler_WrapDragPost = [[
 		local type = self:GetAttribute("type")
-		local target = type and self:GetAttribute(type=="pet" and "action" or type=="flyout" and "spell" or type)
+		local target = type and self:GetAttribute(_ActionTypeMap[type] or type)
 		Manager:RunFor(self, UpdateAction, type, target)
 	]]
-
-	------------------------------------------------------
-	-- Action Info function
-	------------------------------------------------------
-	function _HasAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return HasAction(target)
-		elseif kind == "pet" or kind == "petaction" then
-			return GetPetActionInfo(target) and true
-		elseif kind and kind ~= "" then
-			return true
-		end
-	end
-
-	function _GetActionText(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return GetActionText(target)
-		elseif kind == "macro" then
-			return (GetMacroInfo(target))
-		elseif kind == "equipmentset" then
-			return target
-		else
-			return ""
-		end
-	end
-
-	function _GetActionTexture(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return GetActionTexture(target)
-		elseif kind == "pet" or kind == "petaction" then
-			local name, _, texture, isToken = GetPetActionInfo(target)
-			if name then
-				return isToken and _G[texture] or texture
-			end
-		elseif kind == "spell" then
-			if _StanceMap[target] then
-				return (GetShapeshiftFormInfo(_StanceMap[target]))
-			else
-				return GetSpellTexture(target)
-			end
-		elseif kind == "flyout" then
-			return _FlyoutTexture[target]
-		elseif kind == "item" then
-			return GetItemIcon(target)
-		elseif kind == "macro" then
-			return (select(2, GetMacroInfo(target)))
-		elseif kind == "companion" then
-			if _MountMap[target] then
-				return select(4, GetCompanionInfo("MOUNT", _MountMap[target]))
-			end
-		elseif kind == "equipmentset" then
-			return _EquipSetMap[target] and select(2, GetEquipmentSetInfo(_EquipSetMap[target]))
-		elseif kind == "battlepet" then
-			return select(9, C_PetJournal.GetPetInfoByPetID(target))
-		elseif kind == "worldmarker" then
-			return _WorldMarker[tonumber(target)]
-		else
-			return self.__IFActionHandler_Texture
-		end
-	end
-
-	function _GetActionCharges(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return GetActionCharges(target)
-		elseif kind == "spell" then
-			return GetSpellCharges(target)
-		end
-	end
-
-	function _GetActionCount(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return GetActionCount(target)
-		elseif kind == "spell" then
-			return GetSpellCount(target)
-		elseif kind == "item" then
-			return GetItemCount(target)
-		else
-			return 0
-		end
-	end
-
-	function _GetActionCooldown(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return GetActionCooldown(target)
-		elseif kind == "pet" or kind == "petaction" then
-			return GetPetActionCooldown(target)
-		elseif kind == "spell" then
-			if _StanceMap[target] then
-				if select(2, GetSpellCooldown(target)) > 2 then
-					return GetSpellCooldown(target)
-				end
-			else
-				return GetSpellCooldown(target)
-			end
-		elseif kind == "item" then
-			return GetItemCooldown(target)
-		else
-			return 0, 0, 0
-		end
-	end
-
-	function _IsAttackAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsAttackAction(target)
-		elseif kind == "spell" then
-			return IsAttackSpell(GetSpellInfo(target))
-		end
-	end
-
-	function _IsEquippedItem(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsEquippedAction(target)
-		elseif kind == "item" then
-			return IsEquippedItem(target)
-		elseif kind == "equipmentset" then
-			return true
-		end
-	end
-
-	function _IsActivedAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsCurrentAction(target)
-		elseif kind == "spell" then
-			return IsCurrentSpell(target)
-		elseif kind == "item" then
-			return IsCurrentItem(target)
-		elseif kind == "equipmentset" then
-			return _EquipSetMap[target] and select(4, GetEquipmentSetInfo(_EquipSetMap[target]))
-		elseif kind == "companion" then
-			return _MountMap[target] and select(5, GetCompanionInfo("MOUNT", _MountMap[target]))
-		elseif kind == "worldmarker" then
-			target = tonumber(target)
-			-- No event for world marker, disable it now
-			return false and target and target >= 1 and target <= NUM_WORLD_RAID_MARKERS and IsRaidMarkerActive(target)
-		end
-	end
-
-	function _IsAutoRepeatAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsAutoRepeatAction(target)
-		elseif kind == "spell" then
-			return IsAutoRepeatSpell(GetSpellInfo(target))
-		end
-	end
-
-	function _IsUsableAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsUsableAction(target)
-		elseif kind == "pet" or kind == "petaction" then
-			return GetPetActionSlotUsable(target)
-		elseif kind == "spell" then
-			if _StanceMap[target] then
-				return select(4, GetShapeshiftFormInfo(_StanceMap[target]))
-			else
-				return IsUsableSpell(target)
-			end
-		elseif kind == "item" then
-			return IsUsableItem(target)
-		elseif kind == "companion" then
-			return IsUsableSpell(target)
-		elseif kind and kind ~= "" then
-			return true
-		end
-	end
-
-	function _IsConsumableAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsConsumableAction(target) or IsStackableAction(target) or (not IsItemAction(target) and GetActionCount(target) > 0)
-		elseif kind == "spell" then
-			return IsConsumableSpell(target)
-		elseif kind == "item" then
-			-- return IsConsumableItem(target) blz sucks, wait until IsConsumableItem is fixed
-			local _, _, _, _, _, _, _, maxStack = GetItemInfo(target)
-
-			if IsUsableItem(target) and maxStack and maxStack > 1 then
-				return true
-			else
-				return false
-			end
-		end
-	end
-
-	function _IsInRange(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			return IsActionInRange(target, self:GetAttribute("unit"))
-		elseif kind == "spell" then
-			return IsSpellInRange(GetSpellInfo(target), self:GetAttribute("unit"))
-		elseif kind == "item" then
-			return IsItemInRange(target, self:GetAttribute("unit"))
-		end
-	end
-
-	function _IsAutoCastAction(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "pet" or kind == "petaction" then
-			return select(6, GetPetActionInfo(target))
-		else
-			return false
-		end
-	end
-
-	function _IsAutoCasting(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "pet" or kind == "petaction" then
-			return select(7, GetPetActionInfo(target))
-		else
-			return false
-		end
-	end
-
-	function _SetTooltip(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			_GameTooltip:SetAction(target)
-		elseif kind == "pet" or kind == "petaction" then
-			_GameTooltip:SetPetAction(target)
-		elseif kind == "spell" then
-			_GameTooltip:SetSpellByID(target)
-		elseif kind == "flyout" then
-			_GameTooltip:SetSpellBookItem(_FlyoutSlot[target], "spell")
-		elseif kind == "item" then
-			_GameTooltip:SetHyperlink(select(2, GetItemInfo(target)))
-		elseif kind == "companion" then
-			if _MountMap[target] then
-				_GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", _MountMap[target])))
-			end
-		elseif kind == "equipmentset" then
-			_GameTooltip:SetEquipmentSet(target)
-		elseif kind == "battlepet" then
-			local speciesID, _, _, _, _, _, _, name, _, _, _, sourceText, description, _, _, tradable, unique = C_PetJournal.GetPetInfoByPetID(target)
-
-			if speciesID then
-				_GameTooltip:SetText(name, 1, 1, 1)
-
-				if sourceText and sourceText ~= "" then
-					_GameTooltip:AddLine(sourceText, 1, 1, 1, true)
-				end
-
-				if description and description ~= "" then
-					_GameTooltip:AddLine(" ")
-					_GameTooltip:AddLine(description, nil, nil, nil, true)
-				end
-				_GameTooltip:Show()
-			end
-		elseif self.__IFActionHandler_Tooltip then
-			_GameTooltip:SetText(self.__IFActionHandler_Tooltip)
-		end
-	end
-
-	function _GetSpellId(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "action" then
-			local type, id = GetActionInfo(target)
-			if type == "spell" then
-				return id
-			elseif type == "macro" then
-				return (select(3, GetMacroSpell(id)))
-			end
-		elseif kind == "spell" then
-			return target
-		end
-	end
-
-	function _IsFlyout(self)
-		local kind, target = self.__IFActionHandler_Kind, self.__IFActionHandler_Action
-		if kind == "flyout" then
-			return true
-		end
-	end
 
 	------------------------------------------------------
 	-- Action Script Hanlder
@@ -1175,48 +929,14 @@ do
 			kind, target, detail = target, detail, ...
 		end
 
-		if kind == 'action' then
-			PickupAction(target)
-		elseif kind == 'bag' then
-			PickupBagFromSlot(target)
-		elseif kind == 'bagslot' then
-			PickupContainerItem(target, detail)
-		elseif kind == 'inventory' then
-			PickupInventoryItem(target)
-		elseif kind == 'item' then
-			PickupItem(target)
-		elseif kind == 'macro' then
-			PickupMacro(target)
-		elseif kind == 'merchant' then
-			PickupMerchantItem(target)
-		elseif kind == 'petaction' then
-			PickupPetAction(target)
-		elseif kind == 'money' then
-			PickupPlayerMoney(target)
-		elseif kind == 'spell' then
-			PickupSpell(target)
-		elseif kind == "flyout" then
-			PickupSpellBookItem(_FlyoutSlot[target], "spell")
-		elseif kind == 'companion' then
-			if _MountMap[target] then
-				PickupCompanion('mount', _MountMap[target])
-			end
-		elseif kind == 'equipmentset' then
-			local index = 1
-			while GetEquipmentSetInfo(index) do
-				if GetEquipmentSetInfo(index) == target then
-					PickupEquipmentSet(index)
-					break
-				end
-				index = index + 1
-			end
-		elseif kind == "battlepet" then
-			C_PetJournal.PickupPet(target)
+		if _IFActionTypeHandler[kind] then
+			return _IFActionTypeHandler[kind]:PickupAction(target, detail)
 		end
 	end
 
 	function PostClick(self)
 		UpdateButtonState(self)
+
 		if self.__IFActionHandler_PreMsg and not InCombatLockdown() then
 			if self.__IFActionHandler_PreType then
 				self:SetAttribute("type", self.__IFActionHandler_PreType)
@@ -1226,10 +946,11 @@ do
 
 			if kind and value then
 				local oldKind = self:GetAttribute("type")
-				local oldAction = oldKind and self:GetAttribute(oldKind=="flyout" and "spell" or oldKind)
+				local oldAction = oldKind and self:GetAttribute(_ActionTypeMap[oldKind] or oldKind)
 
 				_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 				_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
+
 				PickupAny("clear", oldKind, oldAction)
 			end
 		end
@@ -1343,9 +1064,10 @@ do
 		local desc
 
 		self = IGAS:GetWrapper(self)
-		if kind ~= "battlepet" then
-			target = tonumber(target) or target
-		end
+
+		-- No harm
+		target = tonumber(target) or target
+
 		if kind == "action" then
 			target = ActionButton_CalculateAction(self)
 			desc = GetActionDesc(target)
@@ -1380,7 +1102,8 @@ do
 		local oldKind = self:GetAttribute("type")
 		if oldKind then
 			self:SetAttribute("type", nil)
-			self:SetAttribute(oldKind == "pet" and "action" or oldKind == "flyout" and "spell" or oldKind == "worldmarker" and "marker" or oldKind, nil)
+			self:SetAttribute(_ActionTypeMap[oldKind] or oldKind, nil)
+
 			if oldKind == "macro" then
 				self:SetAttribute("macrotext", nil)
 			end

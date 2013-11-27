@@ -16,6 +16,8 @@ handler = ActionTypeHandler {
 
 	DragStyle = "Keep",
 
+	ReceiveStyle = "Keep",
+
 	InitSnippet = [[
 	]],
 
@@ -31,6 +33,10 @@ handler = ActionTypeHandler {
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return PickupAction(target)
+end
+
 function handler:HasAction()
 	return HasAction(self.ActionTarget)
 end

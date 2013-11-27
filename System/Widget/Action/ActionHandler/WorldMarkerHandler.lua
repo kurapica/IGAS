@@ -23,6 +23,8 @@ handler = ActionTypeHandler {
 
 	DragStyle = "Block",
 
+	ReceiveStyle = "Block",
+
 	InitSnippet = [[
 	]],
 
@@ -33,6 +35,10 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
+	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("action", nil)
 	]],
 }
 

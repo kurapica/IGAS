@@ -35,9 +35,24 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*macrotext*", nil)
+	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	local index = 1
+	while GetEquipmentSetInfo(index) do
+		if GetEquipmentSetInfo(index) == target then
+			return PickupEquipmentSet(index)
+		end
+		index = index + 1
+	end
+end
+
 function handler:GetActionText()
 	return self.ActionTarget
 end

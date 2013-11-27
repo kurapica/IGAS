@@ -43,6 +43,10 @@ handler = ActionTypeHandler {
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return PickupSpellBookItem(_FlyoutSlot[target], "spell")
+end
+
 function handler:GetActionTexture()
 	return _FlyoutTexture[self.ActionTarget]
 end

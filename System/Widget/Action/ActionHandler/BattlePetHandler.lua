@@ -16,9 +16,7 @@ handler = ActionTypeHandler {
 	InitSnippet = [[
 	]],
 
-	PickupSnippet = [[
-		return "clear", ...
-	]],
+	PickupSnippet = "Custom",
 
 	UpdateSnippet = [[
 		local kind, target = ...
@@ -30,9 +28,18 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	ClearSnippet = [[
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*macrotext*", nil)
+	]],
 }
 
 -- Overwrite methods
+function handler:PickupAction(target)
+	return C_PetJournal.PickupPet(target)
+end
+
 function handler:GetActionTexture()
 	return select(9, C_PetJournal.GetPetInfoByPetID(self.ActionTarget))
 end
