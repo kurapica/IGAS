@@ -25,12 +25,12 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		local kind, target = ...
-		return "clear", kind, "mount", _MountMap[target]
+		local target = ...
+		return "clear", "companion", "mount", _MountMap[target]
 	]],
 
 	UpdateSnippet = [[
-		local kind, target = ...
+		local target = ...
 		local index = _MountMap[target]
 
 		self:SetAttribute("*type*", "macro")
@@ -38,7 +38,7 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
-		local kind, value, detail, extra = ...
+		local value, detail, extra = ...
 
 		local mount
 		for spell, index in pairs(_MountMap) do
@@ -48,11 +48,8 @@ handler = ActionTypeHandler {
 			end
 		end
 		value = mount
-		if not value then
-			kind = nil
-		end
 
-		return kind, value
+		return value
 	]],
 
 	ClearSnippet = [[

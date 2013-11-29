@@ -17,7 +17,7 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		return "clear", ...
+		return "clear", "macro", ...
 	]],
 
 	UpdateSnippet = [[

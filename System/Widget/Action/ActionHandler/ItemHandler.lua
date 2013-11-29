@@ -17,16 +17,20 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		return "clear", ...
+		return "clear", "item", ...
 	]],
 
 	UpdateSnippet = [[
 	]],
 
 	ReceiveSnippet = [[
-		local kind, value, detail, extra = ...
+		local value, detail, extra = ...
 
-		return kind, value = "item:"..value
+		if tonumber(value) then
+			return value = "item:"..value
+		else
+			return value
+		end
 	]],
 
 	ValidateSnippet = [[

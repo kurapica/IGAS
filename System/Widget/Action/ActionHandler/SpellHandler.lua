@@ -29,11 +29,11 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		return "clear", ...
+		return "clear", "spell", ...
 	]],
 
 	UpdateSnippet = [[
-		local kind, target = ...
+		local target = ...
 
 		if _StanceMap[target] then
 			-- Need this to cancel stance, use spell to replace stance button
@@ -43,10 +43,10 @@ handler = ActionTypeHandler {
 	]],
 
 	ReceiveSnippet = [[
-		local kind, value, detail, extra = ...
+		local value, detail, extra = ...
 
 		-- Spell id is stored in extra
-		return kind, extra
+		return extra
 	]],
 
 	ClearSnippet = [[

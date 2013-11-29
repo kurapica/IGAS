@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/11/22
--- Version          r85
+-- Last Update Date 2013/11/29
+-- Version          r86
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1159,6 +1159,16 @@ do
 				CloneWithoutOverride(info.Cache4Property, _NSInfo[IF].Cache4Property)
 			end
 
+			-- Requires
+			if info.Type == TYPE_INTERFACE then
+				for _, IF in ipairs(info.ExtendInterface) do
+					if _NSInfo[IF].Requires then
+						info.Requires = info.Requires or {}
+						CloneWithoutOverride(info.Requires, _NSInfo[IF].Requires)
+					end
+				end
+			end
+
 			-- Refresh branch
 			if info.ChildClass then
 				for subcls in pairs(info.ChildClass) do
@@ -1619,11 +1629,60 @@ do
 		end
 	end
 
+	function require_IF(name)
+		if name and type(name) ~= "string" and not IsNameSpace(name) then
+			error([[Usage: require "namespace.interfacename|classname"]], 2)
+		end
+
+		if type(name) == "string" and name:find("%.%s*%.") then
+			error("The namespace's name can't have empty string between dots.", 2)
+		end
+
+		local env = getfenv(2)
+		local info = _NSInfo[env[OWNER_FIELD]]
+		local IF
+
+		if type(name) == "string" then
+			IF = GetNameSpace(info.NameSpace, name) or env[name]
+
+			if not IF then
+				for subname in name:gmatch("[_%w]+") do
+					if not IF then
+						IF = env[subname]
+					else
+						IF = IF[subname]
+					end
+
+					if not IsNameSpace(IF) then
+						error(("No interface|class is found with the name : %s"):format(name), 2)
+					end
+				end
+			end
+		else
+			IF = name
+		end
+
+		local IFInfo = _NSInfo[IF]
+
+		if not IFInfo or (IFInfo.Type ~= TYPE_INTERFACE and IFInfo.Type ~= TYPE_CLASS) then
+			error("Usage: require (interface|class) : interface or class expected", 2)
+		elseif IFInfo.NonInheritable then
+			error(("%s is non-inheritable."):format(tostring(IF)), 2)
+		end
+
+		info.Requires = info.Requires or {}
+
+		info.Requires[IF] = true
+
+		return require_IF
+	end
+
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
 	_KeyWord4IFEnv.event = event_IF
 	_KeyWord4IFEnv.property = property_IF
 	_KeyWord4IFEnv.endinterface = endinterface
+	_KeyWord4IFEnv.require = require_IF
 
 	_KeyWord4IFEnv.doc = document
 end
@@ -2427,6 +2486,28 @@ do
 			error("Usage: extend (interface) : 'interface' - interface expected", 2)
 		elseif IFInfo.NonInheritable then
 			error(("%s is non-inheritable."):format(tostring(IF)), 2)
+		end
+
+		if IFInfo.Requires then
+			local pass = false
+
+			for prototype in pairs(IFInfo.Requires) do
+				if _NSInfo[prototype].Type == TYPE_INTERFACE then
+					if IsExtend(prototype, info.Owner) then
+						pass = true
+						break
+					end
+				elseif _NSInfo[prototype].Type == TYPE_CLASS then
+					if IsChildClass(prototype, info.Owner) then
+						pass = true
+						break
+					end
+				end
+			end
+
+			if not pass then
+				error(("Usage: extend (interface) : 'interface' - %s is not allowed here."):format(tostring(IF)), 2)
+			end
 		end
 
 		IFInfo.ExtendClass = IFInfo.ExtendClass or {}

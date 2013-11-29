@@ -22,12 +22,12 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		local kind, target = ...
-		return "clear", kind, _EquipSet[target]
+		local target = ...
+		return "clear", "equipmentset", _EquipSet[target]
 	]],
 
 	UpdateSnippet = [[
-		local kind, target = ...
+		local target = ...
 
 		self:SetAttribute("*type*", "macro")
 		self:SetAttribute("*macrotext*", "/equipset "..target)

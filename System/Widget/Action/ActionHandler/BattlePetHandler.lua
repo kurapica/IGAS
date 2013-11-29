@@ -19,7 +19,7 @@ handler = ActionTypeHandler {
 	PickupSnippet = "Custom",
 
 	UpdateSnippet = [[
-		local kind, target = ...
+		local target = ...
 
 		-- just *type* to keep type to battlepet
 		self:SetAttribute("*type*", "macro")

@@ -1,3 +1,6 @@
+2013/11/29
+    The 'require' keyword added for interface system, so the class that extend from the interface must be the sub-class of the target class|interface.
+
 2013/11/22
     Property definition will be stored as predefined table in properties, and can be changed by attribute system, will be convert to the real contents when finished the definition of the class or interface.
 

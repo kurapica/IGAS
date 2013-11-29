@@ -22,7 +22,7 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		return ...
+		return "action", ...
 	]],
 
 	UpdateSnippet = [[

@@ -621,8 +621,6 @@ do
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
 
-			_PickupSnippet[0] = [=[ return "clear" ]=]
-
 			-- to fix blz error, use Manager not control
 			Manager = self
 
@@ -632,7 +630,7 @@ do
 				local kind, target = ...
 
 				if _UpdateSnippet[kind] then
-					Manager:RunFor(self, _UpdateSnippet[kind], kind, target)
+					Manager:RunFor(self, _UpdateSnippet[kind], target)
 				end
 
 				self:CallMethod("IFActionHandler_UpdateAction", kind, target)
@@ -669,9 +667,11 @@ do
 				if _PickupSnippet[kind] == "Custom" then
 					Manager:CallMethod("OnPickUp", kind, target)
 					return false
+				elseif _PickupSnippet[kind] then
+					return Manager:Run(_PickupSnippet[kind], target)
+				else
+					return "clear", kind, target
 				end
-
-				return Manager:Run(_PickupSnippet[kind] or _PickupSnippet[0], kind, target)
 			]=]
 
 			ReceiveDrag = [=[
@@ -699,8 +699,10 @@ do
 					end
 
 					if _ReceiveSnippet[kind] then
-						kind, value = Manager:RunFor(self, _ReceiveSnippet[kind], kind, value, detail, extra)
+						value = Manager:RunFor(self, _ReceiveSnippet[kind], value, detail, extra)
 					end
+
+					if not value then kind = nil end
 
 					self:SetAttribute("type", kind)
 					self:SetAttribute(type, value)
@@ -717,9 +719,11 @@ do
 				if _PickupSnippet[oldKind] == "Custom" then
 					Manager:CallMethod("OnPickUp", oldKind, oldTarget)
 					return false
+				elseif _PickupSnippet[oldKind] then
+					Manager:Run(_PickupSnippet[oldKind], oldTarget)
+				else
+					return "clear", oldKind, oldTarget
 				end
-
-				return Manager:Run(_PickupSnippet[oldKind] or _PickupSnippet[0], oldKind, oldTarget)
 			]=]
 
 			UpdateMainActionBar = [=[
@@ -830,11 +834,7 @@ do
 	]=]
 
 	_IFActionHandler_UpdateActionAttribute = [=[
-		local kind, target = ...
-
-		if IFActionHandler_Manager then
-			IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", kind, target)
-		end
+		return IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...)
 	]=]
 
 	_IFActionHandler_EnableSnippet = [[
@@ -946,12 +946,12 @@ do
 
 			if kind and value then
 				local oldKind = self:GetAttribute("type")
-				local oldAction = oldKind and self:GetAttribute(_ActionTypeMap[oldKind] or oldKind)
+				local oldTarget = oldKind and self:GetAttribute(_ActionTypeMap[oldKind] or oldKind)
 
 				_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 				_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
 
-				PickupAny("clear", oldKind, oldAction)
+				PickupAny("clear", oldKind, oldTarget)
 			end
 		end
 		self.__IFActionHandler_PreType = nil
@@ -1964,6 +1964,7 @@ end
 
 interface "IFActionHandler"
 	extend "IFSecureHandler" "IFCooldown"
+	require "CheckButton"
 
 	doc [======[
 		@name IFActionHandler
@@ -2652,10 +2653,6 @@ interface "IFActionHandler"
 	-- Initialize
 	------------------------------------------------------
     function IFActionHandler(self)
-    	if not Reflector.ObjectIsClass(self, CheckButton) then
-    		error("Only System.Widget.CheckButton can extend IFActionHandler.", 2)
-    	end
-
     	_IFActionHandler_UpdateRangeTimer.Enabled = true
     	InitEventHandler()
 

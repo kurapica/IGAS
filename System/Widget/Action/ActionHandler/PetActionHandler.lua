@@ -21,12 +21,11 @@ handler = ActionTypeHandler {
 	]],
 
 	PickupSnippet = [[
-		local kind, target = ...
-		return "petaction", target
+		return "petaction", ...
 	]],
 
 	UpdateSnippet = [[
-		local kind, target = ...
+		local target = ...
 
 		if tonumber(target) then
 			-- Use macro to toggle auto cast
