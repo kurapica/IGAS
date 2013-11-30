@@ -2488,7 +2488,7 @@ do
 			error(("%s is non-inheritable."):format(tostring(IF)), 2)
 		end
 
-		if IFInfo.Requires then
+		if IFInfo.Requires and next(IFInfo.Requires) then
 			local pass = false
 
 			for prototype in pairs(IFInfo.Requires) do
@@ -2506,7 +2506,13 @@ do
 			end
 
 			if not pass then
-				error(("Usage: extend (interface) : 'interface' - %s is not allowed here."):format(tostring(IF)), 2)
+				local desc
+
+				for prototype in pairs(IFInfo.Requires) do
+					desc = desc and (desc .. "|" .. tostring(prototype)) or tostring(prototype)
+				end
+
+				error(("Usage: extend (%s) : %s should be sub-class of %s."):format(tostring(IF), tostring(info.Owner), desc), 2)
 			end
 		end
 
