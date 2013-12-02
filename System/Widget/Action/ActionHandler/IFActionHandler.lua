@@ -101,6 +101,19 @@ interface "IFActionTypeHandler"
 		end)
 	end
 
+	doc [======[
+		@name RegisterEvent
+		@type method
+		@desc Register an event for the handler
+		@param event
+		@param handler
+		@return nil
+	]======]
+	function RegisterEvent(self, event, handler)
+		_IFActionHandler_ManagerFrame:RegisterEvent(event)
+		_IFActionHandler_ManagerFrame[event] = handler
+	end
+
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
@@ -358,13 +371,6 @@ interface "IFActionTypeHandler"
 	]======]
 	property "ClearSnippet" { Type = String + nil }
 
-	doc [======[
-		@name ValidateSnippet
-		@type property
-		@desc The snippet used to validate the target value
-	]======]
-	property "ValidateSnippet" { Type = String + nil }
-
 	------------------------------------------------------
 	-- Initialize
 	------------------------------------------------------
@@ -390,9 +396,6 @@ interface "IFActionTypeHandler"
 
 		-- Register ClearSnippet
 		if self.ClearSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ClearSnippet", self.Type, self.ClearSnippet) ) end
-
-		-- Register ValidateSnippet
-		if self.ValidateSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ValidateSnippet", self.Type, self.ValidateSnippet) ) end
 
 		-- Register DragStyle
 		self:RunSnippet( _RegisterSnippetTemplate:format("_DragStyle", self.Type, self.DragStyle) )
@@ -616,7 +619,6 @@ do
 			_UpdateSnippet = newtable()
 			_ReceiveSnippet = newtable()
 			_ClearSnippet = newtable()
-			_ValidateSnippet = newtable()
 
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
@@ -668,7 +670,7 @@ do
 					Manager:CallMethod("OnPickUp", kind, target)
 					return false
 				elseif _PickupSnippet[kind] then
-					return Manager:Run(_PickupSnippet[kind], target)
+					return Manager:RunFor(self, _PickupSnippet[kind], target)
 				else
 					return "clear", kind, target
 				end
@@ -712,6 +714,7 @@ do
 					Manager:RunFor(self, UpdateAction, oldKind, oldTarget)
 				end
 
+				-- Special for 'action' types
 				if oldKind == "action" and self:GetAttribute("actionpage") and self:GetID() > 0 then
 					oldTarget = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
 				end
@@ -720,7 +723,7 @@ do
 					Manager:CallMethod("OnPickUp", oldKind, oldTarget)
 					return false
 				elseif _PickupSnippet[oldKind] then
-					Manager:Run(_PickupSnippet[oldKind], oldTarget)
+					Manager:RunFor(self, _PickupSnippet[oldKind], oldTarget)
 				else
 					return "clear", oldKind, oldTarget
 				end
@@ -769,11 +772,6 @@ do
 
 				if kind then
 					self:SetAttribute("type", kind)
-
-					if _ValidateSnippet[kind] then
-						target = Manager:RunFor(self, _ValidateSnippet[kind], target)
-					end
-
 					self:SetAttribute(_ActionTypeMap[kind] or kind, target)
 				end
 
@@ -829,12 +827,8 @@ do
 		]=])
 	end)
 
-	_IFActionHandler_InsertManager = [=[
-		IFActionHandler_Manager = self:GetFrameRef("IFActionHandler_Manager")
-	]=]
-
 	_IFActionHandler_UpdateActionAttribute = [=[
-		return IFActionHandler_Manager:RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...)
+		return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...)
 	]=]
 
 	_IFActionHandler_EnableSnippet = [[
@@ -906,23 +900,6 @@ do
 	------------------------------------------------------
 	-- Action Script Hanlder
 	------------------------------------------------------
-	function PreClick(self)
-		if self:GetAttribute("type") == "action" or self:GetAttribute("type") == "pet" or self:GetAttribute("type") == "custom" or InCombatLockdown() then
-			return
-		end
-
-		local kind, value = GetCursorInfo()
-		if not kind or not value then return end
-
-		self.__IFActionHandler_PreType = self:GetAttribute("type")
-		self.__IFActionHandler_PreMsg = true
-		self:SetAttribute("type", nil)
-	end
-
-	function GetFormatString(param)
-		return type(param) == "string" and ("%q"):format(param) or tostring(param)
-	end
-
 	function PickupAny(kind, target, detail, ...)
 		if (kind == "clear") then
 			ClearCursor()
@@ -932,6 +909,25 @@ do
 		if _IFActionTypeHandler[kind] then
 			return _IFActionTypeHandler[kind]:PickupAction(target, detail)
 		end
+	end
+
+	function PreClick(self)
+		local oldKind = self:GetAttribute("type")
+
+		if InCombatLockdown() or ( _IFActionTypeHandler[oldKind] and _IFActionTypeHandler[oldKind].DragStyle ~= "Clear" ) then
+			return
+		end
+
+		local kind, value = GetCursorInfo()
+		if not kind or not value then return end
+
+		self.__IFActionHandler_PreType = oldKind
+		self.__IFActionHandler_PreMsg = true
+		self:SetAttribute("type", nil)
+	end
+
+	function GetFormatString(param)
+		return type(param) == "string" and ("%q"):format(param) or tostring(param)
 	end
 
 	function PostClick(self)
@@ -1028,9 +1024,8 @@ do
     	_IFActionHandler_ManagerFrame:WrapScript(self, "OnReceiveDrag", _IFActionHandler_WrapDragPrev, _IFActionHandler_WrapDragPost)
 
     	-- Button UpdateAction method added to secure part
-    	self:SetAttribute("UpdateAction", _IFActionHandler_UpdateActionAttribute)
     	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
-    	self:Execute(_IFActionHandler_InsertManager)
+    	self:SetAttribute("UpdateAction", _IFActionHandler_UpdateActionAttribute)
 
 		self.PreClick = self.PreClick + PreClick
 		self.PostClick = self.PostClick + PostClick
@@ -1042,6 +1037,7 @@ do
     	_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnClick")
     	_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnDragStart")
 		_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnReceiveDrag")
+
     	_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnDragStart")
 		_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnReceiveDrag")
 	end
@@ -1071,8 +1067,6 @@ do
 		if kind == "action" then
 			target = ActionButton_CalculateAction(self)
 			desc = GetActionDesc(target)
-		elseif kind == "item" then
-			target = tonumber(type(target) == "string" and target:match("%d+") or target)
 		end
 
 		if self.__IFActionHandler_Kind ~= kind or self.__IFActionHandler_Action ~= target or (kind == "action" and desc ~= self.__IFActionHandler_ActionDesc) then

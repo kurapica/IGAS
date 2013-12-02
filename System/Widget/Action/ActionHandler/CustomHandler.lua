@@ -28,10 +28,6 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
-
-	ValidateSnippet = [[
-		return nil
-	]],
 }
 
 -- Overwrite methods

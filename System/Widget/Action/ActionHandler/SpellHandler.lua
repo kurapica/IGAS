@@ -14,9 +14,11 @@ _StanceMap = {}
 _Profession = {}
 
 function OnEnable(self)
-	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
+	handler:RegisterEvent("UPDATE_SHAPESHIFT_FORMS", UPDATE_SHAPESHIFT_FORMS)
 
 	UpdateStanceMap()
+
+	OnEnable = nil
 end
 
 handler = ActionTypeHandler {

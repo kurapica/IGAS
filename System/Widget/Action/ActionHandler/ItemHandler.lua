@@ -21,22 +21,14 @@ handler = ActionTypeHandler {
 	]],
 
 	UpdateSnippet = [[
-	]],
+		local target = ...
 
-	ReceiveSnippet = [[
-		local value, detail, extra = ...
-
-		if tonumber(value) then
-			return value = "item:"..value
-		else
-			return value
+		if tonumber(target) then
+			self:SetAttribute("item", "item:"..target)
 		end
 	]],
 
-	ValidateSnippet = [[
-		local target = ...
-
-		return tonumber(target) and "item:"..tonumber(target) or target
+	ReceiveSnippet = [[
 	]],
 }
 
