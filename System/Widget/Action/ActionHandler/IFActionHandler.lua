@@ -101,19 +101,6 @@ interface "IFActionTypeHandler"
 		end)
 	end
 
-	doc [======[
-		@name RegisterEvent
-		@type method
-		@desc Register an event for the handler
-		@param event
-		@param handler
-		@return nil
-	]======]
-	function RegisterEvent(self, event, handler)
-		_IFActionHandler_ManagerFrame:RegisterEvent(event)
-		_IFActionHandler_ManagerFrame[event] = handler
-	end
-
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
