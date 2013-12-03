@@ -8,6 +8,42 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ItemHandler", version) then
 	return
 end
 
+import "ActionRefreshMode"
+
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("BAG_UPDATE")
+	self:RegisterEvent("BAG_UPDATE_COOLDOWN")
+	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED")
+	self:RegisterEvent("PLAYER_REGEN_DISABLED")
+
+	OnEnable = nil
+end
+
+function BAG_UPDATE(self)
+	handler:Refresh(RefreshCount)
+	return handler:Refresh(RefreshUsable)
+end
+
+function BAG_UPDATE_COOLDOWN(self)
+	return handler:Refresh(RefreshCooldown)
+end
+
+function PLAYER_EQUIPMENT_CHANGED(self)
+	return handler:Refresh()
+end
+
+function PLAYER_REGEN_ENABLED(self)
+	handler:Refresh(RefreshCount)
+	return handler:Refresh(RefreshUsable)
+end
+
+function PLAYER_REGEN_DISABLED(self)
+	return handler:Refresh(RefreshUsable)
+end
+
+-- Item action type handler
 handler = ActionTypeHandler {
 	Type = "item",
 
@@ -81,3 +117,22 @@ end
 function handler:SetTooltip(GameTooltip)
 	GameTooltip:SetHyperlink(select(2, GetItemInfo(self.ActionTarget)))
 end
+
+-- Part-interface definition
+interface "IFActionHandler"
+	local old_SetAction = IFActionHandler.SetAction
+
+	function SetAction(self, kind, target, ...)
+		if kind == "item" then
+			if tonumber(target) then
+				-- pass
+			elseif target and select(2, GetItemInfo(target)) then
+				target = select(2, GetItemInfo(target)):match("item:(%d+)")
+			end
+
+			target = tonumber(target)
+		end
+
+		return old_SetAction(self, kind, target, ...)
+	end
+endinterface "IFActionHandler"

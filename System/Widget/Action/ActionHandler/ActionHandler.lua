@@ -8,7 +8,45 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ActionHandler", version) then
 	return
 end
 
+import "ActionRefreshMode"
 
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
+	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
+	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
+	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+
+	OnEnable = nil
+end
+
+function ACTIONBAR_SLOT_CHANGED(self, slot)
+	if slot == 0 then
+		return handler:Refresh()
+	else
+		for _, button in handler() do
+			if slot == button.ActionTarget then
+				handler:Refresh(button)
+			end
+		end
+	end
+end
+
+function ACTIONBAR_UPDATE_STATE(self)
+	handler:Refresh(RefreshButtonState)
+end
+
+function ACTIONBAR_UPDATE_USABLE(self)
+	handler:Refresh(RefreshUsable)
+end
+
+function ACTIONBAR_UPDATE_COOLDOWN(self)
+	handler:Refresh(RefreshCooldown)
+
+	RefreshTooltip()
+end
+
+-- Action type handler
 handler = ActionTypeHandler {
 	Type = "action",
 

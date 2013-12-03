@@ -12,6 +12,50 @@ _EquipSetTemplate = "_EquipSet[%q] = %d\n"
 
 _EquipSetMap = {}
 
+import "ActionRefreshMode"
+
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("EQUIPMENT_SETS_CHANGED")
+
+	OnEnable = nil
+end
+
+function PLAYER_EQUIPMENT_CHANGED(self)
+	return handler:Refresh()
+end
+
+function PLAYER_ENTERING_WORLD(self)
+	UpdateEquipmentSet()
+	return handler:Refresh()
+end
+
+function EQUIPMENT_SETS_CHANGED(self)
+	return UpdateEquipmentSet()
+end
+
+function UpdateEquipmentSet()
+	local str = "for i in pairs(_EquipSet) do _EquipSet[i] = nil end\n"
+	local index = 1
+
+	wipe(_EquipSetMap)
+
+	while GetEquipmentSetInfo(index) do
+		str = str.._EquipSetTemplate:format(GetEquipmentSetInfo(index), index)
+		_EquipSetMap[GetEquipmentSetInfo(index)] = index
+		index = index + 1
+	end
+
+	if str ~= "" then
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( str )
+		end)
+	end
+end
+
+-- Equipset action type handler
 handler = ActionTypeHandler {
 	Type = "equipmentset",
 

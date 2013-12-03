@@ -8,6 +8,89 @@ if not IGAS:NewAddon("IGAS.Widget.Action.PetActionHandler", version) then
 	return
 end
 
+import "ActionRefreshMode"
+
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("PET_STABLE_UPDATE")
+	self:RegisterEvent("PET_STABLE_SHOW")
+	self:RegisterEvent("PET_BAR_SHOWGRID")
+	self:RegisterEvent("PET_BAR_HIDEGRID")
+	self:RegisterEvent("PLAYER_CONTROL_LOST")
+	self:RegisterEvent("PLAYER_CONTROL_GAINED")
+	self:RegisterEvent("PLAYER_FARSIGHT_FOCUS_CHANGED")
+	self:RegisterEvent("UNIT_PET")
+	self:RegisterEvent("UNIT_FLAGS")
+	self:RegisterEvent("PET_BAR_UPDATE")
+	self:RegisterEvent("PET_UI_UPDATE")
+	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR")
+	self:RegisterEvent("UNIT_AURA")
+	self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN")
+	self:RegisterEvent("PET_BAR_UPDATE_USABLE")
+
+	OnEnable = nil
+end
+
+function PET_STABLE_UPDATE(self)
+	return handler:Refresh()
+end
+
+function PET_STABLE_SHOW(self)
+	return handler:Refresh()
+end
+
+
+function PLAYER_CONTROL_LOST(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function PLAYER_CONTROL_GAINED(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function PLAYER_FARSIGHT_FOCUS_CHANGED(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function UNIT_PET(self, unit)
+	if unit == "player" then
+		return handler:Refresh(RefreshActionButton)
+	end
+end
+
+function UNIT_FLAGS(self, unit)
+	if unit == "pet" then
+		return handler:Refresh(RefreshActionButton)
+	end
+end
+
+function PET_BAR_UPDATE(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function PET_UI_UPDATE(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function UPDATE_VEHICLE_ACTIONBAR(self)
+	return handler:Refresh(RefreshActionButton)
+end
+
+function UNIT_AURA(self, unit)
+	if unit == "pet" then
+		return handler:Refresh(RefreshActionButton)
+	end
+end
+
+function PET_BAR_UPDATE_COOLDOWN(self)
+	return handler:Refresh(RefreshCooldown)
+end
+
+function PET_BAR_UPDATE_USABLE(self)
+	return handler:Refresh(RefreshUsable)
+end
+
+-- Pet action type handler
 handler = ActionTypeHandler {
 	Type = "pet",
 
@@ -65,6 +148,10 @@ end
 
 function handler:IsUsableAction()
 	return GetPetActionSlotUsable(self.ActionTarget)
+end
+
+function handler:IsActivedAction()
+	return select(5, GetPetActionInfo(self.ActionTarget))
 end
 
 function handler:IsAutoCastAction()

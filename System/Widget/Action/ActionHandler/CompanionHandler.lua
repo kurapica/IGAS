@@ -13,6 +13,68 @@ _MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompan
 
 _MountMap = {}
 
+import "ActionRefreshMode"
+
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("COMPANION_LEARNED")
+	self:RegisterEvent("COMPANION_UNLEARNED")
+	self:RegisterEvent("COMPANION_UPDATE")
+
+	OnEnable = nil
+end
+
+function PLAYER_ENTERING_WORLD(self)
+	if not next(_MountMap) then
+		UpdateMount()
+	end
+end
+
+function COMPANION_LEARNED(self)
+	UpdateMount()
+end
+
+function COMPANION_UNLEARNED(self)
+	UpdateMount()
+end
+
+function COMPANION_UPDATE(self, type)
+	if type == "MOUNT" then
+		UpdateMount()
+		handler:Refresh(RefreshButtonState)
+	end
+end
+
+function UpdateMount()
+	local str = ""
+
+	for i = 1, GetNumCompanions("MOUNT") do
+	    local _, spellId = select(2, GetCompanionInfo("MOUNT", i))
+
+	    if spellId and _MountMap[spellId] ~= i then
+			str = str.._MountMapTemplate:format(spellId, i)
+			_MountMap[spellId] = i
+	    end
+	end
+
+	if str ~= "" then
+		_IFActionHandler_Buttons:EachK("companion", UpdateActionButton)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( str )
+
+			for _, btn in handler() do
+				local index = _MountMap[btn.ActionTarget]
+				if index then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", _MountCastTemplate:format(index, index))
+				end
+			end
+		end)
+	end
+end
+
+-- Companion action type handler
 handler = ActionTypeHandler {
 	Type = "companion",
 

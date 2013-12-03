@@ -2090,7 +2090,7 @@ interface "IFActionHandler"
 	end
 
 	doc [======[
-		@name function_name
+		@name IsMainPage
 		@type method
 		@desc Whether if the action button is belong to main page
 		@return boolean true if the action button is belong to main page

@@ -40,3 +40,17 @@ function handler:SetTooltip(GameTooltip)
 		GameTooltip:SetText(self.CustomTooltip)
 	end
 end
+
+-- Part-interface definition
+interface "IFActionHandler"
+	local old_SetAction = IFActionHandler.SetAction
+
+	function SetAction(self, kind, target, ...)
+		if kind == "custom" then
+			self.custom = type(target) == "function" and target or nil
+			target = type(target) == "string" and target or nil
+		end
+
+		return old_SetAction(self, kind, target, ...)
+	end
+endinterface "IFActionHandler"

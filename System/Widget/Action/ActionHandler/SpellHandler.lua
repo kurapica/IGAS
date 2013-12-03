@@ -8,12 +8,20 @@ if not IGAS:NewAddon("IGAS.Widget.Action.SpellHandler", version) then
 	return
 end
 
+import "ActionRefreshMode"
+
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
 
 _StanceMap = {}
 _Profession = {}
 
+-- Event handler
 function OnEnable(self)
+	self:RegisterEvent("LEARNED_SPELL_IN_TAB")
+	self:RegisterEvent("SPELLS_CHANGED")
+	self:RegisterEvent("SKILL_LINES_CHANGED")
+	self:RegisterEvent("PLAYER_GUILD_UPDATE")
+	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 
 	UpdateStanceMap()
@@ -21,6 +29,90 @@ function OnEnable(self)
 	OnEnable = nil
 end
 
+function LEARNED_SPELL_IN_TAB(self)
+	RefreshTooltip()
+
+	return UpdateProfession()
+end
+
+function SPELLS_CHANGED(self)
+	return UpdateProfession()
+end
+
+function SKILL_LINES_CHANGED(self)
+	return UpdateProfession()
+end
+
+function PLAYER_GUILD_UPDATE(self)
+	return UpdateProfession()
+end
+
+function PLAYER_SPECIALIZATION_CHANGED(self, unit)
+	if unit == "player" then
+		return UpdateProfession()
+	end
+end
+
+function UPDATE_SHAPESHIFT_FORMS(self)
+	UpdateStanceMap()
+
+	return handler:Refresh()
+end
+
+function UpdateStanceMap()
+	local str = "for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
+
+	wipe(_StanceMap)
+
+	for i = 1, GetNumShapeshiftForms() do
+	    local name = select(2, GetShapeshiftFormInfo(i))
+	    name = GetSpellLink(name)
+	    name = tonumber(name and name:match("spell:(%d+)"))
+	    if name then
+			str = str.._StanceMapTemplate:format(name, i)
+	    	_StanceMap[name] = i
+	    end
+	end
+
+	if str ~= "" then
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( str )
+
+			for _, btn in handler() do
+				if _StanceMap[btn.ActionTarget] then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", "/click StanceButton".._StanceMap[btn.ActionTarget])
+				end
+			end
+		end)
+	end
+end
+
+function UpdateProfession()
+	local lst = {GetProfessions()}
+	local offset, spell, name
+
+	for i = 1, 6 do
+	    if lst[i] then
+	        offset = 1 + select(6, GetProfessionInfo(lst[i]))
+	        spell = select(2, GetSpellBookItemInfo(offset, "spell"))
+	        name = GetSpellBookItemName(offset, "spell")
+
+	        if _Profession[name] ~= spell then
+	        	_Profession[name] = spell
+	        	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+	        		for _, btn in handler() do
+	        			if GetSpellInfo(btn.ActionTarget) == name then
+	        				btn:SetAction("spell", spell)
+	        			end
+	        		end
+	        	end)
+	        end
+	    end
+	end
+end
+
+-- Spell action type handler
 handler = ActionTypeHandler {
 	Type = "spell",
 
@@ -97,7 +189,11 @@ function handler:IsAttackAction()
 end
 
 function handler:IsActivedAction()
-	return IsCurrentSpell(self.ActionTarget)
+	if _StanceMap[self.ActionTarget] then
+		return select(3, GetShapeshiftFormInfo(_StanceMap[target]))
+	else
+		return IsCurrentSpell(self.ActionTarget)
+	end
 end
 
 function handler:IsAutoRepeatAction()
@@ -130,38 +226,25 @@ function handler:GetSpellId()
 	return self.ActionTarget
 end
 
--- Private Methods
-function UPDATE_SHAPESHIFT_FORMS(self)
-	UpdateStanceMap()
+-- Part-interface definition
+interface "IFActionHandler"
+	local old_SetAction = IFActionHandler.SetAction
 
-	handler:Refresh()
-end
-
-function UpdateStanceMap()
-	local str = "for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
-
-	wipe(_StanceMap)
-
-	for i = 1, GetNumShapeshiftForms() do
-	    local name = select(2, GetShapeshiftFormInfo(i))
-	    name = GetSpellLink(name)
-	    name = tonumber(name and name:match("spell:(%d+)"))
-	    if name then
-			str = str.._StanceMapTemplate:format(name, i)
-	    	_StanceMap[name] = i
-	    end
-	end
-
-	if str ~= "" then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-			handler:RunSnippet( str )
-
-			for _, btn in handler() do
-				if _StanceMap[btn.ActionTarget] then
-					btn:SetAttribute("*type*", "macro")
-					btn:SetAttribute("*macrotext*", "/click StanceButton".._StanceMap[btn.ActionTarget])
-				end
+	function SetAction(self, kind, target, ...)
+		if kind == "spell" then
+			-- Convert to spell id
+			if tonumber(target) then
+				target = tonumber(target)
+			else
+				target = GetSpellLink(target)
+		   		target = tonumber(target and target:match("spell:(%d+)"))
 			end
-		end)
+
+			if target and _Profession[GetSpellInfo(target)] then
+				target = _Profession[GetSpellInfo(target)]
+			end
+		end
+
+		return old_SetAction(self, kind, target, ...)
 	end
-end
+endinterface "IFActionHandler"

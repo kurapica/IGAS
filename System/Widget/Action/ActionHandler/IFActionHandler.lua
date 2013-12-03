@@ -84,8 +84,12 @@ interface "IFActionTypeHandler"
 		@desc Refresh all action buttons of the same action type
 		@return nil
 	]======]
-	function Refresh(self)
-		_IFActionHandler_Buttons:EachK(self.Type, UpdateActionButton)
+	function Refresh(self, button, mode)
+		if not type(button) == "table" then
+			return _IFActionHandler_Buttons:EachK(self.Type, button or UpdateActionButton)
+		else
+			return mode and mode(button) or UpdateActionButton(button)
+		end
 	end
 
 	doc [======[
@@ -857,7 +861,7 @@ do
 	]]
 
 	_IFActionHandler_UpdateActionSnippet = [[
-		return Manager:RunFor(Manager:GetFrameRef("UpdatingButton"), UpdateAction, %s, %s)
+		return Manager:RunFor(Manager:GetFrameRef("UpdatingButton"), UpdateActionAttribute, %s, %s)
 	]]
 
 	_IFActionHandler_WrapClickPrev = [[
@@ -1079,52 +1083,6 @@ do
 	end
 
 	function SaveAction(self, kind, target)
-		-- Clear
-		local oldKind = self:GetAttribute("type")
-		if oldKind then
-			self:SetAttribute("type", nil)
-			self:SetAttribute(_ActionTypeMap[oldKind] or oldKind, nil)
-
-			if oldKind == "macro" then
-				self:SetAttribute("macrotext", nil)
-			end
-			if oldKind == "worldmarker" then
-				self:SetAttribute("action", nil)
-			end
-		end
-
-		if kind == "spell" then
-			-- Convert to spell id
-			if tonumber(target) then
-				target = tonumber(target)
-			else
-				target = GetSpellLink(target)
-		   		target = tonumber(target and target:match("spell:(%d+)"))
-			end
-		end
-
-		if not target then
-			kind = nil
-		end
-
-		if kind then
-			self:SetAttribute("type", kind == "macrotext" and "macro" or kind)
-			if kind ~= "custom" then
-				if kind == "item" then
-					target = tonumber(target) and "item:"..tonumber(target)
-							or select(2, GetItemInfo(target)) and select(2, GetItemInfo(target)):match("item:%d+")
-				elseif kind == "spell" then
-					if target and _Profession[GetSpellInfo(target)] then
-						target = _Profession[GetSpellInfo(target)]
-					end
-				end
-				self:SetAttribute(kind == "pet" and "action" or kind == "flyout" and "spell" or kind == "worldmarker" and "marker" or kind, target)
-			else
-				self.OnClick = type(target) == "function" and target or nil
-				target = nil
-			end
-		end
-
 		_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target)))
 	end
@@ -1144,146 +1102,13 @@ do
 	------------------------------------------------------
 	-- Update Handler
 	------------------------------------------------------
-	function UpdateEquipmentSet()
-		local str = "for i in pairs(_EquipSet) do _EquipSet[i] = nil end\n"
-		local index = 1
-
-		wipe(_EquipSetMap)
-
-		while GetEquipmentSetInfo(index) do
-			str = str.._EquipSetTemplate:format(GetEquipmentSetInfo(index), index)
-			_EquipSetMap[GetEquipmentSetInfo(index)] = index
-			index = index + 1
-		end
-
-		if str ~= "" then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-				_IFActionHandler_ManagerFrame:Execute(str)
-			end)
-		end
-	end
-
-	function UpdateFlyoutSlotMap()
-		local str = "for i in pairs(_FlyoutSlot) do _FlyoutSlot[i] = nil end\n"
-		local type, id
-		local name, texture, offset, numEntries, isGuild, offspecID
-
-		wipe(_FlyoutSlot)
-		wipe(_FlyoutTexture)
-
-		for i = 1, MAX_SKILLLINE_TABS do
-			name, texture, offset, numEntries, isGuild, offspecID = GetSpellTabInfo(i)
-
-			if not name then
-				break
-			end
-
-			if not isGuild and offspecID == 0 then
-				for index = offset + 1, offset + numEntries do
-					type, id = GetSpellBookItemInfo(index, "spell")
-
-					if type == "FLYOUT" then
-						if not _FlyoutSlot[id] then
-							str = str.._FlyoutSlotTemplate:format(id, index)
-							_FlyoutSlot[id] = index
-							_FlyoutTexture[id] = GetSpellBookItemTexture(index, "spell")
-						end
-					end
-				end
-			end
-		end
-
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-			_IFActionHandler_ManagerFrame:Execute(str)
-		end)
-	end
-
-	function UpdateProfession()
-		local lst = {GetProfessions()}
-		local offset, spell, name
-
-		for i = 1, 6 do
-		    if lst[i] then
-		        offset = 1 + select(6, GetProfessionInfo(lst[i]))
-		        spell = select(2, GetSpellBookItemInfo(offset, "spell"))
-		        name = GetSpellBookItemName(offset, "spell")
-
-		        if _Profession[name] ~= spell then
-		        	_Profession[name] = spell
-		        	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-		        		for _, btn in _IFActionHandler_Buttons("spell") do
-		        			if GetSpellInfo(btn.__IFActionHandler_Action) == name then
-		        				btn:SetAction("spell", spell)
-		        			end
-		        		end
-		        	end)
-		        end
-		    end
-		end
-	end
-
-	function UpdateStanceMap()
-		local str = "for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
-
-		wipe(_StanceMap)
-
-		for i = 1, GetNumShapeshiftForms() do
-		    local name = select(2, GetShapeshiftFormInfo(i))
-		    name = GetSpellLink(name)
-		    name = tonumber(name and name:match("spell:(%d+)"))
-		    if name then
-				str = str.._StanceMapTemplate:format(name, i)
-		    	_StanceMap[name] = i
-		    end
-		end
-
-		if str ~= "" then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-				_IFActionHandler_ManagerFrame:Execute(str)
-
-				for _, btn in _IFActionHandler_Buttons("spell") do
-					if _StanceMap[btn.__IFActionHandler_Action] then
-						btn:SetAttribute("*type*", "macro")
-						btn:SetAttribute("*macrotext*", "/click StanceButton".._StanceMap[btn.__IFActionHandler_Action])
-					end
-				end
-			end)
-		end
-	end
-
-	function UpdateMount()
-		local str = ""
-
-		for i = 1, GetNumCompanions("MOUNT") do
-		    local _, spellId = select(2, GetCompanionInfo("MOUNT", i))
-
-		    if spellId and _MountMap[spellId] ~= i then
-				str = str.._MountMapTemplate:format(spellId, i)
-				_MountMap[spellId] = i
-		    end
-		end
-
-		if str ~= "" then
-			_IFActionHandler_Buttons:EachK("companion", UpdateActionButton)
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-				_IFActionHandler_ManagerFrame:Execute(str)
-
-				for _, btn in _IFActionHandler_Buttons("companion") do
-					local index = _MountMap[btn.__IFActionHandler_Action]
-					if index then
-						btn:SetAttribute("*type*", "macro")
-						btn:SetAttribute("*macrotext*", _MountCastTemplate:format(index, index))
-					end
-				end
-			end)
-		end
-	end
-
 	_IFActionHandler_GridCounter = _IFActionHandler_GridCounter or 0
 
 	function UpdateGrid(self)
-		if self.__IFActionHandler_Kind ~= "pet" and self.__IFActionHandler_Kind ~= "petaction" then
-			if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _HasAction(self) then
+		local kind = self.ActionType
+
+		if kind ~= "pet" and kind ~= "petaction" then
+			if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
 				self.Alpha = 1
 			else
 				self.Alpha = 0
@@ -1294,8 +1119,10 @@ do
 	_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter or 0
 
 	function UpdatePetGrid(self)
-		if self.__IFActionHandler_Kind == "pet" or self.__IFActionHandler_Kind == "petaction" then
-			if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _HasAction(self) then
+		local kind = self.ActionType
+
+		if kind == "pet" or kind == "petaction" then
+			if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
 				self.Alpha = 1
 			else
 				self.Alpha = 0
@@ -1304,33 +1131,33 @@ do
 	end
 
 	function ForceUpdateAction(self)
-		return self:UpdateAction(self.__IFActionHandler_Kind, self.__IFActionHandler_Action)
+		return self:UpdateAction(self.ActionType, self.ActionTarget)
 	end
 
 	function UpdateButtonState(self)
-		if self.__IFActionHandler_Kind == "spell" and _StanceMap[self.__IFActionHandler_Action] then
-			self.Checked = select(3, GetShapeshiftFormInfo(_StanceMap[self.__IFActionHandler_Action]))
-		elseif self.__IFActionHandler_Kind == "pet" or self.__IFActionHandler_Kind == "petaction" then
-			self.Checked = select(5, GetPetActionInfo(self.__IFActionHandler_Action))
-		else
-			self.Checked = _IsActivedAction(self) or _IsAutoRepeatAction(self)
-		end
+		local kind = self.ActionType
+
+		self.Checked = _IFActionTypeHandler[kind].IsActivedAction(self) or _IFActionTypeHandler[kind].IsAutoRepeatAction(self)
 	end
 
 	function UpdateUsable(self)
-		self.Usable = _IsUsableAction(self)
+		self.Usable = _IFActionTypeHandler[self.ActionType].IsUsableAction(self)
 	end
 
 	function UpdateCount(self)
-		if _IsConsumableAction(self) then
-			local count = _GetActionCount(self)
-			if ( count > (self.MaxDisplayCount or 9999 ) ) then
+		local kind = self.ActionType
+
+		if _IFActionTypeHandler[kind].IsConsumableAction(self) then
+			local count = _IFActionTypeHandler[kind].GetActionCount(self)
+
+			if count > self.MaxDisplayCount then
 				self.Count = "*"
 			else
 				self.Count = tostring(count)
 			end
 		else
-			local charges, maxCharges = _GetActionCharges(self)
+			local charges, maxCharges = _IFActionTypeHandler[kind].GetActionCharges(self)
+
 			if maxCharges and maxCharges > 1 then
 				self.Count = tostring(charges)
 			else
@@ -1340,11 +1167,13 @@ do
 	end
 
 	function UpdateCooldown(self)
-		self:Fire("OnCooldownUpdate", _GetActionCooldown(self))
+		self:Fire("OnCooldownUpdate", _IFActionTypeHandler[self.ActionType].GetActionCooldown(self))
 	end
 
 	function UpdateFlash (self)
-		if (_IsAttackAction(self) and _IsActivedAction(self)) or _IsAutoRepeatAction(self) then
+		local kind = self.ActionType
+
+		if (_IFActionTypeHandler[kind].IsAttackAction(self) and _IFActionTypeHandler[kind].IsActivedAction(self)) or _IFActionTypeHandler[kind].IsAutoRepeatAction(self) then
 			StartFlash(self)
 		else
 			StopFlash(self)
@@ -1379,7 +1208,7 @@ do
 		else
 			_GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		end
-		_SetTooltip(self)
+		_IFActionTypeHandler[self.ActionType].SetTooltip(self, _GameTooltip)
 		_IFActionHandler_OnTooltip =self
 
 		IGAS:GetUI(self).UpdateTooltip = UpdateTooltip
@@ -1388,7 +1217,8 @@ do
 	end
 
 	function UpdateOverlayGlow(self)
-		local spellId = _GetSpellId(self)
+		local spellId = _IFActionTypeHandler[self.ActionType].GetSpellId(self)
+
 		if spellId and IsSpellOverlayed(spellId) then
 			ShowOverlayGlow(self)
 		else
@@ -1422,23 +1252,25 @@ do
 	end
 
 	function UpdateRange(self)
-		local inRange = _IsInRange(self)
+		local inRange = _IFActionTypeHandler[self.ActionType].IsInRange(self)
 		self.InRange = inRange == 1 and true or inRange == 0 and false or inRange == nil and nil
 	end
 
 	function UpdateFlyout(self)
-		self.FlyoutVisible = self.ShowFlyOut or _IsFlyout(self)
+		self.FlyoutVisible = self.ShowFlyOut or _IFActionTypeHandler[self.ActionType].IsFlyout(self)
 	end
 
 	function UpdateAutoCastable(self)
-		self.AutoCastable = _IsAutoCastAction(self)
+		self.AutoCastable = _IFActionTypeHandler[self.ActionType].IsAutoCastAction(self)
 	end
 
 	function UpdateAutoCasting(self)
-		self.AutoCasting = _IsAutoCasting(self)
+		self.AutoCasting = _IFActionTypeHandler[self.ActionType].IsAutoCasting(self)
 	end
 
 	function UpdateActionButton(self)
+		local kind = self.ActionType
+
 		UpdateGrid(self)
 		UpdatePetGrid(self)
 		UpdateButtonState(self)
@@ -1450,7 +1282,7 @@ do
 		UpdateAutoCasting(self)
 
 		-- Add a green border if button is an equipped item
-		if _IsEquippedItem(self) and self.Border then
+		if _IFActionTypeHandler[kind].IsEquippedItem(self) and self.Border then
 			self.Border:SetVertexColor(0, 1.0, 0, 0.35)
 			self.Border.Visible = true
 		else
@@ -1458,14 +1290,14 @@ do
 		end
 
 		-- Update Action Text
-		if not _IsConsumableAction(self) then
+		if not _IFActionTypeHandler[kind].IsConsumableAction(self) then
 			self.Text = _GetActionText(self)
 		else
 			self.Text = ""
 		end
 
 		-- Update icon
-		self.Icon = _GetActionTexture(self)
+		self.Icon = _IFActionTypeHandler[kind].GetActionTexture(self)
 
 		UpdateCount(self)
 		UpdateOverlayGlow(self)
@@ -1476,6 +1308,30 @@ do
 
 		ForceUpdateAction(self)
 	end
+
+	function RefreshTooltip()
+		if _IFActionHandler_OnTooltip then
+			UpdateTooltip(_IFActionHandler_OnTooltip)
+		end
+	end
+
+	-- Special definition
+	__Final__() __NonInheritable__() __NonExpandable__()
+	interface "ActionRefreshMode"
+		RefreshGrid = UpdateGrid,
+		RefreshPetGrid = UpdatePetGrid,
+		RefreshButtonState = UpdateButtonState,
+		RefreshUsable = UpdateUsable,
+		RefreshCooldown = UpdateCooldown,
+		RefreshFlash = UpdateFlash,
+		RefreshFlyout = UpdateFlyout,
+		RefreshAutoCastable = UpdateAutoCastable,
+		RefreshAutoCasting = UpdateAutoCasting,
+		RefreshActionButton = UpdateActionButton,
+		RefreshCount = UpdateCount,
+		RefreshOverlayGlow = UpdateOverlayGlow,
+		RefreshTooltip = RefreshTooltip,
+	endinterface "ActionRefreshMode"
 
 	------------------------------------------------------
 	-- Event Handler
@@ -1573,104 +1429,14 @@ do
 		end
 	end
 
-	function _IFActionHandler_ManagerFrame:ACTIONBAR_SLOT_CHANGED(slot)
-		for _, button in _IFActionHandler_Buttons("action") do
-			if slot == 0 or slot == button.__IFActionHandler_Action then
-				UpdateActionButton(button)
-			end
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:ACTIONBAR_UPDATE_STATE()
-		_IFActionHandler_Buttons:Each(UpdateButtonState)
-	end
-
-	function _IFActionHandler_ManagerFrame:ACTIONBAR_UPDATE_USABLE()
-		_IFActionHandler_Buttons:EachK("action", UpdateUsable)
-	end
-
-	function _IFActionHandler_ManagerFrame:ACTIONBAR_UPDATE_COOLDOWN()
-		_IFActionHandler_Buttons:EachK("action", UpdateCooldown)
-		if _IFActionHandler_OnTooltip then
-			UpdateTooltip(_IFActionHandler_OnTooltip)
-		end
-	end
-
 	function _IFActionHandler_ManagerFrame:ARCHAEOLOGY_CLOSED()
 		_IFActionHandler_Buttons:Each(UpdateButtonState)
-	end
-
-	function _IFActionHandler_ManagerFrame:BAG_UPDATE()
-		_IFActionHandler_Buttons:EachK("item", UpdateCount)
-		_IFActionHandler_Buttons:EachK("item", UpdateUsable)
-	end
-
-	function _IFActionHandler_ManagerFrame:BAG_UPDATE_COOLDOWN()
-		_IFActionHandler_Buttons:EachK("item", UpdateCooldown)
-	end
-
-	function _IFActionHandler_ManagerFrame:COMPANION_LEARNED()
-		UpdateMount()
-	end
-
-	function _IFActionHandler_ManagerFrame:COMPANION_UNLEARNED()
-		UpdateMount()
-	end
-
-	function _IFActionHandler_ManagerFrame:COMPANION_UPDATE(type)
-		if type == "MOUNT" then
-			UpdateMount()
-			_IFActionHandler_Buttons:Each(UpdateButtonState)
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:EQUIPMENT_SETS_CHANGED()
-		UpdateEquipmentSet()
-	end
-
-	function _IFActionHandler_ManagerFrame:LEARNED_SPELL_IN_TAB()
-		if _IFActionHandler_OnTooltip then
-			UpdateTooltip(_IFActionHandler_OnTooltip)
-		end
-		UpdateFlyoutSlotMap()
-		UpdateProfession()
-	end
-
-	function _IFActionHandler_ManagerFrame:SPELLS_CHANGED()
-		UpdateFlyoutSlotMap()
-		UpdateProfession()
-	end
-
-	function _IFActionHandler_ManagerFrame:SKILL_LINES_CHANGED()
-		UpdateFlyoutSlotMap()
-		UpdateProfession()
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_GUILD_UPDATE()
-		UpdateFlyoutSlotMap()
-		UpdateProfession()
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_SPECIALIZATION_CHANGED(unit)
-		if unit == "player" then
-			UpdateFlyoutSlotMap()
-			UpdateProfession()
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_STABLE_UPDATE()
-		_IFActionHandler_Buttons:Each(UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_STABLE_SHOW()
-		_IFActionHandler_Buttons:Each(UpdateActionButton)
 	end
 
 	function _IFActionHandler_ManagerFrame:PET_BAR_SHOWGRID()
 		_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter + 1
 		if _IFActionHandler_PetGridCounter == 1 then
-			_IFActionHandler_Buttons:EachK("pet", UpdateGrid)
-			_IFActionHandler_Buttons:EachK("petaction", UpdateGrid)
+			_IFActionHandler_Buttons:EachK("pet", UpdatePetGrid)
 		end
 	end
 
@@ -1678,78 +1444,8 @@ do
 		if _IFActionHandler_PetGridCounter > 0 then
 			_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter - 1
 			if _IFActionHandler_PetGridCounter == 0 then
-				_IFActionHandler_Buttons:EachK("pet", UpdateGrid)
-				_IFActionHandler_Buttons:EachK("petaction", UpdateGrid)
+				_IFActionHandler_Buttons:EachK("pet", UpdatePetGrid)
 			end
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_CONTROL_LOST()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_CONTROL_GAINED()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_FARSIGHT_FOCUS_CHANGED()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:UNIT_PET(unit)
-		if unit == "player" then
-			_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-			_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:UNIT_FLAGS(unit)
-		if unit == "pet" then
-			_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-			_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_BAR_UPDATE()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_UI_UPDATE()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:UPDATE_VEHICLE_ACTIONBAR()
-		_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:UNIT_AURA(unit)
-		if unit == "pet" then
-			_IFActionHandler_Buttons:EachK("pet", UpdateActionButton)
-			_IFActionHandler_Buttons:EachK("petaction", UpdateActionButton)
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_BAR_UPDATE_COOLDOWN()
-		_IFActionHandler_Buttons:EachK("pet", UpdateCooldown)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateCooldown)
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_BAR_UPDATE_USABLE()
-		_IFActionHandler_Buttons:EachK("pet", UpdateUsable)
-		_IFActionHandler_Buttons:EachK("petaction", UpdateUsable)
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_ENTERING_WORLD()
-		UpdateEquipmentSet()
-		_IFActionHandler_Buttons:Each(UpdateActionButton)
-		if not next(_MountMap) then
-			UpdateMount()
 		end
 	end
 
@@ -1764,11 +1460,6 @@ do
 				StartFlash(button)
 			end
 		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_EQUIPMENT_CHANGED()
-		_IFActionHandler_Buttons:EachK("item", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("equipmentset", UpdateActionButton)
 	end
 
 	function _IFActionHandler_ManagerFrame:PLAYER_LEAVE_COMBAT()
@@ -1786,15 +1477,6 @@ do
 
 	function _IFActionHandler_ManagerFrame:PLAYER_TARGET_CHANGED()
 		_IFActionHandler_UpdateRangeTimer:OnTimer()
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_REGEN_ENABLED()
-		_IFActionHandler_Buttons:EachK("item", UpdateCount)
-		_IFActionHandler_Buttons:EachK("item", UpdateUsable)
-	end
-
-	function _IFActionHandler_ManagerFrame:PLAYER_REGEN_DISABLED()
-		_IFActionHandler_Buttons:EachK("item", UpdateUsable)
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_ACTIVATION_OVERLAY_GLOW_SHOW(spellId)
@@ -2088,7 +1770,7 @@ interface "IFActionHandler"
 		@return boolean true if the button has action
 	]======]
 	function HasAction(self)
-		return _HasAction(self)
+		return _IFActionTypeHandler[kind].HasAction(self)
 	end
 
 	doc [======[
@@ -2401,6 +2083,7 @@ interface "IFActionHandler"
 		@desc The action button's type
 	]======]
 	property "ActionType" {
+		Default = "empty",
 		Get = function(self)
 			return self.__IFActionHandler_Kind
 		end,
@@ -2617,6 +2300,13 @@ interface "IFActionHandler"
 		end,
 		Type = System.Boolean,
 	}
+
+	doc [======[
+		@name MaxDisplayCount
+		@type property
+		@desc The max count to display
+	]======]
+	property "MaxDisplayCount" { Type = Number, Default = 9999 }
 
 	------------------------------------------------------
 	-- Dispose
