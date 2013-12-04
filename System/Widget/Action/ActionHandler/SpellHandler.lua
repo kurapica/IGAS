@@ -23,6 +23,9 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYER_GUILD_UPDATE")
 	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
+	self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+	self:RegisterEvent("SPELL_UPDATE_USABLE")
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 
 	UpdateStanceMap()
 
@@ -53,10 +56,22 @@ function PLAYER_SPECIALIZATION_CHANGED(self, unit)
 	end
 end
 
+function UPDATE_SHAPESHIFT_FORM(self)
+	return handler:Refresh()
+end
+
 function UPDATE_SHAPESHIFT_FORMS(self)
 	UpdateStanceMap()
 
 	return handler:Refresh()
+end
+
+function SPELL_UPDATE_COOLDOWN(self)
+	return handler:Refresh(RefreshCooldown)
+end
+
+function SPELL_UPDATE_USABLE(self)
+	return handler:Refresh(RefreshUsable)
 end
 
 function UpdateStanceMap()

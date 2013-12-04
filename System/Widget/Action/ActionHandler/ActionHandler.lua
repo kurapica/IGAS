@@ -16,6 +16,9 @@ function OnEnable(self)
 	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
 	self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+	self:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 
 	OnEnable = nil
 end
@@ -44,6 +47,22 @@ function ACTIONBAR_UPDATE_COOLDOWN(self)
 	handler:Refresh(RefreshCooldown)
 
 	RefreshTooltip()
+end
+
+function UPDATE_SUMMONPETS_ACTION(self)
+	for _, btn in handler() do
+		if GetActionCount(btn.ActionTarget) == "summonpet" then
+			button.Icon = GetActionTexture(btn.ActionTarget)
+		end
+	end
+end
+
+function UPDATE_SHAPESHIFT_FORM(self)
+	return handler:Refresh()
+end
+
+function UPDATE_SHAPESHIFT_FORMS(self)
+	return handler:Refresh()
 end
 
 -- Action type handler

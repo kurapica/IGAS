@@ -1170,7 +1170,7 @@ do
 		self:Fire("OnCooldownUpdate", _IFActionTypeHandler[self.ActionType].GetActionCooldown(self))
 	end
 
-	function UpdateFlash (self)
+	function UpdateFlash(self)
 		local kind = self.ActionType
 
 		if (_IFActionTypeHandler[kind].IsAttackAction(self) and _IFActionTypeHandler[kind].IsActivedAction(self)) or _IFActionTypeHandler[kind].IsAutoRepeatAction(self) then
@@ -1180,7 +1180,7 @@ do
 		end
 	end
 
-	function StartFlash (self)
+	function StartFlash(self)
 		self.Flashing = true
 		_IFActionHandler_FlashingList[self] = self.Flashing or nil
 		if next(_IFActionHandler_FlashingList) then
@@ -1190,7 +1190,7 @@ do
 		UpdateButtonState(self)
 	end
 
-	function StopFlash (self)
+	function StopFlash(self)
 		self.Flashing = false
 		_IFActionHandler_FlashingList[self] = nil
 		if next(_IFActionHandler_FlashingList) then
@@ -1510,15 +1510,6 @@ do
 		_IFActionHandler_Buttons:EachK("spell", UpdateCount)
 	end
 
-	function _IFActionHandler_ManagerFrame:SPELL_UPDATE_COOLDOWN()
-		_IFActionHandler_Buttons:EachK("spell", UpdateCooldown)
-	end
-
-	function _IFActionHandler_ManagerFrame:SPELL_UPDATE_USABLE()
-		_IFActionHandler_Buttons:EachK("spell", UpdateUsable)
-		_IFActionHandler_Buttons:EachK("companion", UpdateUsable)
-	end
-
 	function _IFActionHandler_ManagerFrame:START_AUTOREPEAT_SPELL()
 		for _, button in _IFActionHandler_Buttons("action") do
 			if _IsAutoRepeatAction(button) then
@@ -1566,33 +1557,9 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:UNIT_INVENTORY_CHANGED(unit)
-		if unit == "player" and _IFActionHandler_OnTooltip then
-			UpdateTooltip(_IFActionHandler_OnTooltip)
+		if unit == "player" then
+			return RefreshTooltip()
 		end
-	end
-
-	function _IFActionHandler_ManagerFrame:UPDATE_SHAPESHIFT_FORM()
-		_IFActionHandler_Buttons:EachK("action", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("spell", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:UPDATE_SHAPESHIFT_FORMS()
-		UpdateStanceMap()
-		_IFActionHandler_Buttons:EachK("action", UpdateActionButton)
-		_IFActionHandler_Buttons:EachK("spell", UpdateActionButton)
-	end
-
-	function _IFActionHandler_ManagerFrame:UPDATE_SUMMONPETS_ACTION()
-		for _, button in _IFActionHandler_Buttons("action") do
-			local actionType, id = GetActionCount(button.__IFActionHandler_Action)
-			if actionType == "summonpet" then
-				button.Icon = GetActionTexture(button.__IFActionHandler_Action)
-			end
-		end
-	end
-
-	function _IFActionHandler_ManagerFrame:PET_JOURNAL_LIST_UPDATE()
-		_IFActionHandler_Buttons:EachK("battlepet", UpdateActionButton)
 	end
 
 	function _IFActionHandler_UpdateRangeTimer:OnTimer()

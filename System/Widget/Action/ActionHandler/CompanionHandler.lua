@@ -21,6 +21,7 @@ function OnEnable(self)
 	self:RegisterEvent("COMPANION_LEARNED")
 	self:RegisterEvent("COMPANION_UNLEARNED")
 	self:RegisterEvent("COMPANION_UPDATE")
+	self:RegisterEvent("SPELL_UPDATE_USABLE")
 
 	OnEnable = nil
 end
@@ -44,6 +45,10 @@ function COMPANION_UPDATE(self, type)
 		UpdateMount()
 		handler:Refresh(RefreshButtonState)
 	end
+end
+
+function SPELL_UPDATE_USABLE(self)
+	return handler:Refresh(RefreshUsable)
 end
 
 function UpdateMount()

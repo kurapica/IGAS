@@ -8,6 +8,18 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BattlePetHandler", version) then
 	return
 end
 
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
+
+	OnEnable = nil
+end
+
+function PET_JOURNAL_LIST_UPDATE(self)
+	return handler:Refresh()
+end
+
+-- Battlepet action type handler
 handler = ActionTypeHandler {
 	Type = "battlepet",
 
