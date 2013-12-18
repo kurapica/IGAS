@@ -8,12 +8,6 @@ if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
 
-_FlashInterval = 0.4
-_UpdateRangeInterval = 0.2
-
-_IFActionTypeHandler = {}
-_ActionTypeMap = {}
-
 ------------------------------------------------------
 -- Module
 --
@@ -25,6 +19,15 @@ _ActionTypeMap = {}
 --		GetGroup(group) : True Group name
 ------------------------------------------------------
 do
+	_FlashInterval = 0.4
+	_UpdateRangeInterval = 0.2
+
+	_IFActionTypeHandler = {}
+
+	_ActionTypeMap = {}
+	_ActionTargetMap = {}
+	_ActionTargetMap2 = {}
+
 	_GlobalGroup = "Global"
 
 	function GetGroup(group)
@@ -86,9 +89,13 @@ interface "IFActionTypeHandler"
 	]======]
 	function Refresh(self, button, mode)
 		if not type(button) == "table" then
-			return _IFActionHandler_Buttons:EachK(self.Type, button or UpdateActionButton)
+			return _IFActionHandler_Buttons:EachK(self.Name, button or UpdateActionButton)
 		else
-			return mode and mode(button) or UpdateActionButton(button)
+			if mode then
+				return mode(button)
+			else
+				return UpdateActionButton(button)
+			end
 		end
 	end
 
@@ -300,18 +307,43 @@ interface "IFActionTypeHandler"
 	-- Property
 	------------------------------------------------------
 	doc [======[
-		@name Type
+		@name Manager
 		@type property
-		@desc The action type's name
+		@desc The manager of the action system
 	]======]
-	property "Type" { Type = String }
+	property "Manager" {
+		Get = function(self)
+			return _IFActionHandler_ManagerFrame
+		end,
+	}
 
 	doc [======[
-		@name Action
+		@name Name
 		@type property
-		@desc The action attribute value
+		@desc The action's name
 	]======]
-	property "Action" { Type = String }
+	property "Name" { Type = String }
+
+	doc [======[
+		@name Type
+		@type property
+		@desc The action type's type
+	]======]
+	property "Type" { Type = String + nil }
+
+	doc [======[
+		@name Target
+		@type property
+		@desc The target attribute name
+	]======]
+	property "Target" { Type = String + nil }
+
+	doc [======[
+		@name Target2
+		@type property
+		@desc The 2nd target attribute name
+	]======]
+	property "Target2" { Type = String + nil }
 
 	doc [======[
 		@name DragStyle
@@ -326,6 +358,13 @@ interface "IFActionTypeHandler"
 		@desc The receive style of the action type
 	]======]
 	property "ReceiveStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
+
+	doc [======[
+		@name ReceiveType
+		@type property
+		@desc The receive type
+	]======]
+	property "ReceiveType" { Type = String + nil }
 
 	doc [======[
 		@name InitSnippet
@@ -366,33 +405,48 @@ interface "IFActionTypeHandler"
 	-- Initialize
 	------------------------------------------------------
     function IFActionTypeHandler(self)
+    	-- No repeat definition for action types
+    	if _IFActionTypeHandler[self.Name] then return end
+
     	-- Register the action type handler
-    	_IFActionTypeHandler[self.Type] = self
+    	_IFActionTypeHandler[self.Name] = self
+
+    	-- Default map
+    	if self.Type == nil then self.Type = self.Name end
+    	if self.Target == nil then self.Target = self.Type end
+    	if self.ReceiveType == nil and self.ReceiveStyle == "Clear" then self.ReceiveType = self.Type end
 
 		-- Register action type map
-		_ActionTypeMap[self.Type] = self.Action
-		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Type, self.Action) )
+		_ActionTypeMap[self.Name] = self.Type
+		_ActionTargetMap[self.Name] = self.Target
+		_ActionTargetMap2[self.Name]  = self.Target2
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Name, self.Type) )
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetMap", self.Name, self.Target) )
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetMap2", self.Name, self.Target2) )
 
 		-- Init the environment
 		if self.InitSnippet then self:RunSnippet( self.InitSnippet ) end
 
 		-- Register PickupSnippet
-		if self.PickupSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupSnippet", self.Type, self.PickupSnippet) ) end
+		if self.PickupSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupSnippet", self.Name, self.PickupSnippet) ) end
 
 		-- Register UpdateSnippet
-		if self.UpdateSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_UpdateSnippet", self.Type, self.UpdateSnippet) ) end
+		if self.UpdateSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_UpdateSnippet", self.Name, self.UpdateSnippet) ) end
 
 		-- Register ReceiveSnippet
-		if self.ReceiveSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveSnippet", self.Type, self.ReceiveSnippet) ) end
+		if self.ReceiveSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveSnippet", self.Name, self.ReceiveSnippet) ) end
 
 		-- Register ClearSnippet
-		if self.ClearSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ClearSnippet", self.Type, self.ClearSnippet) ) end
+		if self.ClearSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_ClearSnippet", self.Name, self.ClearSnippet) ) end
 
 		-- Register DragStyle
-		self:RunSnippet( _RegisterSnippetTemplate:format("_DragStyle", self.Type, self.DragStyle) )
+		self:RunSnippet( _RegisterSnippetTemplate:format("_DragStyle", self.Name, self.DragStyle) )
 
 		-- Register ReceiveStyle
-		self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveStyle", self.Type, self.ReceiveStyle) )
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveStyle", self.Name, self.ReceiveStyle) )
+
+		-- Register ReciveType
+		if self.ReceiveType then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveType", self.ReceiveType, self.Name) )
     end
 endinterface "IFActionTypeHandler"
 
@@ -600,12 +654,17 @@ do
 	-- Init manger frame's enviroment
 	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 		_IFActionHandler_ManagerFrame:Execute[[
-			NUM_ACTIONBAR_BUTTONS = 12
+			-- to fix blz error, use Manager not control
+			Manager = self
 
 			_NoDraggable = newtable()
-			_MainPage = newtable()
 
 			_ActionTypeMap = newtable()
+			_ActionTargetMap = newtable()
+			_ActionTargetMap2 = newtable()
+
+			_ReceiveType = newtable()
+
 			_PickupSnippet = newtable()
 			_UpdateSnippet = newtable()
 			_ReceiveSnippet = newtable()
@@ -614,56 +673,61 @@ do
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
 
-			-- to fix blz error, use Manager not control
-			Manager = self
+			ClearAction = [=[
+				local name = self:GetAttribute("actiontype")
 
-			MainPage = newtable()
+				if name then
+					self:SetAttribute("actiontype", nil)
+					self:SetAttribute("type", nil)
+					self:SetAttribute(_ActionTargetMap[name], nil)
+					if _ActionTargetMap2[name] then
+						self:SetAttribute(_ActionTargetMap2[name], nil)
+					end
+
+					-- Custom clear
+					if _ClearSnippet[name] then
+						Manager:RunFor(self, _ClearSnippet[name])
+					end
+				end
+			]=]
 
 			UpdateAction = [=[
-				local kind, target = ...
+				local name = self:GetAttribute("actiontype")
 
-				if _UpdateSnippet[kind] then
-					Manager:RunFor(self, _UpdateSnippet[kind], target)
+				-- Custom update
+				if _UpdateSnippet[name] then
+					Manager:RunFor(
+						self, _UpdateSnippet[name],
+						self:GetAttribute(_ActionTargetMap[name]),
+						_ActionTargetMap2[name] and self:GetAttribute(_ActionTargetMap2[name])
+					)
 				end
 
-				self:CallMethod("IFActionHandler_UpdateAction", kind, target)
+				self:CallMethod("IFActionHandler_UpdateAction")
 			]=]
 
 			DragStart = [=[
-				local kind = self:GetAttribute("type")
+				local name = self:GetAttribute("actiontype")
 
-				if not kind or kind == "" or _DragStyle[kind] == "Block" then return false end
+				if not _DragStyle[name] or _DragStyle[name] == "Block" then return false end
 
-				local type = _ActionTypeMap[kind] or kind
-				local target = self:GetAttribute(type)
+				local target = self:GetAttribute(_ActionTargetMap[name])
+				local target2 = _ActionTargetMap2[name] and self:GetAttribute(_ActionTargetMap2[name])
 
-				if not target then return false end
-
-				if _DragStyle[kind] == "Clear" then
-					-- Clear the action
-					self:SetAttribute("type", nil)
-					self:SetAttribute(type, nil)
-
-					-- Custom clear
-					if _ClearSnippet[kind] then
-						Manager:RunFor(self, _ClearSnippet[kind])
-					end
-
-					Manager:RunFor(self, UpdateAction, nil, nil)
+				-- Clear and refresh
+				if _DragStyle[name] == "Clear" then
+					Manager:RunFor(self, ClearAction)
+					Manager:RunFor(self, UpdateAction)
 				end
 
-				-- Special for 'action' with actionpage
-				if kind == "action" and self:GetAttribute("actionpage") and self:GetID() > 0 then
-					target = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
-				end
-
-				if _PickupSnippet[kind] == "Custom" then
-					Manager:CallMethod("OnPickUp", kind, target)
+				-- Pickup the target
+				if _PickupSnippet[name] == "Custom" then
+					Manager:CallMethod("OnPickUp", _ActionTypeMap[name], target, target2)
 					return false
-				elseif _PickupSnippet[kind] then
-					return Manager:RunFor(self, _PickupSnippet[kind], target)
+				elseif _PickupSnippet[name] then
+					return Manager:RunFor(self, _PickupSnippet[name], target, target2)
 				else
-					return "clear", kind, target
+					return "clear", _ActionTypeMap[name], target, target2
 				end
 			]=]
 
@@ -672,75 +736,48 @@ do
 
 				if not kind or not value then return false end
 
-				local type = _ActionTypeMap[kind] or kind
+				local oldName = self:GetAttribute("actiontype")
 
-				local oldKind = self:GetAttribute("type")
-				local oldType = _ActionTypeMap[oldKind] or oldKind
-				local oldTarget = oldType and self:GetAttribute(oldType)
+				if _ReceiveStyle[oldName] == "Block" then return false end
 
-				if _ReceiveStyle[oldKind] == "Block" then
-					return false
-				elseif _ReceiveStyle[oldKind] == "Clear" then
-					if oldKind then
-						self:SetAttribute("type", nil)
-						self:SetAttribute(oldType, nil)
+				local oldTarget = oldName and self:GetAttribute(_ActionTargetMap[oldName])
+				local oldTarget2 = oldName and _ActionTargetMap2[oldName] and self:GetAttribute(_ActionTargetMap2[oldName])
 
-						-- Custom clear
-						if _ClearSnippet[oldKind] then
-							Manager:RunFor(self, _ClearSnippet[oldKind])
+				if _ReceiveStyle[oldName] == "Clear" then
+					Manager:RunFor(self, ClearAction)
+
+					local name = _ReceiveType[kind]
+					local target, target2
+
+					if name then
+						if _ReceiveSnippet[name] then
+							target, target2 = Manager:RunFor(self, _ReceiveSnippet[name], value, detail, extra)
+						else
+							target, target2 = value, detail
+						end
+
+						if target then
+							self:SetAttribute("actiontype", name)
+							self:SetAttribute("type", _ActionTypeMap[name])
+							self:SetAttribute(_ActionTargetMap[name], target)
+
+							if target2 and _ActionTargetMap2[name] then
+								self:SetAttribute(_ActionTargetMap2[name], target2)
+							end
 						end
 					end
-
-					if _ReceiveSnippet[kind] then
-						value = Manager:RunFor(self, _ReceiveSnippet[kind], value, detail, extra)
-					end
-
-					if not value then kind = nil end
-
-					self:SetAttribute("type", kind)
-					self:SetAttribute(type, value)
-
-					Manager:RunFor(self, UpdateAction, kind, value)
-				elseif _ReceiveStyle[oldKind] == "Keep" then
-					Manager:RunFor(self, UpdateAction, oldKind, oldTarget)
 				end
 
-				-- Special for 'action' types
-				if oldKind == "action" and self:GetAttribute("actionpage") and self:GetID() > 0 then
-					oldTarget = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
-				end
+				Manager:RunFor(self, UpdateAction)
 
-				if _PickupSnippet[oldKind] == "Custom" then
-					Manager:CallMethod("OnPickUp", oldKind, oldTarget)
+				-- Pickup the target
+				if _PickupSnippet[oldName] == "Custom" then
+					Manager:CallMethod("OnPickUp", _ActionTypeMap[oldName], oldTarget, oldTarget2)
 					return false
-				elseif _PickupSnippet[oldKind] then
-					Manager:RunFor(self, _PickupSnippet[oldKind], oldTarget)
+				elseif _PickupSnippet[oldName] then
+					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldTarget2)
 				else
-					return "clear", oldKind, oldTarget
-				end
-			]=]
-
-			UpdateMainActionBar = [=[
-				local page = ...
-				if page == "tempshapeshift" then
-					if HasTempShapeshiftActionBar() then
-						page = GetTempShapeshiftBarIndex()
-					else
-						page = 1
-					end
-				elseif page == "possess" then
-					page = Manager:GetFrameRef("MainMenuBarArtFrame"):GetAttribute("actionpage")
-					if page <= 10 then
-						page = Manager:GetFrameRef("OverrideActionBar"):GetAttribute("actionpage")
-					end
-					if page <= 10 then
-						page = 12
-					end
-				end
-				MainPage[0] = page
-				for btn in pairs(_MainPage) do
-					btn:SetAttribute("actionpage", MainPage[0])
-					Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
+					return "clear", _ActionTypeMap[oldName], oldTarget, oldTarget2
 				end
 			]=]
 
@@ -748,16 +785,7 @@ do
 				local kind, target = ...
 
 				-- Clear
-				local oldKind = self:GetAttribute("type")
-				if oldKind then
-					self:SetAttribute("type", nil)
-					self:SetAttribute(_ActionTypeMap[oldKind] or oldKind, nil)
-
-					-- Custom clear
-					if _ClearSnippet[oldKind] then
-						Manager:RunFor(self, _ClearSnippet[oldKind])
-					end
-				end
+				Manager:RunFor(self, ClearAction)
 
 				if not target then kind = nil end
 
@@ -769,9 +797,6 @@ do
 				Manager:RunFor(self, UpdateAction, kind, target)
 			]=]
 		]]
-
-		_IFActionHandler_ManagerFrame:SetFrameRef("MainMenuBarArtFrame", MainMenuBarArtFrame)
-		_IFActionHandler_ManagerFrame:SetFrameRef("OverrideActionBar", OverrideActionBar)
 
 		-- ActionBar swap register
 		local state = {}

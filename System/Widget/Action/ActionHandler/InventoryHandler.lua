@@ -9,9 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.InventoryHandler", version) then
 end
 
 handler = ActionTypeHandler {
-	Type = "inventory",
-
-	Action = "inventory",
+	Name = "inventory",
 
 	InitSnippet = [[
 	]],

@@ -45,9 +45,7 @@ end
 
 -- Item action type handler
 handler = ActionTypeHandler {
-	Type = "item",
-
-	Action = "item",
+	Name = "item",
 
 	InitSnippet = [[
 	]],

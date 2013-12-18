@@ -637,7 +637,7 @@ It's easy to give default values yourself like :
 
 		property "Name" { Type = String, Default = "Anonymous" }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -650,7 +650,7 @@ And in the code `for k, v in pairs(o) do print(k, v) end`, we can find the real 
 
 		property "Name" { Type = String, Default = "Anonymous", Field = "__Name" }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -685,7 +685,7 @@ You may ask : If I want to know somebody is access those properties, what should
 			Field = "__Name"
 		}
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -719,7 +719,7 @@ It may be strange that define a **Set** method with the **Field** settings, so, 
 			Default = "Anonymous",
 		}
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -742,7 +742,7 @@ Some authors may like using **GetName** and **SetName** methods, and if you do, 
 
 		property "Name" { Type = String, Default = "Anonymous" }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -795,7 +795,7 @@ You may think those automatically methods scan not steady, so you can set it you
 
 		property "Name" { Type = String, Default = "Anonymous", Get = "GetName", Set = "SetName" }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -818,7 +818,7 @@ You may ask why not using
 
 		property "Name" { Type = String, Default = "Anonymous", Get = GetName, Set = SetName }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 
@@ -849,7 +849,7 @@ Set **Get** or **Set** to false will block the automatically methods scan :
 
 		property "Name" { Type = String, Default = "Anonymous", Set = false }
 
-		property "Age" { Type = Number, default = "99" }
+		property "Age" { Type = Number, default = 99 }
 
 	endclass "Person"
 

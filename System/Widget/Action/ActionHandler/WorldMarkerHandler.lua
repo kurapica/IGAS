@@ -17,9 +17,9 @@ _WorldMarker = {
 }
 
 handler = ActionTypeHandler {
-	Type = "worldmarker",
+	Name = "worldmarker",
 
-	Action = "marker",
+	Target = "marker",
 
 	DragStyle = "Block",
 

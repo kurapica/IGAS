@@ -67,19 +67,53 @@ end
 
 -- Action type handler
 handler = ActionTypeHandler {
-	Type = "action",
-
-	Action = "action",
+	Name = "action",
 
 	DragStyle = "Keep",
 
 	ReceiveStyle = "Keep",
 
 	InitSnippet = [[
+		NUM_ACTIONBAR_BUTTONS = 12
+
+		_MainPage = newtable()
+
+		MainPage = newtable()
+
+		UpdateMainActionBar = [=[
+			local page = ...
+			if page == "tempshapeshift" then
+				if HasTempShapeshiftActionBar() then
+					page = GetTempShapeshiftBarIndex()
+				else
+					page = 1
+				end
+			elseif page == "possess" then
+				page = Manager:GetFrameRef("MainMenuBarArtFrame"):GetAttribute("actionpage")
+				if page <= 10 then
+					page = Manager:GetFrameRef("OverrideActionBar"):GetAttribute("actionpage")
+				end
+				if page <= 10 then
+					page = 12
+				end
+			end
+			MainPage[0] = page
+			for btn in pairs(_MainPage) do
+				btn:SetAttribute("actionpage", MainPage[0])
+				Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
+			end
+		]=]
+
 	]],
 
 	PickupSnippet = [[
-		return "action", ...
+		local target = ...
+
+		if self:GetAttribute("actionpage") and self:GetID() > 0 then
+			target = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
+		end
+
+		return "clear", "action", target
 	]],
 
 	UpdateSnippet = [[
@@ -88,6 +122,9 @@ handler = ActionTypeHandler {
 	ReceiveSnippet = [[
 	]],
 }
+
+handler.Manager:SetFrameRef("MainMenuBarArtFrame", MainMenuBarArtFrame)
+handler.Manager:SetFrameRef("OverrideActionBar", OverrideActionBar)
 
 -- Overwrite methods
 function handler:PickupAction(target)

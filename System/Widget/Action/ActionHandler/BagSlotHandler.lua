@@ -9,9 +9,11 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BagSlotHandler", version) then
 end
 
 handler = ActionTypeHandler {
-	Type = "bagslot",
+	Name = "bagslot",
 
-	Action = "bagslot",
+	Type = "item",
+
+	Target = "bagslot",
 
 	InitSnippet = [[
 	]],

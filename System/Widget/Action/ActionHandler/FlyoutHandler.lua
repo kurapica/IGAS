@@ -94,9 +94,9 @@ end
 
 -- Flyout action type handler
 handler = ActionTypeHandler {
-	Type = "flyout",
+	Name = "flyout",
 
-	Action = "spell",
+	Target = "spell",
 
 	InitSnippet = [[
 		_FlyoutSlot = newtable()

@@ -81,9 +81,7 @@ end
 
 -- Companion action type handler
 handler = ActionTypeHandler {
-	Type = "companion",
-
-	Action = "companion",
+	Name = "companion",
 
 	InitSnippet = [[
 		_MountMap = newtable()

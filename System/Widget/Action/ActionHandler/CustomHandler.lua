@@ -9,9 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.CustomHandler", version) then
 end
 
 handler = ActionTypeHandler {
-	Type = "custom",
-
-	Action = "custom",
+	Name = "custom",
 
 	DragStyle = "Block",
 

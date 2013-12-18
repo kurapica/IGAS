@@ -92,9 +92,9 @@ end
 
 -- Pet action type handler
 handler = ActionTypeHandler {
-	Type = "pet",
+	Name = "pet",
 
-	Action = "action",
+	Target = "action",
 
 	DragStyle = "Keep",
 

@@ -8,7 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.Action.EmptyHandler", version) then
 	return
 end
 
-handler = ActionTypeHandler { Type = "empty" }
+handler = ActionTypeHandler {
+	Name = "empty",
+}
 
 function handler:HasAction()
 	return false

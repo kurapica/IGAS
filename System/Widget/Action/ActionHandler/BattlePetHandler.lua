@@ -21,9 +21,7 @@ end
 
 -- Battlepet action type handler
 handler = ActionTypeHandler {
-	Type = "battlepet",
-
-	Action = "battlepet",
+	Name = "battlepet",
 
 	InitSnippet = [[
 	]],

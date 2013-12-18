@@ -9,9 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BagHandler", version) then
 end
 
 handler = ActionTypeHandler {
-	Type = "bag",
-
-	Action = "bag",
+	Name = "bag",
 
 	InitSnippet = [[
 	]],

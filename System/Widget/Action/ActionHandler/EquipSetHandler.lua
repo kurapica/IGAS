@@ -57,9 +57,7 @@ end
 
 -- Equipset action type handler
 handler = ActionTypeHandler {
-	Type = "equipmentset",
-
-	Action = "equipmentset",
+	Name = "equipmentset",
 
 	InitSnippet = [[
 		_EquipSet = newtable()

@@ -9,7 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.Action.MacroHandler", version) then
 end
 
 handler = ActionTypeHandler {
-	Name = "macro",
+	Name = "macrotext",
+
+	Type = "macro",
 
 	InitSnippet = [[
 	]],

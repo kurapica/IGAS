@@ -129,9 +129,7 @@ end
 
 -- Spell action type handler
 handler = ActionTypeHandler {
-	Type = "spell",
-
-	Action = "spell",
+	Name = "spell",
 
 	InitSnippet = [[
 		_StanceMap = newtable()
