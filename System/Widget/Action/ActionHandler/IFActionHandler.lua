@@ -34,6 +34,10 @@ do
 		return tostring(type(group) == "string" and strtrim(group) ~= "" and strtrim(group) or _GlobalGroup):upper()
 	end
 
+	function GetFormatString(param)
+		return type(param) == "string" and ("%q"):format(param) or tostring(param)
+	end
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -360,11 +364,18 @@ interface "IFActionTypeHandler"
 	property "ReceiveStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
 
 	doc [======[
-		@name ReceiveType
+		@name ReceiveMap
 		@type property
-		@desc The receive type
+		@desc The receive map
 	]======]
-	property "ReceiveType" { Type = String + nil }
+	property "ReceiveMap" { Type = String + nil }
+
+	doc [======[
+		@name PickupMap
+		@type property
+		@desc The pickup map
+	]======]
+	property "PickupMap" { Type = String + nil }
 
 	doc [======[
 		@name InitSnippet
@@ -414,7 +425,9 @@ interface "IFActionTypeHandler"
     	-- Default map
     	if self.Type == nil then self.Type = self.Name end
     	if self.Target == nil then self.Target = self.Type end
-    	if self.ReceiveType == nil and self.ReceiveStyle == "Clear" then self.ReceiveType = self.Type end
+    	if self.ReceiveMap == nil and self.ReceiveStyle == "Clear" then self.ReceiveMap = self.Type end
+    	if self.PickupMap == nil and self.DragStyle ~= "Block" then self.PickupMap = self.Type end
+
 
 		-- Register action type map
 		_ActionTypeMap[self.Name] = self.Type
@@ -445,8 +458,11 @@ interface "IFActionTypeHandler"
 		-- Register ReceiveStyle
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveStyle", self.Name, self.ReceiveStyle) )
 
-		-- Register ReciveType
-		if self.ReceiveType then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveType", self.ReceiveType, self.Name) )
+		-- Register ReceiveMap
+		if self.ReceiveMap then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveMap", self.ReceiveMap, self.Name) )
+
+		-- Register PickupMap
+		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) )
     end
 endinterface "IFActionTypeHandler"
 
@@ -628,9 +644,9 @@ do
 	_IFActionHandler_ManagerFrame = SecureFrame("IGAS_IFActionHandler_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
 	_IFActionHandler_ManagerFrame.Visible = false
 
-	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target)
+	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target, target2)
 		if not InCombatLockdown() then
-			return PickupAny("clear", kind, target)
+			return PickupAny("clear", kind, target, target2)
 		end
 	end
 
@@ -663,12 +679,13 @@ do
 			_ActionTargetMap = newtable()
 			_ActionTargetMap2 = newtable()
 
-			_ReceiveType = newtable()
+			_ReceiveMap = newtable()
+			_PickupMap = newtable()
 
-			_PickupSnippet = newtable()
-			_UpdateSnippet = newtable()
-			_ReceiveSnippet = newtable()
 			_ClearSnippet = newtable()
+			_UpdateSnippet = newtable()
+			_PickupSnippet = newtable()
+			_ReceiveSnippet = newtable()
 
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
@@ -677,7 +694,8 @@ do
 				local name = self:GetAttribute("actiontype")
 
 				if name then
-					self:SetAttribute("actiontype", nil)
+					self:SetAttribute("actiontype", "empty")
+
 					self:SetAttribute("type", nil)
 					self:SetAttribute(_ActionTargetMap[name], nil)
 					if _ActionTargetMap2[name] then
@@ -722,12 +740,12 @@ do
 
 				-- Pickup the target
 				if _PickupSnippet[name] == "Custom" then
-					Manager:CallMethod("OnPickUp", _ActionTypeMap[name], target, target2)
+					Manager:CallMethod("OnPickUp", name, target, target2)
 					return false
 				elseif _PickupSnippet[name] then
 					return Manager:RunFor(self, _PickupSnippet[name], target, target2)
 				else
-					return "clear", _ActionTypeMap[name], target, target2
+					return "clear", _PickupMap[name], target, target2
 				end
 			]=]
 
@@ -746,7 +764,7 @@ do
 				if _ReceiveStyle[oldName] == "Clear" then
 					Manager:RunFor(self, ClearAction)
 
-					local name = _ReceiveType[kind]
+					local name = _ReceiveMap[kind]
 					local target, target2
 
 					if name then
@@ -758,10 +776,11 @@ do
 
 						if target then
 							self:SetAttribute("actiontype", name)
+
 							self:SetAttribute("type", _ActionTypeMap[name])
 							self:SetAttribute(_ActionTargetMap[name], target)
 
-							if target2 and _ActionTargetMap2[name] then
+							if target2 ~= nil and _ActionTargetMap2[name] then
 								self:SetAttribute(_ActionTargetMap2[name], target2)
 							end
 						end
@@ -772,107 +791,43 @@ do
 
 				-- Pickup the target
 				if _PickupSnippet[oldName] == "Custom" then
-					Manager:CallMethod("OnPickUp", _ActionTypeMap[oldName], oldTarget, oldTarget2)
+					Manager:CallMethod("OnPickUp", oldName, oldTarget, oldTarget2)
 					return false
 				elseif _PickupSnippet[oldName] then
 					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldTarget2)
 				else
-					return "clear", _ActionTypeMap[oldName], oldTarget, oldTarget2
+					return "clear", _PickupMap[oldName], oldTarget, oldTarget2
 				end
 			]=]
 
 			UpdateActionAttribute = [=[
-				local kind, target = ...
+				local name, target, target2 = ...
 
 				-- Clear
 				Manager:RunFor(self, ClearAction)
 
-				if not target then kind = nil end
-
-				if kind then
-					self:SetAttribute("type", kind)
-					self:SetAttribute(_ActionTypeMap[kind] or kind, target)
+				if name == nil or target == nil then
+					name = "empty"
+					target = nil
+					target2 = nil
 				end
 
-				Manager:RunFor(self, UpdateAction, kind, target)
+				self:SetAttribute("actiontype", name)
+
+				self:SetAttribute("type", _ActionTypeMap[name])
+				self:SetAttribute(_ActionTargetMap[name], target)
+
+				if target2 ~= nil and _ActionTargetMap2[name] then
+					self:SetAttribute(_ActionTargetMap2[name], target2)
+				end
+
+				return Manager:RunFor(self, UpdateAction)
 			]=]
 		]]
-
-		-- ActionBar swap register
-		local state = {}
-
-		-- special using
-		tinsert(state, "[overridebar][possessbar]possess")
-
-		-- action bar swap
-		for i = 2, 6 do
-			tinsert(state, ("[bar:%d]%d"):format(i, i))
-		end
-
-		-- stance
-		local _, playerclass = UnitClass("player")
-
-		if playerclass == "DRUID" then
-			-- prowl first
-			tinsert(state, "[bonusbar:1,stealth]8")
-		elseif playerclass == "WARRIOR" then
-			tinsert(state, "[stance:2]7")
-			tinsert(state, "[stance:3]8")
-		end
-
-		-- bonusbar map
-		for i = 1, 4 do
-			tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
-		end
-
-		-- Fix for temp shape shift bar
-		tinsert(state, "[stance:1]tempshapeshift")
-
-		tinsert(state, "1")
-
-		state = table.concat(state, ";")
-
-		local now = SecureCmdOptionParse(state)
-
-		_IFActionHandler_ManagerFrame:Execute(("MainPage[0] = %s"):format(now))
-
-		_IFActionHandler_ManagerFrame:RegisterStateDriver("page", state)
-
-		_IFActionHandler_ManagerFrame:SetAttribute("_onstate-page", [=[
-			Manager:Run(UpdateMainActionBar, newstate)
-		]=])
 	end)
 
-	_IFActionHandler_UpdateActionAttribute = [=[
-		return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...)
-	]=]
-
-	_IFActionHandler_EnableSnippet = [[
-		_NoDraggable[%q] = nil
-	]]
-
-	_IFActionHandler_DisableSnippet = [[
-		_NoDraggable[%q] = true
-	]]
-
-	_IFActionHandler_RegisterMainPage = [[
-		local btn = Manager:GetFrameRef("MainPageButton")
-		if btn then
-			_MainPage[btn] = true
-			btn:SetAttribute("actionpage", MainPage[0] or 1)
-		end
-	]]
-
-	_IFActionHandler_UnregisterMainPage = [[
-		local btn = Manager:GetFrameRef("MainPageButton")
-		if btn then
-			_MainPage[btn] = nil
-			btn:SetAttribute("actionpage", nil)
-		end
-	]]
-
 	_IFActionHandler_OnDragStartSnippet = [[
-		if (IsModifierKeyDown() or _NoDraggable[%q]) and not IsModifiedClick("PICKUPACTION") then return false end
+		if (IsModifierKeyDown() or _NoDraggable[self:GetAttribute("IFActionHandlerGroup")]) and not IsModifiedClick("PICKUPACTION") then return false end
 
 		return Manager:RunFor(self, DragStart)
 	]]
@@ -886,7 +841,7 @@ do
 	]]
 
 	_IFActionHandler_UpdateActionSnippet = [[
-		return Manager:RunFor(Manager:GetFrameRef("UpdatingButton"), UpdateActionAttribute, %s, %s)
+		return Manager:RunFor(Manager:GetFrameRef("UpdatingButton"), UpdateActionAttribute, %s, %s, %s)
 	]]
 
 	_IFActionHandler_WrapClickPrev = [[
@@ -899,7 +854,7 @@ do
 	_IFActionHandler_WrapClickPost = [[
 		local type, action = GetActionInfo(self:GetAttribute("action"))
 		if message ~= format("%s|%s", tostring(type), tostring(action)) then
-			Manager:RunFor(self, UpdateAction, self:GetAttribute("type"), self:GetAttribute("action"))
+			Manager:RunFor(self, UpdateAction)
 		end
 	]]
 
@@ -908,9 +863,7 @@ do
 	]]
 
 	_IFActionHandler_WrapDragPost = [[
-		local type = self:GetAttribute("type")
-		local target = type and self:GetAttribute(_ActionTypeMap[type] or type)
-		Manager:RunFor(self, UpdateAction, type, target)
+		Manager:RunFor(self, UpdateAction)
 	]]
 
 	------------------------------------------------------
@@ -928,9 +881,9 @@ do
 	end
 
 	function PreClick(self)
-		local oldKind = self:GetAttribute("type")
+		local oldKind = self:GetAttribute("actiontype")
 
-		if InCombatLockdown() or ( _IFActionTypeHandler[oldKind] and _IFActionTypeHandler[oldKind].DragStyle ~= "Clear" ) then
+		if InCombatLockdown() or _IFActionTypeHandler[oldKind].ReceiveStyle ~= "Clear" then
 			return
 		end
 
@@ -940,10 +893,6 @@ do
 		self.__IFActionHandler_PreType = oldKind
 		self.__IFActionHandler_PreMsg = true
 		self:SetAttribute("type", nil)
-	end
-
-	function GetFormatString(param)
-		return type(param) == "string" and ("%q"):format(param) or tostring(param)
 	end
 
 	function PostClick(self)
@@ -985,14 +934,14 @@ do
 		group = GetGroup(group)
 
 		_DBCharNoDrag[group] = nil
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_EnableSnippet:format(group))
+		_IFActionHandler_ManagerFrame:Execute( ("_NoDraggable[%q] = nil"):format(group) )
 	end
 
 	function DisableDrag(group)
 		group = GetGroup(group)
 
 		_DBCharNoDrag[group] = true
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_DisableSnippet:format(group))
+		_IFActionHandler_ManagerFrame:Execute( ("_NoDraggable[%q] = true"):format(group) )
 	end
 
 	function IsDragEnabled(group)
@@ -1041,7 +990,7 @@ do
 
     	-- Button UpdateAction method added to secure part
     	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
-    	self:SetAttribute("UpdateAction", _IFActionHandler_UpdateActionAttribute)
+    	self:SetAttribute("UpdateAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...) ]])
 
 		self.PreClick = self.PreClick + PreClick
 		self.PostClick = self.PostClick + PostClick
@@ -1107,20 +1056,32 @@ do
 		end
 	end
 
-	function SaveAction(self, kind, target)
+	function SaveAction(self, kind, target, target2)
 		_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target)))
+		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target), GetFormatString(target2)))
 	end
 
 	function RegisterMainPage(self)
 		_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_RegisterMainPage)
+		_IFActionHandler_ManagerFrame:Execute([[
+			local btn = Manager:GetFrameRef("MainPageButton")
+			if btn then
+				_MainPage[btn] = true
+				btn:SetAttribute("actionpage", MainPage[0] or 1)
+			end
+		]])
 		SaveAction(self, "action", self.ID or 1)
 	end
 
 	function UnregisterMainPage(self)
 		_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UnregisterMainPage)
+		_IFActionHandler_ManagerFrame:Execute([[
+			local btn = Manager:GetFrameRef("MainPageButton")
+			if btn then
+				_MainPage[btn] = nil
+				btn:SetAttribute("actionpage", nil)
+			end
+		]])
 		SaveAction(self)
 	end
 
@@ -1866,9 +1827,22 @@ interface "IFActionHandler"
 		@desc Overridable, the action button's group name
 	]======]
 	property "IFActionHandlerGroup" {
-		Get = function(self)
-			return _GlobalGroup
+		Set = function (self, group)
+			group = GetGroup(group)
+
+			self:SetAttribute("IFActionHandlerGroup", group)
+
+	    	if _DBCharUseDown[group] then
+	    		self:RegisterForClicks("AnyDown")
+			else
+				self:RegisterForClicks("AnyUp")
+			end
 		end,
+		Get = function (self)
+			return self:GetAttribute("IFActionHandlerGroup")
+		end
+		Default = _GlobalGroup,
+		Type = String + nil,
 	}
 
 	------------------------------------------------------
@@ -2319,7 +2293,12 @@ interface "IFActionHandler"
     	_IFActionHandler_UpdateRangeTimer.Enabled = true
     	InitEventHandler()
 
-    	if _DBCharUseDown[GetGroup(self.IFActionHandlerGroup)] then
+    	-- Don't know how authors would treat the property, so make sure all done here.
+    	local group = GetGroup(self.IFActionHandlerGroup)
+
+    	self:SetAttribute("IFActionHandlerGroup", group)
+
+    	if _DBCharUseDown[group] then
     		self:RegisterForClicks("AnyDown")
 		else
 			self:RegisterForClicks("AnyUp")

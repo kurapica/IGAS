@@ -123,8 +123,54 @@ handler = ActionTypeHandler {
 	]],
 }
 
-handler.Manager:SetFrameRef("MainMenuBarArtFrame", MainMenuBarArtFrame)
-handler.Manager:SetFrameRef("OverrideActionBar", OverrideActionBar)
+do
+	handler.Manager:SetFrameRef("MainMenuBarArtFrame", MainMenuBarArtFrame)
+	handler.Manager:SetFrameRef("OverrideActionBar", OverrideActionBar)
+
+	-- ActionBar swap register
+	local state = {}
+
+	-- special using
+	tinsert(state, "[overridebar][possessbar]possess")
+
+	-- action bar swap
+	for i = 2, 6 do
+		tinsert(state, ("[bar:%d]%d"):format(i, i))
+	end
+
+	-- stance
+	local _, playerclass = UnitClass("player")
+
+	if playerclass == "DRUID" then
+		-- prowl first
+		tinsert(state, "[bonusbar:1,stealth]8")
+	elseif playerclass == "WARRIOR" then
+		tinsert(state, "[stance:2]7")
+		tinsert(state, "[stance:3]8")
+	end
+
+	-- bonusbar map
+	for i = 1, 4 do
+		tinsert(state, ("[bonusbar:%d]%d"):format(i, i+6))
+	end
+
+	-- Fix for temp shape shift bar
+	tinsert(state, "[stance:1]tempshapeshift")
+
+	tinsert(state, "1")
+
+	state = table.concat(state, ";")
+
+	local now = SecureCmdOptionParse(state)
+
+	handler:RunSnippet(("MainPage[0] = %s"):format(now))
+
+	handler.Manager:RegisterStateDriver("page", state)
+
+	handler.Manager:SetAttribute("_onstate-page", [=[
+		Manager:Run(UpdateMainActionBar, newstate)
+	]=])
+end
 
 -- Overwrite methods
 function handler:PickupAction(target)
