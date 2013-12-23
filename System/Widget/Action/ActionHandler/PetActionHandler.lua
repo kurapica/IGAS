@@ -100,6 +100,8 @@ handler = ActionTypeHandler {
 
 	ReceiveStyle = "Keep",
 
+	IsPlayerAction = false,
+
 	InitSnippet = [[
 	]],
 

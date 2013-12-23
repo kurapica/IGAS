@@ -173,6 +173,21 @@ do
 end
 
 -- Overwrite methods
+function handler:GetActionDetail()
+	local target = ActionButton_CalculateAction(self)
+	local desc
+
+	if target then
+		local type, id = GetActionInfo(action)
+
+		if type and id then
+			desc = ""..type.."_"..id
+		end
+	end
+
+	return target, desc
+end
+
 function handler:PickupAction(target)
 	return PickupAction(target)
 end

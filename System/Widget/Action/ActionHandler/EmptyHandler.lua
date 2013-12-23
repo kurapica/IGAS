@@ -10,6 +10,8 @@ end
 
 handler = ActionTypeHandler {
 	Name = "empty",
+	DragStyle = "Block",
+	ReceiveStyle = "Clear",
 }
 
 function handler:HasAction()

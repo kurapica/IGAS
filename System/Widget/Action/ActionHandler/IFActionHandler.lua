@@ -23,6 +23,7 @@ do
 	_UpdateRangeInterval = 0.2
 
 	_IFActionTypeHandler = {}
+	_IFPlayerActionType = {}
 
 	_ActionTypeMap = {}
 	_ActionTargetMap = {}
@@ -119,6 +120,18 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
+	doc [======[
+		@name GetActionDetail
+		@type method
+		@desc Get the actions's kind, target & detail
+		@return kind
+		@return target
+		@return detail
+	]======]
+	function GetActionDetail(self)
+		return self:GetAttribute(_ActionTargetMap[self.Name]), _ActionTargetMap2[self.Name] and self:GetAttribute(_ActionTargetMap2[self.Name])
+	end
+
 	doc [======[
 		@name PickupAction
 		@type method
@@ -350,6 +363,13 @@ interface "IFActionTypeHandler"
 	property "Target2" { Type = String + nil }
 
 	doc [======[
+		@name IsPlayerAction
+		@type property
+		@desc Whether the action is player action
+	]======]
+	property "IsPlayerAction" { Type = Boolean, Default = true }
+
+	doc [======[
 		@name DragStyle
 		@type property
 		@desc The drag style of the action type
@@ -422,12 +442,14 @@ interface "IFActionTypeHandler"
     	-- Register the action type handler
     	_IFActionTypeHandler[self.Name] = self
 
+    	-- Register if is a player action
+    	tinsert(_IFPlayerActionType, self.Name)
+
     	-- Default map
     	if self.Type == nil then self.Type = self.Name end
     	if self.Target == nil then self.Target = self.Type end
     	if self.ReceiveMap == nil and self.ReceiveStyle == "Clear" then self.ReceiveMap = self.Type end
-    	if self.PickupMap == nil and self.DragStyle ~= "Block" then self.PickupMap = self.Type end
-
+    	if self.PickupMap == nil then self.PickupMap = self.Type end
 
 		-- Register action type map
 		_ActionTypeMap[self.Name] = self.Type
@@ -693,7 +715,7 @@ do
 			ClearAction = [=[
 				local name = self:GetAttribute("actiontype")
 
-				if name then
+				if name and name ~= "empty" then
 					self:SetAttribute("actiontype", "empty")
 
 					self:SetAttribute("type", nil)
@@ -806,19 +828,15 @@ do
 				-- Clear
 				Manager:RunFor(self, ClearAction)
 
-				if name == nil or target == nil then
-					name = "empty"
-					target = nil
-					target2 = nil
-				end
+				if name and _ActionTypeMap[name] and target then
+					self:SetAttribute("actiontype", name)
 
-				self:SetAttribute("actiontype", name)
+					self:SetAttribute("type", _ActionTypeMap[name])
+					self:SetAttribute(_ActionTargetMap[name], target)
 
-				self:SetAttribute("type", _ActionTypeMap[name])
-				self:SetAttribute(_ActionTargetMap[name], target)
-
-				if target2 ~= nil and _ActionTargetMap2[name] then
-					self:SetAttribute(_ActionTargetMap2[name], target2)
+					if target2 ~= nil and _ActionTargetMap2[name] then
+						self:SetAttribute(_ActionTargetMap2[name], target2)
+					end
 				end
 
 				return Manager:RunFor(self, UpdateAction)
@@ -854,7 +872,7 @@ do
 	_IFActionHandler_WrapClickPost = [[
 		local type, action = GetActionInfo(self:GetAttribute("action"))
 		if message ~= format("%s|%s", tostring(type), tostring(action)) then
-			Manager:RunFor(self, UpdateAction)
+			return Manager:RunFor(self, UpdateAction)
 		end
 	]]
 
@@ -892,12 +910,15 @@ do
 
 		self.__IFActionHandler_PreType = oldKind
 		self.__IFActionHandler_PreMsg = true
+
+		-- Make sure no action happended
 		self:SetAttribute("type", nil)
 	end
 
 	function PostClick(self)
 		UpdateButtonState(self)
 
+		-- Restore the action
 		if self.__IFActionHandler_PreMsg and not InCombatLockdown() then
 			if self.__IFActionHandler_PreType then
 				self:SetAttribute("type", self.__IFActionHandler_PreType)
@@ -906,13 +927,16 @@ do
 			local kind, value, subtype, detail = GetCursorInfo()
 
 			if kind and value then
-				local oldKind = self:GetAttribute("type")
-				local oldTarget = oldKind and self:GetAttribute(_ActionTypeMap[oldKind] or oldKind)
+				local oldName = self:GetAttribute("actiontype")
+				local oldTarget = oldName and self:GetAttribute(_ActionTypeMap[oldName])
+				local oldTarget2 = oldName and _ActionTargetMap2[oldName] and self:GetAttribute(_ActionTargetMap2[oldName])
 
 				_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 				_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
 
-				PickupAny("clear", oldKind, oldTarget)
+				if oldName and oldTarget then
+					PickupAny("clear", oldName, oldTarget, oldTarget2)
+				end
 			end
 		end
 		self.__IFActionHandler_PreType = nil
@@ -946,16 +970,18 @@ do
 
 	function IsDragEnabled(group)
 		group = GetGroup(group)
+
 		return not _DBCharNoDrag[group]
 	end
 
 	function EnableButtonDown(group)
 		group = GetGroup(group)
+
 		if not _DBCharUseDown[group] then
 			_DBCharUseDown[group] = true
+
 			_IFActionHandler_Buttons:Each(function(self)
-				local bgroup = GetGroup(self.IFActionHandlerGroup)
-				if bgroup == group then
+				if GetGroup(self.IFActionHandlerGroup) == group then
 					self:RegisterForClicks("AnyDown")
 				end
 			end)
@@ -964,11 +990,12 @@ do
 
 	function DisableButtonDown(group)
 		group = GetGroup(group)
+
 		if _DBCharUseDown[group] then
 			_DBCharUseDown[group] = nil
+
 			_IFActionHandler_Buttons:Each(function(self)
-				local bgroup = GetGroup(self.IFActionHandlerGroup)
-				if bgroup == group then
+				if GetGroup(self.IFActionHandlerGroup) == group then
 					self:RegisterForClicks("AnyUp")
 				end
 			end)
@@ -977,12 +1004,13 @@ do
 
 	function IsButtonDownEnabled(group)
 		group = GetGroup(group)
+
 		return _DBCharUseDown[group]
 	end
 
 	function SetupActionButton(self)
-		_IFActionHandler_ManagerFrame:WrapScript(self, "OnDragStart", _IFActionHandler_OnDragStartSnippet:format(GetGroup(self.IFActionHandlerGroup)))
-		_IFActionHandler_ManagerFrame:WrapScript(self, "OnReceiveDrag", _IFActionHandler_OnReceiveDragSnippet:format(GetGroup(self.IFActionHandlerGroup)))
+		_IFActionHandler_ManagerFrame:WrapScript(self, "OnDragStart", _IFActionHandler_OnDragStartSnippet)
+		_IFActionHandler_ManagerFrame:WrapScript(self, "OnReceiveDrag", _IFActionHandler_OnReceiveDragSnippet)
 
     	_IFActionHandler_ManagerFrame:WrapScript(self, "OnClick", _IFActionHandler_WrapClickPrev, _IFActionHandler_WrapClickPost)
     	_IFActionHandler_ManagerFrame:WrapScript(self, "OnDragStart", _IFActionHandler_WrapDragPrev, _IFActionHandler_WrapDragPost)
@@ -1007,82 +1035,35 @@ do
 		_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnReceiveDrag")
 	end
 
-	function GetActionDesc(action)
-		local type, id = GetActionInfo(action)
-
-		if action then
-			type, id = GetActionInfo(action)
-		end
-
-		if type and id then
-			return ""..type.."_"..id
-		else
-			return nil
-		end
-	end
-
-	function UI_UpdateActionButton(self, kind, target)
-		local desc
-
+	function UI_UpdateActionButton(self)
 		self = IGAS:GetWrapper(self)
+
+		local name = self:GetAttribute("actiontype")
+		local target, detail = _IFActionTypeHandler[name].GetActionDetail(self)
 
 		-- No harm
 		target = tonumber(target) or target
+		detail = tonumber(detail) or detail
 
-		if kind == "action" then
-			target = ActionButton_CalculateAction(self)
-			desc = GetActionDesc(target)
-		end
+		if self.__IFActionHandler_Kind ~= name
+			or self.__IFActionHandler_Target ~= target
+			or self.__IFActionHandler_Detail ~= detail then
 
-		if self.__IFActionHandler_Kind ~= kind or self.__IFActionHandler_Action ~= target or (kind == "action" and desc ~= self.__IFActionHandler_ActionDesc) then
-			self.__IFActionHandler_Kind = kind
-			self.__IFActionHandler_Action = target
-			self.__IFActionHandler_ActionDesc = desc
+			self.__IFActionHandler_Kind = name
+			self.__IFActionHandler_Target = target
+			self.__IFActionHandler_Detail = detail
 
-			_IFActionHandler_Buttons[self] = kind 	-- keep button in kind's link list
+			_IFActionHandler_Buttons[self] = name 	-- keep button in kind's link list
 
 			UpdateActionButton(self)
 
-			return self:UpdateAction(kind, target)
-		end
-	end
-
-	function SaveActionPage(self, page)
-		self:SetAttribute("actionpage", page)
-		if page then
-			SaveAction(self, "action", self.ID or 1)
-		else
-			SaveAction(self)
+			return self:UpdateAction(name, target, detail)
 		end
 	end
 
 	function SaveAction(self, kind, target, target2)
 		_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target), GetFormatString(target2)))
-	end
-
-	function RegisterMainPage(self)
-		_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-		_IFActionHandler_ManagerFrame:Execute([[
-			local btn = Manager:GetFrameRef("MainPageButton")
-			if btn then
-				_MainPage[btn] = true
-				btn:SetAttribute("actionpage", MainPage[0] or 1)
-			end
-		]])
-		SaveAction(self, "action", self.ID or 1)
-	end
-
-	function UnregisterMainPage(self)
-		_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-		_IFActionHandler_ManagerFrame:Execute([[
-			local btn = Manager:GetFrameRef("MainPageButton")
-			if btn then
-				_MainPage[btn] = nil
-				btn:SetAttribute("actionpage", nil)
-			end
-		]])
-		SaveAction(self)
 	end
 
 	------------------------------------------------------
@@ -1634,7 +1615,16 @@ interface "IFActionHandler"
 		if self.ID == nil then page = nil end
 
 		if GetActionPage(self) ~= page then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(SaveActionPage, self, page)
+			IFNoCombatTaskHandler._RegisterNoCombatTask(
+				function (self, page)
+					self:SetAttribute("actionpage", page)
+					if page then
+						SaveAction(self, "action", self.ID or 1)
+					else
+						SaveAction(self)
+					end
+				end,
+				self, page)
 		end
 	end
 
@@ -1663,9 +1653,31 @@ interface "IFActionHandler"
 			self.__IFActionHandler_IsMain = isMain
 
 			if isMain then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(RegisterMainPage, self)
+				IFNoCombatTaskHandler._RegisterNoCombatTask(
+					function (self)
+						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
+						_IFActionHandler_ManagerFrame:Execute([[
+							local btn = Manager:GetFrameRef("MainPageButton")
+							if btn then
+								_MainPage[btn] = true
+								btn:SetAttribute("actionpage", MainPage[0] or 1)
+							end
+						]])
+						SaveAction(self, "action", self.ID or 1)
+					end, self)
 			else
-				IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterMainPage, self)
+				IFNoCombatTaskHandler._RegisterNoCombatTask(
+					function (self)
+						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
+						_IFActionHandler_ManagerFrame:Execute([[
+							local btn = Manager:GetFrameRef("MainPageButton")
+							if btn then
+								_MainPage[btn] = nil
+								btn:SetAttribute("actionpage", nil)
+							end
+						]])
+						SaveAction(self)
+					end, self)
 			end
 		end
 	end
@@ -1713,7 +1725,7 @@ interface "IFActionHandler"
 		@return content string|number, the action's content
 	]======]
 	function GetAction(self)
-		return self.__IFActionHandler_Kind, self.__IFActionHandler_Action
+		return self.__IFActionHandler_Kind, self.__IFActionHandler_Target
 	end
 
 	doc [======[
@@ -2062,7 +2074,7 @@ interface "IFActionHandler"
 	]======]
 	property "ActionTarget" {
 		Get = function(self)
-			return self.__IFActionHandler_Action
+			return self.__IFActionHandler_Target
 		end,
 	}
 
