@@ -210,9 +210,7 @@ class "ActionButton"
 		@desc whether the target is in range, accessed by IFActionHandler
 	]======]
 	property "InRange" {
-		Get = function(self)
-			return self.__InRange
-		end,
+		Field = "__InRange",
 		Set = function(self, value)
 			if self.__InRange ~= value then
 				self.__InRange = value
@@ -228,9 +226,7 @@ class "ActionButton"
 		@desc whether the action is usable, accessed by IFActionHandler
 	]======]
 	property "Usable" {
-		Get = function(self)
-			return self.__Usable or false
-		end,
+		Field = "__Usable",
 		Set = function(self, value)
 			if self.__Usable ~= value then
 				self.__Usable = value
@@ -250,9 +246,7 @@ class "ActionButton"
 		@desc whether the action is auto castable, accessed by IFActionHandler
 	]======]
 	property "AutoCastable" {
-		Get = function(self)
-			return self.__AutoCastable or false
-		end,
+		Field = "__AutoCastable",
 		Set = function(self, value)
 			if self.AutoCastable ~= value then
 				self.__AutoCastable = value
@@ -281,9 +275,7 @@ class "ActionButton"
 		@desc whether the action is now auto-casting, accessed by IFActionHandler
 	]======]
 	property "AutoCasting" {
-		Get = function(self)
-			return self.__AutoCasting or false
-		end,
+		Field = "__AutoCasting",
 		Set = function(self, value)
 			if self.AutoCasting ~= value then
 				self.__AutoCasting = value
@@ -300,6 +292,27 @@ class "ActionButton"
 			end
 		end,
 		Type = System.Boolean,
+	}
+
+	doc [======[
+		@name EquippedItemIndicator
+		@type property
+		@desc Whether an indicator should be shown for equipped item
+	]======]
+	property "EquippedItemIndicator" {
+		Field = "__EquippedItemIndicator",
+		Set = function(self, value)
+			if self.EquippedItemIndicator ~= value then
+				self.__EquippedItemIndicator = value
+
+				if value then
+					self.Border:SetVertexColor(0, 1.0, 0, 0.35)
+					self.Border.Visible = true
+				else
+					self.Border.Visible = false
+				end
+		end
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

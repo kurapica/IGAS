@@ -23,11 +23,13 @@ do
 	_UpdateRangeInterval = 0.2
 
 	_IFActionTypeHandler = {}
-	_IFPlayerActionType = {}
 
 	_ActionTypeMap = {}
 	_ActionTargetMap = {}
 	_ActionTargetMap2 = {}
+
+	_AutoAttackButtons = setmetatable({}, {__mode = "k"})
+	_AutoRepeatButtons = setmetatable({}, {__mode = "k"})
 
 	_GlobalGroup = "Global"
 
@@ -441,9 +443,6 @@ interface "IFActionTypeHandler"
 
     	-- Register the action type handler
     	_IFActionTypeHandler[self.Name] = self
-
-    	-- Register if is a player action
-    	tinsert(_IFPlayerActionType, self.Name)
 
     	-- Default map
     	if self.Type == nil then self.Type = self.Name end
@@ -1020,6 +1019,10 @@ do
     	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
     	self:SetAttribute("UpdateAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...) ]])
 
+    	if not self:GetAttribute("actiontype") then
+    		self:SetAttribute("actiontype", "empty")
+    	end
+
 		self.PreClick = self.PreClick + PreClick
 		self.PostClick = self.PostClick + PostClick
 		self.OnEnter = self.OnEnter + OnEnter
@@ -1057,7 +1060,7 @@ do
 
 			UpdateActionButton(self)
 
-			return self:UpdateAction(name, target, detail)
+			return self:UpdateAction()
 		end
 	end
 
@@ -1069,36 +1072,31 @@ do
 	------------------------------------------------------
 	-- Update Handler
 	------------------------------------------------------
-	_IFActionHandler_GridCounter = _IFActionHandler_GridCounter or 0
+	_IFActionHandler_GridCounter = 0
+	_IFActionHandler_PetGridCounter = 0
 
 	function UpdateGrid(self)
 		local kind = self.ActionType
 
-		if kind ~= "pet" and kind ~= "petaction" then
-			if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
-				self.Alpha = 1
-			else
-				self.Alpha = 0
-			end
+		if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
+			self.Alpha = 1
+		else
+			self.Alpha = 0
 		end
 	end
-
-	_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter or 0
 
 	function UpdatePetGrid(self)
 		local kind = self.ActionType
 
-		if kind == "pet" or kind == "petaction" then
-			if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
-				self.Alpha = 1
-			else
-				self.Alpha = 0
-			end
+		if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
+			self.Alpha = 1
+		else
+			self.Alpha = 0
 		end
 	end
 
 	function ForceUpdateAction(self)
-		return self:UpdateAction(self.ActionType, self.ActionTarget)
+		return self:UpdateAction()
 	end
 
 	function UpdateButtonState(self)
@@ -1160,8 +1158,8 @@ do
 	function StopFlash(self)
 		self.Flashing = false
 		_IFActionHandler_FlashingList[self] = nil
-		if next(_IFActionHandler_FlashingList) then
-			_IFActionHandler_FlashingTimer.Enabled = true
+		if not next(_IFActionHandler_FlashingList) then
+			_IFActionHandler_FlashingTimer.Enabled = false
 		end
 		self.FlashVisible = false
 		UpdateButtonState(self)
@@ -1237,34 +1235,47 @@ do
 
 	function UpdateActionButton(self)
 		local kind = self.ActionType
+		local handler = _IFActionTypeHandler[kind]
 
-		UpdateGrid(self)
-		UpdatePetGrid(self)
+		if handler.IsAttackAction(self) then
+			_AutoAttackButtons[self] = true
+		else
+			_AutoAttackButtons[self] = nil
+		end
+
+		if handler.IsAutoRepeatAction(self) then
+			_AutoRepeatButtons[self] = true
+		else
+			_AutoRepeatButtons[self] = nil
+		end
+
+		if handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+			UpdateGrid(self)
+		end
+
+		if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+			UpdatePetGrid(self)
+		end
+
 		UpdateButtonState(self)
 		UpdateUsable(self)
 		UpdateCooldown(self)
-		UpdateFlash(self)
 		UpdateFlyout(self)
 		UpdateAutoCastable(self)
 		UpdateAutoCasting(self)
 
-		-- Add a green border if button is an equipped item
-		if _IFActionTypeHandler[kind].IsEquippedItem(self) and self.Border then
-			self.Border:SetVertexColor(0, 1.0, 0, 0.35)
-			self.Border.Visible = true
-		else
-			self.Border.Visible = false
-		end
+		-- Whether the action is an equipped item
+		self.EquippedItemIndicator = handler.IsEquippedItem(self)
 
 		-- Update Action Text
-		if not _IFActionTypeHandler[kind].IsConsumableAction(self) then
+		if not handler.IsConsumableAction(self) then
 			self.Text = _GetActionText(self)
 		else
 			self.Text = ""
 		end
 
 		-- Update icon
-		self.Icon = _IFActionTypeHandler[kind].GetActionTexture(self)
+		self.Icon = handler.GetActionTexture(self)
 
 		UpdateCount(self)
 		UpdateOverlayGlow(self)
@@ -1285,19 +1296,19 @@ do
 	-- Special definition
 	__Final__() __NonInheritable__() __NonExpandable__()
 	interface "ActionRefreshMode"
-		RefreshGrid = UpdateGrid,
-		RefreshPetGrid = UpdatePetGrid,
-		RefreshButtonState = UpdateButtonState,
-		RefreshUsable = UpdateUsable,
-		RefreshCooldown = UpdateCooldown,
-		RefreshFlash = UpdateFlash,
-		RefreshFlyout = UpdateFlyout,
-		RefreshAutoCastable = UpdateAutoCastable,
-		RefreshAutoCasting = UpdateAutoCasting,
-		RefreshActionButton = UpdateActionButton,
-		RefreshCount = UpdateCount,
-		RefreshOverlayGlow = UpdateOverlayGlow,
-		RefreshTooltip = RefreshTooltip,
+		RefreshGrid = UpdateGrid
+		RefreshPetGrid = UpdatePetGrid
+		RefreshButtonState = UpdateButtonState
+		RefreshUsable = UpdateUsable
+		RefreshCooldown = UpdateCooldown
+		RefreshFlash = UpdateFlash
+		RefreshFlyout = UpdateFlyout
+		RefreshAutoCastable = UpdateAutoCastable
+		RefreshAutoCasting = UpdateAutoCasting
+		RefreshActionButton = UpdateActionButton
+		RefreshCount = UpdateCount
+		RefreshOverlayGlow = UpdateOverlayGlow
+		RefreshTooltip = RefreshTooltip
 	endinterface "ActionRefreshMode"
 
 	------------------------------------------------------
@@ -1309,69 +1320,11 @@ do
 		if _IFActionHandler_InitEvent then return end
 		_IFActionHandler_InitEvent = true
 
-		for _, event in ipairs({
-			"ACTIONBAR_SHOWGRID",
-			"ACTIONBAR_HIDEGRID",
-			"ACTIONBAR_SLOT_CHANGED",
-			"ACTIONBAR_UPDATE_STATE",
-			"ACTIONBAR_UPDATE_USABLE",
-			"ACTIONBAR_UPDATE_COOLDOWN",
-			"ARCHAEOLOGY_CLOSED",
-			"BAG_UPDATE_COOLDOWN",
-			"COMPANION_LEARNED",
-			"COMPANION_UNLEARNED",
-			"COMPANION_UPDATE",
-			"EQUIPMENT_SETS_CHANGED",
-			"LEARNED_SPELL_IN_TAB",
-			"PET_STABLE_UPDATE",
-			"PET_STABLE_SHOW",
-			"PET_BAR_UPDATE_COOLDOWN",
-			"PET_BAR_UPDATE_USABLE",
-			"PLAYER_ENTERING_WORLD",
-			"PLAYER_ENTER_COMBAT",
-			"PLAYER_EQUIPMENT_CHANGED",
-			"PLAYER_LEAVE_COMBAT",
-			"PLAYER_TARGET_CHANGED",
-			"PLAYER_REGEN_ENABLED",
-			"PLAYER_REGEN_DISABLED",
-			"SPELL_ACTIVATION_OVERLAY_GLOW_SHOW",
-			"SPELL_ACTIVATION_OVERLAY_GLOW_HIDE",
-			"SPELL_UPDATE_CHARGES",
-			"SPELL_UPDATE_COOLDOWN",
-			"SPELL_UPDATE_USABLE",
-			"START_AUTOREPEAT_SPELL",
-			"STOP_AUTOREPEAT_SPELL",
-			"TRADE_SKILL_SHOW",
-			"TRADE_SKILL_CLOSE",
-			"UNIT_ENTERED_VEHICLE",
-			"UNIT_EXITED_VEHICLE",
-			"UNIT_INVENTORY_CHANGED",
-			--"UPDATE_BINDINGS",
-			--"UPDATE_INVENTORY_ALERTS",
-			"UPDATE_SHAPESHIFT_FORM",
-			"UPDATE_SHAPESHIFT_FORMS",
-			"UPDATE_SUMMONPETS_ACTION",
-			"SPELLS_CHANGED",
-			"SKILL_LINES_CHANGED",
-			"PLAYER_GUILD_UPDATE",
-			"PLAYER_SPECIALIZATION_CHANGED",
-			"BAG_UPDATE",	-- need this to update item count
-			-- For Pet Action
-			"PET_BAR_SHOWGRID",
-			"PET_BAR_HIDEGRID",
-			"PLAYER_CONTROL_LOST",
-			"PLAYER_CONTROL_GAINED",
-			"PLAYER_FARSIGHT_FOCUS_CHANGED",
-			"UNIT_PET",
-			"UNIT_FLAGS",
-			"PET_BAR_UPDATE",
-			"PET_UI_UPDATE",
-			"UPDATE_VEHICLE_ACTIONBAR",
-			"UNIT_AURA",
-			-- For battle pet
-			"PET_JOURNAL_LIST_UPDATE",
-			}) do
-			_IFActionHandler_ManagerFrame:RegisterEvent(event)
+		-- Smart event register
+		for evt, func in pairs(_IFActionHandler_ManagerFrame) do
+			if type(func) == "function" and type(evt) == "string" and evt == strupper(evt) then
+				_IFActionHandler_ManagerFrame:RegisterEvent(evt)
+			end
 		end
 	end
 
@@ -1383,7 +1336,11 @@ do
 	function _IFActionHandler_ManagerFrame:ACTIONBAR_SHOWGRID()
 		_IFActionHandler_GridCounter = _IFActionHandler_GridCounter + 1
 		if _IFActionHandler_GridCounter == 1 then
-			_IFActionHandler_Buttons:Each(UpdateGrid)
+			for kind, handler in pairs(_IFActionTypeHandler) do
+				if handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+					_IFActionHandler_Buttons:EachK(kind, UpdateGrid)
+				end
+			end
 		end
 	end
 
@@ -1391,7 +1348,11 @@ do
 		if _IFActionHandler_GridCounter > 0 then
 			_IFActionHandler_GridCounter = _IFActionHandler_GridCounter - 1
 			if _IFActionHandler_GridCounter == 0 then
-				_IFActionHandler_Buttons:Each(UpdateGrid)
+				for kind, handler in pairs(_IFActionTypeHandler) do
+					if handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+						_IFActionHandler_Buttons:EachK(kind, UpdateGrid)
+					end
+				end
 			end
 		end
 	end
@@ -1403,7 +1364,11 @@ do
 	function _IFActionHandler_ManagerFrame:PET_BAR_SHOWGRID()
 		_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter + 1
 		if _IFActionHandler_PetGridCounter == 1 then
-			_IFActionHandler_Buttons:EachK("pet", UpdatePetGrid)
+			for kind, handler in pairs(_IFActionTypeHandler) do
+				if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+					_IFActionHandler_Buttons:EachK(kind, UpdatePetGrid)
+				end
+			end
 		end
 	end
 
@@ -1411,7 +1376,11 @@ do
 		if _IFActionHandler_PetGridCounter > 0 then
 			_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter - 1
 			if _IFActionHandler_PetGridCounter == 0 then
-				_IFActionHandler_Buttons:EachK("pet", UpdatePetGrid)
+				for kind, handler in pairs(_IFActionTypeHandler) do
+					if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+						_IFActionHandler_Buttons:EachK(kind, UpdatePetGrid)
+					end
+				end
 			end
 		end
 	end
@@ -2078,6 +2047,17 @@ interface "IFActionHandler"
 		end,
 	}
 
+	doc [======[
+		@name ActionDetail
+		@type property
+		@desc The action button's detail
+	]======]
+	property "ActionDetail" {
+		Get = function(self)
+			return self.__IFActionHandler_Detail
+		end,
+	}
+
 	------------------------------------------------------
 	-- Display Property
 	------------------------------------------------------
@@ -2088,12 +2068,18 @@ interface "IFActionHandler"
 	]======]
 	property "ShowGrid" {
 		Get = function(self)
-			return self.__ShowGrid or false
+			return self.__ShowGrid
 		end,
 		Set = function(self, value)
-			self.__ShowGrid = value
-			UpdateGrid(self)
-			UpdatePetGrid(self)
+			if self.ShowGrid ~= value then
+				self.__ShowGrid = value
+
+				if _IFActionTypeHandler[self.ActionType].IsPlayerAction then
+					UpdateGrid(self)
+				else
+					UpdatePetGrid(self)
+				end
+			end
 		end,
 		Type = System.Boolean,
 	}
@@ -2285,6 +2271,13 @@ interface "IFActionHandler"
 		@desc The max count to display
 	]======]
 	property "MaxDisplayCount" { Type = Number, Default = 9999 }
+
+	doc [======[
+		@name EquippedItemIndicator
+		@type property
+		@desc Whether an indicator should be shown for equipped item
+	]======]
+	property "EquippedItemIndicator" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
