@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.WorldMarkerHandler", version) then
 	return
 end
 
+_Enabled = false
+
 _WorldMarker = {
 	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_6",
 	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_4",
@@ -40,6 +42,8 @@ handler = ActionTypeHandler {
 	ClearSnippet = [[
 		self:SetAttribute("action", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

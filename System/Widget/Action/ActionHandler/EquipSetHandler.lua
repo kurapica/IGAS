@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.EquipSetHandler", version) then
 	return
 end
 
+_Enabled = false
+
 _EquipSetTemplate = "_EquipSet[%q] = %d\n"
 
 _EquipSetMap = {}
@@ -82,6 +84,8 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

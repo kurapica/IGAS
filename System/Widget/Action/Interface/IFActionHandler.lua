@@ -1957,7 +1957,7 @@ do
 
 	function _IFActionHandler_ManagerFrame:UPDATE_SUMMONPETS_ACTION()
 		for _, button in _IFActionHandler_Buttons("action") do
-			local actionType, id = GetActionCount(button.__IFActionHandler_Action)
+			local actionType, id = GetActionInfo(button.__IFActionHandler_Action)
 			if actionType == "summonpet" then
 				button.Icon = GetActionTexture(button.__IFActionHandler_Action)
 			end

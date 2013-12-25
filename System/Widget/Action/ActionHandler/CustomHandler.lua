@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.CustomHandler", version) then
 	return
 end
 
+_Enabled = false
+
 handler = ActionTypeHandler {
 	Name = "custom",
 
@@ -26,6 +28,8 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

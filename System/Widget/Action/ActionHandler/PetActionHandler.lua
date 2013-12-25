@@ -10,6 +10,8 @@ end
 
 import "ActionRefreshMode"
 
+_Enabled = false
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("PET_STABLE_UPDATE")
@@ -126,6 +128,8 @@ handler = ActionTypeHandler {
 		self:SetAttribute("type2", nil)
 		self:SetAttribute("macrotext2", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwritde methods

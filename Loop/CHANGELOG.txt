@@ -1,3 +1,6 @@
+2013/12/25
+    No cache when define types, only cache when using those types, ignore some painful problems.
+
 2013/11/29
     The 'require' keyword added for interface system, so the class that extend from the interface must be the sub-class of the target class|interface.
 

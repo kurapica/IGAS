@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/11/29
--- Version          r86
+-- Last Update Date 2013/12/25
+-- Version          r87
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1216,6 +1216,7 @@ do
 
 	-- metatable for interface's env
 	_MetaIFEnv = _MetaIFEnv or {}
+	_MetaIFDefEnv = _MetaIFDefEnv or {}
 	do
 		_MetaIFEnv.__index = function(self, key)
 			local info = _NSInfo[self[OWNER_FIELD]]
@@ -1284,7 +1285,60 @@ do
 			end
 		end
 
-		_MetaIFEnv.__newindex = function(self, key, value)
+		-- Don't cache item in definition to reduce some one time access feature
+		_MetaIFDefEnv.__index = function(self, key)
+			local info = _NSInfo[self[OWNER_FIELD]]
+			local value
+
+			-- Check owner
+			if key == info.Name then
+				return info.Owner
+			end
+
+			-- Check keywords
+			if _KeyWord4IFEnv[key] then
+				return _KeyWord4IFEnv[key]
+			end
+
+			-- Check namespace
+			if info.NameSpace then
+				if key == _NSInfo[info.NameSpace].Name then
+					return info.NameSpace
+				elseif info.NameSpace[key] then
+					return info.NameSpace[key]
+				end
+			end
+
+			-- Check imports
+			if info.Import4Env then
+				for _, ns in ipairs(info.Import4Env) do
+					if key == _NSInfo[ns].Name then
+						return ns
+					elseif ns[key] then
+						return ns[key]
+					end
+				end
+			end
+
+			-- Check base namespace
+			value = GetNameSpace(GetDefaultNameSpace(), key)
+			if value then
+				return value
+			end
+
+			-- Check method, so definition environment can use existed method
+			-- created by another definition environment for the same interface
+			value = info.Method[key]
+
+			if value then
+				return value
+			end
+
+			-- Check Base
+			return self[BASE_ENV_FIELD][key]
+		end
+
+		_MetaIFDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4IFEnv[key] then
@@ -1393,7 +1447,7 @@ do
 		local interfaceEnv = setmetatable({
 			[OWNER_FIELD] = IF,
 			[BASE_ENV_FIELD] = fenv,
-		}, _MetaIFEnv)
+		}, _MetaIFDefEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(interfaceEnv, IF)
@@ -1610,6 +1664,10 @@ do
 	-- @usage endinterface "IFSocket"
 	------------------------------------
 	function endinterface(name)
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
+		end
+
 		if type(name) ~= "string" or name:find("%.") then
 			error([[Usage: endinterface "interfacename"]], 2)
 		end
@@ -1618,14 +1676,11 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
+			setmetatable(env, _MetaIFEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
-		end
-
-		if __Attribute__ then
-			__Attribute__._ClearPreparedAttributes()
 		end
 	end
 
@@ -1782,6 +1837,7 @@ do
 
 	-- metatable for class's env
 	_MetaClsEnv = _MetaClsEnv or {}
+	_MetaClsDefEnv = _MetaClsDefEnv or {}
 	do
 		_MetaClsEnv.__index = function(self, key)
 			local info = _NSInfo[self[OWNER_FIELD]]
@@ -1870,7 +1926,79 @@ do
 			end
 		end
 
-		_MetaClsEnv.__newindex = function(self, key, value)
+		_MetaClsDefEnv.__index = function(self, key)
+			local info = _NSInfo[self[OWNER_FIELD]]
+			local value
+
+			-- Check owner
+			if key == info.Name then
+				return info.Owner
+			end
+
+			if key == _SuperIndex then
+				if info.SuperClass then
+					local superInfo = _NSInfo[info.SuperClass]
+					value = superInfo.SuperAlias
+
+					if not value then
+						-- Generate super alias when need
+						superInfo.SuperAlias = newproxy(_SuperAlias)
+						_SuperMap[superInfo.SuperAlias] = superInfo
+
+						value = superInfo.SuperAlias
+					end
+
+					rawset(self, _SuperIndex, value)
+					return value
+				else
+					error("No super class for the class.", 2)
+				end
+			end
+
+			-- Check keywords
+			if _KeyWord4ClsEnv[key] then
+				return _KeyWord4ClsEnv[key]
+			end
+
+			-- Check namespace
+			if info.NameSpace then
+				if key == _NSInfo[info.NameSpace].Name then
+					return info.NameSpace
+				elseif info.NameSpace[key] then
+					return info.NameSpace[key]
+				end
+			end
+
+			-- Check imports
+			if info.Import4Env then
+				for _, ns in ipairs(info.Import4Env) do
+					if key == _NSInfo[ns].Name then
+						return ns
+					elseif ns[key] then
+						return ns[key]
+					end
+				end
+			end
+
+			-- Check base namespace
+			value = GetNameSpace(GetDefaultNameSpace(), key)
+			if value then
+				return value
+			end
+
+			-- Check method, so definition environment can use existed method
+			-- created by another definition environment for the same class
+			value = info.Method[key]
+
+			if value then
+				return value
+			end
+
+			-- Check Base
+			return self[BASE_ENV_FIELD][key]
+		end
+
+		_MetaClsDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4ClsEnv[key] then
@@ -2251,6 +2379,14 @@ do
 		-- Create new object
 		local obj = setmetatable({}, info.MetaTable)
 
+		local ok, ret = pcall(Class1Obj, cls, obj, ...)
+
+		if not ok then
+			DisposeObject(obj)
+
+			error(ret, 2)
+		end
+
 		Class1Obj(cls, obj, ...)
 		InitObjectWithInterface(cls, obj)
 
@@ -2316,7 +2452,7 @@ do
 		local classEnv = setmetatable({
 			[OWNER_FIELD] = cls,
 			[BASE_ENV_FIELD] = fenv,
-		}, _MetaClsEnv)
+		}, _MetaClsDefEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(classEnv, cls)
@@ -2635,6 +2771,10 @@ do
 	-- @usage endclass "Form"
 	------------------------------------
 	function endclass(name)
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
+		end
+
 		if type(name) ~= "string" or name:find("%.") then
 			error([[Usage: endclass "classname"]], 2)
 		end
@@ -2643,14 +2783,11 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
+			setmetatable(env, _MetaClsEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
-		end
-
-		if __Attribute__ then
-			__Attribute__._ClearPreparedAttributes()
 		end
 	end
 
@@ -2788,6 +2925,7 @@ do
 
 	-- metatable for class's env
 	_MetaStrtEnv = _MetaStrtEnv or {}
+	_MetaStrtDefEnv = _MetaStrtDefEnv or {}
 	do
 		_MetaStrtEnv.__index = function(self, key)
 			local info = _NSInfo[self[OWNER_FIELD]]
@@ -2858,7 +2996,61 @@ do
 			end
 		end
 
-		_MetaStrtEnv.__newindex = function(self, key, value)
+		_MetaStrtDefEnv.__index = function(self, key)
+			local info = _NSInfo[self[OWNER_FIELD]]
+			local value
+
+			-- Check owner
+			if key == info.Name then
+				return info.Owner
+			end
+
+			if key == "Validate" then
+				return info.UserValidate
+			end
+
+			-- Check keywords
+			if _KeyWord4StrtEnv[key] then
+				return _KeyWord4StrtEnv[key]
+			end
+
+			-- Check namespace
+			if info.NameSpace then
+				if key == _NSInfo[info.NameSpace].Name then
+					return info.NameSpace
+				elseif info.NameSpace[key] then
+					return info.NameSpace[key]
+				end
+			end
+
+			-- Check imports
+			if info.Import4Env then
+				for _, ns in ipairs(info.Import4Env) do
+					if key == _NSInfo[ns].Name then
+						return ns
+					elseif ns[key] then
+						return ns[key]
+					end
+				end
+			end
+
+			-- Check base namespace
+			value = GetNameSpace(GetDefaultNameSpace(), key)
+			if value then
+				return value
+			end
+
+			-- Check Method
+			value = info.Method and info.Method[key]
+			if value then
+				return value
+			end
+
+			-- Check Base
+			return self[BASE_ENV_FIELD][key]
+		end
+
+		_MetaStrtDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
 
 			if _KeyWord4StrtEnv[key] then
@@ -3204,7 +3396,7 @@ do
 		info.StructEnv = setmetatable({
 			[OWNER_FIELD] = strt,
 			[BASE_ENV_FIELD] = fenv,
-		}, _MetaStrtEnv)
+		}, _MetaStrtDefEnv)
 
 		-- Set namespace
 		SetNameSpace4Env(info.StructEnv, strt)
@@ -3262,6 +3454,10 @@ do
 	-- @usage endclass "Form"
 	------------------------------------
 	function endstruct(name)
+		if __Attribute__ then
+			__Attribute__._ClearPreparedAttributes()
+		end
+
 		if type(name) ~= "string" or name:find("%.") then
 			error([[Usage: endstruct "structname"]], 2)
 		end
@@ -3270,10 +3466,7 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
-			if __Attribute__ then
-				__Attribute__._ClearPreparedAttributes()
-			end
-
+			setmetatable(env, _MetaStrtEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
 		else
 			error(("%s is not closed."):format(info.Name), 2)

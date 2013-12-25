@@ -10,6 +10,8 @@ end
 
 import "ActionRefreshMode"
 
+_Enabled = false
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("BAG_UPDATE")
@@ -64,6 +66,8 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

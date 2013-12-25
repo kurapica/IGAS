@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BagHandler", version) then
 	return
 end
 
+_Enabled = false
+
 handler = ActionTypeHandler {
 	Name = "bag",
 
@@ -22,6 +24,8 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

@@ -29,7 +29,8 @@ do
 	_ActionTargetMap2 = {}
 
 	_AutoAttackButtons = setmetatable({}, {__mode = "k"})
-	_AutoRepeatButtons = setmetatable({}, {__mode = "k"})
+	_AutoRepeatButtons = setmetatable({}, getmetatable(_AutoAttackButtons))
+	_Spell4Buttons = setmetatable({}, getmetatable(_AutoAttackButtons))
 
 	_GlobalGroup = "Global"
 
@@ -84,6 +85,12 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
+	doc [======[
+		@name OnEnableChanged
+		@type event
+		@desc Fired when the handler is enabled or disabled
+	]======]
+	event "OnEnableChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -325,6 +332,13 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Enabled
+		@type property
+		@desc Whether the handler is enabled(has buttons)
+	]======]
+	property "Enabled" { Type = Boolean, Event = OnEnableChanged }
+
 	doc [======[
 		@name Manager
 		@type property
@@ -592,7 +606,7 @@ class "ActionList"
 			error("key must be a table.", 2)
 		end
 
-		if kind ~= nil and ( type(kind) ~= "string" or kind:match("^__") ) then
+		if kind ~= nil and not _IFActionTypeHandler[kind] then
 			error("value not supported.", 2)
 		end
 
@@ -618,7 +632,11 @@ class "ActionList"
 		if header then
 			if prev == header then
 				rawset(self, header, next)
-				if next then next[preKey] = prev end
+				if next then
+					next[preKey] = prev
+				else
+					_IFActionTypeHandler[kind].Enabled = false
+				end
 			else
 				prev[nxtKey] = next
 				if next then next[preKey] = prev end
@@ -639,6 +657,8 @@ class "ActionList"
 				tail[preKey] = frame
 				frame[nxtKey] = tail
 			end
+
+			_IFActionTypeHandler[kind].Enabled = true
 		end
 	end
 
@@ -1249,6 +1269,8 @@ do
 			_AutoRepeatButtons[self] = nil
 		end
 
+		_Spell4Buttons[self] = handler.GetSpellId(self)
+
 		if handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
 			UpdateGrid(self)
 		end
@@ -1386,28 +1408,14 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:PLAYER_ENTER_COMBAT()
-		for _, button in _IFActionHandler_Buttons("action") do
-			if _IsAttackAction(button) then
-				StartFlash(button)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if _IsAttackAction(button) then
-				StartFlash(button)
-			end
+		for button in pairs(_AutoAttackButtons) do
+			StartFlash(button)
 		end
 	end
 
 	function _IFActionHandler_ManagerFrame:PLAYER_LEAVE_COMBAT()
-		for _, button in _IFActionHandler_Buttons("action") do
-			if button.Flashing then
-				StopFlash(button)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if button.Flashing then
-				StopFlash(button)
-			end
+		for button in pairs(_AutoAttackButtons) do
+			StopFlash(button)
 		end
 	end
 
@@ -1416,57 +1424,38 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_ACTIVATION_OVERLAY_GLOW_SHOW(spellId)
-		for _, button in _IFActionHandler_Buttons("action") do
-			if spellId == _GetSpellId(button) then
-				ShowOverlayGlow(button)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if spellId == _GetSpellId(button) then
+		for button, id in pairs(_Spell4Buttons) do
+			if id == spellId then
 				ShowOverlayGlow(button)
 			end
 		end
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_ACTIVATION_OVERLAY_GLOW_HIDE(spellId)
-		for _, button in _IFActionHandler_Buttons("action") do
-			if spellId == _GetSpellId(button) then
-				HideOverlayGlow(button, true)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if spellId == _GetSpellId(button) then
+		for button, id in pairs(_Spell4Buttons) do
+			if id == spellId then
 				HideOverlayGlow(button, true)
 			end
 		end
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_UPDATE_CHARGES()
-		_IFActionHandler_Buttons:EachK("action", UpdateCount)
-		_IFActionHandler_Buttons:EachK("spell", UpdateCount)
+		for button, id in pairs(_Spell4Buttons) do
+			UpdateCount(button)
+		end
 	end
 
 	function _IFActionHandler_ManagerFrame:START_AUTOREPEAT_SPELL()
-		for _, button in _IFActionHandler_Buttons("action") do
-			if _IsAutoRepeatAction(button) then
-				StartFlash(button)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if _IsAutoRepeatAction(button) then
+		for button in paris(_AutoRepeatButtons) do
+			if not _AutoAttackButtons[button] then
 				StartFlash(button)
 			end
 		end
 	end
 
 	function _IFActionHandler_ManagerFrame:STOP_AUTOREPEAT_SPELL()
-		for _, button in _IFActionHandler_Buttons("action") do
-			if button.Flashing and not _IsAttackAction(button) then
-				StopFlash(button)
-			end
-		end
-		for _, button in _IFActionHandler_Buttons("spell") do
-			if button.Flashing and not _IsAttackAction(button) then
+		for button in paris(_AutoRepeatButtons) do
+			if button.Flashing and not _AutoAttackButtons[button] then
 				StopFlash(button)
 			end
 		end
@@ -1562,103 +1551,9 @@ interface "IFActionHandler"
 		@name UpdateAction
 		@type method
 		@desc Update the action, Overridable
-		@param kind System.Widget.Action.IFActionHandler.ActionType, the action's type, such like 'action', 'pet', 'spell', etc.
-		@param content string|number, the action't content, such like 'Revive' for 'spell' type
 		@return nil
 	]======]
-	function UpdateAction(self, kind, target)
-	end
-
-	doc [======[
-		@name SetActionPage
-		@type method
-		@desc Set Action Page for actionbutton
-		@param page number|nil, the action page for the action button
-		@return nil
-	]======]
-	function SetActionPage(self, page)
-		page = tonumber(page)
-		page = page and floor(page)
-		if page and page <= 0 then page = nil end
-
-		if self.ID == nil then page = nil end
-
-		if GetActionPage(self) ~= page then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(
-				function (self, page)
-					self:SetAttribute("actionpage", page)
-					if page then
-						SaveAction(self, "action", self.ID or 1)
-					else
-						SaveAction(self)
-					end
-				end,
-				self, page)
-		end
-	end
-
-	doc [======[
-		@name GetActionPage
-		@type method
-		@desc Get Action Page of action button
-		@return number the action button's action page if set, or nil
-	]======]
-	function GetActionPage(self)
-		if not IsMainPage(self) then
-			return tonumber(self:GetAttribute("actionpage"))
-		end
-	end
-
-	doc [======[
-		@name SetMainPage
-		@type method
-		@desc Set if this action button belongs to main page
-		@param isMain boolean, true if the action button belongs to main page, so its content will be automatically changed under several conditions.
-		@return nil
-	]======]
-	function SetMainPage(self, isMain)
-		isMain = isMain and true or nil
-		if self.__IFActionHandler_IsMain ~= isMain then
-			self.__IFActionHandler_IsMain = isMain
-
-			if isMain then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(
-					function (self)
-						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-						_IFActionHandler_ManagerFrame:Execute([[
-							local btn = Manager:GetFrameRef("MainPageButton")
-							if btn then
-								_MainPage[btn] = true
-								btn:SetAttribute("actionpage", MainPage[0] or 1)
-							end
-						]])
-						SaveAction(self, "action", self.ID or 1)
-					end, self)
-			else
-				IFNoCombatTaskHandler._RegisterNoCombatTask(
-					function (self)
-						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-						_IFActionHandler_ManagerFrame:Execute([[
-							local btn = Manager:GetFrameRef("MainPageButton")
-							if btn then
-								_MainPage[btn] = nil
-								btn:SetAttribute("actionpage", nil)
-							end
-						]])
-						SaveAction(self)
-					end, self)
-			end
-		end
-	end
-
-	doc [======[
-		@name function_name
-		@type method
-		@desc Whether if the action button is belong to main page
-		@return boolean true if the action button is belong to main page
-	]======]
-	function IsMainPage(self)
-		return self.__IFActionHandler_IsMain or false
+	function UpdateAction(self)
 	end
 
 	doc [======[

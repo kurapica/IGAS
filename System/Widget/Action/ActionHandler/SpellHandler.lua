@@ -10,6 +10,8 @@ end
 
 import "ActionRefreshMode"
 
+_Enabled = false
+
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
 
 _StanceMap = {}
@@ -160,6 +162,8 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

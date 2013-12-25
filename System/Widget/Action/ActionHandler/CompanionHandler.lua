@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.CompanionHandler", version) then
 	return
 end
 
+_Enabled = false
+
 _MountMapTemplate = "_MountMap[%d] = %d\n"
 _MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
 
@@ -121,6 +123,8 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

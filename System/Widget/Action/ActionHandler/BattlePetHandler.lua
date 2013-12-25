@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BattlePetHandler", version) then
 	return
 end
 
+_Enabled = false
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
@@ -43,6 +45,8 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

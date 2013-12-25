@@ -10,6 +10,8 @@ end
 
 import "ActionRefreshMode"
 
+_Enabled = false
+
 MAX_SKILLLINE_TABS = _G.MAX_SKILLLINE_TABS
 
 enum "FlyoutDirection" {
@@ -111,6 +113,8 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

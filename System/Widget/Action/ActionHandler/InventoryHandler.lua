@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.InventoryHandler", version) then
 	return
 end
 
+_Enabled = false
+
 handler = ActionTypeHandler {
 	Name = "inventory",
 
@@ -22,6 +24,8 @@ handler = ActionTypeHandler {
 
 	ReceiveSnippet = [[
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

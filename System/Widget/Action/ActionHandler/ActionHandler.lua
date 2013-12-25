@@ -10,6 +10,8 @@ end
 
 import "ActionRefreshMode"
 
+_Enabled = false
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
@@ -51,7 +53,7 @@ end
 
 function UPDATE_SUMMONPETS_ACTION(self)
 	for _, btn in handler() do
-		if GetActionCount(btn.ActionTarget) == "summonpet" then
+		if GetActionInfo(btn.ActionTarget) == "summonpet" then
 			button.Icon = GetActionTexture(btn.ActionTarget)
 		end
 	end
@@ -103,7 +105,6 @@ handler = ActionTypeHandler {
 				Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
 			end
 		]=]
-
 	]],
 
 	PickupSnippet = [[
@@ -116,11 +117,7 @@ handler = ActionTypeHandler {
 		return "clear", "action", target
 	]],
 
-	UpdateSnippet = [[
-	]],
-
-	ReceiveSnippet = [[
-	]],
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 do
@@ -257,3 +254,111 @@ function handler:GetSpellId()
 		return (select(3, GetMacroSpell(id)))
 	end
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+
+	------------------------------------------------------
+	-- Event
+	------------------------------------------------------
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	doc [======[
+		@name SetActionPage
+		@type method
+		@desc Set Action Page for actionbutton
+		@param page number|nil, the action page for the action button
+		@return nil
+	]======]
+	function SetActionPage(self, page)
+		page = tonumber(page)
+		page = page and floor(page)
+		if page and page <= 0 then page = nil end
+
+		if self.ID == nil then page = nil end
+
+		if GetActionPage(self) ~= page then
+			IFNoCombatTaskHandler._RegisterNoCombatTask(
+				function (self, page)
+					self:SetAttribute("actionpage", page)
+					if page then
+						SaveAction(self, "action", self.ID or 1)
+					else
+						SaveAction(self)
+					end
+				end,
+				self, page)
+		end
+	end
+
+	doc [======[
+		@name GetActionPage
+		@type method
+		@desc Get Action Page of action button
+		@return number the action button's action page if set, or nil
+	]======]
+	function GetActionPage(self)
+		if not IsMainPage(self) then
+			return tonumber(self:GetAttribute("actionpage"))
+		end
+	end
+
+	doc [======[
+		@name SetMainPage
+		@type method
+		@desc Set if this action button belongs to main page
+		@param isMain boolean, true if the action button belongs to main page, so its content will be automatically changed under several conditions.
+		@return nil
+	]======]
+	function SetMainPage(self, isMain)
+		isMain = isMain and true or nil
+		if self.__IFActionHandler_IsMain ~= isMain then
+			self.__IFActionHandler_IsMain = isMain
+
+			if isMain then
+				IFNoCombatTaskHandler._RegisterNoCombatTask(
+					function (self)
+						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
+						_IFActionHandler_ManagerFrame:Execute([[
+							local btn = Manager:GetFrameRef("MainPageButton")
+							if btn then
+								_MainPage[btn] = true
+								btn:SetAttribute("actionpage", MainPage[0] or 1)
+							end
+						]])
+						SaveAction(self, "action", self.ID or 1)
+					end, self)
+			else
+				IFNoCombatTaskHandler._RegisterNoCombatTask(
+					function (self)
+						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
+						_IFActionHandler_ManagerFrame:Execute([[
+							local btn = Manager:GetFrameRef("MainPageButton")
+							if btn then
+								_MainPage[btn] = nil
+								btn:SetAttribute("actionpage", nil)
+							end
+						]])
+						SaveAction(self)
+					end, self)
+			end
+		end
+	end
+
+	doc [======[
+		@name IsMainPage
+		@type method
+		@desc Whether if the action button is belong to main page
+		@return boolean true if the action button is belong to main page
+	]======]
+	function IsMainPage(self)
+		return self.__IFActionHandler_IsMain or false
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+
+endinterface "interface_name"

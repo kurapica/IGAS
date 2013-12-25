@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.MacroHandler", version) then
 	return
 end
 
+_Enabled = false
+
 handler = ActionTypeHandler {
 	Name = "macro",
 
@@ -27,6 +29,8 @@ handler = ActionTypeHandler {
 	ClearSnippet = [[
 		self:SetAttribute("macrotext", nil)
 	]],
+
+	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods
