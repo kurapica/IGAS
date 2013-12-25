@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
 -- Last Update Date 2013/12/25
--- Version          r87
+-- Version          r88
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -2387,7 +2387,6 @@ do
 			error(ret, 2)
 		end
 
-		Class1Obj(cls, obj, ...)
 		InitObjectWithInterface(cls, obj)
 
 		if info.UniqueObject then
@@ -2788,6 +2787,64 @@ do
 			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
+		end
+
+		-- Validate the interface
+		if info.ExtendInterface then
+			local cache = CACHE_TABLE()
+			local cacheIF = CACHE_TABLE()
+			local ret
+
+			for _, IF in ipairs(info.ExtendInterface) do
+				local sinfo = _NSInfo[IF]
+				local msg
+
+				wipe(cacheIF)
+
+				if sinfo.RequireMethod then
+					for name in pairs(sinfo.RequireMethod) do
+						if sinfo.Method[name] == info.Cache4Method[name] then
+							tinsert(cacheIF, name)
+						end
+					end
+
+					if #cacheIF > 0 then
+						msg = "[Method]" .. tblconcat(cacheIF, ", ")
+					end
+				end
+
+				wipe(cacheIF)
+
+				if sinfo.RequireProperty then
+					for name in pairs(sinfo.RequireProperty) do
+						if sinfo.Property[name] == info.Cache4Property[name] then
+							tinsert(cacheIF, name)
+						end
+					end
+
+					if #cacheIF > 0 then
+						msg = msg and (msg .. " ") or ""
+						msg = msg .. "[Property]" .. tblconcat(cacheIF, ", ")
+					end
+				end
+
+				if msg then
+					tinsert(cache, tostring(IF) .. " - " .. msg)
+				end
+			end
+
+			if #cache > 0 then
+				tinsert(cache, 1, tostring(info.Owner) .. " lack declaration of :")
+
+				ret = tblconcat(cache, "\n    ")
+			end
+
+			CACHE_TABLE(cacheIF)
+			CACHE_TABLE(cache)
+
+			if ret then
+				error(ret, 2)
+			end
 		end
 	end
 
@@ -4148,6 +4205,70 @@ do
 					return false
 				end
 			end
+		end
+
+		doc [======[
+			@name IsRequireMethod
+			@type method
+			@desc Whether the method is required to be overridden
+			@param ns the interface
+			@param name the method's name
+			@return boolean
+		]======]
+		function IsRequireMethod(ns, name)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and _NSInfo[ns]
+
+			return info and info.Type == TYPE_INTERFACE and info.RequireMethod and info.RequireMethod[name] or false
+		end
+
+		doc [======[
+			@name IsRequireProperty
+			@type method
+			@desc Whether the property is required to be overridden
+			@param ns the interface
+			@param name the property's name
+			@return boolean
+		]======]
+		function IsRequireProperty(ns, name)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and _NSInfo[ns]
+
+			return info and info.Type == TYPE_INTERFACE and info.RequireProperty and info.RequireProperty[name] or false
+		end
+
+		doc [======[
+			@name IsOptionalMethod
+			@type method
+			@desc Whether the method is optional to be overridden
+			@param ns the interface
+			@param name the method's name
+			@return boolean
+		]======]
+		function IsOptionalMethod(ns, name)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and _NSInfo[ns]
+
+			return info and info.Type == TYPE_INTERFACE and info.OptionalMethod and info.OptionalMethod[name] or false
+		end
+
+		doc [======[
+			@name IsOptionalProperty
+			@type method
+			@desc Whether the property is optional to be overridden
+			@param ns the interface
+			@param name the property's name
+			@return boolean
+		]======]
+		function IsOptionalProperty(ns, name)
+			if type(ns) == "string" then ns = ForName(ns) end
+
+			local info = ns and _NSInfo[ns]
+
+			return info and info.Type == TYPE_INTERFACE and info.OptionalProperty and info.OptionalProperty[name] or false
 		end
 
 		doc [======[
@@ -7791,9 +7912,11 @@ do
 			@desc Apply the attribute to the target, overridable
 			@param target the attribute's target
 			@param targetType System.AttributeTargets
+			@param owner the target's owner
+			@param name the target's name
 			@return nil
 		]======]
-		function ApplyAttribute(self, target, targetType)
+		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Pass
 		end
 
@@ -8381,6 +8504,60 @@ do
 			end
 		end
 	endclass "__InitTable__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__Require__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __Require__
+			@type class
+			@desc Whether the method or property of the interface is required to be override
+		]======]
+
+		function ApplyAttribute(self, target, targetType, owner, name)
+			local info = rawget(_NSInfo, owner)
+
+			if info and info.Type == TYPE_INTERFACE and type(name) == "string" then
+				if targetType == AttributeTargets.Method and not name:match("^_") then
+					info.RequireMethod = info.RequireMethod or {}
+					info.RequireMethod[name] = true
+				elseif targetType == AttributeTargets.Property then
+					info.RequireProperty = info.RequireProperty or {}
+					info.RequireProperty[name] = true
+				end
+			end
+		end
+	endclass "__Require__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__Optional__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __Optional__
+			@type class
+			@desc Whether the method or property of the interface is optional to be override
+		]======]
+
+		function ApplyAttribute(self, target, targetType, owner, name)
+			local info = rawget(_NSInfo, owner)
+
+			if info and info.Type == TYPE_INTERFACE and type(name) == "string" then
+				if targetType == AttributeTargets.Method and not name:match("^_") then
+					info.OptionalMethod = info.RequireMethod or {}
+					info.OptionalMethod[name] = true
+				elseif targetType == AttributeTargets.Property then
+					info.OptionalProperty = info.RequireProperty or {}
+					info.OptionalProperty[name] = true
+				end
+			end
+		end
+	endclass "__Optional__"
 end
 
 ------------------------------------------------------

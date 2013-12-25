@@ -1,4 +1,7 @@
 2013/12/25
+    __Require__ and __Optional__ attributes are added to System used to describe the requirement of the features defined in the interfaces.
+
+2013/12/25
     No cache when define types, only cache when using those types, ignore some painful problems.
 
 2013/11/29

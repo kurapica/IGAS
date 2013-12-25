@@ -880,7 +880,7 @@ class "Frame"
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
-		UnregisterAllEvents(self)
+		self:UnregisterAllEvents()
 	end
 
 	------------------------------------------------------

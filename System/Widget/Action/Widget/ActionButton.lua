@@ -311,7 +311,8 @@ class "ActionButton"
 				else
 					self.Border.Visible = false
 				end
-		end
+			end
+		end,
 		Type = Boolean,
 	}
 
