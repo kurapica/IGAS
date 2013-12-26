@@ -3,6 +3,7 @@ Loop
 
 Pure lua object-oriented program system with a special sugar syntax system. Several features contains in it:
 
+* Namespace system used to contains custom types.
 * Enum system used to define enumeration value types.
 * Struct system used to define structure value types.
 * Class system used to define object types with methods and properties settings, also with object events and meta-methods.
@@ -11,6 +12,7 @@ Pure lua object-oriented program system with a special sugar syntax system. Seve
 * Attribute system used to give descriptions for every parts of the system: enum, struct, class, interface, method, property, event.
 * Overload system used to apply several definitions for class's constructor, method or meta-method with the same name.
 
+
 Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now, or you can provide them in another way.
 
 
@@ -18,7 +20,7 @@ Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy**
 How to use
 ====
 
-Use loadfile or require to load the class.lua file in the folder. Then you can try the below code:
+Use loadfile or require to load the **class.lua** file in the folder. Then you can try the below code:
 
 	do
 		-- Define a class
@@ -86,7 +88,7 @@ In the namespace system, we can access those features like classes, interfaces, 
 A full path looks like **System.Forms.EditBox**, a combination of words separated by '.', in the example, **System**, **System.Forms** and **System.Forms.EditBox** are all namespaces, the namespace can be a pure namespace used only to contains other namespaces, but also can be classes, interfaces, structs or enums, only eums can't contains other namespaces.
 
 
-The **import** function is used to save the target namespace into current environment, the 1st paramter is a string that contains the full path of the target namespace, so we can share the classes and other features in many lua files(environments), the 2nd paramter is a boolean, if true, then all the sub-namespace of the target namespace will be saved to the current environment too.
+The **import** function is used to save the target namespace into current environment, the 1st paramter is a string that contains the full path of the target namespace, so we can share the classes and other features in many lua files(environments), the 2nd paramter is a boolean value, if true, then all the sub-namespace of the target namespace will be saved to the current environment too.
 
     import (name[, all])
 
@@ -129,36 +131,34 @@ The namespace system is used to share features like classes, if you don't declar
 enum
 ====
 
-enum is used to defined new value types with enumerated values.
+enum is used to define new value types with enumerated values.
 
-First, an example used to show how to create a new enum type :
+First, an example is used to show how to create a new enum type :
 
 	import "System"
 
 	-- Define a enum data type
 	enum "Week" {
-		SUNDAY = 0,
-		MONDAY = 1,
-		TUESDAY = 2,
-		WEDNESDAY = 3,
-	    THURSDAY = 4,
-	    FRIDAY = 5,
-	    SATURDAY = 6,
-	    "None",
+		"Sunday",
+		Monday = "Monday",
+		"Tuesday",
+		Wednesday = 3,
+	    thur = "Thursday",
+	    "Friday",
+	    "Saturday",
 	}
 
-	-- All output : 0
-	-- Access the values like table field, just case ignored
-	print( Week.sunday )
-	print( Week.Sunday )
-	print( Week.SunDay )
+	-- Access the values like table field, case ignored
+	print( Week.SuNday )	-- Sunday
+	print( Week.Sunday )	-- Sunday
+	print( Week.THUR )		-- Thursday
 
-	-- Output : 'None'
-	print( Week.none )
+	print( Week.wedNesday )	-- 3
 
 	-- Call the enum as a function, parse the value to the text
 	-- Output : 'WEDNESDAY'
 	print( Week( 3 ) )
+
 
 The true format of the 'enum' function is
 
@@ -166,20 +166,21 @@ The true format of the 'enum' function is
 
 The **name** is a common string word, **enum(name)** should return a function to receive a table as the definition of the enum data type.
 
-In the **table**, for each key-value pairs, if the key is **string**, the key would be used as the value's name, if the key is a number and the value is a string, the value should be used as the value's name, so the 'None' is the value's name in the enum **Week**.
+In the **table**, for each key-value pairs, if the key is **string**, the key would be used as the value's name, if the key is a number and the value is a string, the value should be used as the value's name, so the 'Sunday' is the value's name in the enum **Week**.
 
-So, you can get the value of an enumeration like a field, and get the enumeration from the value like a function call, it's a simple value type.
+So, you can get the value of an enumeration like a case ignored field, and get the enumeration from the value like a function call, it's a simple value type.
+
 
 ---
+
 
 Sometimes, we may need use the enum values as a combination, like Week.SUNDAY + Week.SATURDAY as the weekend days. We could use the `System.__Flags__` attribute to mark the enum data type as bit flags data type (The Attribute system will be explained later, using `System.__Flags__` is so simple so just remember it).
 
 Here is the full example :
 
-	-- So, no need use full path like System.__Flags__
-	import ( "System", true )
+	import "System"
 
-	__Flags__()
+	System.__Flags__()
 	enum "Week" {
 		SUNDAY = 1,
 		MONDAY = 2,
@@ -187,9 +188,11 @@ Here is the full example :
 		WEDNESDAY = 8,
 	    THURSDAY = 16,
 	    FRIDAY = 32,
-	    SATURDAY = 64,
-	    "None",
+	    "SATURDAY",
 	}
+
+	-- Output : 64
+	print( Week.SATURDAY )
 
 	-- Output : 65
 	print( Week.SUNDAY + Week.SATURDAY )
@@ -197,20 +200,10 @@ Here is the full example :
 	-- Output : SATURDAY	SUNDAY
 	print( Week( 65 ) )
 
-	-- Output : true
-	print( Reflector.ValidateFlags( Week.SATURDAY, 65 ) )
 
-	-- Output : false
-	print( Reflector.ValidateFlags( Week.TUESDAY, 65 ) )
+The enumeration values should be 2^n, and the system would provide auto values if no value is set or not correct, so the Week.SATURDAY is 64.
 
-	-- Ouput : 128
-	print( Week.None )
-
-
-The enumeration values should be 2^n, and the system would provide auto values if no value is set or not correct, so the Week.None is 128.
-
-So use the enum type as function to parse the value, will return multi-values of the combination. When you want check some bit flags is on for the value, you can check it by yourself(it's only number values), or just use the function **System.Reflector.ValidateFlags** that provided by the system.
-
+So use the enum type as function to parse the value, will return multi-values of the combination.
 
 
 struct
@@ -218,7 +211,7 @@ struct
 
 The main purpose of the struct system is used to validate values, for lua, the values can be boolean, number, string, function, userdata, thread and table.
 
-And in the **System** namespace, each basic data type have a struct type defined for it :
+And in the **System** namespace, each basic data type have a **custom** struct type defined for it :
 
 * System.Boolean - The value should be mapped to true or false, no validation
 * System.String  - means the value should match : type(value) == "string"
@@ -228,6 +221,7 @@ And in the **System** namespace, each basic data type have a struct type defined
 * System.Thread  - means the value should match : type(value) == "thread"
 * System.Table  - means the value should match : type(value) == "table"
 * System.RawTable  - means the value should match : type(value) == "table" and getmetatable(value) == nil
+* System.Any - Any value
 
 Those are the **basic** struct types, take the **System.Number** as an example to show how to use :
 
@@ -239,13 +233,11 @@ Those are the **basic** struct types, take the **System.Number** as an example t
 	-- Error : [Number] must be a number, got string.
 	print( System.Number( '123' ))
 
-All structs can used to validate values. ( Normally, you only need to declare where and what type is needed.)
+All structs can be used to validate values. ( Normally, you only need to declare where and what type is needed, the validation will be done by the system.)
 
 When the value is a table, and we may expect the table contains fields with expected type values, and the **System.Table** can only be used to check whether the value is a table.
 
 Take a position table as the example, we may expect the table has two fields : **x** - the horizontal position, **y** - the vertical position, and the fields' values should all be numbers. So, we can declare a **member** struct type like :
-
-	import "System"
 
 	struct "Position"
 		x = System.Number
@@ -259,7 +251,7 @@ The expression *x = System.Number*, the left part **x** is the member name, the 
 * For a given class, the value should be objects that created from the class.
 * For a given interface, the value should be objects whose class extend from the interface.
 * For a given enum, the value should be the enum value or the value's name.
-* For a given struct, the value that can pass the validation of the struct.
+* For a given struct, the value should pass the validation of the struct.
 
 So, we can test the custom struct now :
 
