@@ -1,7 +1,7 @@
-Loop
+Pure lua object-oriented program system
 ====
 
-Pure lua object-oriented program system with a special sugar syntax system. Several features contains in it:
+PLoop provide a oop system with a special sugar syntax system. Several features contains in it:
 
 * Namespace system used to contains custom types.
 * Enum system used to define enumeration value types.
@@ -9,8 +9,8 @@ Pure lua object-oriented program system with a special sugar syntax system. Seve
 * Class system used to define object types with methods and properties settings, also with object events and meta-methods.
 * Interface system used to define interfaces for class objects.
 
-* Attribute system used to give descriptions for every parts of the system: enum, struct, class, interface, method, property, event.
-* Overload system used to apply several definitions for class's constructor, method or meta-method with the same name.
+* Attribute system used to give descriptions for every parts of the system: enum, struct, class, interface, method, property, event. Those are useful for frameworks and adding system features in a good manner.
+* Overload system used to apply several definitions for class's constructor, method or meta-method with the same name, will make the config features easily to be defined.
 
 
 Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy** api is removed from Lua 5.2, the system won't works on it now, or you can provide them in another way.
@@ -20,7 +20,7 @@ Now, it only works for Lua 5.1. Since the **getfenv**, **setfenv**, **newproxy**
 How to use
 ====
 
-Use loadfile or require to load the **class.lua** file in the folder. Then you can try the below code:
+Use loadfile or require to load the **PLoop.lua** file in the folder. Then you can try the below code:
 
 	do
 		-- Define a class
@@ -93,7 +93,7 @@ The **import** function is used to save the target namespace into current enviro
     import (name[, all])
 
 
-If you already load the class.lua, you can try some example :
+If you already load the PLoop.lua, you can try some example :
 
 	import "System"  -- Short for import( "System" ), just want make it looks like a keyword
 
@@ -105,7 +105,7 @@ If you already load the class.lua, you can try some example :
 
 	print( Object )          -- Output : System.Object
 
-The System is a root namespace defined in the class.lua file, some basic features are defined in the namespace, such like **System.Object**, could be used as the super class of other classes(Unlike other oop system, there is no default super class, for lua, simple is good).
+The System is a root namespace defined in the PLoop.lua file, some basic features are defined in the namespace, such like **System.Object**, could be used as the super class of other classes(Unlike other oop system, there is no default super class, for lua, simple is good).
 
 Also you can see, **Object** is a sub-namespace in **System**, we can access it just like a field in the **System**.
 
@@ -246,7 +246,9 @@ Take a position table as the example, we may expect the table has two fields : *
 
 Here, **struct** keyword is used to begin the declaration, and **endstruct** keyword is used to end the declaration. Anything defined between them will be the definition of the struct.
 
-The expression *x = System.Number*, the left part **x** is the member name, the right part **System.Number** is the member's type, the type can be any classes, interfaces, enums or structs :
+The expression *x = System.Number*, the left part **x** is the member name, the right part **System.Number** is the member's type.
+
+the type can be any classes, interfaces, enums or structs :
 
 * For a given class, the value should be objects that created from the class.
 * For a given interface, the value should be objects whose class extend from the interface.
@@ -271,9 +273,78 @@ So, we can test the custom struct now :
 	-- Output : 110	-	200
 	print(pos.x, '-', pos.y)
 
+
 ---
 
-In the previous example, the **x** and **y** field can't be nil, we can re-define it to make the field accpet nil value :
+In the struct's definition, there is no need to use `import "System"` to import the **System** namespace, the root namespace like **System** can be accessed directly, if you want use **Number** directly, also, can use `import "System"` like :
+
+	struct "Position"
+		import "System"
+
+		x = System.Number
+		y = System.Number
+	endstruct "Position"
+
+The struct is the first type that defined with those special syntax, so here is an explanation :
+
+* PLoop is designed based on controlling lua environment, so all type definitions can be tracke by the PLoop system and won't effect the common lua coding.
+
+* The struct keyword start the declaration, and also changed the current lua environment to a private table for the struct type's definition
+
+* The private environment can access any global features in the outside environment (mostly _G) , also has a cache system to increase performance, so normally you don't need to care how the track system working.
+
+* The private environment can access any root namespaces such like **System** directly, also can access any sub-namespaces of the namespaces that imported, so **Number** can be accessed just by import the **System**, those features can't be done in the _G.
+
+* There is no need to use **namespace** to give a namespace for the private environment, the private environment's namespace is the struct type itself.
+
+* The code of the definition will be running in the private environment, so the PLoop system can track all the special defintions like `x = System.Number`, this is a simple assignment, but the value is a type, so the PLoop system know the **x** is a field of the struct.
+
+* Except the special defintions, other definitions will be passed to do the default job, like :
+
+		struct "Position"
+			import "System"
+
+			-- Simple lua code
+			a = 123
+			print(a)
+
+			-- Special definition
+			x = System.Number
+			y = System.Number
+		endstruct "Position"
+
+		-- nil, a is defined in the private environment, no where get it
+		print(a)
+
+* endstruct is used to finished the defintion of the struct, and change back the lua environment, so the **struct ... enstruct** works just like define a function to keep all code in one piece.
+
+* The struct can be redefined any times(we'll see how to disable it in later), each time a new private environment will be used to make sure the previous defintion won't affect the new one :
+
+
+		struct "Position"
+			import "System"
+
+			-- Simple lua code
+			x = 123
+
+			-- Special definition
+			y = System.Number
+		endstruct "Position"
+
+		struct "Position"
+			import "System"
+
+			-- Special definition
+			x = System.Number
+			y = System.Number
+		endstruct "Position"
+
+	If the redefine code using the same private environment, and **x** has a value 123, then `x = System.Number` won't be tracked by the system, so **x** won't be treated as a struct's field. Each time using a new private environment will keep the problem out the way.
+
+
+---
+
+In the previous example, the **x** and **y** field can't be nil, we can redefine it to make the field accpet nil value :
 
 	struct "Position"
 		x = System.Number + nil
@@ -287,7 +358,7 @@ Normally, the type part can be a combination of lots types seperated by '+', **n
 
 ---
 
-If you want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method, and just remeber to **return the value** in the **Validate** method.
+If you want default values for the fields, we can add a **Validate** method in the definition, this is a special method used to do custom validations, so we can do some changes in the method.
 
 	struct "Position"
 		x = System.Number + nil
@@ -296,8 +367,6 @@ If you want default values for the fields, we can add a **Validate** method in t
 		function Validate(value)
 			value.x = value.x or 0
 			value.y = value.y or 0
-
-			return value
 		end
 	endstruct "Position"
 
@@ -322,7 +391,7 @@ Or you can use a method with the name of the struct, the method should be treate
 		end
 	endstruct "Position"
 
-	-- Use struct type as a validator won't go through the constructor
+	-- Use struct type as validator won't go through the constructor
 	pos = Position {x = 111}
 
 	-- Output : 111	-	nil
@@ -340,7 +409,7 @@ Or you can use a method with the name of the struct, the method should be treate
 	print(pos.x, '-', pos.y)
 
 
-There are not many things can be done in the constructor, so it's better to throw it away and let the struct system do the jobs.
+There are not many things can be done in the constructor, the struct know how to create tables based on the field settings, and the **Validate** function works better than the constructor, so just forget it normally.
 
 ---
 
@@ -352,15 +421,13 @@ In sometimes, we need validate the values and fire new errors, those operations 
 
 		function Validate(value)
 			assert(value.min <= value.max, "%s.min can't be greater than %s.max.")
-
-			return value
 		end
 	endstruct "MinMax"
 
 	-- Error : Usage : MinMax(min, max) - min can't be greater than max.
 	minmax = MinMax(200, 100)
 
-In the error message, there are two "%s" used to represent the value, and will be replaced by the validation system considered by where it's using. Here an example to show :
+In the error message, there are two "%s." used to represent the value, and will be replaced by the validation system considered by where it's using. Here an example to show :
 
 	struct "Value"
 		value = System.Number
@@ -372,6 +439,8 @@ In the error message, there are two "%s" used to represent the value, and will b
 
 So, you can quickly find where the error happened.
 
+Remember, when a value is passed to the **Validate** method, it has already passed the type checking, so no need to check it again in your custom validation.
+
 ---
 
 We also may want to validate numeric index table of a same type values, like a table contains only string values :
@@ -380,9 +449,9 @@ We also may want to validate numeric index table of a same type values, like a t
 
 We can declare a **array** struct for those types (A special attribtue for the struct):
 
-	import("System", true)
+	import "System"
 
-	__StructType__( "array" )
+	System.__StructType__( "array" )
 	struct "StringTable"
 		element = String
 	endstruct "StringTable"
@@ -390,9 +459,75 @@ We can declare a **array** struct for those types (A special attribtue for the s
 	-- Error : Usage : StringTable(...) - [3] must be a string, got number.
 	a = StringTable{"Hello", "World", 3}
 
-The **"array"** is enumeration value of System.StructType, so the real code : `System.__StructType__( System.StructType.Array )`, since we import all from **System** namespace, so we can use **String** instead of **System.String** too.
+It's looks like the **member** struct, but the field name **element** has no means, it's just used to decalre the element's type, you can use **element**, **ele** or anything else.
 
-It's looks like the **member** struct, but the member name **element** has no means, it's just used to decalre the element's type, you can use **element**, **ele** or anything else.
+The **"array"** is an enumeration value of System.StructType, there are three type structs, **"custom"**, **"member"** and **"array"**, **"custom"** is used for special values that not table, all has be defined in the **System** namespace like **System.Number**, if no struct type is specified by `__StructType__`, **"member"** is the default type, so we only need use the attribute when defining an array struct type.
+
+
+---
+
+Now, let's defined a special struct type :
+
+	struct "Person"
+		import "System"
+
+		__StructType__( "array" )
+		struct "Children"
+			ele = Person
+		endstruct "Children"
+
+		enum "Gender" {
+			"male",
+			"female",
+		}
+
+		name = String
+		gender = Gender
+		father = Person + nil
+		mother = Person + nil
+		children = Children + nil
+
+		-- generate the relationship
+		function Validate(value)
+			if value.children then
+				for _, child in ipairs(value.children) do
+					if value.gender == Gender.Male then
+						child.father = value
+					else
+						child.mother = value
+					end
+				end
+			end
+		end
+
+	endstruct "Person"
+
+The **Person** struct is a **member** struct type, it contains an enum type named **Gender**, like I said, the private environment using the struct type as the namespace, so the enum can be accessed like **Person.Gender**.
+
+Also an **array** struct type is defined in it with name **Children**, specially, it using **Person** as its element's type, when using `struct "Person"`, the **Person** struct type is created and can be used, no matter it's definition is finished or not.
+
+The **Person** struct need a **name** field to store its name, **gender** to store its gender, and three optional field to store the relationship between the person objects.
+
+Also a custom validation is added to generate the relationship for person objects, here is the test :
+
+	king = Person {
+		name = "King",
+		gender = "male",
+		children = {
+			Person {
+				name = "Ann",
+				gender = "female",
+				children = {
+					Person ("Kite", "female"),
+				},
+			},
+		}
+	}
+
+	kite = king.children[1].children[1]
+
+	-- king
+	print(kite.mother.father.name)
 
 ---
 
@@ -451,7 +586,7 @@ Since the **Person** class is a empty class, the **obj** just works as a normal 
 Method
 ----
 
-Calling an object's method is like sending a message to the object, so the object can do some operations. Take the **Person** class as an example, re-define it :
+Calling an object's method is like sending a message to the object, so the object can do some operations. Take the **Person** class as an example, redefine it :
 
 	class "Person"
 
@@ -1247,7 +1382,7 @@ The **inherit** keyword can only be used in the class definition. In the previou
 
 		endclass "B"
 
-	But when re-define the **A** class, the **oldPrint** would point to an old version **Print** method, it's better to avoid, unless you don't need to re-define any features.
+	But when redefine the **A** class, the **oldPrint** would point to an old version **Print** method, it's better to avoid, unless you don't need to redefine any features.
 
 * Like the object methods, override the metamethods is the same, take **__call** as example, **super.__call** can be used to retrieve the superclass's **__call** metamethod.
 
@@ -1647,9 +1782,9 @@ For now, we introduced the namespace, enum, struct, class and interface. Let's d
 
 The first thing is about the feature's re-definition.
 
-* Only features defined in the same namespace or the same private environment can be re-defined, so, if there is a class **System.Widget.Frame**, in your program, you import "System.Widget", and define a new class **Frame**, it won't re-define the **System.Widget.Frame**, but if you declare your program in **System.Widget** namespace, you can re-define it.
+* Only features defined in the same namespace or the same private environment can be redefined, so, if there is a class **System.Widget.Frame**, in your program, you import "System.Widget", and define a new class **Frame**, it won't redefine the **System.Widget.Frame**, but if you declare your program in **System.Widget** namespace, you can redefine it.
 
-* For Enum : re-define enums would clear all settings.
+* For Enum : redefine enums would clear all settings.
 
 		enum "EnumType" {
 			"First",
@@ -1668,7 +1803,7 @@ The first thing is about the feature's re-definition.
 		-- Output : Third is not an enumeration value of EnumType.
 		print(EnumType.Third)
 
-* For Struct : re-define struct would clear all settings.
+* For Struct : redefine struct would clear all settings.
 
 		struct "Position"
 			x = System.Number
@@ -1686,7 +1821,7 @@ The first thing is about the feature's re-definition.
 		-- Output : 1	2	nil
 		print(p.x, p.y, p.z)
 
-* For Class : re-define class wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the class is okay.
+* For Class : redefine class wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the class is okay.
 
 		class "ClsA"
 			property "Name" { Type = System.String }
@@ -1713,7 +1848,7 @@ The first thing is about the feature's re-definition.
 		o:Walk()
 
 
-＊ For Interface : re-define interface wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the interface is okay.
+＊ For Interface : redefine interface wouldn't clear previous settings. Object would receive new features. If you want add new method to it, just set the new method to the interface is okay.
 
 		-- Follow previous example
 		interface "IFAge"
@@ -1776,7 +1911,7 @@ And you should get :
 			UnBlockEvent　-　Un-Block some events for the object
 
 
-* The first line : [__Final__] means the class is a final class, it can't be re-defined, it's an attribute description, will be explained later.
+* The first line : [__Final__] means the class is a final class, it can't be redefined, it's an attribute description, will be explained later.
 
 * The next part is the description for the class.
 
@@ -2386,7 +2521,7 @@ The whole attribute system is built on the `System.__Attribute__` class. Here is
 `System.__Final__`
 ----
 
-The first line show the class is a final class, `System.__Final__` is a class inherited from the `System.__Attribute__` and used to mark the class, interface, struct and enum as final, final features can't be re-defined. Here is an example, Form now on, using **Module** as the environment :
+The first line show the class is a final class, `System.__Final__` is a class inherited from the `System.__Attribute__` and used to mark the class, interface, struct and enum as final, final features can't be redefined. Here is an example, Form now on, using **Module** as the environment :
 
 	Module "A" ""
 
@@ -2396,7 +2531,7 @@ The first line show the class is a final class, `System.__Final__` is a class in
 	class "A"
 	endclass "A"
 
-	-- Error : The class is final, can't be re-defined.
+	-- Error : The class is final, can't be redefined.
 	class "A"
 	endclass "A"
 
@@ -2463,7 +2598,7 @@ So, take the `__Final__` class as an example to show how the `__AttributeUsage__
 	[Class] System.__Final__ :
 
 	Description :
-		Mark the class|interface|struct|enum to be final, and can't be re-defined again
+		Mark the class|interface|struct|enum to be final, and can't be redefined again
 
 
 	Super Class :
@@ -2951,7 +3086,7 @@ The `__Table__` attribute is used on the struct, used to mark the struct with th
 
 The `__Field__` attribute is used on the field, used to mark the field to a field of a datatable, the **Name** to the field's name, **Index** to the field's display index, and the **Type** to the field's type (not the type of the Loop).
 
-So, here re-define the **Person** struct :
+So, here redefine the **Person** struct :
 
 	Module "DataTable" ""
 

@@ -150,13 +150,13 @@ do
 	DISPOSE_METHOD = "Dispose"
 
 	-- Namespace field
-	NAMESPACE_FIELD = "__LOOP_NameSpace"
+	NAMESPACE_FIELD = "__PLOOP_NameSpace"
 
 	-- Owner field
-	OWNER_FIELD = "__LOOP_OWNER"
+	OWNER_FIELD = "__PLOOP_OWNER"
 
 	-- Base env field
-	BASE_ENV_FIELD = "__LOOP_BASE_ENV"
+	BASE_ENV_FIELD = "__PLOOP_BASE_ENV"
 end
 
 ------------------------------------------------------
@@ -3172,11 +3172,17 @@ do
 		end
 	end
 
+	-- Some struct object may ref to each others, that would crash the validation
+	_ValidatedCache = setmetatable({}, {__mode = "k"})
+
 	function ValidateStruct(strt, value)
 		local info = _NSInfo[strt]
 
 		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
-			assert(type(value) == "table", ("%s must be a table, got %s."):format("%s", type(value)))
+			if type(value) ~= "table" then
+				wipe(_ValidatedCache)
+				error(("%s must be a table, got %s."):format("%s", type(value)))
+			end
 
 			for _, n in ipairs(info.Members) do
 				value[n] = info.StructEnv[n]:Validate(value[n])
@@ -3184,7 +3190,10 @@ do
 		end
 
 		if info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-			assert(type(value) == "table", ("%s must be a table, got %s."):format("%s", type(value)))
+			if type(value) ~= "table" then
+				wipe(_ValidatedCache)
+				error(("%s must be a table, got %s."):format("%s", type(value)))
+			end
 
 			local flag, ret
 			local ele = info.ArrayElement
@@ -3201,13 +3210,25 @@ do
 						ret = ret:gsub("%%s([_%w]+)", "%%s["..i.."]")
 					end
 
-					assert(false, ret)
+					wipe(_ValidatedCache)
+					error(ret)
 				end
 			end
 		end
 
 		if type(info.UserValidate) == "function" then
-			value = info.UserValidate(value)
+			local flag, ret = pcall(info.UserValidate, value)
+
+			if not flag then
+				ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
+
+				wipe(_ValidatedCache)
+				error(ret)
+			end
+
+			if info.SubType == _STRUCT_TYPE_CUSTOM and ret ~= nil then
+				value = ret
+			end
 		end
 
 		return value
