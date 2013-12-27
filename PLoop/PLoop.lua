@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/12/25
--- Version          r88
+-- Last Update Date 2013/12/27
+-- Version          r89
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -3173,45 +3173,50 @@ do
 	end
 
 	-- Some struct object may ref to each others, that would crash the validation
-	_ValidatedCache = setmetatable({}, {__mode = "k"})
+	_ValidatedCache = setmetatable({}, {__mode = "kv"})
 
 	function ValidateStruct(strt, value)
+		if _ValidatedCache[value] then return value end
+
 		local info = _NSInfo[strt]
 
-		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+		if info.SubType ~= _STRUCT_TYPE_CUSTOM then
 			if type(value) ~= "table" then
 				wipe(_ValidatedCache)
 				error(("%s must be a table, got %s."):format("%s", type(value)))
 			end
 
-			for _, n in ipairs(info.Members) do
-				value[n] = info.StructEnv[n]:Validate(value[n])
-			end
-		end
-
-		if info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-			if type(value) ~= "table" then
-				wipe(_ValidatedCache)
-				error(("%s must be a table, got %s."):format("%s", type(value)))
+			if not _ValidatedCache[1] then
+				_ValidatedCache[1] = value
 			end
 
-			local flag, ret
-			local ele = info.ArrayElement
+			_ValidatedCache[value] = true
 
-			for i, v in ipairs(value) do
-				flag, ret = pcall(ele.Validate, ele, v)
+			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+				for _, n in ipairs(info.Members) do
+					value[n] = info.StructEnv[n]:Validate(value[n])
+				end
+			end
 
-				if flag then
-					value[i] = ret
-				else
-					ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
+			if info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+				local flag, ret
+				local ele = info.ArrayElement
 
-					if ret:find("%%s([_%w]+)") then
-						ret = ret:gsub("%%s([_%w]+)", "%%s["..i.."]")
+				for i, v in ipairs(value) do
+					flag, ret = pcall(ele.Validate, ele, v)
+
+					if flag then
+						value[i] = ret
+					else
+						ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
+
+						if ret:find("%%s([_%w]+)") then
+							ret = ret:gsub("%%s([_%w]+)", "%%s["..i.."]")
+						end
+
+						wipe(_ValidatedCache)
+						error(ret)
 					end
-
-					wipe(_ValidatedCache)
-					error(ret)
 				end
 			end
 		end
@@ -3228,6 +3233,12 @@ do
 
 			if info.SubType == _STRUCT_TYPE_CUSTOM and ret ~= nil then
 				value = ret
+			end
+		end
+
+		if info.SubType ~= _STRUCT_TYPE_CUSTOM then
+			if _ValidatedCache[1] == value then
+				wipe(_ValidatedCache)
 			end
 		end
 
