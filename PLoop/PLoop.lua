@@ -3236,10 +3236,8 @@ do
 			end
 		end
 
-		if info.SubType ~= _STRUCT_TYPE_CUSTOM then
-			if _ValidatedCache[1] == value then
-				wipe(_ValidatedCache)
-			end
+		if info.SubType ~= _STRUCT_TYPE_CUSTOM and _ValidatedCache[1] == value then
+			wipe(_ValidatedCache)
 		end
 
 		return value
