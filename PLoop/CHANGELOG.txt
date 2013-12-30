@@ -1,3 +1,6 @@
+2013/12/30
+    __Synthesize__ attribtue added, used to auto-generate methods bodys for property accessors.
+
 2013/12/27
     Loop renamed to PLoop, avoid with the existed lua oop lib.
 

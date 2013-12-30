@@ -26,7 +26,7 @@ do
 
 	_ActionTypeMap = {}
 	_ActionTargetMap = {}
-	_ActionTargetMap2 = {}
+	_ActionTargetDetail = {}
 
 	_AutoAttackButtons = setmetatable({}, {__mode = "k"})
 	_AutoRepeatButtons = setmetatable({}, getmetatable(_AutoAttackButtons))
@@ -138,7 +138,7 @@ interface "IFActionTypeHandler"
 		@return detail
 	]======]
 	function GetActionDetail(self)
-		return self:GetAttribute(_ActionTargetMap[self.Name]), _ActionTargetMap2[self.Name] and self:GetAttribute(_ActionTargetMap2[self.Name])
+		return self:GetAttribute(_ActionTargetMap[self.Name]), _ActionTargetDetail[self.Name] and self:GetAttribute(_ActionTargetDetail[self.Name])
 	end
 
 	doc [======[
@@ -372,11 +372,11 @@ interface "IFActionTypeHandler"
 	property "Target" { Type = String + nil }
 
 	doc [======[
-		@name Target2
+		@name Detail
 		@type property
-		@desc The 2nd target attribute name
+		@desc The detail attribute name
 	]======]
-	property "Target2" { Type = String + nil }
+	property "Detail" { Type = String + nil }
 
 	doc [======[
 		@name IsPlayerAction
@@ -467,10 +467,10 @@ interface "IFActionTypeHandler"
 		-- Register action type map
 		_ActionTypeMap[self.Name] = self.Type
 		_ActionTargetMap[self.Name] = self.Target
-		_ActionTargetMap2[self.Name]  = self.Target2
+		_ActionTargetDetail[self.Name]  = self.Detail
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Name, self.Type) )
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetMap", self.Name, self.Target) )
-		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetMap2", self.Name, self.Target2) )
+		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetDetail", self.Name, self.Detail) )
 
 		-- Init the environment
 		if self.InitSnippet then self:RunSnippet( self.InitSnippet ) end
@@ -498,6 +498,13 @@ interface "IFActionTypeHandler"
 
 		-- Register PickupMap
 		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) )
+
+		-- Clear
+		self.InitSnippet = nil
+		self.PickupSnippet = nil
+		self.UpdateSnippet = nil
+		self.ReceiveSnippet = nil
+		self.ClearSnippet = nil
     end
 endinterface "IFActionTypeHandler"
 
@@ -610,7 +617,7 @@ class "ActionList"
 			error("value not supported.", 2)
 		end
 
-		kind = kind and kind:lower()
+		kind = kind and strlower(kind)
 
 		local preKey = "__ActionList_Prev"
 		local nxtKey = "__ActionList_Next"
@@ -685,13 +692,14 @@ do
 	_IFActionHandler_ManagerFrame = SecureFrame("IGAS_IFActionHandler_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
 	_IFActionHandler_ManagerFrame.Visible = false
 
-	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target, target2)
+	-- Custom pick up handler
+	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target, detail)
 		if not InCombatLockdown() then
-			return PickupAny("clear", kind, target, target2)
+			return PickupAny("clear", kind, target, detail)
 		end
 	end
 
-	-- Recycle
+	-- Spell activation alert recycle manager
 	_RecycleAlert = Recycle(SpellActivationAlert, "SpellActivationAlert%d", _IFActionHandler_ManagerFrame)
 
 	-- Timer
@@ -703,7 +711,7 @@ do
 	_IFActionHandler_FlashingTimer.Enabled = false
 	_IFActionHandler_FlashingTimer.Interval = _FlashInterval
 
-	_IFActionHandler_FlashingList = {}
+	_IFActionHandler_FlashingList = setmetatable({}, getmetatable(_AutoAttackButtons))
 
 	------------------------------------------------------
 	-- Snippet Definition
@@ -718,7 +726,7 @@ do
 
 			_ActionTypeMap = newtable()
 			_ActionTargetMap = newtable()
-			_ActionTargetMap2 = newtable()
+			_ActionTargetDetail = newtable()
 
 			_ReceiveMap = newtable()
 			_PickupMap = newtable()
@@ -739,8 +747,8 @@ do
 
 					self:SetAttribute("type", nil)
 					self:SetAttribute(_ActionTargetMap[name], nil)
-					if _ActionTargetMap2[name] then
-						self:SetAttribute(_ActionTargetMap2[name], nil)
+					if _ActionTargetDetail[name] then
+						self:SetAttribute(_ActionTargetDetail[name], nil)
 					end
 
 					-- Custom clear
@@ -758,7 +766,7 @@ do
 					Manager:RunFor(
 						self, _UpdateSnippet[name],
 						self:GetAttribute(_ActionTargetMap[name]),
-						_ActionTargetMap2[name] and self:GetAttribute(_ActionTargetMap2[name])
+						_ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
 					)
 				end
 
@@ -768,10 +776,10 @@ do
 			DragStart = [=[
 				local name = self:GetAttribute("actiontype")
 
-				if not _DragStyle[name] or _DragStyle[name] == "Block" then return false end
+				if _DragStyle[name] == "Block" then return false end
 
 				local target = self:GetAttribute(_ActionTargetMap[name])
-				local target2 = _ActionTargetMap2[name] and self:GetAttribute(_ActionTargetMap2[name])
+				local detail = _ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
 
 				-- Clear and refresh
 				if _DragStyle[name] == "Clear" then
@@ -781,17 +789,17 @@ do
 
 				-- Pickup the target
 				if _PickupSnippet[name] == "Custom" then
-					Manager:CallMethod("OnPickUp", name, target, target2)
+					Manager:CallMethod("OnPickUp", name, target, detail)
 					return false
 				elseif _PickupSnippet[name] then
-					return Manager:RunFor(self, _PickupSnippet[name], target, target2)
+					return Manager:RunFor(self, _PickupSnippet[name], target, detail)
 				else
-					return "clear", _PickupMap[name], target, target2
+					return "clear", _PickupMap[name], target, detail
 				end
 			]=]
 
 			ReceiveDrag = [=[
-				local kind, value, detail, extra = ...
+				local kind, value, extra, extra2 = ...
 
 				if not kind or not value then return false end
 
@@ -800,19 +808,19 @@ do
 				if _ReceiveStyle[oldName] == "Block" then return false end
 
 				local oldTarget = oldName and self:GetAttribute(_ActionTargetMap[oldName])
-				local oldTarget2 = oldName and _ActionTargetMap2[oldName] and self:GetAttribute(_ActionTargetMap2[oldName])
+				local oldDetail = oldName and _ActionTargetDetail[oldName] and self:GetAttribute(_ActionTargetDetail[oldName])
 
 				if _ReceiveStyle[oldName] == "Clear" then
 					Manager:RunFor(self, ClearAction)
 
 					local name = _ReceiveMap[kind]
-					local target, target2
+					local target, detail
 
 					if name then
 						if _ReceiveSnippet[name] then
-							target, target2 = Manager:RunFor(self, _ReceiveSnippet[name], value, detail, extra)
+							target, detail = Manager:RunFor(self, _ReceiveSnippet[name], value, extra, extra2)
 						else
-							target, target2 = value, detail
+							target, detail = value, detail
 						end
 
 						if target then
@@ -821,8 +829,8 @@ do
 							self:SetAttribute("type", _ActionTypeMap[name])
 							self:SetAttribute(_ActionTargetMap[name], target)
 
-							if target2 ~= nil and _ActionTargetMap2[name] then
-								self:SetAttribute(_ActionTargetMap2[name], target2)
+							if detail ~= nil and _ActionTargetDetail[name] then
+								self:SetAttribute(_ActionTargetDetail[name], detail)
 							end
 						end
 					end
@@ -832,17 +840,17 @@ do
 
 				-- Pickup the target
 				if _PickupSnippet[oldName] == "Custom" then
-					Manager:CallMethod("OnPickUp", oldName, oldTarget, oldTarget2)
+					Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
 					return false
 				elseif _PickupSnippet[oldName] then
-					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldTarget2)
+					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
 				else
-					return "clear", _PickupMap[oldName], oldTarget, oldTarget2
+					return "clear", _PickupMap[oldName], oldTarget, oldDetail
 				end
 			]=]
 
 			UpdateActionAttribute = [=[
-				local name, target, target2 = ...
+				local name, target, detail = ...
 
 				-- Clear
 				Manager:RunFor(self, ClearAction)
@@ -853,8 +861,8 @@ do
 					self:SetAttribute("type", _ActionTypeMap[name])
 					self:SetAttribute(_ActionTargetMap[name], target)
 
-					if target2 ~= nil and _ActionTargetMap2[name] then
-						self:SetAttribute(_ActionTargetMap2[name], target2)
+					if detail ~= nil and _ActionTargetDetail[name] then
+						self:SetAttribute(_ActionTargetDetail[name], detail)
 					end
 				end
 
@@ -948,13 +956,13 @@ do
 			if kind and value then
 				local oldName = self:GetAttribute("actiontype")
 				local oldTarget = oldName and self:GetAttribute(_ActionTypeMap[oldName])
-				local oldTarget2 = oldName and _ActionTargetMap2[oldName] and self:GetAttribute(_ActionTargetMap2[oldName])
+				local oldDetail = oldName and _ActionTargetDetail[oldName] and self:GetAttribute(_ActionTargetDetail[oldName])
 
 				_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 				_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
 
 				if oldName and oldTarget then
-					PickupAny("clear", oldName, oldTarget, oldTarget2)
+					PickupAny("clear", oldName, oldTarget, oldDetail)
 				end
 			end
 		end
@@ -1084,9 +1092,9 @@ do
 		end
 	end
 
-	function SaveAction(self, kind, target, target2)
+	function SaveAction(self, kind, target, detail)
 		_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
-		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target), GetFormatString(target2)))
+		_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_UpdateActionSnippet:format(GetFormatString(kind), GetFormatString(target), GetFormatString(detail)))
 	end
 
 	------------------------------------------------------

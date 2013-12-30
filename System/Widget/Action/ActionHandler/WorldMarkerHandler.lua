@@ -23,25 +23,11 @@ handler = ActionTypeHandler {
 
 	Target = "marker",
 
+	Detail = "action",
+
 	DragStyle = "Block",
 
 	ReceiveStyle = "Block",
-
-	InitSnippet = [[
-	]],
-
-	PickupSnippet = [[
-	]],
-
-	UpdateSnippet = [[
-	]],
-
-	ReceiveSnippet = [[
-	]],
-
-	ClearSnippet = [[
-		self:SetAttribute("action", nil)
-	]],
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }

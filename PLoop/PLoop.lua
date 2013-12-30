@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/12/27
--- Version          r89
+-- Last Update Date 2013/12/30
+-- Version          r90
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -69,6 +69,7 @@ do
 	strrep = string.rep
 	strsub = string.gsub
 	strupper = string.upper
+	strlower = string.lower
 	strtrim = strtrim or function(s)
 	  return s and (s:gsub("^%s*(.-)%s*$", "%1")) or ""
 	end
@@ -910,7 +911,7 @@ do
 			end
 		end
 
-		function RefreshCache(ns)
+		function RefreshCache(ns, env)
 			local info = _NSInfo[ns]
 
 			-- Cache4Interface
@@ -1126,9 +1127,63 @@ do
 						useMethod = true
 					end
 
-					-- Auto generate Field
+					-- Validate the Event
+					if prop.Event and not info.Cache4Event[prop.Event] then
+						prop.Event = nil
+					end
+
+					-- Auto generate Field or methods
 					if not useMethod and not prop.Field then
-						prop.Field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. prop.Name
+						local name = prop.Name
+						local uname = name:gsub("^%a", strupper)
+						local field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. uname
+
+						if set.Synthesize and env then
+							local evt = prop.Event
+							local fire = Reflector.FireObjectEvent
+							local getName, setName
+
+							if set.Synthesize == __Synthesize__.NameCase.Pascal then
+								getName, setName = "Get" .. uname, "Set" .. uname
+							elseif set.Synthesize == __Synthesize__.NameCase.Camel then
+								getName, setName = "get" .. uname, "set" .. uname
+							end
+
+							if getName and setName then
+								info.Method[getName] = function (self)
+									return self[field]
+								end
+
+								if evt then
+									info.Method[setName] = function (self, value)
+										local old =  self[name]
+										if old ~= value then
+											self[field] = value
+
+											return fire(self, evt, old, value, name)
+										end
+									end
+								else
+									info.Method[setName] = function (self, value)
+										self[field] = value
+									end
+								end
+
+								-- Keep in the definition environment
+								setfenv(info.Method[getName], env)
+								setfenv(info.Method[setName], env)
+
+								info.Cache4Method[getName] = info.Method[getName]
+								info.Cache4Method[setName] = info.Method[setName]
+
+								prop.GetMethod = getName
+								prop.SetMethod = setName
+							else
+								prop.Field = field
+							end
+						else
+							prop.Field = field
+						end
 					end
 
 					-- Auto generate Default
@@ -1140,11 +1195,6 @@ do
 						elseif prop.Type:Is(String) then
 							prop.Default = ""
 						end
-					end
-
-					-- Validate the Event
-					if prop.Event and ( prop.Set or prop.SetMethod or not prop.Field or not info.Cache4Event[prop.Event] ) then
-						prop.Event = nil
 					end
 				end
 			end
@@ -1678,7 +1728,7 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaIFEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
-			RefreshCache(info.Owner)
+			RefreshCache(info.Owner, env)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -2329,6 +2379,7 @@ do
 				end
 
 				if noArgMethod then
+					-- No arguments method can still using init table
 					noArgMethod.Method(obj)
 					break
 				end
@@ -2363,6 +2414,9 @@ do
 		if getmetatable(info.UniqueObject) then
 			-- Init the obj with new arguments
 			Class1Obj(cls, info.UniqueObject, ...)
+
+			-- Don't think there would be interfaces for the unique class, just for safe
+			InitObjectWithInterface(cls, info.UniqueObject)
 
 			return info.UniqueObject
 		end
@@ -2784,7 +2838,7 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaClsEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
-			RefreshCache(info.Owner)
+			RefreshCache(info.Owner, env)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -8588,6 +8642,38 @@ do
 			end
 		end
 	endclass "__Optional__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
+	class "__Synthesize__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __Synthesize__
+			@type class
+			@desc Used to generate property accessors automatically
+		]======]
+
+		enum "NameCase" {
+			"Camel",	-- setName
+			"Pascal",	-- SetName
+		}
+
+		doc [======[
+			@name NameCase
+			@type property
+			@desc The name case of the generate method, in one program, only need to be set once, default is Pascal case
+		]======]
+		property "NameCase" { Type = NameCase, Default = NameCase.Pascal }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			target.Synthesize = self.NameCase
+		end
+	endclass "__Synthesize__"
 end
 
 ------------------------------------------------------

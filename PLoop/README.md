@@ -2017,7 +2017,7 @@ The first thing is about the type's redefinition.
 
 
 
-Document
+Document(Pass just re-designing, a new xml base document system with attribute would be added)
 ====
 
 **System.Object** and many other features are used before, it's better if there is a way to show details of them, so, a document system is bring in to bind comments for those features.
