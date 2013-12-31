@@ -793,7 +793,7 @@ do
 					return false
 				elseif _PickupSnippet[name] then
 					return Manager:RunFor(self, _PickupSnippet[name], target, detail)
-				else
+				elseif name ~= "empty" then
 					return "clear", _PickupMap[name], target, detail
 				end
 			]=]
@@ -844,7 +844,7 @@ do
 					return false
 				elseif _PickupSnippet[oldName] then
 					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
-				else
+				elseif oldName ~= "empty" then
 					return "clear", _PickupMap[oldName], oldTarget, oldDetail
 				end
 			]=]

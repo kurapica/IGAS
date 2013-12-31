@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/12/30
--- Version          r90
+-- Last Update Date 2013/12/31
+-- Version          r91
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1797,6 +1797,7 @@ end
 ------------------------------------------------------
 do
 	_SuperIndex = "Super"
+	_ThisIndex = "This"
 
 	_KeyWord4ClsEnv = _KeyWord4ClsEnv or {}
 
@@ -1912,10 +1913,27 @@ do
 					end
 
 					rawset(self, _SuperIndex, value)
+
 					return value
 				else
 					error("No super class for the class.", 2)
 				end
+			end
+
+			if key == _ThisIndex then
+				value = info.SuperAlias
+
+				if not value then
+					-- Generate super alias when need
+					info.SuperAlias = newproxy(_SuperAlias)
+					_SuperMap[info.SuperAlias] = info
+
+					value = info.SuperAlias
+				end
+
+				rawset(self, _ThisIndex, value)
+
+				return value
 			end
 
 			-- Check keywords
@@ -2003,6 +2021,22 @@ do
 				else
 					error("No super class for the class.", 2)
 				end
+			end
+
+			if key == _ThisIndex then
+				value = info.SuperAlias
+
+				if not value then
+					-- Generate super alias when need
+					info.SuperAlias = newproxy(_SuperAlias)
+					_SuperMap[info.SuperAlias] = info
+
+					value = info.SuperAlias
+				end
+
+				rawset(self, _ThisIndex, value)
+
+				return value
 			end
 
 			-- Check keywords

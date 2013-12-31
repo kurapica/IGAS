@@ -1,3 +1,6 @@
+2013/12/31
+    'This' is added for class definition, used in the class's constructor to call other constructors.
+
 2013/12/30
     __Synthesize__ attribtue added, used to auto-generate methods bodys for property accessors.
 
