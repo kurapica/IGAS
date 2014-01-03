@@ -42,3 +42,24 @@ function handler:IsActivedAction()
 	-- No event for world marker, disable it now
 	return false and target and target >= 1 and target <= NUM_WORLD_RAID_MARKERS and IsRaidMarkerActive(target)
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name WorldMarker
+		@type property
+		@desc The action button's content if its type is 'worldmarker'
+	]======]
+	property "WorldMarker" {
+		Get = function(self)
+			return self:GetAttribute("type") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("worldmarker", value)
+		end,
+		Type = System.Number + nil,
+	}
+endinterface "IFActionHandler"

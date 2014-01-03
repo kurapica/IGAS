@@ -156,3 +156,24 @@ function handler:SetTooltip(GameTooltip)
 		GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", _MountMap[target])))
 	end
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Mount
+		@type property
+		@desc The action button's content if its type is 'mount'
+	]======]
+	property "Mount" {
+		Get = function(self)
+			return self:GetAttribute("type") == "companion" and tonumber(self:GetAttribute("companion")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("companion", value)
+		end,
+		Type = System.Number + nil,
+	}
+endinterface "IFActionHandler"

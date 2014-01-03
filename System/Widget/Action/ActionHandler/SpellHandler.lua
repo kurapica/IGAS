@@ -264,4 +264,22 @@ interface "IFActionHandler"
 
 		return old_SetAction(self, kind, target, ...)
 	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Spell
+		@type property
+		@desc The action button's content if its type is 'spell'
+	]======]
+	property "Spell" {
+		Get = function(self)
+			return self:GetAttribute("actiontype") == "spell" and self:GetAttribute("spell") or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("spell", value)
+		end,
+		Type = System.String + System.Number + nil,
+	}
 endinterface "IFActionHandler"

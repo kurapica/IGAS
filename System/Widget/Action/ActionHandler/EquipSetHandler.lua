@@ -120,3 +120,24 @@ end
 function handler:SetTooltip(GameTooltip)
 	GameTooltip:SetEquipmentSet(self.ActionTarget)
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name EquipmentSet
+		@type property
+		@desc The action button's content if its type is 'equipmentset'
+	]======]
+	property "EquipmentSet" {
+		Get = function(self)
+			return self:GetAttribute("type") == "equipmentset" and self:GetAttribute("equipmentset") or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("equipmentset", value)
+		end,
+		Type = System.String + nil,
+	}
+endinterface "IFActionHandler"

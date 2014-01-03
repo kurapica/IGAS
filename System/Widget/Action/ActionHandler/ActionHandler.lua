@@ -360,5 +360,49 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	doc [======[
+		@name Action
+		@type property
+		@desc The action button's content if its type is 'action'
+	]======]
+	property "Action" {
+		Get = function(self)
+			return self:GetAttribute("type") == "action" and tonumber(self:GetAttribute("action")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("action", value)
+		end,
+		Type = System.Number + nil,
+	}
 
-endinterface "interface_name"
+	doc [======[
+		@name ActionPage
+		@type property
+		@desc The action page of the action button if type is 'action'
+	]======]
+	property "ActionPage" {
+		Get = function(self)
+			return self:GetActionPage()
+		end,
+		Set = function(self, value)
+			self:SetActionPage(value)
+		end,
+		Type = System.Number + nil,
+	}
+
+	doc [======[
+		@name MainPage
+		@type property
+		@desc Whether the action button is used in the main page
+	]======]
+	property "MainPage" {
+		Get = function(self)
+			return self:IsMainPage()
+		end,
+		Set = function(self, value)
+			self:SetMainPage(value)
+		end,
+		Type = System.Boolean,
+	}
+
+endinterface "IFActionHandler"

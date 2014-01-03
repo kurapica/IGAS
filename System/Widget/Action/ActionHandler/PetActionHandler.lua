@@ -171,3 +171,25 @@ end
 function handler:SetTooltip(GameTooltip)
 	GameTooltip:SetPetAction(self.ActionTarget)
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name PetAction
+		@type property
+		@desc The action button's content if its type is 'pet'
+	]======]
+	property "PetAction" {
+		Get = function(self)
+			return self:GetAttribute("type") == "pet" and tonumber(self:GetAttribute("action")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("pet", value)
+		end,
+		Type = System.Number + nil,
+	}
+
+endinterface "IFActionHandler"

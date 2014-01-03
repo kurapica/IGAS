@@ -45,3 +45,25 @@ end
 function handler:GetActionTexture()
 	return (select(2, GetMacroInfo(self.ActionTarget)))
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name MacroText
+		@type property
+		@desc The action button's content if its type is 'macro'
+	]======]
+	property "MacroText" {
+		Get = function(self)
+			return self:GetAttribute("type") == "macro" and self:GetAttribute("macrotext") or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("macrotext", value)
+		end,
+		Type = System.String + nil,
+	}
+
+endinterface "IFActionHandler"

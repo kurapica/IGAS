@@ -27,6 +27,7 @@ do
 	_ActionTypeMap = {}
 	_ActionTargetMap = {}
 	_ActionTargetDetail = {}
+	_ReceiveMap = {}
 
 	_AutoAttackButtons = setmetatable({}, {__mode = "k"})
 	_AutoRepeatButtons = setmetatable({}, getmetatable(_AutoAttackButtons))
@@ -138,7 +139,8 @@ interface "IFActionTypeHandler"
 		@return detail
 	]======]
 	function GetActionDetail(self)
-		return self:GetAttribute(_ActionTargetMap[self.Name]), _ActionTargetDetail[self.Name] and self:GetAttribute(_ActionTargetDetail[self.Name])
+		local name = self:GetAttribute("actiontype")
+		return self:GetAttribute(_ActionTargetMap[name]), _ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
 	end
 
 	doc [======[
@@ -495,6 +497,7 @@ interface "IFActionTypeHandler"
 
 		-- Register ReceiveMap
 		if self.ReceiveMap then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveMap", self.ReceiveMap, self.Name) )
+		_ReceiveMap[self.ReceiveMap] = self
 
 		-- Register PickupMap
 		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) )
@@ -793,7 +796,7 @@ do
 					return false
 				elseif _PickupSnippet[name] then
 					return Manager:RunFor(self, _PickupSnippet[name], target, detail)
-				elseif name ~= "empty" then
+				else
 					return "clear", _PickupMap[name], target, detail
 				end
 			]=]
@@ -844,7 +847,7 @@ do
 					return false
 				elseif _PickupSnippet[oldName] then
 					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
-				elseif oldName ~= "empty" then
+				else
 					return "clear", _PickupMap[oldName], oldTarget, oldDetail
 				end
 			]=]
@@ -928,14 +931,14 @@ do
 	function PreClick(self)
 		local oldKind = self:GetAttribute("actiontype")
 
-		if InCombatLockdown() or _IFActionTypeHandler[oldKind].ReceiveStyle ~= "Clear" then
+		if not oldKind or InCombatLockdown() or _IFActionTypeHandler[oldKind].ReceiveStyle ~= "Clear" then
 			return
 		end
 
 		local kind, value = GetCursorInfo()
 		if not kind or not value then return end
 
-		self.__IFActionHandler_PreType = oldKind
+		self.__IFActionHandler_PreType = self:GetAttribute("type")
 		self.__IFActionHandler_PreMsg = true
 
 		-- Make sure no action happended
@@ -946,28 +949,34 @@ do
 		UpdateButtonState(self)
 
 		-- Restore the action
-		if self.__IFActionHandler_PreMsg and not InCombatLockdown() then
-			if self.__IFActionHandler_PreType then
-				self:SetAttribute("type", self.__IFActionHandler_PreType)
-			end
-
-			local kind, value, subtype, detail = GetCursorInfo()
-
-			if kind and value then
-				local oldName = self:GetAttribute("actiontype")
-				local oldTarget = oldName and self:GetAttribute(_ActionTypeMap[oldName])
-				local oldDetail = oldName and _ActionTargetDetail[oldName] and self:GetAttribute(_ActionTargetDetail[oldName])
-
-				_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
-				_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
-
-				if oldName and oldTarget then
-					PickupAny("clear", oldName, oldTarget, oldDetail)
+		if self.__IFActionHandler_PreMsg then
+			if not InCombatLockdown() then
+				if self.__IFActionHandler_PreType then
+					self:SetAttribute("type", self.__IFActionHandler_PreType)
 				end
+
+				local kind, value, subtype, detail = GetCursorInfo()
+
+				if kind and value and _ReceiveMap[kind] then
+					local oldName = self:GetAttribute("actiontype")
+					local oldTarget = oldName and self:GetAttribute(_ActionTypeMap[oldName])
+					local oldDetail = oldName and _ActionTargetDetail[oldName] and self:GetAttribute(_ActionTargetDetail[oldName])
+
+					_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
+					_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
+
+					if oldName and oldTarget then
+						PickupAny("clear", oldName, oldTarget, oldDetail)
+					end
+				end
+			elseif self.__IFActionHandler_PreType then
+				-- Keep safe
+				IFNoCombatTaskHandler._RegisterNoCombatTask(self.SetAttribute, self, "type", self.__IFActionHandler_PreType)
 			end
+
+			self.__IFActionHandler_PreType = nil
+			self.__IFActionHandler_PreMsg = nil
 		end
-		self.__IFActionHandler_PreType = nil
-		self.__IFActionHandler_PreMsg = nil
 	end
 
 	_IFActionHandler_OnTooltip = nil
@@ -1086,9 +1095,7 @@ do
 
 			_IFActionHandler_Buttons[self] = name 	-- keep button in kind's link list
 
-			UpdateActionButton(self)
-
-			return self:UpdateAction()
+			return UpdateActionButton(self)
 		end
 	end
 
@@ -1121,10 +1128,6 @@ do
 		else
 			self.Alpha = 0
 		end
-	end
-
-	function ForceUpdateAction(self)
-		return self:UpdateAction()
 	end
 
 	function UpdateButtonState(self)
@@ -1176,9 +1179,7 @@ do
 	function StartFlash(self)
 		self.Flashing = true
 		_IFActionHandler_FlashingList[self] = self.Flashing or nil
-		if next(_IFActionHandler_FlashingList) then
-			_IFActionHandler_FlashingTimer.Enabled = true
-		end
+		_IFActionHandler_FlashingTimer.Enabled = true
 		self.FlashVisible = true
 		UpdateButtonState(self)
 	end
@@ -1186,9 +1187,6 @@ do
 	function StopFlash(self)
 		self.Flashing = false
 		_IFActionHandler_FlashingList[self] = nil
-		if not next(_IFActionHandler_FlashingList) then
-			_IFActionHandler_FlashingTimer.Enabled = false
-		end
 		self.FlashVisible = false
 		UpdateButtonState(self)
 	end
@@ -1267,13 +1265,13 @@ do
 
 		if handler.IsAttackAction(self) then
 			_AutoAttackButtons[self] = true
-		else
+		elseif _AutoAttackButtons[self] then
 			_AutoAttackButtons[self] = nil
 		end
 
 		if handler.IsAutoRepeatAction(self) then
 			_AutoRepeatButtons[self] = true
-		else
+		elseif _AutoRepeatButtons[self] then
 			_AutoRepeatButtons[self] = nil
 		end
 
@@ -1314,12 +1312,12 @@ do
 			UpdateTooltip(self)
 		end
 
-		ForceUpdateAction(self)
+		return self:UpdateAction()
 	end
 
 	function RefreshTooltip()
 		if _IFActionHandler_OnTooltip then
-			UpdateTooltip(_IFActionHandler_OnTooltip)
+			return UpdateTooltip(_IFActionHandler_OnTooltip)
 		end
 	end
 
@@ -1448,7 +1446,7 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:SPELL_UPDATE_CHARGES()
-		for button, id in pairs(_Spell4Buttons) do
+		for button in pairs(_Spell4Buttons) do
 			UpdateCount(button)
 		end
 	end
@@ -1516,7 +1514,7 @@ do
 			self:ClearAllPoints()
 			self:Hide()
 
-			_RecycleAlert(self)
+			return _RecycleAlert(self)
 		end
 	end
 
@@ -1533,19 +1531,6 @@ interface "IFActionHandler"
 		@name IFActionHandler
 		@type interface
 		@desc IFActionHandler is used to manage action buttons
-		@overridable UpdateAction method, used to customize action button when it's content is changed
-		@overridable IFActionHandlerGroup property, return a group name, the name is used to mark the action button into a group
-		@overridable Usable property, whether the action is usable, used to refresh the action button as a trigger
-		@overridable Count property, the action's count, used to refresh the action count as a trigger
-		@overridable Flashing property, whether need flash the action, used to refresh the action count as a trigger
-		@overridable FlashVisible property, the action button's flash texture's visible, used to refresh the action count as a trigger
-		@overridable FlyoutVisible property, the action button's flyout's visible, used to refresh the action count as a trigger
-		@overridable Text property, the action't text, used to refresh the action count as a trigger
-		@overridable Icon property, the action's icon path, used to refresh the action count as a trigger
-		@overridable InRange property, whether the action is in range, used to refresh the action count as a trigger
-		@overridable FlyoutDirection property, the action button's flyout direction, used to refresh the action count as a trigger
-		@overridable AutoCastable property, whether the action is auto-castable, used to refresh the action count as a trigger
-		@overridable AutoCasting property, whether the action is now auto-casting, used to refresh the action count as a trigger
 	]======]
 
 	------------------------------------------------------
@@ -1558,35 +1543,30 @@ interface "IFActionHandler"
 	doc [======[
 		@name UpdateAction
 		@type method
-		@desc Update the action, Overridable
+		@desc Used to customize action button when it's content is changed
 		@return nil
 	]======]
-	function UpdateAction(self)
-	end
+	__Optional__() function UpdateAction(self) end
 
 	doc [======[
 		@name SetAction
 		@type method
 		@desc Set action for the actionbutton
 		@param kind System.Widget.Action.IFActionHandler.ActionType, the action type
-		@param content string|number, the action's content
+		@param target the action't target
+		@param detail the action's detail
 		@return nil
 	]======]
-	function SetAction(self, kind, target, texture, tooltip)
-		kind = kind and Reflector.Validate(ActionType, kind, "kind", "Usage: IFActionHandler:SetAction(kind, target) -")
+	function SetAction(self, kind, target, detail)
+		if kind and not _ActionTypeMap[kind] then
+			error("IFActionHandler:SetAction(kind, target, detail) - no such action kind", 2)
+		end
 
 		if not kind or not target then
-			kind, target = nil, nil
+			kind, target, detail = nil, nil, nil
 		end
 
-		if kind == ActionType.petaction then
-			kind = "pet"
-		end
-
-		self.__IFActionHandler_Texture = texture
-		self.__IFActionHandler_Tooltip = tooltip
-
-		IFNoCombatTaskHandler._RegisterNoCombatTask(SaveAction, self, kind, target)
+		IFNoCombatTaskHandler._RegisterNoCombatTask(SaveAction, self, kind, target, detail)
 	end
 
 	doc [======[
@@ -1597,7 +1577,7 @@ interface "IFActionHandler"
 		@return content string|number, the action's content
 	]======]
 	function GetAction(self)
-		return self.__IFActionHandler_Kind, self.__IFActionHandler_Target
+		return self.__IFActionHandler_Kind, self.__IFActionHandler_Target, self.__IFActionHandler_Detail
 	end
 
 	doc [======[
@@ -1607,7 +1587,7 @@ interface "IFActionHandler"
 		@return boolean true if the button has action
 	]======]
 	function HasAction(self)
-		return _IFActionTypeHandler[kind].HasAction(self)
+		return _IFActionTypeHandler[self.ActionType].HasAction(self)
 	end
 
 	doc [======[
@@ -1710,7 +1690,7 @@ interface "IFActionHandler"
 		@type property
 		@desc Overridable, the action button's group name
 	]======]
-	property "IFActionHandlerGroup" {
+	__Optional__() property "IFActionHandlerGroup" {
 		Set = function (self, group)
 			group = GetGroup(group)
 
@@ -1732,201 +1712,6 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Action Property
 	------------------------------------------------------
-	doc [======[
-		@name Action
-		@type property
-		@desc The action button's content if its type is 'action'
-	]======]
-	property "Action" {
-		Get = function(self)
-			return self:GetAttribute("type") == "action" and tonumber(self:GetAttribute("action")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("action", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name PetAction
-		@type property
-		@desc The action button's content if its type is 'pet'
-	]======]
-	property "PetAction" {
-		Get = function(self)
-			return self:GetAttribute("type") == "pet" and tonumber(self:GetAttribute("action")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("pet", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name Spell
-		@type property
-		@desc The action button's content if its type is 'spell'
-	]======]
-	property "Spell" {
-		Get = function(self)
-			return self:GetAttribute("type") == "spell" and self:GetAttribute("spell") or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("spell", value)
-		end,
-		Type = System.String + System.Number + nil,
-	}
-
-	doc [======[
-		@name Item
-		@type property
-		@desc The action button's content if its type is 'item'
-	]======]
-	property "Item" {
-		Get = function(self)
-			return self:GetAttribute("type") == "item" and type(self:GetAttribute("item")) == "string" and self:GetAttribute("item"):match("%d+") or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("item", value and GetItemInfo(value) and select(2, GetItemInfo(value)):match("item:%d+") or nil)
-		end,
-		Type = System.String + System.Number + nil,
-	}
-
-	doc [======[
-		@name Macro
-		@type property
-		@desc The action button's content if its type is 'macro'
-	]======]
-	property "Macro" {
-		Get = function(self)
-			return self:GetAttribute("type") == "macro" and self:GetAttribute("macro") or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("macro", value)
-		end,
-		Type = System.String + System.Number + nil,
-	}
-
-	doc [======[
-		@name MacroText
-		@type property
-		@desc The action button's content if its type is 'macro'
-	]======]
-	property "MacroText" {
-		Get = function(self)
-			return self:GetAttribute("type") == "macro" and self:GetAttribute("macrotext") or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("macrotext", value)
-		end,
-		Type = System.String + nil,
-	}
-
-	doc [======[
-		@name Mount
-		@type property
-		@desc The action button's content if its type is 'mount'
-	]======]
-	property "Mount" {
-		Get = function(self)
-			return self:GetAttribute("type") == "companion" and tonumber(self:GetAttribute("companion")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("companion", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name EquipmentSet
-		@type property
-		@desc The action button's content if its type is 'equipmentset'
-	]======]
-	property "EquipmentSet" {
-		Get = function(self)
-			return self:GetAttribute("type") == "equipmentset" and self:GetAttribute("equipmentset") or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("equipmentset", value)
-		end,
-		Type = System.String + nil,
-	}
-
-	doc [======[
-		@name BattlePet
-		@type property
-		@desc The action button's content if its type is 'battlepet'
-	]======]
-	property "BattlePet" {
-		Get = function(self)
-			return self:GetAttribute("type") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("battlepet", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name WorldMarker
-		@type property
-		@desc The action button's content if its type is 'worldmarker'
-	]======]
-	property "WorldMarker" {
-		Get = function(self)
-			return self:GetAttribute("type") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("worldmarker", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name FlytoutID
-		@type property
-		@desc The action button's content if its type is 'flyout'
-	]======]
-	property "FlytoutID" {
-		Get = function(self)
-			return self:GetAttribute("type") == "flyout" and tonumber(self:GetAttribute("spell")) or nil
-		end,
-		Set = function(self, value)
-			self:SetAction("flyout", value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name ActionPage
-		@type property
-		@desc The action page of the action button if type is 'action'
-	]======]
-	property "ActionPage" {
-		Get = function(self)
-			return self:GetActionPage()
-		end,
-		Set = function(self, value)
-			self:SetActionPage(value)
-		end,
-		Type = System.Number + nil,
-	}
-
-	doc [======[
-		@name MainPage
-		@type property
-		@desc Whether the action button is used in the main page
-	]======]
-	property "MainPage" {
-		Get = function(self)
-			return self:IsMainPage()
-		end,
-		Set = function(self, value)
-			self:SetMainPage(value)
-		end,
-		Type = System.Boolean,
-	}
-
 	doc [======[
 		@name ActionType
 		@type property
@@ -1984,7 +1769,7 @@ interface "IFActionHandler"
 				end
 			end
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	doc [======[
@@ -2000,187 +1785,99 @@ interface "IFActionHandler"
 			self.__ShowFlyOut = value
 			UpdateFlyout(self)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	doc [======[
 		@name Usable
 		@type property
-		@desc Whether the action button is usable, controlled by IFActionHandler
+		@desc Whether the action is usable, used to refresh the action button as a trigger
 	]======]
-	property "Usable" {
-		Get = function(self)
-			return self.__Usable or false
-		end,
-		Set = function(self, value)
-			self.__Usable = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "Usable" { Type = Boolean }
 
 	doc [======[
 		@name Count
 		@type property
-		@desc The action's count, controlled by IFActionHandler
+		@desc The action's count, used to refresh the action count as a trigger
 	]======]
-	property "Count" {
-		Get = function(self)
-			return self.__Count
-		end,
-		Set = function(self, value)
-			self.__Count = value
-		end,
-		Type = System.String,
-	}
+	__Optional__() property "Count" { Type = String }
 
 	doc [======[
 		@name Flashing
 		@type property
-		@desc Whether the action is flashing, controlled by IFActionHandler
+		@desc Whether need flash the action, used to refresh the action count as a trigger
 	]======]
-	property "Flashing" {
-		Get = function(self)
-			return self.__Flashing or false
-		end,
-		Set = function(self, value)
-			self.__Flashing = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "Flashing" { Type = Boolean }
 
 	doc [======[
 		@name FlashVisible
 		@type property
-		@desc Whether the action's flashing texture should be shown, controlled by IFActionHandler
+		@desc The action button's flash texture's visible, used to refresh the action count as a trigger
 	]======]
-	property "FlashVisible" {
-		Get = function(self)
-			return self.__FlashVisible
-		end,
-		Set = function(self, value)
-			self.__FlashVisible = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "FlashVisible" { Type = Boolean }
 
 	doc [======[
 		@name FlyoutVisible
 		@type property
-		@desc Whether the action's flyout icon should be shown, controlled by IFActionHandler
+		@desc The action button's flyout's visible, used to refresh the action count as a trigger
 	]======]
-	property "FlyoutVisible" {
-		Get = function(self)
-			return self.__FlyoutVisible
-		end,
-		Set = function(self, value)
-			self.__FlyoutVisible = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "FlyoutVisible" { Type = Boolean }
 
 	doc [======[
 		@name Text
 		@type property
-		@desc The action button's text, controlled by the IFActionHandler
+		@desc The action't text, used to refresh the action count as a trigger
 	]======]
-	property "Text" {
-		Get = function(self)
-			return self.__Text
-		end,
-		Set = function(self, value)
-			self.__Text = value
-		end,
-		Type = System.String,
-	}
+	__Optional__() property "Text" { Type = String }
 
 	doc [======[
 		@name Icon
 		@type property
-		@desc The action button's icon image path, controlled by IFActionHandler
+		@desc The action's icon path, used to refresh the action count as a trigger
 	]======]
-	property "Icon" {
-		Get = function(self)
-			return self.__Icon
-		end,
-		Set = function(self, value)
-			self.__Icon = value
-		end,
-		Type = System.String,
-	}
+	__Optional__() property "Icon" { Type = String }
 
 	doc [======[
 		@name InRange
 		@type property
-		@desc Whether the target is in the range of the action, controlled by IFActionHandler
+		@desc Whether the action is in range, used to refresh the action count as a trigger
 	]======]
-	property "InRange" {
-		Get = function(self)
-			return self.__InRange
-		end,
-		Set = function(self, value)
-			self.__InRange = value
-		end,
-		Type = System.Boolean+nil,
-	}
+	__Optional__() property "InRange" { Type = Boolean+nil }
 
 	doc [======[
 		@name FlyoutDirection
 		@type property
-		@desc The flyout's direction, controlled by IFActionHandler
+		@desc The action button's flyout direction, used to refresh the action count as a trigger
 	]======]
-	property "FlyoutDirection" {
-		Get = function(self)
-			return self:GetFlyoutDirection()
-		end,
-		Set = function(self, dir)
-			self:SetFlyoutDirection(dir)
-		end,
-		Type = FlyoutDirection,
-	}
+	property "FlyoutDirection" { Type = FlyoutDirection }
 
 	doc [======[
 		@name AutoCastable
 		@type property
-		@desc Whether the action is autocastable, controlled by IFActionHandler
+		@desc Whether the action is auto-castable, used to refresh the action count as a trigger
 	]======]
-	property "AutoCastable" {
-		Get = function(self)
-			return self.__AutoCastable or false
-		end,
-		Set = function(self, value)
-			self.__AutoCastable = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "AutoCastable" { Type = Boolean }
 
 	doc [======[
 		@name AutoCasting
 		@type property
-		@desc Whether the action is now auto-casting, controlled by IFActionHandler
+		@desc Whether the action is now auto-casting, used to refresh the action count as a trigger
 	]======]
-	property "AutoCasting" {
-		Get = function(self)
-			return self.__AutoCasting or false
-		end,
-		Set = function(self, value)
-			self.__AutoCasting = value
-		end,
-		Type = System.Boolean,
-	}
+	__Optional__() property "AutoCasting" { Type = Boolean }
 
 	doc [======[
 		@name MaxDisplayCount
 		@type property
 		@desc The max count to display
 	]======]
-	property "MaxDisplayCount" { Type = Number, Default = 9999 }
+	__Optional__() property "MaxDisplayCount" { Type = Number, Default = 9999 }
 
 	doc [======[
 		@name EquippedItemIndicator
 		@type property
 		@desc Whether an indicator should be shown for equipped item
 	]======]
-	property "EquippedItemIndicator" { Type = Boolean }
+	__Optional__() property "EquippedItemIndicator" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose

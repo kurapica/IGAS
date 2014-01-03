@@ -137,4 +137,23 @@ interface "IFActionHandler"
 
 		return old_SetAction(self, kind, target, ...)
 	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name Item
+		@type property
+		@desc The action button's content if its type is 'item'
+	]======]
+	property "Item" {
+		Get = function(self)
+			return self:GetAttribute("type") == "item" and type(self:GetAttribute("item")) == "string" and self:GetAttribute("item"):match("%d+") or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("item", value and GetItemInfo(value) and select(2, GetItemInfo(value)):match("item:%d+") or nil)
+		end,
+		Type = System.String + System.Number + nil,
+	}
+
 endinterface "IFActionHandler"

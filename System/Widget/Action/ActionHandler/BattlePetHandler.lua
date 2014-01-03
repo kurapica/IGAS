@@ -75,3 +75,24 @@ function handler:SetTooltip(GameTooltip)
 		GameTooltip:Show()
 	end
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name BattlePet
+		@type property
+		@desc The action button's content if its type is 'battlepet'
+	]======]
+	property "BattlePet" {
+		Get = function(self)
+			return self:GetAttribute("type") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("battlepet", value)
+		end,
+		Type = System.Number + nil,
+	}
+endinterface "IFActionHandler"

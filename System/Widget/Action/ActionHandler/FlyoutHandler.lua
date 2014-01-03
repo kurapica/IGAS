@@ -133,3 +133,24 @@ end
 function handler:IsFlyout()
 	return true
 end
+
+-- Expand IFActionHandler
+interface "IFActionHandler"
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	doc [======[
+		@name FlytoutID
+		@type property
+		@desc The action button's content if its type is 'flyout'
+	]======]
+	property "FlytoutID" {
+		Get = function(self)
+			return self:GetAttribute("type") == "flyout" and tonumber(self:GetAttribute("spell")) or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("flyout", value)
+		end,
+		Type = System.Number + nil,
+	}
+endinterface "IFActionHandler"
