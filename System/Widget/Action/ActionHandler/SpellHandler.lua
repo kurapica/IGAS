@@ -137,15 +137,10 @@ handler = ActionTypeHandler {
 		_StanceMap = newtable()
 	]],
 
-	PickupSnippet = [[
-		return "clear", "spell", ...
-	]],
-
 	UpdateSnippet = [[
 		local target = ...
 
 		if _StanceMap[target] then
-			-- Need this to cancel stance, use spell to replace stance button
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click StanceButton".. _StanceMap[target])
 		end

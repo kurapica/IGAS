@@ -931,7 +931,7 @@ do
 	function PreClick(self)
 		local oldKind = self:GetAttribute("actiontype")
 
-		if not oldKind or InCombatLockdown() or _IFActionTypeHandler[oldKind].ReceiveStyle ~= "Clear" then
+		if InCombatLockdown() or (oldKind and _IFActionTypeHandler[oldKind].ReceiveStyle ~= "Clear") then
 			return
 		end
 
@@ -941,7 +941,7 @@ do
 		self.__IFActionHandler_PreType = self:GetAttribute("type")
 		self.__IFActionHandler_PreMsg = true
 
-		-- Make sure no action happended
+		-- Make sure no action used
 		self:SetAttribute("type", nil)
 	end
 
@@ -1105,7 +1105,7 @@ do
 	end
 
 	------------------------------------------------------
-	-- Update Handler
+	-- Display functions
 	------------------------------------------------------
 	_IFActionHandler_GridCounter = 0
 	_IFActionHandler_PetGridCounter = 0
@@ -1574,7 +1574,8 @@ interface "IFActionHandler"
 		@type method
 		@desc Get action for the actionbutton
 		@return kind System.Widget.Action.IFActionHandler.ActionType, the action type
-		@return content string|number, the action's content
+		@return target any, the action's target
+		@return detail any, the action's detail
 	]======]
 	function GetAction(self)
 		return self.__IFActionHandler_Kind, self.__IFActionHandler_Target, self.__IFActionHandler_Detail
