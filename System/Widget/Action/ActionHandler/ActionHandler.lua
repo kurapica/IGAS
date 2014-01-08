@@ -102,7 +102,7 @@ handler = ActionTypeHandler {
 			MainPage[0] = page
 			for btn in pairs(_MainPage) do
 				btn:SetAttribute("actionpage", MainPage[0])
-				Manager:RunFor(btn, UpdateAction, "action", btn:GetID() or 1)
+				Manager:RunFor(btn, UpdateAction)
 			end
 		]=]
 	]],

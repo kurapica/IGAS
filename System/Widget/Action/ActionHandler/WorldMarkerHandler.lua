@@ -10,6 +10,12 @@ end
 
 _Enabled = false
 
+enum "WorldMarkerActionType" {
+	"set",
+	"clear",
+	"toggle",
+}
+
 _WorldMarker = {
 	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_6",
 	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_4",
@@ -58,8 +64,24 @@ interface "IFActionHandler"
 			return self:GetAttribute("type") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
 		end,
 		Set = function(self, value)
-			self:SetAction("worldmarker", value)
+			self:SetAction("worldmarker", value, self.WorldMarkerActionType)
 		end,
 		Type = System.Number + nil,
+	}
+
+	doc [======[
+		@name WorldMarkerActionType
+		@type property
+		@desc The world marker action type
+	]======]
+	property "WorldMarkerActionType" {
+		Get = function (self)
+			return self:GetAttribute("type") == "worldmarker" and self:GetAttribute("action")
+		end,
+		Set = function (self, type)
+			self:SetAction("worldmarker", self.WorldMarker, type)
+		end
+		Type = WorldMarkerActionType,
+		Default = "toggle",
 	}
 endinterface "IFActionHandler"

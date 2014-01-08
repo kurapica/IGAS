@@ -958,9 +958,9 @@ do
 				local kind, value, subtype, detail = GetCursorInfo()
 
 				if kind and value and _ReceiveMap[kind] then
-					local oldName = self:GetAttribute("actiontype")
-					local oldTarget = oldName and self:GetAttribute(_ActionTypeMap[oldName])
-					local oldDetail = oldName and _ActionTargetDetail[oldName] and self:GetAttribute(_ActionTargetDetail[oldName])
+					local oldName = self.__IFActionHandler_Kind
+					local oldTarget = self.__IFActionHandler_Target
+					local oldDetail = self.__IFActionHandler_Detail
 
 					_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 					_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))

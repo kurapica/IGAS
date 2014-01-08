@@ -89,9 +89,7 @@ function UpdateFlyoutSlotMap()
 		end
 	end
 
-	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-		handler:RunSnippet( str )
-	end)
+	return handler:RunSnippet( str )
 end
 
 -- Flyout action type handler
@@ -102,16 +100,6 @@ handler = ActionTypeHandler {
 
 	InitSnippet = [[
 		_FlyoutSlot = newtable()
-	]],
-
-	PickupSnippet = [[
-		return "clear", "flyout", ...
-	]],
-
-	UpdateSnippet = [[
-	]],
-
-	ReceiveSnippet = [[
 	]],
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
