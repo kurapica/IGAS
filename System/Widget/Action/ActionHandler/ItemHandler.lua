@@ -8,7 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ItemHandler", version) then
 	return
 end
 
-import "ActionRefreshMode"
+import "System.Widget.Action.ActionRefreshMode"
 
 _Enabled = false
 

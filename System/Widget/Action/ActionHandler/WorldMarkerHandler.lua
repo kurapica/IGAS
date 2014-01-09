@@ -80,7 +80,7 @@ interface "IFActionHandler"
 		end,
 		Set = function (self, type)
 			self:SetAction("worldmarker", self.WorldMarker, type)
-		end
+		end,
 		Type = WorldMarkerActionType,
 		Default = "toggle",
 	}

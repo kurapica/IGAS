@@ -8,7 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.PetActionHandler", version) then
 	return
 end
 
-import "ActionRefreshMode"
+import "System.Widget.Action.ActionRefreshMode"
 
 _Enabled = false
 
@@ -105,7 +105,7 @@ handler = ActionTypeHandler {
 	IsPlayerAction = false,
 
 	PickupSnippet = [[
-		return "clear", "petaction", ...
+		return "petaction", ...
 	]],
 
 	UpdateSnippet = [[

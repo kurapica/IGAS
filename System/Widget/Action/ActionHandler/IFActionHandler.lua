@@ -122,9 +122,7 @@ interface "IFActionTypeHandler"
 		@return nil
 	]======]
 	function RunSnippet(self, code)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(
-			SecureFrame.Execute, _IFActionHandler_ManagerFrame, code
-		end)
+		return IFNoCombatTaskHandler._RegisterNoCombatTask( SecureFrame.Execute, _IFActionHandler_ManagerFrame, code )
 	end
 
 	------------------------------------------------------
@@ -279,7 +277,7 @@ interface "IFActionTypeHandler"
 		@return boolean
 	]======]
 	function IsInRange(self)
-		return false
+		return
 	end
 
 	doc [======[
@@ -472,7 +470,7 @@ interface "IFActionTypeHandler"
 		_ActionTargetDetail[self.Name]  = self.Detail
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTypeMap", self.Name, self.Type) )
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetMap", self.Name, self.Target) )
-		self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetDetail", self.Name, self.Detail) )
+		if self.Detail then self:RunSnippet( _RegisterSnippetTemplate:format("_ActionTargetDetail", self.Name, self.Detail) ) end
 
 		-- Init the environment
 		if self.InitSnippet then self:RunSnippet( self.InitSnippet ) end
@@ -496,11 +494,13 @@ interface "IFActionTypeHandler"
 		self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveStyle", self.Name, self.ReceiveStyle) )
 
 		-- Register ReceiveMap
-		if self.ReceiveMap then self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveMap", self.ReceiveMap, self.Name) )
-		_ReceiveMap[self.ReceiveMap] = self
+		if self.ReceiveMap then
+			self:RunSnippet( _RegisterSnippetTemplate:format("_ReceiveMap", self.ReceiveMap, self.Name) )
+			_ReceiveMap[self.ReceiveMap] = self
+		end
 
 		-- Register PickupMap
-		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) )
+		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) ) end
 
 		-- Clear
 		self.InitSnippet = nil
@@ -1142,9 +1142,9 @@ do
 		local name = self:GetAttribute("actiontype")
 		local target, detail = _IFActionTypeHandler[name].GetActionDetail(self)
 
-		-- No harm
-		target = tonumber(target) or target
-		detail = tonumber(detail) or detail
+		-- Some problem with battlepet
+		-- target = tonumber(target) or target
+		-- detail = tonumber(detail) or detail
 
 		if self.__IFActionHandler_Kind ~= name
 			or self.__IFActionHandler_Target ~= target
@@ -1358,7 +1358,7 @@ do
 
 		-- Update Action Text
 		if not handler.IsConsumableAction(self) then
-			self.Text = _GetActionText(self)
+			self.Text = handler.GetActionText(self)
 		else
 			self.Text = ""
 		end
@@ -1766,7 +1766,7 @@ interface "IFActionHandler"
 		end,
 		Get = function (self)
 			return self:GetAttribute("IFActionHandlerGroup")
-		end
+		end,
 		Default = _GlobalGroup,
 		Type = String + nil,
 	}

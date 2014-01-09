@@ -8,14 +8,14 @@ if not IGAS:NewAddon("IGAS.Widget.Action.CompanionHandler", version) then
 	return
 end
 
+import "System.Widget.Action.ActionRefreshMode"
+
 _Enabled = false
 
 _MountMapTemplate = "_MountMap[%d] = %d\n"
 _MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
 
 _MountMap = {}
-
-import "ActionRefreshMode"
 
 -- Event handler
 function OnEnable(self)

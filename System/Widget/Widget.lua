@@ -364,6 +364,7 @@ struct "Inset"
 endstruct "Inset"
 
 -- ColorFloat
+__StructType__(StructType.Custom)
 struct "ColorFloat"
 	function Validate(value)
 		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))

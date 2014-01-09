@@ -124,6 +124,7 @@ end
 ------------------------------------------------------
 -- LocaleString
 ------------------------------------------------------
+__StructType__(StructType.Custom)
 struct "LocaleString"
 	function Validate(value)
 		if type(value) ~= "string" then
@@ -136,6 +137,7 @@ endstruct "LocaleString"
 ------------------------------------------------------
 -- PositiveNumber
 ------------------------------------------------------
+__StructType__(StructType.Custom)
 struct "PositiveNumber"
 	function Validate(value)
 		if type(value) ~= "number" then

@@ -8,7 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ActionHandler", version) then
 	return
 end
 
-import "ActionRefreshMode"
+import "System.Widget.Action.ActionRefreshMode"
 
 _Enabled = false
 
@@ -114,7 +114,7 @@ handler = ActionTypeHandler {
 			target = self:GetID() + (tonumber(self:GetAttribute("actionpage"))-1) * NUM_ACTIONBAR_BUTTONS
 		end
 
-		return "clear", "action", target
+		return "action", target
 	]],
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
@@ -175,7 +175,7 @@ function handler:GetActionDetail()
 	local desc
 
 	if target then
-		local type, id = GetActionInfo(action)
+		local type, id = GetActionInfo(target)
 
 		if type and id then
 			desc = ""..type.."_"..id
@@ -283,7 +283,11 @@ interface "IFActionHandler"
 			IFNoCombatTaskHandler._RegisterNoCombatTask(
 				function (self, page)
 					self:SetAttribute("actionpage", page)
-					self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
+					if page then
+						self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
+					else
+						self:SetAction(nil)
+					end
 				end,
 				self, page
 			)
@@ -315,8 +319,8 @@ interface "IFActionHandler"
 			if isMain then
 				IFNoCombatTaskHandler._RegisterNoCombatTask(
 					function (self)
-						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-						_IFActionHandler_ManagerFrame:Execute([[
+						handler.Manager:SetFrameRef("MainPageButton", self)
+						handler.Manager:Execute([[
 							local btn = Manager:GetFrameRef("MainPageButton")
 							if btn then
 								_MainPage[btn] = true
@@ -329,15 +333,15 @@ interface "IFActionHandler"
 			else
 				IFNoCombatTaskHandler._RegisterNoCombatTask(
 					function (self)
-						_IFActionHandler_ManagerFrame:SetFrameRef("MainPageButton", self)
-						_IFActionHandler_ManagerFrame:Execute([[
+						handler.Manager:SetFrameRef("MainPageButton", self)
+						handler.Manager:Execute([[
 							local btn = Manager:GetFrameRef("MainPageButton")
 							if btn then
 								_MainPage[btn] = nil
 								btn:SetAttribute("actionpage", nil)
 							end
 						]])
-						self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
+						self:SetAction(nil)
 					end, self
 				)
 			end

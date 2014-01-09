@@ -8,13 +8,13 @@ if not IGAS:NewAddon("IGAS.Widget.Action.EquipSetHandler", version) then
 	return
 end
 
+import "System.Widget.Action.ActionRefreshMode"
+
 _Enabled = false
 
 _EquipSetTemplate = "_EquipSet[%q] = %d\n"
 
 _EquipSetMap = {}
-
-import "ActionRefreshMode"
 
 -- Event handler
 function OnEnable(self)
