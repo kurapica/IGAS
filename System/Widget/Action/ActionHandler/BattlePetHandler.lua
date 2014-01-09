@@ -25,20 +25,13 @@ end
 handler = ActionTypeHandler {
 	Name = "battlepet",
 
-	InitSnippet = [[
-	]],
-
 	PickupSnippet = "Custom",
 
 	UpdateSnippet = [[
 		local target = ...
 
-		-- just *type* to keep type to battlepet
 		self:SetAttribute("*type*", "macro")
 		self:SetAttribute("*macrotext*", "/summonpet "..target)
-	]],
-
-	ReceiveSnippet = [[
 	]],
 
 	ClearSnippet = [[
@@ -88,7 +81,7 @@ interface "IFActionHandler"
 	]======]
 	property "BattlePet" {
 		Get = function(self)
-			return self:GetAttribute("type") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
+			return self:GetAttribute("actiontype") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("battlepet", value)

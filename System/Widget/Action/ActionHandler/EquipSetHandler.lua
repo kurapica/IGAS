@@ -30,8 +30,7 @@ function PLAYER_EQUIPMENT_CHANGED(self)
 end
 
 function PLAYER_ENTERING_WORLD(self)
-	UpdateEquipmentSet()
-	return handler:Refresh()
+	return UpdateEquipmentSet()
 end
 
 function EQUIPMENT_SETS_CHANGED(self)
@@ -53,6 +52,8 @@ function UpdateEquipmentSet()
 	if str ~= "" then
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 			handler:RunSnippet( str )
+
+			return handler:Refresh()
 		end)
 	end
 end
@@ -75,9 +76,6 @@ handler = ActionTypeHandler {
 
 		self:SetAttribute("*type*", "macro")
 		self:SetAttribute("*macrotext*", "/equipset "..target)
-	]],
-
-	ReceiveSnippet = [[
 	]],
 
 	ClearSnippet = [[
@@ -133,7 +131,7 @@ interface "IFActionHandler"
 	]======]
 	property "EquipmentSet" {
 		Get = function(self)
-			return self:GetAttribute("type") == "equipmentset" and self:GetAttribute("equipmentset") or nil
+			return self:GetAttribute("actiontype") == "equipmentset" and self:GetAttribute("equipmentset") or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("equipmentset", value)

@@ -49,22 +49,16 @@ end
 handler = ActionTypeHandler {
 	Name = "item",
 
-	InitSnippet = [[
-	]],
-
-	PickupSnippet = [[
-		return "clear", "item", ...
-	]],
-
 	UpdateSnippet = [[
 		local target = ...
 
 		if tonumber(target) then
-			self:SetAttribute("item", "item:"..target)
+			self:SetAttribute("*item*", "item:"..target)
 		end
 	]],
 
-	ReceiveSnippet = [[
+	ClearSnippet = [[
+		self:SetAttribute("*item*", nil)
 	]],
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
@@ -84,7 +78,7 @@ function handler:GetActionCount()
 end
 
 function handler:GetActionCooldown()
-	GetItemCooldown(self.ActionTarget)
+	return GetItemCooldown(self.ActionTarget)
 end
 
 function handler:IsEquippedItem()
@@ -103,7 +97,7 @@ function handler:IsConsumableAction()
 	local target = self.ActionTarget
 
 	-- return IsConsumableItem(target) blz sucks, wait until IsConsumableItem is fixed
-	local _, _, _, _, _, _, _, maxStack = GetItemInfo(target)
+	local maxStack = select(8, GetItemInfo(target))
 
 	if IsUsableItem(target) and maxStack and maxStack > 1 then
 		return true
@@ -148,7 +142,7 @@ interface "IFActionHandler"
 	]======]
 	property "Item" {
 		Get = function(self)
-			return self:GetAttribute("type") == "item" and type(self:GetAttribute("item")) == "string" and self:GetAttribute("item"):match("%d+") or nil
+			return self:GetAttribute("actiontype") == "item" and self:GetAttribute("item") or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("item", value and GetItemInfo(value) and select(2, GetItemInfo(value)):match("item:%d+") or nil)

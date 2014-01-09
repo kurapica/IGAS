@@ -15,37 +15,28 @@ handler = ActionTypeHandler {
 
 	Type = "macro",
 
-	InitSnippet = [[
-	]],
+	Target = "macrotext",
 
-	PickupSnippet = [[
-		return "clear", "macro", ...
-	]],
+	DragStyle = "Block",
 
-	UpdateSnippet = [[
-	]],
-
-	ReceiveSnippet = [[
-	]],
-
-	ClearSnippet = [[
-		self:SetAttribute("macrotext", nil)
-	]],
+	ReceiveStyle = "Block",
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods
-function handler:PickupAction(target)
-	return PickupMacro(target)
-end
-
 function handler:GetActionText()
-	return (GetMacroInfo(self.ActionTarget))
+	return self.CustomText
 end
 
 function handler:GetActionTexture()
-	return (select(2, GetMacroInfo(self.ActionTarget)))
+	return self.CustomTexture
+end
+
+function handler:SetTooltip(GameTooltip)
+	if self.CustomTooltip then
+		GameTooltip:SetText(self.CustomTooltip)
+	end
 end
 
 -- Expand IFActionHandler
@@ -56,15 +47,36 @@ interface "IFActionHandler"
 	doc [======[
 		@name Macro
 		@type property
-		@desc The action button's content if its type is 'macro'
+		@desc The action button's content if its type is 'macrotext'
 	]======]
-	property "Macro" {
+	property "MacroText" {
 		Get = function(self)
-			return self:GetAttribute("type") == "macro" and self:GetAttribute("macro") or nil
+			return self:GetAttribute("actiontype") == "macrotext" and self:GetAttribute("macrotext") or nil
 		end,
 		Set = function(self, value)
-			self:SetAction("macro", value)
+			self:SetAction("macrotext", value)
 		end,
-		Type = System.String + System.Number + nil,
+		Type = System.String + nil,
 	}
+
+	doc [======[
+		@name CustomText
+		@type property
+		@desc The custom text
+	]======]
+	property "CustomText" { Type = String + nil }
+
+	doc [======[
+		@name CustomTexture
+		@type property
+		@desc The custom texture path
+	]======]
+	property "CustomTexture" { Type = String + nil }
+
+	doc [======[
+		@name CustomTooltip
+		@type property
+		@desc The custom tooltip
+	]======]
+	property "CustomTooltip" { Type = String + nil }
 endinterface "IFActionHandler"

@@ -7,9 +7,9 @@
 
 	<!-- Interface -->
 	<Script file="Interface\IFKeyBinding.lua"/>
-	<Script file="Interface\IFActionHandler.lua"/>
-	<!-- Action Type System >
-	<Include file="ActionHandler\ActionHandler.xml"/ -->
+	<!-- Script file="Interface\IFActionHandler.lua"/ -->
+	<!-- Action Type System -->
+	<Include file="ActionHandler\ActionHandler.xml"/>
 
 	<!-- ActionButton -->
 	<Script file="Widget\ActionButton.lua"/>

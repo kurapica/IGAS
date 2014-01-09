@@ -742,6 +742,21 @@ do
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
 
+			UpdateAction = [=[
+				local name = self:GetAttribute("actiontype")
+
+				-- Custom update
+				if _UpdateSnippet[name] then
+					Manager:RunFor(
+						self, _UpdateSnippet[name],
+						self:GetAttribute(_ActionTargetMap[name]),
+						_ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
+					)
+				end
+
+				self:CallMethod("IFActionHandler_UpdateAction")
+			]=]
+
 			ClearAction = [=[
 				local name = self:GetAttribute("actiontype")
 
@@ -761,19 +776,62 @@ do
 				end
 			]=]
 
-			UpdateAction = [=[
-				local name = self:GetAttribute("actiontype")
+			CopyAction = [=[
+				local source = ...
+				local name = source:GetAttribute("actiontype")
+				local target = source:GetAttribute(_ActionTargetMap[name])
+				local detail = _ActionTargetDetail[name] and source:GetAttribute(_ActionTargetDetail[name])
 
-				-- Custom update
-				if _UpdateSnippet[name] then
-					Manager:RunFor(
-						self, _UpdateSnippet[name],
-						self:GetAttribute(_ActionTargetMap[name]),
-						_ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
-					)
+				Manager:RunFor(self, ClearAction)
+
+				self:SetAttribute("actiontype", name)
+
+				self:SetAttribute("type", _ActionTypeMap[name])
+				self:SetAttribute(_ActionTargetMap[name], target)
+
+				if detail ~= nil and _ActionTargetDetail[name] then
+					self:SetAttribute(_ActionTargetDetail[name], detail)
 				end
 
-				self:CallMethod("IFActionHandler_UpdateAction")
+				Manager:RunFor(self, UpdateAction)
+			]=]
+
+			SwapAction = [=[
+				local source = ...
+
+				local name = source:GetAttribute("actiontype")
+				local target = source:GetAttribute(_ActionTargetMap[name])
+				local detail = _ActionTargetDetail[name] and source:GetAttribute(_ActionTargetDetail[name])
+
+				local sname = self:GetAttribute("actiontype")
+				local starget = self:GetAttribute(_ActionTargetMap[sname])
+				local sdetail = _ActionTargetDetail[sname] and self:GetAttribute(_ActionTargetDetail[sname])
+
+				Manager:RunFor(source, ClearAction)
+				Manager:RunFor(self, ClearAction)
+
+				-- Set for source
+				source:SetAttribute("actiontype", sname)
+
+				source:SetAttribute("type", _ActionTypeMap[sname])
+				source:SetAttribute(_ActionTargetMap[sname], starget)
+
+				if sdetail ~= nil and _ActionTargetDetail[sname] then
+					source:SetAttribute(_ActionTargetDetail[sname], sdetail)
+				end
+
+				-- Set for self
+				self:SetAttribute("actiontype", name)
+
+				self:SetAttribute("type", _ActionTypeMap[name])
+				self:SetAttribute(_ActionTargetMap[name], target)
+
+				if detail ~= nil and _ActionTargetDetail[name] then
+					self:SetAttribute(_ActionTargetDetail[name], detail)
+				end
+
+				Manager:RunFor(source, UpdateAction)
+				Manager:RunFor(self, UpdateAction)
 			]=]
 
 			DragStart = [=[
@@ -1055,6 +1113,9 @@ do
     	-- Button UpdateAction method added to secure part
     	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
     	self:SetAttribute("UpdateAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...) ]])
+    	self:SetAttribute("ClearAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, ClearAction, ...)", ...) ]])
+    	self:SetAttribute("CopyAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, CopyAction, ...)", ...) ]])
+    	self:SetAttribute("SwapAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, SwapAction, ...)", ...) ]])
 
     	if not self:GetAttribute("actiontype") then
     		self:SetAttribute("actiontype", "empty")

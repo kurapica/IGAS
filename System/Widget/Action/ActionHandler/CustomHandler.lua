@@ -17,22 +17,14 @@ handler = ActionTypeHandler {
 
 	ReceiveStyle = "Block",
 
-	InitSnippet = [[
-	]],
-
-	PickupSnippet = [[
-	]],
-
-	UpdateSnippet = [[
-	]],
-
-	ReceiveSnippet = [[
-	]],
-
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods
+function handler:GetActionText()
+	return self.CustomText
+end
+
 function handler:GetActionTexture()
 	return self.CustomTexture
 end
@@ -55,4 +47,40 @@ interface "IFActionHandler"
 
 		return old_SetAction(self, kind, target, ...)
 	end
+
+	doc [======[
+		@name Custom
+		@type property
+		@desc The custom action
+	]======]
+	property "Custom" {
+		Get = function(self)
+			return self:GetAttribute("actiontype") == "custom" and self.custom or self:GetAttribute("custom") or nil
+		end,
+		Set = function(self, value)
+			self:SetAction("custom", value)
+		end,
+		Type = String + Function + nil,
+	}
+
+	doc [======[
+		@name CustomText
+		@type property
+		@desc The custom text
+	]======]
+	property "CustomText" { Type = String + nil }
+
+	doc [======[
+		@name CustomTexture
+		@type property
+		@desc The custom texture path
+	]======]
+	property "CustomTexture" { Type = String + nil }
+
+	doc [======[
+		@name CustomTooltip
+		@type property
+		@desc The custom tooltip
+	]======]
+	property "CustomTooltip" { Type = String + nil }
 endinterface "IFActionHandler"

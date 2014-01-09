@@ -61,7 +61,7 @@ interface "IFActionHandler"
 	]======]
 	property "WorldMarker" {
 		Get = function(self)
-			return self:GetAttribute("type") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
+			return self:GetAttribute("actiontype") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("worldmarker", value, self.WorldMarkerActionType)
@@ -76,7 +76,7 @@ interface "IFActionHandler"
 	]======]
 	property "WorldMarkerActionType" {
 		Get = function (self)
-			return self:GetAttribute("type") == "worldmarker" and self:GetAttribute("action")
+			return self:GetAttribute("actiontype") == "worldmarker" and self:GetAttribute("action")
 		end,
 		Set = function (self, type)
 			self:SetAction("worldmarker", self.WorldMarker, type)

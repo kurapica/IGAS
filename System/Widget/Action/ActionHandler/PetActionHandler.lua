@@ -43,44 +43,44 @@ end
 
 
 function PLAYER_CONTROL_LOST(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function PLAYER_CONTROL_GAINED(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function PLAYER_FARSIGHT_FOCUS_CHANGED(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function UNIT_PET(self, unit)
 	if unit == "player" then
-		return handler:Refresh(RefreshActionButton)
+		return handler:Refresh()
 	end
 end
 
 function UNIT_FLAGS(self, unit)
 	if unit == "pet" then
-		return handler:Refresh(RefreshActionButton)
+		return handler:Refresh()
 	end
 end
 
 function PET_BAR_UPDATE(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function PET_UI_UPDATE(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function UPDATE_VEHICLE_ACTIONBAR(self)
-	return handler:Refresh(RefreshActionButton)
+	return handler:Refresh()
 end
 
 function UNIT_AURA(self, unit)
 	if unit == "pet" then
-		return handler:Refresh(RefreshActionButton)
+		return handler:Refresh()
 	end
 end
 
@@ -104,11 +104,8 @@ handler = ActionTypeHandler {
 
 	IsPlayerAction = false,
 
-	InitSnippet = [[
-	]],
-
 	PickupSnippet = [[
-		return "petaction", ...
+		return "clear", "petaction", ...
 	]],
 
 	UpdateSnippet = [[
@@ -119,9 +116,6 @@ handler = ActionTypeHandler {
 			self:SetAttribute("type2", "macro")
 			self:SetAttribute("macrotext2", "/click PetActionButton".. target .. " RightButton")
 		end
-	]],
-
-	ReceiveSnippet = [[
 	]],
 
 	ClearSnippet = [[
@@ -184,7 +178,7 @@ interface "IFActionHandler"
 	]======]
 	property "PetAction" {
 		Get = function(self)
-			return self:GetAttribute("type") == "pet" and tonumber(self:GetAttribute("action")) or nil
+			return self:GetAttribute("actiontype") == "pet" and tonumber(self:GetAttribute("action")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("pet", value)

@@ -54,11 +54,9 @@ class "ActionButton"
 		@name UpdateAction
 		@type method
 		@desc Update the action button when content is changed
-		@param kind string, the kind of the action, like 'macro' | 'spell' | 'action' | etc.
-		@param target string|number, the content of the action, like 'Revive' for 'spell'
 		@return nil
 	]======]
-	function UpdateAction(self, kind, target, texture, tooltip)
+	function UpdateAction(self)
 		if self:HasAction() then
 			self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot2]]
 		else

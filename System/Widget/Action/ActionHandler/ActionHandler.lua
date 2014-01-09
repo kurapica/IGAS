@@ -273,7 +273,7 @@ interface "IFActionHandler"
 		@return nil
 	]======]
 	function SetActionPage(self, page)
-		page = tonumber(page)
+		page = tonumber(page) or 0
 		page = page and floor(page)
 		if page and page <= 0 then page = nil end
 
@@ -283,13 +283,10 @@ interface "IFActionHandler"
 			IFNoCombatTaskHandler._RegisterNoCombatTask(
 				function (self, page)
 					self:SetAttribute("actionpage", page)
-					if page then
-						SaveAction(self, "action", self.ID or 1)
-					else
-						SaveAction(self)
-					end
+					self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
 				end,
-				self, page)
+				self, page
+			)
 		end
 	end
 
@@ -300,9 +297,7 @@ interface "IFActionHandler"
 		@return number the action button's action page if set, or nil
 	]======]
 	function GetActionPage(self)
-		if not IsMainPage(self) then
-			return tonumber(self:GetAttribute("actionpage"))
-		end
+		return tonumber(self:GetAttribute("actionpage"))
 	end
 
 	doc [======[
@@ -314,8 +309,8 @@ interface "IFActionHandler"
 	]======]
 	function SetMainPage(self, isMain)
 		isMain = isMain and true or nil
-		if self.__IFActionHandler_IsMain ~= isMain then
-			self.__IFActionHandler_IsMain = isMain
+		if self.__IFActionHandler_IsMainPage ~= isMain then
+			self.__IFActionHandler_IsMainPage = isMain
 
 			if isMain then
 				IFNoCombatTaskHandler._RegisterNoCombatTask(
@@ -328,8 +323,9 @@ interface "IFActionHandler"
 								btn:SetAttribute("actionpage", MainPage[0] or 1)
 							end
 						]])
-						SaveAction(self, "action", self.ID or 1)
-					end, self)
+						self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
+					end, self
+				)
 			else
 				IFNoCombatTaskHandler._RegisterNoCombatTask(
 					function (self)
@@ -341,8 +337,9 @@ interface "IFActionHandler"
 								btn:SetAttribute("actionpage", nil)
 							end
 						]])
-						SaveAction(self)
-					end, self)
+						self:SetAction("action", tonumber(self:GetAttribute("action")) or self.ID or 1)
+					end, self
+				)
 			end
 		end
 	end
@@ -354,7 +351,7 @@ interface "IFActionHandler"
 		@return boolean true if the action button is belong to main page
 	]======]
 	function IsMainPage(self)
-		return self.__IFActionHandler_IsMain or false
+		return self.__IFActionHandler_IsMainPage or false
 	end
 
 	------------------------------------------------------
@@ -367,7 +364,7 @@ interface "IFActionHandler"
 	]======]
 	property "Action" {
 		Get = function(self)
-			return self:GetAttribute("type") == "action" and tonumber(self:GetAttribute("action")) or nil
+			return self:GetAttribute("actiontype") == "action" and tonumber(self:GetAttribute("action")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("action", value)
@@ -380,29 +377,13 @@ interface "IFActionHandler"
 		@type property
 		@desc The action page of the action button if type is 'action'
 	]======]
-	property "ActionPage" {
-		Get = function(self)
-			return self:GetActionPage()
-		end,
-		Set = function(self, value)
-			self:SetActionPage(value)
-		end,
-		Type = System.Number + nil,
-	}
+	property "ActionPage" { Type = System.Number + nil }
 
 	doc [======[
 		@name MainPage
 		@type property
 		@desc Whether the action button is used in the main page
 	]======]
-	property "MainPage" {
-		Get = function(self)
-			return self:IsMainPage()
-		end,
-		Set = function(self, value)
-			self:SetMainPage(value)
-		end,
-		Type = System.Boolean,
-	}
+	property "MainPage" { Type = System.Boolean }
 
 endinterface "IFActionHandler"

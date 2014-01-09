@@ -66,7 +66,7 @@ function UpdateMount()
 	end
 
 	if str ~= "" then
-		_IFActionHandler_Buttons:EachK("companion", UpdateActionButton)
+		_IFActionHandler_Buttons:EachK("companion", RefreshActionButton)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 			handler:RunSnippet( str )
 
@@ -129,21 +129,21 @@ handler = ActionTypeHandler {
 
 -- Overwrite methods
 function handler:PickupAction(target)
-	if _MountMap[target] then
-		return PickupCompanion('mount', _MountMap[target])
-	end
+	local target = _MountMap[self.ActionTarget]
+
+	return target and PickupCompanion('mount', target)
 end
 
 function handler:GetActionTexture()
-	local target = self.ActionTarget
-	if _MountMap[target] then
-		return select(4, GetCompanionInfo("MOUNT", _MountMap[target]))
-	end
+	local target = _MountMap[self.ActionTarget]
+
+	return target and (select(4, GetCompanionInfo("MOUNT", target)))
 end
 
 function handler:IsActivedAction()
-	local target = self.ActionTarget
-	return _MountMap[target] and select(5, GetCompanionInfo("MOUNT", _MountMap[target]))
+	local target = _MountMap[self.ActionTarget]
+
+	return target and (select(5, GetCompanionInfo("MOUNT", target)))
 end
 
 function handler:IsUsableAction()
@@ -151,10 +151,9 @@ function handler:IsUsableAction()
 end
 
 function handler:SetTooltip(GameTooltip)
-	local target = self.ActionTarget
-	if _MountMap[target] then
-		GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", _MountMap[target])))
-	end
+	local target = _MountMap[self.ActionTarget]
+
+	return target and GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", target)))
 end
 
 -- Expand IFActionHandler
@@ -169,7 +168,7 @@ interface "IFActionHandler"
 	]======]
 	property "Mount" {
 		Get = function(self)
-			return self:GetAttribute("type") == "companion" and tonumber(self:GetAttribute("companion")) or nil
+			return self:GetAttribute("actiontype") == "companion" and tonumber(self:GetAttribute("companion")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("companion", value)

@@ -134,7 +134,7 @@ interface "IFActionHandler"
 	]======]
 	property "FlytoutID" {
 		Get = function(self)
-			return self:GetAttribute("type") == "flyout" and tonumber(self:GetAttribute("spell")) or nil
+			return self:GetAttribute("actiontype") == "flyout" and tonumber(self:GetAttribute("spell")) or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("flyout", value)
