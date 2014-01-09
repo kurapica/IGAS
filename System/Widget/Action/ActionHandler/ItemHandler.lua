@@ -86,7 +86,8 @@ function handler:IsEquippedItem()
 end
 
 function handler:IsActivedAction()
-	return IsCurrentItem(self.ActionTarget)
+	-- Block now, no event to deactivate
+	return false and IsCurrentItem(self.ActionTarget)
 end
 
 function handler:IsUsableAction()

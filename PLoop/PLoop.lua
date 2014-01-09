@@ -6449,7 +6449,7 @@ do
 		-- Meta-Method
 		------------------------------------------------------
 		function __tostring(self)
-			return ("%s( %q )"):format(tostring(Event), self.__Name)
+			return ("%s( %q )"):format(tostring(Event), self.Name)
 		end
 	endclass "Event"
 

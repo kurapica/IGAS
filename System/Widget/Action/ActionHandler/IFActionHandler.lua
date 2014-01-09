@@ -103,7 +103,7 @@ interface "IFActionTypeHandler"
 		@return nil
 	]======]
 	function Refresh(self, button, mode)
-		if not type(button) == "table" then
+		if type(button) ~= "table" then
 			return _IFActionHandler_Buttons:EachK(self.Name, button or UpdateActionButton)
 		else
 			if mode then
@@ -337,7 +337,7 @@ interface "IFActionTypeHandler"
 		@type property
 		@desc Whether the handler is enabled(has buttons)
 	]======]
-	property "Enabled" { Type = Boolean, Event = OnEnableChanged }
+	property "Enabled" { Type = Boolean, Event = "OnEnableChanged" }
 
 	doc [======[
 		@name Manager
@@ -619,8 +619,6 @@ class "ActionList"
 		if kind ~= nil and not _IFActionTypeHandler[kind] then
 			error("value not supported.", 2)
 		end
-
-		kind = kind and strlower(kind)
 
 		local preKey = "__ActionList_Prev"
 		local nxtKey = "__ActionList_Next"

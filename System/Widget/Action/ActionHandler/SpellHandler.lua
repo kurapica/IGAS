@@ -201,10 +201,11 @@ function handler:IsAttackAction()
 end
 
 function handler:IsActivedAction()
-	if _StanceMap[self.ActionTarget] then
+	local target = self.ActionTarget
+	if _StanceMap[target] then
 		return select(3, GetShapeshiftFormInfo(_StanceMap[target]))
 	else
-		return IsCurrentSpell(self.ActionTarget)
+		return IsCurrentSpell(target)
 	end
 end
 
