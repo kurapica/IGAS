@@ -15,6 +15,8 @@ function OnEnable(self)
 	self:RegisterEvent("PET_JOURNAL_LIST_UPDATE")
 
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function PET_JOURNAL_LIST_UPDATE(self)

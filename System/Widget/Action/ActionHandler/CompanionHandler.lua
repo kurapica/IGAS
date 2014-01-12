@@ -25,7 +25,11 @@ function OnEnable(self)
 	self:RegisterEvent("COMPANION_UPDATE")
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 
+	UpdateMount()
+
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function PLAYER_ENTERING_WORLD(self)

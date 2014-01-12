@@ -21,6 +21,8 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function BAG_UPDATE(self)

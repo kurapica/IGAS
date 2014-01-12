@@ -23,6 +23,8 @@ function OnEnable(self)
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
 
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function ACTIONBAR_SLOT_CHANGED(self, slot)

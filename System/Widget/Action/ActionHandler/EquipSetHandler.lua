@@ -22,7 +22,11 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("EQUIPMENT_SETS_CHANGED")
 
+	UpdateEquipmentSet()
+
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function PLAYER_EQUIPMENT_CHANGED(self)
@@ -107,7 +111,8 @@ function handler:GetActionTexture()
 end
 
 function handler:IsEquippedItem()
-	return true
+	local target = self.ActionTarget
+	return _EquipSetMap[target] and select(4, GetEquipmentSetInfo(_EquipSetMap[target]))
 end
 
 function handler:IsActivedAction()

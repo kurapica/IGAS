@@ -31,6 +31,8 @@ function OnEnable(self)
 	self:RegisterEvent("PET_BAR_UPDATE_USABLE")
 
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function PET_STABLE_UPDATE(self)

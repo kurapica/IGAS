@@ -1021,9 +1021,7 @@ do
 					_IFActionHandler_ManagerFrame:SetFrameRef("UpdatingButton", self)
 					_IFActionHandler_ManagerFrame:Execute(_IFActionHandler_PostReceiveSnippet:format(GetFormatString(kind), GetFormatString(value), GetFormatString(subtype), GetFormatString(detail)))
 
-					if oldName and oldTarget then
-						PickupAny("clear", oldName, oldTarget, oldDetail)
-					end
+					PickupAny("clear", oldName, oldTarget, oldDetail)
 				end
 			elseif self.__IFActionHandler_PreType then
 				-- Keep safe

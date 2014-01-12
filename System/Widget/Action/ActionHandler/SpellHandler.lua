@@ -32,6 +32,8 @@ function OnEnable(self)
 	UpdateStanceMap()
 
 	OnEnable = nil
+
+	return handler:Refresh()
 end
 
 function LEARNED_SPELL_IN_TAB(self)
