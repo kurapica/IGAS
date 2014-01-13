@@ -106,6 +106,8 @@ handler = ActionTypeHandler {
 
 	IsPlayerAction = false,
 
+	IsPetAction = true,
+
 	PickupSnippet = [[
 		return "petaction", ...
 	]],

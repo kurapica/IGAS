@@ -386,6 +386,13 @@ interface "IFActionTypeHandler"
 	property "IsPlayerAction" { Type = Boolean, Default = true }
 
 	doc [======[
+		@name IsPetAction
+		@type property
+		@desc Whether the action is pet action
+	]======]
+	property "IsPetAction" { Type = Boolean, Default = false }
+
+	doc [======[
 		@name DragStyle
 		@type property
 		@desc The drag style of the action type
@@ -1338,7 +1345,7 @@ do
 			UpdateGrid(self)
 		end
 
-		if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+		if handler.IsPetAction and handler.ReceiveStyle ~= "Block" then
 			UpdatePetGrid(self)
 		end
 
@@ -1450,7 +1457,7 @@ do
 		_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter + 1
 		if _IFActionHandler_PetGridCounter == 1 then
 			for kind, handler in pairs(_IFActionTypeHandler) do
-				if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+				if handler.IsPetAction and handler.ReceiveStyle ~= "Block" then
 					_IFActionHandler_Buttons:EachK(kind, UpdatePetGrid)
 				end
 			end
@@ -1462,7 +1469,7 @@ do
 			_IFActionHandler_PetGridCounter = _IFActionHandler_PetGridCounter - 1
 			if _IFActionHandler_PetGridCounter == 0 then
 				for kind, handler in pairs(_IFActionTypeHandler) do
-					if not handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
+					if handler.IsPetAction and handler.ReceiveStyle ~= "Block" then
 						_IFActionHandler_Buttons:EachK(kind, UpdatePetGrid)
 					end
 				end
