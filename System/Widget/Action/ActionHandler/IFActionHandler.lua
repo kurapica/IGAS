@@ -534,6 +534,10 @@ __Cache__() class "ActionTypeHandler"
 	------------------------------------------------------
 	-- Meta-methods
 	------------------------------------------------------
+	function __exist(name)
+		return name and _IFActionTypeHandler[name]
+	end
+
 	function __call(self)
 		return _IFActionHandler_Buttons(self.Type)
 	end
