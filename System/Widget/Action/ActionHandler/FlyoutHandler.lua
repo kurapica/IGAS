@@ -10,8 +10,6 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
-_Enabled = false
-
 MAX_SKILLLINE_TABS = _G.MAX_SKILLLINE_TABS
 
 enum "FlyoutDirection" {
@@ -101,8 +99,6 @@ handler = ActionTypeHandler {
 	InitSnippet = [[
 		_FlyoutSlot = newtable()
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

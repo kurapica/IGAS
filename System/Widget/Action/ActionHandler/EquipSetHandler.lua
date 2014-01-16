@@ -10,8 +10,6 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
-_Enabled = false
-
 _EquipSetTemplate = "_EquipSet[%q] = %d\n"
 
 _EquipSetMap = {}
@@ -22,11 +20,7 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("EQUIPMENT_SETS_CHANGED")
 
-	UpdateEquipmentSet()
-
 	OnEnable = nil
-
-	return handler:Refresh()
 end
 
 function PLAYER_EQUIPMENT_CHANGED(self)
@@ -86,8 +80,6 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

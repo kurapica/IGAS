@@ -10,8 +10,6 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
-_Enabled = false
-
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
 
 _StanceMap = {}
@@ -29,11 +27,7 @@ function OnEnable(self)
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 
-	UpdateStanceMap()
-
 	OnEnable = nil
-
-	return handler:Refresh()
 end
 
 function LEARNED_SPELL_IN_TAB(self)
@@ -159,8 +153,6 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

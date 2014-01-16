@@ -10,8 +10,6 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
-_Enabled = false
-
 _MountMapTemplate = "_MountMap[%d] = %d\n"
 _MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
 
@@ -25,11 +23,7 @@ function OnEnable(self)
 	self:RegisterEvent("COMPANION_UPDATE")
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 
-	UpdateMount()
-
 	OnEnable = nil
-
-	return handler:Refresh()
 end
 
 function PLAYER_ENTERING_WORLD(self)
@@ -70,7 +64,8 @@ function UpdateMount()
 	end
 
 	if str ~= "" then
-		_IFActionHandler_Buttons:EachK("companion", RefreshActionButton)
+		handler:Refresh()
+
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
 			handler:RunSnippet( str )
 
@@ -127,8 +122,6 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods
