@@ -26,6 +26,7 @@ function OnEnable(self)
 	self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
 
 	OnEnable = nil
 end
@@ -70,6 +71,10 @@ end
 
 function SPELL_UPDATE_USABLE(self)
 	return handler:Refresh(RefreshUsable)
+end
+
+function CURRENT_SPELL_CAST_CHANGED(self)
+	return handler:Refresh(RefreshButtonState)
 end
 
 function UpdateStanceMap()

@@ -786,7 +786,11 @@ do
 			]=]
 
 			CopyAction = [=[
-				local source = ...
+				local source = self:GetFrameRef("CopyTarget")
+				self:SetAttribute("frameref-CopyTarget", nil)
+
+				if not source then return end
+
 				local name = source:GetAttribute("actiontype")
 				local target = source:GetAttribute(_ActionTargetMap[name])
 				local detail = _ActionTargetDetail[name] and source:GetAttribute(_ActionTargetDetail[name])
@@ -806,7 +810,10 @@ do
 			]=]
 
 			SwapAction = [=[
-				local source = ...
+				local source = self:GetFrameRef("SwapTarget")
+				self:SetAttribute("frameref-SwapTarget", nil)
+
+				if not source then return end
 
 				local name = source:GetAttribute("actiontype")
 				local target = source:GetAttribute(_ActionTargetMap[name])
@@ -1120,9 +1127,9 @@ do
     	-- Button UpdateAction method added to secure part
     	self:SetFrameRef("IFActionHandler_Manager", _IFActionHandler_ManagerFrame)
     	self:SetAttribute("UpdateAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, UpdateActionAttribute, ...)", ...) ]])
-    	self:SetAttribute("ClearAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, ClearAction, ...)", ...) ]])
-    	self:SetAttribute("CopyAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, CopyAction, ...)", ...) ]])
-    	self:SetAttribute("SwapAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, SwapAction, ...)", ...) ]])
+    	self:SetAttribute("ClearAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, ClearAction)") ]])
+    	self:SetAttribute("CopyAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, CopyAction)") ]])
+    	self:SetAttribute("SwapAction", [[ return self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, "Manager:RunFor(self, SwapAction)") ]])
 
     	if not self:GetAttribute("actiontype") then
     		self:SetAttribute("actiontype", "empty")
