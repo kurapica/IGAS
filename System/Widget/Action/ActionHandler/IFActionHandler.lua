@@ -1987,6 +1987,8 @@ interface "IFActionHandler"
 		self:RegisterForDrag("LeftButton", "RightButton")
 		_IFActionHandler_Buttons:Insert(self)
 
+		_IFActionHandler_Buttons[self] = self.ActionType
+
 		-- Since secure code can only call method in the UI part
 		IGAS:GetUI(self).IFActionHandler_UpdateAction = UI_UpdateActionButton
 		IFNoCombatTaskHandler._RegisterNoCombatTask(SetupActionButton, self)
