@@ -8,14 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Action.EmptyHandler", version) then
 	return
 end
 
-_Enabled = false
-
 handler = ActionTypeHandler {
 	Name = "empty",
 	DragStyle = "Block",
 	ReceiveStyle = "Clear",
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 function handler:HasAction()
