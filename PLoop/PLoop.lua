@@ -138,6 +138,9 @@ end
 -- GLOBAL Definition
 ------------------------------------------------------
 do
+	-- Used to enable/disable document system, not started with '_', so can be disabled outsider
+	DOCUMENT_ENABLED = DOCUMENT_ENABLED == nil and true or false
+
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
 	TYPE_STRUCT = "Struct"
@@ -712,7 +715,7 @@ end
 -- Documentation
 ------------------------------------------------------
 do
-	_EnableDocument = _EnableDocument == nil and true or _EnableDocument
+	-- @todo: update
 	_MetaDoc = _MetaDoc or {}
 	do
 		_MetaDoc.__index = function(self,  key)
@@ -755,6 +758,7 @@ do
 			end
 		end
 	end
+	-- @todo: update
 
 	------------------------------------
 	--- Registe documents
@@ -767,12 +771,18 @@ do
 	--	@desc Common methods for class addon and interface
 	-- ]]
 	------------------------------------
-	function document(documentation)
-		if not _EnableDocument or type(documentation) ~= "string" then return end
+	function document(documentation, owner, targetType, name)
+		if not DOCUMENT_ENABLED or type(documentation) ~= "string" then return end
 
-		local info = rawget(_NSInfo, getfenv(2)[OWNER_FIELD])
+		owner = owner or getfenv(2)[OWNER_FIELD]
+
+		if not owner then return end
+
+		local info = rawget(_NSInfo, owner)
 
 		if not info then return end
+
+
 
 		documentation = documentation:gsub("\n", ""):gsub("\r", ""):gsub("%s+@", "@")
 
@@ -835,14 +845,6 @@ do
 		end
 
 		return
-	end
-
-	function EnableDocument(enabled)
-		_EnableDocument = enabled and true or false
-	end
-
-	function IsDocumentEnabled()
-		return _EnableDocument or false
 	end
 end
 
@@ -8708,6 +8710,33 @@ do
 			target.Synthesize = self.NameCase
 		end
 	endclass "__Synthesize__"
+
+	__AttributeUsage__{Inherited = false, RunOnce = true}
+	class "__Doc__"
+		inherit "__Attribute__"
+
+		doc [======[
+			@name __Doc__
+			@type class
+			@desc Used to document the features like : class, struct, enum, interface, property, event and method
+		]======]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+	    function __Doc__(self, data)
+	    	self.Doc = data
+
+	    	return Super(self)
+	    end
+	endclass "__Doc__"
 end
 
 ------------------------------------------------------
