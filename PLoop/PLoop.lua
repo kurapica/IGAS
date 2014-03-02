@@ -4969,7 +4969,7 @@ do
 			@usage System.Reflector.EnableDocumentSystem(true)
 		]======]
 		function EnableDocumentSystem(enabled)
-			EnableDocument(enabled)
+			--EnableDocument(enabled)
 		end
 
 		doc [======[
