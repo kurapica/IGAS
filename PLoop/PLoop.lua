@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2013/12/31
--- Version          r91
+-- Last Update Date 2014/03/05
+-- Version          r92
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -715,115 +715,127 @@ end
 -- Documentation
 ------------------------------------------------------
 do
-	-- @todo: update
-	_MetaDoc = _MetaDoc or {}
-	do
-		_MetaDoc.__index = function(self,  key)
-			if type(key) ~= "string" or key:match("^_") then return end
+	function getSuperDoc(info, key)
+		if info.SuperClass then
+			local sinfo = _NSInfo[info.SuperClass]
 
-			local value, sinfo
+			while sinfo do
+				if sinfo.Documentation and sinfo.Documentation[key] then
+					return sinfo.Documentation[key]
+				end
 
-			-- Check SuperClass
-			local info = rawget(self, "__OwnerInfo")
-
-			if key == "class-" .. info.Name or key == "interface-" .. info.Name or key == "default-" .. info.Name then
-				return
-			end
-
-			if info.SuperClass then
-				sinfo = _NSInfo[info.SuperClass]
-
-				sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
-
-				value = sinfo.Documentation[key]
-				if value then
-					rawset(self, key, value)
-					return value
+				if sinfo.SuperClass then
+					sinfo = _NSInfo[sinfo.SuperClass]
+				else
+					break
 				end
 			end
+		end
 
-			-- Check Interface
-			if info.ExtendInterface then
-				for _, IF in ipairs(info.ExtendInterface) do
-					sinfo = _NSInfo[IF]
+		-- Check Interface
+		if info.Cache4Interface then
+			for _, IF in ipairs(info.Cache4Interface) do
+				local sinfo = _NSInfo[IF]
 
-					sinfo.Documentation = sinfo.Documentation or setmetatable({__OwnerInfo=sinfo}, _MetaDoc)
-
-					value = sinfo.Documentation[key]
-					if value then
-						rawset(self, key, value)
-						return value
-					end
+				if sinfo.Documentation and sinfo.Documentation[key] then
+					return sinfo.Documentation[key]
 				end
 			end
 		end
 	end
-	-- @todo: update
 
-	------------------------------------
-	--- Registe documents
-	-- @name document
-	-- @class function
-	-- @param string the document
-	-- @usage document [[
-	--	@name IFModule
-	--	@type interface
-	--	@desc Common methods for class addon and interface
-	-- ]]
-	------------------------------------
-	function document(documentation, owner, targetType, name)
-		if not DOCUMENT_ENABLED or type(documentation) ~= "string" then return end
+	function getTargetType(info, name, targetType)
+		if type(name) ~= "string" then return end
+
+		if not targetType then
+			-- Find the targetType based on the name
+			if name == info.Name then
+				targetType = info.Type:upper()
+			elseif info.Cache4Event[name] then
+				targetType = "EVENT"
+			elseif info.Cache4Property[name] then
+				targetType = "PROPERTY"
+			elseif info.Cache4Method[name] then
+				targetType = "METHOD"
+			end
+		elseif type(targetType) == "number" then
+			targetType = AttributeTargets(targetType)
+		end
+
+		return targetType
+	end
+
+	function document(data, name, targetType, owner)
+		if not DOCUMENT_ENABLED or type(data) ~= "string" then return end
 
 		owner = owner or getfenv(2)[OWNER_FIELD]
 
-		if not owner then return end
+		if not owner or type(name) ~= "string" then return end
 
 		local info = rawget(_NSInfo, owner)
 
 		if not info then return end
 
+		-- Check the type
+		if type(targetType) == "number" then
+			targetType = AttributeTargets(targetType)
+		else
+			targetType = targetType or "METHOD"
+		end
 
+		if not targetType then return end
 
-		documentation = documentation:gsub("\n", ""):gsub("\r", ""):gsub("%s+@", "@")
+		-- Get the head space in the first line and remove it from all lines
+		local space = data:match("^%s+")
 
-		local name = documentation:match("@name%s+([^@%s]+)")
-		local doctype = documentation:match("@type%s(%w+)") or "default"
+		if space then
+			data = data:gsub("^%s+", ""):gsub("\n"..space, "\n"):gsub("\r"..space, "\r")
+		end
 
-		if name then
-			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
-			info.Documentation[doctype .. "-" .. name] = documentation
+		info.Documentation = info.Documentation or {}
+		info.Documentation[targetType .. "-" .. name] = data
+	end
+
+	function GetDocument(owner, name, targetType)
+		if not DOCUMENT_ENABLED then return end
+
+		if type(owner) == "string" then
+			owner = GetNameSpace(GetDefaultNameSpace(), owner)
+		end
+
+		local info = rawget(_NSInfo, owner)
+
+		if info and (name == nil or type(name) == "string") then
+			name = name or info.Name
+
+			targetType = getTargetType(info, name, targetType)
+
+			if not targetType then return end
+
+			local key = targetType .. "-" .. name
+
+			return info.Documentation and info.Documentation[key]or (targetType ~= "CLASS" and targetType ~= "INTERFACE") and getSuperDoc(info, key) or nil
 		end
 	end
 
-	function HasDocumentPart(ns, doctype, name)
-		if type(ns) == "string" then
-			ns = GetNameSpace(GetDefaultNameSpace(), ns)
+	function GetPartDocument(owner, name, part, targetType)
+		--[[if not  DOCUMENT_ENABLED then return end
+
+		if type(owner) == "string" then
+			owner = GetNameSpace(GetDefaultNameSpace(), owner)
 		end
-		local info = rawget(_NSInfo, ns)
 
-		doctype = type(doctype) == "string" and doctype or "default"
+		local info = rawget(_NSInfo, owner)
 
-		if info and type(name) == "string" then
-			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
+		if info and (name == nil or type(name) == "string") then
+			name = name or info.Name
 
-			if info.Documentation[doctype .. "-" .. name] then
-				return true
-			end
-		end
-	end
+			targetType = getTargetType(info, name, targetType)
 
-	function GetDocumentPart(ns, doctype, name, part)
-		if type(ns) == "string" then
-			ns = GetNameSpace(GetDefaultNameSpace(), ns)
-		end
-		local info = rawget(_NSInfo, ns)
+			if not targetType then return false end
 
-		doctype = type(doctype) == "string" and doctype or "default"
-
-		if info and type(name) == "string" then
-			info.Documentation = info.Documentation or setmetatable({__OwnerInfo=info}, _MetaDoc)
-
-			local value = info.Documentation[doctype .. "-" .. name]
+			local key = targetType .. "-" .. name
+			local value = info.Documentation and info.Documentation[key] or (targetType ~= "CLASS" and targetType ~= "INTERFACE") and getSuperDoc(info, key) or nil
 
 			if value then
 				if type(part) == "string" then
@@ -841,7 +853,7 @@ do
 						return value:gmatch("@(%w+)%s+([^@]*)")
 					end
 				end
-			end
+			end--]]
 		end
 
 		return
@@ -4988,7 +5000,7 @@ do
 			@desc Get the document settings
 			@format namespace, docType, name[, part]
 			@param namespace
-			@param doctype such as "property"
+			@param targetType such as "property"
 			@param name the query name
 			@param part the part name
 			@return Iterator the iterator to get detail
@@ -4997,8 +5009,8 @@ do
 			<br>	do print(part, value)
 			<br>end
 		]======]
-		function GetDocument(ns, doctype, name, part)
-			return GetDocumentPart(ns, doctype, name, part)
+		function GetDocument(ns, targetType, name, part)
+			return GetPartDocument(ns, targetType, name, part)
 		end
 
 		doc [======[
@@ -5006,12 +5018,12 @@ do
 			@type method
 			@desc Check if has the document
 			@param namespace
-			@param doctype
+			@param targetType
 			@param name
 			@return true if the document is present
 		]======]
-		function HasDocument(ns, doctype, name)
-			return HasDocumentPart(ns, doctype, name)
+		function HasDocument(ns, targetType, name)
+			return HasPartDocument(ns, targetType, name)
 		end
 
 		doc [======[
@@ -5108,7 +5120,7 @@ do
 			return result
 		end
 
-		function Help(ns, doctype, name)
+		function Help(ns, targetType, name)
 			if type(ns) == "string" then ns = ForName(ns) end
 
 			if ns and rawget(_NSInfo, ns) then
@@ -5179,11 +5191,11 @@ do
 					return result
 				elseif info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS then
 					-- Interface & Class
-					if type(doctype) ~= "string" then
+					if type(targetType) ~= "string" then
 						local result = ""
 						local desc
 
-						doctype = doctype and true or false
+						targetType = targetType and true or false
 
 						if info.IsFinal then
 							result = result .. "[__Final__]\n"
@@ -5200,10 +5212,10 @@ do
 						if info.Type == TYPE_INTERFACE then
 							result = result .. "[Interface] " .. GetFullName(ns) .. " :"
 
-							if HasDocumentPart(ns, "interface", GetName(ns)) then
-								desc = GetDocumentPart(ns, "interface", GetName(ns), "desc")
-							elseif HasDocumentPart(ns, "default", GetName(ns)) then
-								desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+							if HasPartDocument(ns, "interface", GetName(ns)) then
+								desc = GetPartDocument(ns, "interface", GetName(ns), "desc")
+							elseif HasPartDocument(ns, "default", GetName(ns)) then
+								desc = GetPartDocument(ns, "default", GetName(ns), "desc")
 							end
 						else
 							if info.AutoCache then
@@ -5234,10 +5246,10 @@ do
 
 							result = result .. "[Class] " .. GetFullName(ns) .. " :"
 
-							if HasDocumentPart(ns, "class", GetName(ns)) then
-								desc = GetDocumentPart(ns, "class", GetName(ns), "desc")
-							elseif HasDocumentPart(ns, "default", GetName(ns)) then
-								desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+							if HasPartDocument(ns, "class", GetName(ns)) then
+								desc = GetPartDocument(ns, "class", GetName(ns), "desc")
+							elseif HasPartDocument(ns, "default", GetName(ns)) then
+								desc = GetPartDocument(ns, "default", GetName(ns), "desc")
 							end
 						end
 
@@ -5266,7 +5278,7 @@ do
 						-- Event
 						if next(info.Event) then
 							result = result .. "\n\n  Event :"
-							for _, evt in ipairs(GetEvents(ns, not doctype)) do
+							for _, evt in ipairs(GetEvents(ns, not targetType)) do
 								-- Desc
 								desc = HasDocument(ns, "event", evt) and GetDocument(ns, "event", evt, "desc")
 								desc = desc and desc()
@@ -5283,7 +5295,7 @@ do
 						-- Property
 						if next(info.Property) then
 							result = result .. "\n\n  Property :"
-							for _, prop in ipairs(GetProperties(ns, not doctype)) do
+							for _, prop in ipairs(GetProperties(ns, not targetType)) do
 								-- Desc
 								desc = HasDocument(ns, "property", prop) and GetDocument(ns, "property", prop, "desc")
 								desc = desc and desc()
@@ -5300,7 +5312,7 @@ do
 						-- Method
 						if next(info.Method) then
 							result = result .. "\n\n  Method :"
-							for _, method in ipairs(GetMethods(ns, not doctype)) do
+							for _, method in ipairs(GetMethods(ns, not targetType)) do
 								-- Desc
 								desc = HasDocument(ns, "method", method) and GetDocument(ns, "method", method, "desc")
 								desc = desc and desc()
@@ -5315,7 +5327,7 @@ do
 
 						-- Need
 						if info.Type == TYPE_INTERFACE then
-							desc = GetDocumentPart(ns, "interface", GetName(ns), "overridable")
+							desc = GetPartDocument(ns, "interface", GetName(ns), "overridable")
 
 							if desc then
 								result = result .. "\n\n  Overridable :"
@@ -5391,16 +5403,16 @@ do
 
 								desc = nil
 
-								if HasDocumentPart(ns, "class", GetName(ns)) then
-									desc = GetDocumentPart(ns, "class", GetName(ns), "format")
+								if HasPartDocument(ns, "class", GetName(ns)) then
+									desc = GetPartDocument(ns, "class", GetName(ns), "format")
 									if not desc then
-										desc = GetDocumentPart(ns, "class", GetName(ns), "param")
+										desc = GetPartDocument(ns, "class", GetName(ns), "param")
 										isFormat = false
 									end
-								elseif HasDocumentPart(ns, "default", GetName(ns)) then
-									desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+								elseif HasPartDocument(ns, "default", GetName(ns)) then
+									desc = GetPartDocument(ns, "default", GetName(ns), "desc")
 									if not desc then
-										desc = GetDocumentPart(ns, "default", GetName(ns), "param")
+										desc = GetPartDocument(ns, "default", GetName(ns), "param")
 										isFormat = false
 									end
 								end
@@ -5430,7 +5442,7 @@ do
 									end
 
 									-- Params
-									desc = GetDocumentPart(ns, "class", GetName(ns), "param") or GetDocumentPart(ns, "default", GetName(ns), "param")
+									desc = GetPartDocument(ns, "class", GetName(ns), "param") or GetPartDocument(ns, "default", GetName(ns), "param")
 									if desc then
 										result = result .. "\n\n  Parameter :"
 										for param, info in desc do
@@ -5461,10 +5473,10 @@ do
 						end
 
 						if type(name) ~= "string" then
-							doctype, name = nil, doctype
+							targetType, name = nil, targetType
 						end
 
-						querytype = doctype
+						querytype = targetType
 
 						if not querytype then
 							if HasEvent(ns, name) then
@@ -5478,18 +5490,18 @@ do
 							end
 						end
 
-						doctype = querytype or "default"
+						targetType = querytype or "default"
 
-						if doctype:match("^%a") then
-							result = result .. "[" .. doctype:match("^%a"):upper() .. doctype:sub(2, -1) .. "] " .. name .. " :"
+						if targetType:match("^%a") then
+							result = result .. "[" .. targetType:match("^%a"):upper() .. targetType:sub(2, -1) .. "] " .. name .. " :"
 						else
-							result = result .. "[" .. doctype .. "] " .. name .. " :"
+							result = result .. "[" .. targetType .. "] " .. name .. " :"
 						end
 
-						local hasDocument = HasDocumentPart(ns, doctype, name)
+						local hasDocument = HasPartDocument(ns, targetType, name)
 
 						-- Desc
-						local desc = hasDocument and GetDocumentPart(ns, doctype, name, "desc")
+						local desc = hasDocument and GetPartDocument(ns, targetType, name, "desc")
 						desc = desc and desc()
 						if desc then
 							result = result .. "\n\n  Description :\n    " .. desc:gsub("<br>", "\n    ")
@@ -5502,7 +5514,7 @@ do
 							end
 
 							-- Format
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "format")
 							if desc then
 								result = result .. "\n\n  Format :"
 								for fmt in desc do
@@ -5511,7 +5523,7 @@ do
 							else
 								result = result .. "\n\n  Format :\n    function object:" .. name .. "("
 
-								desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+								desc = hasDocument and GetPartDocument(ns, targetType, name, "param")
 
 								if desc then
 									local isFirst = true
@@ -5530,7 +5542,7 @@ do
 							end
 
 							-- Params
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "param")
 							if desc then
 								result = result .. "\n\n  Parameter :"
 								for param, info in desc do
@@ -5630,7 +5642,7 @@ do
 							end
 
 							-- Format
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "format")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "format")
 							result = result .. "\n\n  Format :"
 							if desc then
 								for fmt in desc do
@@ -5647,7 +5659,7 @@ do
 									result = result .. "\n    object:" .. name .. "("
 								end
 
-								desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+								desc = hasDocument and GetPartDocument(ns, targetType, name, "param")
 
 								if desc then
 									local isFirst = true
@@ -5666,7 +5678,7 @@ do
 							end
 
 							-- Params
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "param")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "param")
 							if desc then
 								result = result .. "\n\n  Parameter :"
 								for param, info in desc do
@@ -5679,7 +5691,7 @@ do
 							end
 
 							-- ReturnFormat
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "returnformat")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "returnformat")
 							if desc then
 								result = result .. "\n\n  Return Format :"
 								for fmt in desc do
@@ -5688,7 +5700,7 @@ do
 							end
 
 							-- Returns
-							desc = hasDocument and GetDocumentPart(ns, doctype, name, "return")
+							desc = hasDocument and GetPartDocument(ns, targetType, name, "return")
 							if desc then
 								result = result .. "\n\n  Return :"
 								for ret, info in desc do
@@ -5704,7 +5716,7 @@ do
 						end
 
 						-- Usage
-						desc = hasDocument and GetDocumentPart(ns, doctype, name, "usage")
+						desc = hasDocument and GetPartDocument(ns, targetType, name, "usage")
 						if desc then
 							result = result .. "\n\n  Usage :"
 							for usage in desc do
@@ -5718,10 +5730,10 @@ do
 					local result = "[NameSpace] " .. GetFullName(ns) .. " :"
 					local desc
 
-					if HasDocumentPart(ns, "namespace", GetName(ns)) then
-						desc = GetDocumentPart(ns, "namespace", GetName(ns), "desc")
-					elseif HasDocumentPart(ns, "default", GetName(ns)) then
-						desc = GetDocumentPart(ns, "default", GetName(ns), "desc")
+					if HasPartDocument(ns, "namespace", GetName(ns)) then
+						desc = GetPartDocument(ns, "namespace", GetName(ns), "desc")
+					elseif HasPartDocument(ns, "default", GetName(ns)) then
+						desc = GetPartDocument(ns, "default", GetName(ns), "desc")
 					end
 
 					-- Desc
@@ -9457,9 +9469,20 @@ do
 end
 
 ------------------------------------------------------
+-- System.XML Namespace
+------------------------------------------------------
+do
+	namespace "System.XML"
+
+
+end
+
+------------------------------------------------------
 -- Global Settings
 ------------------------------------------------------
 do
+	namespace "System"
+
 	-- Keep the root so can't be disposed
 	System = Reflector.ForName("System")
 
