@@ -652,8 +652,8 @@ do
 	--- Set the default namespace for the current environment, the class defined in this environment will be stored in this namespace
 	-- @name namespace
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage namespace "Widget"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>namespace "Widget"</return>
 	------------------------------------
 	function namespace(name)
 		if name ~= nil and type(name) ~= "string" and not IsNameSpace(name) then
@@ -765,10 +765,8 @@ do
 		return targetType
 	end
 
-	function document(data, name, targetType, owner)
+	function SaveDocument(data, name, targetType, owner)
 		if not DOCUMENT_ENABLED or type(data) ~= "string" then return end
-
-		owner = owner or getfenv(2)[OWNER_FIELD]
 
 		if not owner or type(name) ~= "string" then return end
 
@@ -818,45 +816,25 @@ do
 		end
 	end
 
-	function GetPartDocument(owner, name, part, targetType)
-		--[[if not  DOCUMENT_ENABLED then return end
+	do
+		local _name
+		local _owner
 
-		if type(owner) == "string" then
-			owner = GetNameSpace(GetDefaultNameSpace(), owner)
+		local function parseDoc(data)
+			local info = _NSInfo[_owner]
+			if _name == info.Name then
+				return SaveDocument(data, _name, info.Type:upper(), _owner)
+			else
+				return SaveDocument(data, _name, "METHOD", _owner)
+			end
 		end
 
-		local info = rawget(_NSInfo, owner)
+		function document(name)
+			_name = name
+			_owner = getfenv(2)[OWNER_FIELD]
 
-		if info and (name == nil or type(name) == "string") then
-			name = name or info.Name
-
-			targetType = getTargetType(info, name, targetType)
-
-			if not targetType then return false end
-
-			local key = targetType .. "-" .. name
-			local value = info.Documentation and info.Documentation[key] or (targetType ~= "CLASS" and targetType ~= "INTERFACE") and getSuperDoc(info, key) or nil
-
-			if value then
-				if type(part) == "string" then
-					if part == "param" or part == "return" or part == "need" or part == "overridable" then
-						if value:match("@" .. part .. "%s+([^@%s]+)%s*([^@]*)") then
-							return value:gmatch("@" .. part .. "%s+([^@%s]+)%s*([^@]*)")
-						end
-					else
-						if value:match("@" .. part .. "%s+([^@]*)") then
-							return value:gmatch("@" .. part .. "%s+([^@]*)")
-						end
-					end
-				else
-					if value:match("@(%w+)%s+([^@]*)") then
-						return value:gmatch("@(%w+)%s+([^@]*)")
-					end
-				end
-			end--]]
+			return parseDoc
 		end
-
-		return
 	end
 end
 
@@ -1457,8 +1435,8 @@ do
 
 	------------------------------------
 	--- Create interface in currect environment's namespace or default namespace
-	-- @param name the interface's name
-	-- @usage interface "IFSocket"
+	-- <param name="name">the interface's name</param>
+	-- <usage>interface "IFSocket"</return>
 	------------------------------------
 	function interface(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
@@ -1541,8 +1519,8 @@ do
 	--- Set the current interface' extended interface
 	-- @name extend
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage extend "System.IFSocket"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>extend "System.IFSocket"</return>
 	------------------------------------
 	function extend_IF(name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then
@@ -1617,8 +1595,8 @@ do
 	--- import classes from the given name's namespace to the current environment
 	-- @name import
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage import "System.Widget"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>import "System.Widget"</return>
 	------------------------------------
 	function import_IF(name)
 		if type(name) ~= "string" and not IsNameSpace(name) then
@@ -1658,8 +1636,8 @@ do
 	--- Add an event for current interface
 	-- @name event
 	-- @class function
-	-- @param name the name of the event
-	-- @usage event "OnClick"
+	-- <param name="name">the name of the event</param>
+	-- <usage>event "OnClick"</return>
 	------------------------------------
 	function event_IF(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
@@ -1699,8 +1677,8 @@ do
 	--- set a propert to the current interface
 	-- @name property
 	-- @class function
-	-- @param name the name of the property
-	-- @usage property "Title" {
+	-- <param name="name">the name of the property</param>
+	-- <usage>property "Title" {</return>
 	--		Get = function(self)
 	--			-- return the property's value
 	--		end,
@@ -1724,8 +1702,8 @@ do
 	--- End the interface's definition and restore the environment
 	-- @name class
 	-- @class function
-	-- @param name the name of the interface
-	-- @usage endinterface "IFSocket"
+	-- <param name="name">the name of the interface</param>
+	-- <usage>endinterface "IFSocket"</return>
 	------------------------------------
 	function endinterface(name)
 		if __Attribute__ then
@@ -2500,8 +2478,8 @@ do
 
 	------------------------------------
 	--- Create class in currect environment's namespace or default namespace
-	-- @param name the class's name
-	-- @usage class "Form"
+	-- <param name="name">the class's name</param>
+	-- <usage>class "Form"</return>
 	------------------------------------
 	function class(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
@@ -2594,8 +2572,8 @@ do
 	--- Set the current class' super class
 	-- @name inherit
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage inherit "System.Widget.Frame"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>inherit "System.Widget.Frame"</return>
 	------------------------------------
 	function inherit_Cls(name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then
@@ -2684,8 +2662,8 @@ do
 	--- Set the current class' extended interface
 	-- @name extend
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage extend "System.IFSocket"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>extend "System.IFSocket"</return>
 	------------------------------------
 	function extend_Cls(name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then
@@ -2780,8 +2758,8 @@ do
 	--- import classes from the given name's namespace to the current environment
 	-- @name import
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage import "System.Widget"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>import "System.Widget"</return>
 	------------------------------------
 	function import_Cls(name)
 		if type(name) ~= "string" and not IsNameSpace(name) then
@@ -2817,8 +2795,8 @@ do
 	--- Add an event for current class
 	-- @name event
 	-- @class function
-	-- @param name the name of the event
-	-- @usage event "OnClick"
+	-- <param name="name">the name of the event</param>
+	-- <usage>event "OnClick"</return>
 	------------------------------------
 	function event_Cls(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
@@ -2843,8 +2821,8 @@ do
 	--- set a propert to the current class
 	-- @name property
 	-- @class function
-	-- @param name the name of the property
-	-- @usage property "Title" {
+	-- <param name="name">the name of the property</param>
+	-- <usage>property "Title" {</return>
 	--		Get = function(self)
 	--			-- return the property's value
 	--		end,
@@ -2868,8 +2846,8 @@ do
 	--- End the class's definition and restore the environment
 	-- @name class
 	-- @class function
-	-- @param name the name of the class
-	-- @usage endclass "Form"
+	-- <param name="name">the name of the class</param>
+	-- <usage>endclass "Form"</return>
 	------------------------------------
 	function endclass(name)
 		if __Attribute__ then
@@ -3012,8 +2990,8 @@ do
 	--- create a enumeration
 	-- @name enum
 	-- @class function
-	-- @param name the name of the enum
-	-- @usage enum "ButtonState" {
+	-- <param name="name">the name of the enum</param>
+	-- <usage>enum "ButtonState" {</return>
 	--		"PUSHED",
 	--		"NORMAL",
 	--}
@@ -3524,8 +3502,8 @@ do
 	--- create a structure
 	-- @name struct
 	-- @class function
-	-- @param name the name of the enum
-	-- @usage struct "Point"
+	-- <param name="name">the name of the enum</param>
+	-- <usage>struct "Point"</return>
 	--    x = System.Number
 	--    y = System.Number
 	-- endstruct "Point"
@@ -3602,8 +3580,8 @@ do
 	--- import classes from the given name's namespace to the current environment
 	-- @name import
 	-- @class function
-	-- @param name the namespace's name list, using "." to split.
-	-- @usage import "System.Widget"
+	-- <param name="name">the namespace's name list, using "." to split.</param>
+	-- <usage>import "System.Widget"</return>
 	------------------------------------
 	function import_STRT(name)
 		if type(name) ~= "string" and not IsNameSpace(name) then
@@ -3639,8 +3617,8 @@ do
 	--- End the class's definition and restore the environment
 	-- @name class
 	-- @class function
-	-- @param name the name of the class
-	-- @usage endclass "Form"
+	-- <param name="name">the name of the class</param>
+	-- <usage>endclass "Form"</return>
 	------------------------------------
 	function endstruct(name)
 		if __Attribute__ then
@@ -3813,19 +3791,13 @@ do
 	------------------------------------------------------
 	interface "Reflector"
 
-		doc [======[
-			@name Reflector
-			@type interface
-			@desc This interface contains much methodes to get the running object-oriented system's informations.
-		]======]
+		doc "Reflector" [[This interface contains much methodes to get the running object-oriented system's informations.]]
 
-		doc [======[
-			@name GetCurrentNameSpace
-			@type method
-			@desc Get the namespace used by the environment
-			@param env table
-			@param rawOnly boolean, rawget data from the env if true
-			@return namespace
+		doc "GetCurrentNameSpace" [======[
+			<desc>Get the namespace used by the environment</desc>
+			<param name="env">table</param>
+			<param name="rawOnly">boolean, rawget data from the env if true</param>
+			<return name="namespace"></return>
 		]======]
 		function GetCurrentNameSpace(env, rawOnly)
 			env = type(env) == "table" and env or getfenv(2)
@@ -3833,13 +3805,11 @@ do
 			return GetNameSpace4Env(env, rawOnly)
 		end
 
-		doc [======[
-			@name SetCurrentNameSpace
-			@type method
-			@desc set the namespace used by the environment
-			@param ns the namespace that set for the environment
-			@param env table
-			@return nil
+		doc "SetCurrentNameSpace" [======[
+			<desc>set the namespace used by the environment</desc>
+			<param name="ns">the namespace that set for the environment</param>
+			<param name="env">table</param>
+			<return name="nil"></return>
 		]======]
 		function SetCurrentNameSpace(ns, env)
 			env = type(env) == "table" and env or getfenv(2)
@@ -3847,25 +3817,21 @@ do
 			return SetNameSpace4Env(env, ns)
 		end
 
-		doc [======[
-			@name ForName
-			@type method
-			@desc Get the namespace for the name
-			@param name the namespace's name, split by "."
-			@return namespace the namespace
-			@usage System.Reflector.ForName("System")
+		doc "ForName" [======[
+			<desc>Get the namespace for the name</desc>
+			<param name="name">the namespace's name, split by "."</param>
+			<return name="namespace">the namespace</return>
+			<usage>System.Reflector.ForName("System")</return>
 		]======]
 		function ForName(name)
 			return GetNameSpace(GetDefaultNameSpace(), name)
 		end
 
-		doc [======[
-			@name GetType
-			@type method
-			@desc Get the class|enum|struct|interface for the namespace
-			@param name the namespace
-			@return type
-			@usage System.Reflector.GetType("System.Object")
+		doc "GetType" [======[
+			<desc>Get the class|enum|struct|interface for the namespace</desc>
+			<param name="name">the namespace</param>
+			<return name="type"></return>
+			<usage>System.Reflector.GetType("System.Object")</return>
 		]======]
 		function GetType(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3873,13 +3839,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type
 		end
 
-		doc [======[
-			@name GetName
-			@type method
-			@desc Get the name for the namespace
-			@param namespace the namespace to query
-			@return name
-			@usage System.Reflector.GetName(System.Object)
+		doc "GetName" [======[
+			<desc>Get the name for the namespace</desc>
+			<param name="namespace">the namespace to query</param>
+			<return name="name"></return>
+			<usage>System.Reflector.GetName(System.Object)</return>
 		]======]
 		function GetName(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3887,13 +3851,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Name
 		end
 
-		doc [======[
-			@name GetFullName
-			@type method
-			@desc Get the full name for the namespace
-			@param namespace the namespace to query
-			@return fullname
-			@usage System.Reflector.GetFullName(System.Object)
+		doc "GetFullName" [======[
+			<desc>Get the full name for the namespace</desc>
+			<param name="namespace">the namespace to query</param>
+			<return name="fullname"></return>
+			<usage>System.Reflector.GetFullName(System.Object)</return>
 		]======]
 		function GetFullName(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3901,13 +3863,11 @@ do
 			return GetFullName4NS(ns)
 		end
 
-		doc [======[
-			@name GetSuperClass
-			@type method
-			@desc Get the superclass for the class
-			@param class the class object to query
-			@return superclass
-			@usage System.Reflector.GetSuperClass(System.Object)
+		doc "GetSuperClass" [======[
+			<desc>Get the superclass for the class</desc>
+			<param name="class">the class object to query</param>
+			<return name="superclass"></return>
+			<usage>System.Reflector.GetSuperClass(System.Object)</return>
 		]======]
 		function GetSuperClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3915,13 +3875,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].SuperClass
 		end
 
-		doc [======[
-			@name IsNameSpace
-			@type method
-			@desc Check if the object is a NameSpace
-			@param object the object to query
-			@return boolean true if the object is a NameSpace
-			@usage System.Reflector.IsNameSpace(System.Object)
+		doc "IsNameSpace" [======[
+			<desc>Check if the object is a NameSpace</desc>
+			<param name="object">the object to query</param>
+			<return name="boolean">true if the object is a NameSpace</return>
+			<usage>System.Reflector.IsNameSpace(System.Object)</return>
 		]======]
 		function IsNameSpace(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3929,13 +3887,11 @@ do
 			return ns and rawget(_NSInfo, ns) and true or false
 		end
 
-		doc [======[
-			@name IsClass
-			@type method
-			@desc Check if the namespace is a class
+		doc "IsClass" [======[
+			<desc>Check if the namespace is a class</desc>
 			@param object
-			@return boolean true if the object is a class
-			@usage System.Reflector.IsClass(System.Object)
+			<return name="boolean">true if the object is a class</return>
+			<usage>System.Reflector.IsClass(System.Object)</return>
 		]======]
 		function IsClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3943,13 +3899,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_CLASS or false
 		end
 
-		doc [======[
-			@name IsStruct
-			@type method
-			@desc Check if the namespace is a struct
+		doc "IsStruct" [======[
+			<desc>Check if the namespace is a struct</desc>
 			@param object
-			@return boolean true if the object is a struct
-			@usage System.Reflector.IsStruct(System.Object)
+			<return name="boolean">true if the object is a struct</return>
+			<usage>System.Reflector.IsStruct(System.Object)</return>
 		]======]
 		function IsStruct(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3957,13 +3911,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_STRUCT or false
 		end
 
-		doc [======[
-			@name IsEnum
-			@type method
-			@desc Check if the namespace is an enum
+		doc "IsEnum" [======[
+			<desc>Check if the namespace is an enum</desc>
 			@param object
-			@return boolean true if the object is a enum
-			@usage System.Reflector.IsEnum(System.Object)
+			<return name="boolean">true if the object is a enum</return>
+			<usage>System.Reflector.IsEnum(System.Object)</return>
 		]======]
 		function IsEnum(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3971,13 +3923,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_ENUM or false
 		end
 
-		doc [======[
-			@name IsInterface
-			@type method
-			@desc Check if the namespace is an interface
+		doc "IsInterface" [======[
+			<desc>Check if the namespace is an interface</desc>
 			@param object
-			@return boolean true if the object is an Interface
-			@usage System.Reflector.IsInterface(System.IFSocket)
+			<return name="boolean">true if the object is an Interface</return>
+			<usage>System.Reflector.IsInterface(System.IFSocket)</return>
 		]======]
 		function IsInterface(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3985,13 +3935,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_INTERFACE or false
 		end
 
-		doc [======[
-			@name IsFinal
-			@type method
-			@desc Check if the class|interface is final, can't be re-defined
+		doc "IsFinal" [======[
+			<desc>Check if the class|interface is final, can't be re-defined</desc>
 			@param object
-			@return boolean true if the class|interface is final
-			@usage System.Reflector.IsFinal(System.Object)
+			<return name="boolean">true if the class|interface is final</return>
+			<usage>System.Reflector.IsFinal(System.Object)</return>
 		]======]
 		function IsFinal(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -3999,13 +3947,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFinal or false
 		end
 
-		doc [======[
-			@name IsNonInheritable
-			@type method
-			@desc Check if the class|interface is non-inheritable
+		doc "IsNonInheritable" [======[
+			<desc>Check if the class|interface is non-inheritable</desc>
 			@param object
-			@return boolean true if the class|interface is non-inheritable
-			@usage System.Reflector.IsNonInheritable(System.Object)
+			<return name="boolean">true if the class|interface is non-inheritable</return>
+			<usage>System.Reflector.IsNonInheritable(System.Object)</return>
 		]======]
 		function IsNonInheritable(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4013,13 +3959,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].NonInheritable or false
 		end
 
-		doc [======[
-			@name IsUniqueClass
-			@type method
-			@desc Check if the class is unique, can only have one object
+		doc "IsUniqueClass" [======[
+			<desc>Check if the class is unique, can only have one object</desc>
 			@param object
-			@return boolean true if the class is unique
-			@usage System.Reflector.IsUniqueClass(System.Object)
+			<return name="boolean">true if the class is unique</return>
+			<usage>System.Reflector.IsUniqueClass(System.Object)</return>
 		]======]
 		function IsUniqueClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4027,13 +3971,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].UniqueObject and true or false
 		end
 
-		doc [======[
-			@name IsAutoCacheClass
-			@type method
-			@desc Whether the class is auto-cache, the objects of the class will keep methods in itself when called
+		doc "IsAutoCacheClass" [======[
+			<desc>Whether the class is auto-cache, the objects of the class will keep methods in itself when called</desc>
 			@param object
-			@return boolean true if the class is auto-cache
-			@usage System.Reflector.IsAutoCacheClass(System.Object)
+			<return name="boolean">true if the class is auto-cache</return>
+			<usage>System.Reflector.IsAutoCacheClass(System.Object)</return>
 		]======]
 		function IsAutoCacheClass(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4041,13 +3983,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].AutoCache or false
 		end
 
-		doc [======[
-			@name IsNonExpandable
-			@type method
-			@desc Check if the class|interface is non-expandable
+		doc "IsNonExpandable" [======[
+			<desc>Check if the class|interface is non-expandable</desc>
 			@param object
-			@return boolean true if the class|interface is non-expandable
-			@usage System.Reflector.IsNonExpandable(System.Object)
+			<return name="boolean">true if the class|interface is non-expandable</return>
+			<usage>System.Reflector.IsNonExpandable(System.Object)</return>
 		]======]
 		function IsNonExpandable(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4055,13 +3995,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].NonExpandable or false
 		end
 
-		doc [======[
-			@name GetSubNamespace
-			@type method
-			@desc Get the sub namespace of the namespace
+		doc "GetSubNamespace" [======[
+			<desc>Get the sub namespace of the namespace</desc>
 			@param namespace
-			@return table the sub-namespace list
-			@usage System.Reflector.GetSubNamespace(System)
+			<return name="table">the sub-namespace list</return>
+			<usage>System.Reflector.GetSubNamespace(System)</return>
 		]======]
 		function GetSubNamespace(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4081,13 +4019,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetExtendInterfaces
-			@type method
-			@desc Get the extend interfaces of the class
+		doc "GetExtendInterfaces" [======[
+			<desc>Get the extend interfaces of the class</desc>
 			@param class
-			@return table the extend interface list
-			@usage System.Reflector.GetExtendInterfaces(System.Object)
+			<return name="table">the extend interface list</return>
+			<usage>System.Reflector.GetExtendInterfaces(System.Object)</return>
 		]======]
 		function GetExtendInterfaces(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
@@ -4105,13 +4041,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetAllExtendInterfaces
-			@type method
-			@desc Get all the extend interfaces of the class
+		doc "GetAllExtendInterfaces" [======[
+			<desc>Get all the extend interfaces of the class</desc>
 			@param class
-			@return table the full extend interface list in the inheritance tree
-			@usage System.Reflector.GetAllExtendInterfaces(System.Object)
+			<return name="table">the full extend interface list in the inheritance tree</return>
+			<usage>System.Reflector.GetAllExtendInterfaces(System.Object)</return>
 		]======]
 		function GetAllExtendInterfaces(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
@@ -4129,13 +4063,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetChildClasses
-			@type method
-			@desc Get the child classes of the class
+		doc "GetChildClasses" [======[
+			<desc>Get the child classes of the class</desc>
 			@param class
-			@return table the child class list
-			@usage System.Reflector.GetChildClasses(System.Object)
+			<return name="table">the child class list</return>
+			<usage>System.Reflector.GetChildClasses(System.Object)</return>
 		]======]
 		function GetChildClasses(cls)
 			if type(cls) == "string" then cls = ForName(cls) end
@@ -4153,15 +4085,13 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetEvents
-			@type method
-			@desc Get the events of the class
+		doc "GetEvents" [======[
+			<desc>Get the events of the class</desc>
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
-			@param noSuper no super event handlers
-			@return table the event handler list
-			@usage System.Reflector.GetEvents(System.Object)
+			<param name="noSuper">no super event handlers</param>
+			<return name="table">the event handler list</return>
+			<usage>System.Reflector.GetEvents(System.Object)</return>
 		]======]
 		function GetEvents(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4183,15 +4113,13 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetProperties
-			@type method
-			@desc Get the properties of the class
+		doc "GetProperties" [======[
+			<desc>Get the properties of the class</desc>
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
-			@param noSuper no super properties
-			@return table the property list
-			@usage System.Reflector.GetProperties(System.Object)
+			<param name="noSuper">no super properties</param>
+			<return name="table">the property list</return>
+			<usage>System.Reflector.GetProperties(System.Object)</return>
 		]======]
 		function GetProperties(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4213,15 +4141,13 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetMethods
-			@type method
-			@desc Get the methods of the class
+		doc "GetMethods" [======[
+			<desc>Get the methods of the class</desc>
 			@format class|interface[, noSuper]
 			@param class|interface the class or interface to query
-			@param noSuper no super methodes
-			@return table the method list
-			@usage System.Reflector.GetMethods(System.Object)
+			<param name="noSuper">no super methodes</param>
+			<return name="table">the method list</return>
+			<usage>System.Reflector.GetMethods(System.Object)</return>
 		]======]
 		function GetMethods(ns, noSuper)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4249,14 +4175,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetPropertyType
-			@type method
-			@desc Get the property type of the class
+		doc "GetPropertyType" [======[
+			<desc>Get the property type of the class</desc>
 			@param class|interface
-			@param propName the property name
-			@return type the property type
-			@usage System.Reflector.GetPropertyType(System.Object, "Name")
+			<param name="propName">the property name</param>
+			<return name="type">the property type</return>
+			<usage>System.Reflector.GetPropertyType(System.Object, "Name")</return>
 		]======]
 		function GetPropertyType(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4270,14 +4194,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name HasProperty
-			@type method
-			@desc whether the property is existed
+		doc "HasProperty" [======[
+			<desc>whether the property is existed</desc>
 			@param class|interface
 			@param propName
-			@return boolean true if the class|interface has the property
-			@usage System.Reflector.HasProperty(System.Object, "Name")
+			<return name="boolean">true if the class|interface has the property</return>
+			<usage>System.Reflector.HasProperty(System.Object, "Name")</return>
 		]======]
 		function HasProperty(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4291,14 +4213,12 @@ do
 			return false
 		end
 
-		doc [======[
-			@name IsPropertyReadable
-			@type method
-			@desc whether the property is readable
+		doc "IsPropertyReadable" [======[
+			<desc>whether the property is readable</desc>
 			@param class|interface
 			@param propName
-			@return boolean true if the property is readable
-			@usage System.Reflector.IsPropertyReadable(System.Object, "Name")
+			<return name="boolean">true if the property is readable</return>
+			<usage>System.Reflector.IsPropertyReadable(System.Object, "Name")</return>
 		]======]
 		function IsPropertyReadable(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4315,14 +4235,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name IsPropertyWritable
-			@type method
-			@desc whether the property is writable
+		doc "IsPropertyWritable" [======[
+			<desc>whether the property is writable</desc>
 			@param class|interface
 			@param propName
-			@return boolean true if the property is writable
-			@usage System.Reflector.IsPropertyWritable(System.Object, "Name")
+			<return name="boolean">true if the property is writable</return>
+			<usage>System.Reflector.IsPropertyWritable(System.Object, "Name")</return>
 		]======]
 		function IsPropertyWritable(ns, propName)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4339,13 +4257,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name IsRequireMethod
-			@type method
-			@desc Whether the method is required to be overridden
-			@param ns the interface
-			@param name the method's name
-			@return boolean
+		doc "IsRequireMethod" [======[
+			<desc>Whether the method is required to be overridden</desc>
+			<param name="ns">the interface</param>
+			<param name="name">the method's name</param>
+			<return name="boolean"></return>
 		]======]
 		function IsRequireMethod(ns, name)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4355,13 +4271,11 @@ do
 			return info and info.Type == TYPE_INTERFACE and info.RequireMethod and info.RequireMethod[name] or false
 		end
 
-		doc [======[
-			@name IsRequireProperty
-			@type method
-			@desc Whether the property is required to be overridden
-			@param ns the interface
-			@param name the property's name
-			@return boolean
+		doc "IsRequireProperty" [======[
+			<desc>Whether the property is required to be overridden</desc>
+			<param name="ns">the interface</param>
+			<param name="name">the property's name</param>
+			<return name="boolean"></return>
 		]======]
 		function IsRequireProperty(ns, name)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4371,13 +4285,11 @@ do
 			return info and info.Type == TYPE_INTERFACE and info.RequireProperty and info.RequireProperty[name] or false
 		end
 
-		doc [======[
-			@name IsOptionalMethod
-			@type method
-			@desc Whether the method is optional to be overridden
-			@param ns the interface
-			@param name the method's name
-			@return boolean
+		doc "IsOptionalMethod" [======[
+			<desc>Whether the method is optional to be overridden</desc>
+			<param name="ns">the interface</param>
+			<param name="name">the method's name</param>
+			<return name="boolean"></return>
 		]======]
 		function IsOptionalMethod(ns, name)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4387,13 +4299,11 @@ do
 			return info and info.Type == TYPE_INTERFACE and info.OptionalMethod and info.OptionalMethod[name] or false
 		end
 
-		doc [======[
-			@name IsOptionalProperty
-			@type method
-			@desc Whether the property is optional to be overridden
-			@param ns the interface
-			@param name the property's name
-			@return boolean
+		doc "IsOptionalProperty" [======[
+			<desc>Whether the property is optional to be overridden</desc>
+			<param name="ns">the interface</param>
+			<param name="name">the property's name</param>
+			<return name="boolean"></return>
 		]======]
 		function IsOptionalProperty(ns, name)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4403,13 +4313,11 @@ do
 			return info and info.Type == TYPE_INTERFACE and info.OptionalProperty and info.OptionalProperty[name] or false
 		end
 
-		doc [======[
-			@name IsFlagsEnum
-			@type method
-			@desc Whether the enum is flags or not
+		doc "IsFlagsEnum" [======[
+			<desc>Whether the enum is flags or not</desc>
 			@param object
-			@return boolean
-			@usage System.Reflector.IsFlagsEnum(System.Object)
+			<return name="boolean"></return>
+			<usage>System.Reflector.IsFlagsEnum(System.Object)</return>
 		]======]
 		function IsFlagsEnum(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4417,13 +4325,11 @@ do
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFlags or false
 		end
 
-		doc [======[
-			@name GetEnums
-			@type method
-			@desc Get the enums of the enum
+		doc "GetEnums" [======[
+			<desc>Get the enums of the enum</desc>
 			@param enum
-			@return table the enum index list
-			@usage System.Reflector.GetEnums(System.SampleEnum)
+			<return name="table">the enum index list</return>
+			<usage>System.Reflector.GetEnums(System.SampleEnum)</return>
 		]======]
 		function GetEnums(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4464,14 +4370,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name ParseEnum
-			@type method
-			@desc Get the enum index of the enum value
+		doc "ParseEnum" [======[
+			<desc>Get the enum index of the enum value</desc>
 			@param enum
 			@param value
-			@return index
-			@usage System.Reflector.ParseEnum(System.SampleEnum, 1)
+			<return name="index"></return>
+			<usage>System.Reflector.ParseEnum(System.SampleEnum, 1)</return>
 		]======]
 		function ParseEnum(ns, value)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4505,27 +4409,23 @@ do
 			end
 		end
 
-		doc [======[
-			@name ValidateFlags
-			@type method
-			@desc  hether the value is contains on the target value
-			@param checkValue like 1, 2, 4, 8, ...
-			@param targetValue like 3 : (1 + 2)
-			@return boolean true if the targetValue contains the checkValue
+		doc "ValidateFlags" [======[
+			<desc> hether the value is contains on the target value</desc>
+			<param name="checkValue">like 1, 2, 4, 8, ...</param>
+			<param name="targetValue">like 3 : (1 + 2)</param>
+			<return name="boolean">true if the targetValue contains the checkValue</return>
 		]======]
 		function ValidateFlags(checkValue, targetValue)
 			targetValue = targetValue % (2 * checkValue)
 			return (targetValue - targetValue % checkValue) == checkValue
 		end
 
-		doc [======[
-			@name HasEvent
-			@type method
-			@desc Check if the class|interface has that event
+		doc "HasEvent" [======[
+			<desc>Check if the class|interface has that event</desc>
 			@param class|interface
-			@param event the event handler name
-			@return true if the class|interface has the event
-			@usage System.Reflector.HasEvent(Addon, "OnEvent")
+			<param name="event">the event handler name</param>
+			<return name="true">if the class|interface has the event</return>
+			<usage>System.Reflector.HasEvent(Addon, "OnEvent")</return>
 		]======]
 		function HasEvent(cls, sc)
 			if type(cls) == "string" then cls = ForName(cls) end
@@ -4537,12 +4437,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetStructType
-			@type method
-			@desc Get the type of the struct
+		doc "GetStructType" [======[
+			<desc>Get the type of the struct</desc>
 			@param struct
-			@return string
+			<return name="string"></return>
 		]======]
 		function GetStructType(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4554,12 +4452,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetStructArrayElement
-			@type method
-			@desc Get the array element type of the struct
+		doc "GetStructArrayElement" [======[
+			<desc>Get the array element type of the struct</desc>
 			@param ns
-			@return type the array element's type
+			<return name="type">the array element's type</return>
 		]======]
 		function GetStructArrayElement(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4571,13 +4467,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetStructParts
-			@type method
-			@desc Get the parts of the struct
+		doc "GetStructParts" [======[
+			<desc>Get the parts of the struct</desc>
 			@param struct
-			@return table struct part name list
-			@usage System.Reflector.GetStructParts(Position)
+			<return name="table">struct part name list</return>
+			<usage>System.Reflector.GetStructParts(Position)</return>
 		]======]
 		function GetStructParts(ns)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4611,14 +4505,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name GetStructPart
-			@type method
-			@desc Get the part's type of the struct
+		doc "GetStructPart" [======[
+			<desc>Get the part's type of the struct</desc>
 			@param struct
-			@param part the part's name
-			@return type the part's type
-			@usage System.Reflector.GetStructPart(Position, "x")
+			<param name="part">the part's name</param>
+			<return name="type">the part's type</return>
+			<usage>System.Reflector.GetStructPart(Position, "x")</return>
 		]======]
 		function GetStructPart(ns, part)
 			if type(ns) == "string" then ns = ForName(ns) end
@@ -4642,14 +4534,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name IsSuperClass
-			@type method
-			@desc Check if this first arg is a child class of the next arg
+		doc "IsSuperClass" [======[
+			<desc>Check if this first arg is a child class of the next arg</desc>
 			@param childclass
 			@param superclass
-			@return boolean true if the supeclass is the childclass's super class
-			@usage System.Reflector.IsSuperClass(UIObject, Object)
+			<return name="boolean">true if the supeclass is the childclass's super class</return>
+			<usage>System.Reflector.IsSuperClass(UIObject, Object)</return>
 		]======]
 		function IsSuperClass(child, super)
 			if type(child) == "string" then child = ForName(child) end
@@ -4658,14 +4548,12 @@ do
 			return IsClass(child) and IsClass(super) and IsChildClass(super, child)
 		end
 
-		doc [======[
-			@name IsExtendedInterface
-			@type method
-			@desc Check if the class is extended from the interface
+		doc "IsExtendedInterface" [======[
+			<desc>Check if the class is extended from the interface</desc>
 			@param class|interface
 			@param interface
-			@return boolean true if the first arg is extend from the second
-			@usage System.Reflector.IsExtendedInterface(UIObject, IFSocket)
+			<return name="boolean">true if the first arg is extend from the second</return>
+			<usage>System.Reflector.IsExtendedInterface(UIObject, IFSocket)</return>
 		]======]
 		function IsExtendedInterface(cls, IF)
 			if type(cls) == "string" then cls = ForName(cls) end
@@ -4674,54 +4562,46 @@ do
 			return IsExtend(IF, cls)
 		end
 
-		doc [======[
-			@name GetObjectClass
-			@type method
-			@desc Get the class type of this object
+		doc "GetObjectClass" [======[
+			<desc>Get the class type of this object</desc>
 			@param object
-			@return class the object's class
-			@usage System.Reflector.GetObjectClass(obj)
+			<return name="class">the object's class</return>
+			<usage>System.Reflector.GetObjectClass(obj)</return>
 		]======]
 		function GetObjectClass(obj)
 			return type(obj) == "table" and getmetatable(obj)
 		end
 
-		doc [======[
-			@name ObjectIsClass
-			@type method
-			@desc Check if this object is an instance of the class
+		doc "ObjectIsClass" [======[
+			<desc>Check if this object is an instance of the class</desc>
 			@param object
 			@param class
-			@return true if the object is an instance of the class or it's child class
-			@usage System.Reflector.ObjectIsClass(obj, Object)
+			<return name="true">if the object is an instance of the class or it's child class</return>
+			<usage>System.Reflector.ObjectIsClass(obj, Object)</return>
 		]======]
 		function ObjectIsClass(obj, cls)
 			if type(cls) == "string" then cls = ForName(cls) end
 			return (obj and cls and IsChildClass(cls, GetObjectClass(obj))) or false
 		end
 
-		doc [======[
-			@name ObjectIsInterface
-			@type method
-			@desc Check if this object is an instance of the interface
+		doc "ObjectIsInterface" [======[
+			<desc>Check if this object is an instance of the interface</desc>
 			@param object
 			@param interface
-			@return true if the object's class is extended from the interface
-			@usage System.Reflector.ObjectIsInterface(obj, IFSocket)
+			<return name="true">if the object's class is extended from the interface</return>
+			<usage>System.Reflector.ObjectIsInterface(obj, IFSocket)</return>
 		]======]
 		function ObjectIsInterface(obj, IF)
 			if type(IF) == "string" then IF = ForName(IF) end
 			return (obj and IF and IsExtend(IF, GetObjectClass(obj))) or false
 		end
 
-		doc [======[
-			@name FireObjectEvent
-			@type method
-			@desc Fire an object's event, to trigger the object's event handlers
-			@param object the object
-			@param event the event name
+		doc "FireObjectEvent" [======[
+			<desc>Fire an object's event, to trigger the object's event handlers</desc>
+			<param name="object">the object</param>
+			<param name="event">the event name</param>
 			@param ... the event's arguments
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function FireObjectEvent(obj, sc, ...)
 			-- No more check , just fire the event as quick as we can
@@ -4730,14 +4610,12 @@ do
 			if handler then return handler(obj, ...) end
 		end
 
-		doc [======[
-			@name ActiveThread
-			@type method
-			@desc Active thread mode for special events.
+		doc "ActiveThread" [======[
+			<desc>Active thread mode for special events.</desc>
 			@param object
 			@param ... event handler name list
-			@return nil
-			@usage System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")
+			<return name="nil"></return>
+			<usage>System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")</return>
 		]======]
 		function ActiveThread(obj, ...)
 			local cls = GetObjectClass(obj)
@@ -4759,14 +4637,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name IsThreadActivated
-			@type method
-			@desc Whether the thread mode is activated for special events.
+		doc "IsThreadActivated" [======[
+			<desc>Whether the thread mode is activated for special events.</desc>
 			@param obect
 			@param event
-			@return boolean true if the object has active thread mode for the given event.
-			@usage System.Reflector.IsThreadActivated(obj, "OnClick")
+			<return name="boolean">true if the object has active thread mode for the given event.</return>
+			<usage>System.Reflector.IsThreadActivated(obj, "OnClick")</return>
 		]======]
 		function IsThreadActivated(obj, sc)
 			if IsClass(obj) then
@@ -4784,14 +4660,12 @@ do
 			return false
 		end
 
-		doc [======[
-			@name InactiveThread
-			@type method
-			@desc Inactive thread mode for special events.
+		doc "InactiveThread" [======[
+			<desc>Inactive thread mode for special events.</desc>
 			@param object
 			@param ... event name list
-			@return nil
-			@usage System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")
+			<return name="nil"></return>
+			<usage>System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")</return>
 		]======]
 		function InactiveThread(obj, ...)
 			local cls = GetObjectClass(obj)
@@ -4813,14 +4687,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name BlockEvent
-			@type method
-			@desc Block event for object
+		doc "BlockEvent" [======[
+			<desc>Block event for object</desc>
 			@param object
 			@param ... the event handler name list
-			@return nil
-			@usage System.Reflector.BlockEvent(obj, "OnClick", "OnEnter")
+			<return name="nil"></return>
+			<usage>System.Reflector.BlockEvent(obj, "OnClick", "OnEnter")</return>
 		]======]
 		function BlockEvent(obj, ...)
 			local cls = GetObjectClass(obj)
@@ -4837,14 +4709,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name IsEventBlocked
-			@type method
-			@desc Whether the event is blocked for object
+		doc "IsEventBlocked" [======[
+			<desc>Whether the event is blocked for object</desc>
 			@param object
 			@param event
-			@return boolean true if the event is blocked
-			@usage System.Reflector.IsEventBlocked(obj, "OnClick")
+			<return name="boolean">true if the event is blocked</return>
+			<usage>System.Reflector.IsEventBlocked(obj, "OnClick")</return>
 		]======]
 		function IsEventBlocked(obj, sc)
 			local cls = GetObjectClass(obj)
@@ -4857,14 +4727,12 @@ do
 			return false
 		end
 
-		doc [======[
-			@name UnBlockEvent
-			@type method
-			@desc Un-Block event for object
+		doc "UnBlockEvent" [======[
+			<desc>Un-Block event for object</desc>
 			@param object
 			@param ... event handler name list
-			@return nil
-			@usage System.Reflector.UnBlockEvent(obj, "OnClick", "OnEnter")
+			<return name="nil"></return>
+			<usage>System.Reflector.UnBlockEvent(obj, "OnClick", "OnEnter")</return>
 		]======]
 		function UnBlockEvent(obj, ...)
 			local cls = GetObjectClass(obj)
@@ -4900,18 +4768,16 @@ do
 			end,
 		})
 
-		doc [======[
-			@name Validate
-			@type method
-			@desc Validating the value to the given type.
+		doc "Validate" [======[
+			<desc>Validating the value to the given type.</desc>
 			@format type, value, name[, prefix[, stacklevel]]
-			@param type such like Object+String+nil
-			@param value the test value
-			@param name the parameter's name
-			@param prefix the prefix string
-			@param stacklevel set if not in the main function call, only work when prefix is setted
-			@return nil
-			@usage System.Reflector.Validate(System.String+nil, "Test")
+			<param name="type">such like Object+String+nil</param>
+			<param name="value">the test value</param>
+			<param name="name">the parameter's name</param>
+			<param name="prefix">the prefix string</param>
+			<param name="stacklevel">set if not in the main function call, only work when prefix is setted</param>
+			<return name="nil"></return>
+			<usage>System.Reflector.Validate(System.String+nil, "Test")</return>
 		]======]
 		function Validate(types, value, name, prefix, stacklevel)
 			stacklevel = type(stacklevel) == "number" and stacklevel > 0 and stacklevel or 0
@@ -4972,38 +4838,32 @@ do
 			return value
 		end
 
-		doc [======[
-			@name EnableDocumentSystem
-			@type method
-			@desc Enable or disbale the document system, only effect later created document
-			@param enabled true to enable the document system
-			@return nil
-			@usage System.Reflector.EnableDocumentSystem(true)
+		doc "EnableDocumentSystem" [======[
+			<desc>Enable or disbale the document system, only effect later created document</desc>
+			<param name="enabled">true to enable the document system</param>
+			<return name="nil"></return>
+			<usage>System.Reflector.EnableDocumentSystem(true)</return>
 		]======]
 		function EnableDocumentSystem(enabled)
 			--EnableDocument(enabled)
 		end
 
-		doc [======[
-			@name IsDocumentSystemEnabled
-			@type method
-			@desc Whether the document system is enabled
-			@return boolean
+		doc "IsDocumentSystemEnabled" [======[
+			<desc>Whether the document system is enabled</desc>
+			<return name="boolean"></return>
 		]======]
 		function IsDocumentSystemEnabled()
 			return IsDocumentEnabled()
 		end
 
-		doc [======[
-			@name GetDocument
-			@type method
-			@desc Get the document settings
+		doc "GetDocument" [======[
+			<desc>Get the document settings</desc>
 			@format namespace, docType, name[, part]
 			@param namespace
-			@param targetType such as "property"
-			@param name the query name
-			@param part the part name
-			@return Iterator the iterator to get detail
+			<param name="targetType">such as "property"</param>
+			<param name="name">the query name</param>
+			<param name="part">the part name</param>
+			<return name="Iterator">the iterator to get detail</return>
 			@usage
 				for part, value in System.Reflector.GetDocument(System.Object, "method", "GetClass")
 			<br>	do print(part, value)
@@ -5013,32 +4873,28 @@ do
 			return GetPartDocument(ns, targetType, name, part)
 		end
 
-		doc [======[
-			@name HasDocument
-			@type method
-			@desc Check if has the document
+		doc "HasDocument" [======[
+			<desc>Check if has the document</desc>
 			@param namespace
 			@param targetType
 			@param name
-			@return true if the document is present
+			<return name="true">if the document is present</return>
 		]======]
 		function HasDocument(ns, targetType, name)
 			return HasPartDocument(ns, targetType, name)
 		end
 
-		doc [======[
-			@name Help
-			@type method
-			@desc Get the document detail
+		doc "Help" [======[
+			<desc>Get the document detail</desc>
 			@format class|interface[, 'event'|'property'|'method', name]
 			@format class|interface, name
 			@format class|interface, includeSuper
 			@format enum|struct
 			@param class|interface|enum|struct
 			@param event|property|method
-			@param name the name to query
-			@param includeSuper boolean, whether include all details
-			@return string the detail information
+			<param name="name">the name to query</param>
+			<param name="includeSuper">boolean, whether include all details</param>
+			<return name="string">the detail information</return>
 		]======]
 
 		-- The cache for constructor parameters
@@ -5750,14 +5606,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name Serialize
-			@type method
-			@desc Serialize the data
+		doc "Serialize" [======[
+			<desc>Serialize the data</desc>
 			@format data[, type]
-			@param data the data
-			@param type the data's type
-			@return string
+			<param name="data">the data</param>
+			<param name="type">the data's type</param>
+			<return name="string"></return>
 		]======]
 		local function SerializeData(data)
 			if type(data) == "string" then
@@ -5905,25 +5759,21 @@ do
 			end
 		end
 
-		doc [======[
-			@name ThreadCall
-			@type method
-			@desc Call the function in a thread from the thread pool of the system
-			@param func the function
+		doc "ThreadCall" [======[
+			<desc>Call the function in a thread from the thread pool of the system</desc>
+			<param name="func">the function</param>
 			@param ... the parameters
-			@return any
+			<return name="any"></return>
 		]======]
 		function ThreadCall(func, ...)
 			return CallThread(func, ...)
 		end
 
-		doc [======[
-			@name IsEqual
-			@type method
-			@desc Whether the two objects are objects with same settings
-			@param obj1 object, the object used to compare
-			@param obj2 object, the object used to compare to
-			@return boolean
+		doc "IsEqual" [======[
+			<desc>Whether the two objects are objects with same settings</desc>
+			<param name="obj1">object, the object used to compare</param>
+			<param name="obj2">object, the object used to compare to</param>
+			<return name="boolean"></return>
 		]======]
 		local function checkEqual(obj1, obj2, cache)
 			if obj1 == obj2 then return true end
@@ -5990,26 +5840,20 @@ do
 	namespace( nil )
 
 	class "Type"
-		doc [======[
-			@name Type
-			@type class
-			@desc The type object used to handle the value's validation
-		]======]
+		doc "Type" [[The type object used to handle the value's validation]]
 
 		_ALLOW_NIL = "AllowNil"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name Validate
-			@type method
-			@desc Used to validate the value
+		doc "Validate" [======[
+			<desc>Used to validate the value</desc>
 			@format value[, name[, stack]]
 			@param value
-			@param name the name present the value
-			@param stack the stack level, default 1
-			@return value
+			<param name="name">the name present the value</param>
+			<param name="stack">the stack level, default 1</param>
+			<return name="value"></return>
 		]======]
 		function Validate(self, value, name, stack)
 			if value == nil and rawget(self, _ALLOW_NIL) then
@@ -6170,11 +6014,9 @@ do
 			return value
 		end
 
-		doc [======[
-			@name Copy
-			@type method
-			@desc Copy the type object
-			@return the clone
+		doc "Copy" [======[
+			<desc>Copy the type object</desc>
+			<return name="the">clone</return>
 		]======]
 		function Copy(self)
 			local _type = Type()
@@ -6186,13 +6028,11 @@ do
 			return _type
 		end
 
-		doc [======[
-			@name Is
-			@type method
-			@desc Check if the type object constains such type
-			@param type class | struct | enum | nil
-			@param onlyClass true if the type only much class, not class' object
-			@return boolean
+		doc "Is" [======[
+			<desc>Check if the type object constains such type</desc>
+			<param name="type">class | struct | enum | nil</param>
+			<param name="onlyClass">true if the type only much class, not class' object</param>
+			<return name="boolean"></return>
 		]======]
 		function Is(self, ns, onlyClass)
 			local fenv = getfenv(2)
@@ -6223,12 +6063,10 @@ do
 			return false
 		end
 
-		doc [======[
-			@name GetObjectType
-			@type method
-			@desc Get the object type if validated, false if nothing match
+		doc "GetObjectType" [======[
+			<desc>Get the object type if validated, false if nothing match</desc>
 			@param value
-			@return type struct | enum | class | interface | nil
+			<return name="type">struct | enum | class | interface | nil</return>
 		]======]
 		function GetObjectType(self, value)
 			if value == nil and rawget(self, _ALLOW_NIL) then
@@ -6432,24 +6270,12 @@ do
 	endclass "Type"
 
 	class "Event"
-		doc [======[
-			@name Event
-			@type class
-			@desc The object event definition
-		]======]
+		doc "Event" [[The object event definition]]
 
-		doc [======[
-			@name Name
-			@type property
-			@desc The event's name
-		]======]
+		doc "Name" [[The event's name]]
 		property "Name" { Type = String }
 
-		doc [======[
-			@name ThreadActivated
-			@type property
-			@desc Whether the event is thread activated
-		]======]
+		doc "ThreadActivated" [[Whether the event is thread activated]]
 		property "ThreadActivated" { Type = Boolean }
 
 		------------------------------------------------------
@@ -6468,11 +6294,7 @@ do
 	endclass "Event"
 
 	class "EventHandler"
-		doc [======[
-			@name EventHandler
-			@type class
-			@desc The object event handler
-		]======]
+		doc "EventHandler" [[The object event handler]]
 
 		local function FireOnEventHandlerChanged(self)
 			return Reflector.FireObjectEvent(self.Owner, "OnEventHandlerChanged", self.Event.Name)
@@ -6481,21 +6303,17 @@ do
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name IsEmpty
-			@type method
-			@desc Check if the event handler is empty
-			@return boolean true if the event handler has no functions
+		doc "IsEmpty" [======[
+			<desc>Check if the event handler is empty</desc>
+			<return name="boolean">true if the event handler has no functions</return>
 		]======]
 		function IsEmpty(self)
 			return #self == 0 and self[0] == nil
 		end
 
-		doc [======[
-			@name Clear
-			@type method
-			@desc Clear all handlers
-			@return nil
+		doc "Clear" [======[
+			<desc>Clear all handlers</desc>
+			<return name="nil"></return>
 		]======]
 		function Clear(self)
 			local flag = false
@@ -6510,12 +6328,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name Copy
-			@type method
-			@desc Copy handlers from the source event handler
-			@param src the event handler source
-			@return nil
+		doc "Copy" [======[
+			<desc>Copy handlers from the source event handler</desc>
+			<param name="src">the event handler source</param>
+			<return name="nil"></return>
 		]======]
 		function Copy(self, src)
 			local flag = false
@@ -6540,39 +6356,19 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Owner
-			@type property
-			@desc The owner of the event handler
-		]======]
+		doc "Owner" [[The owner of the event handler]]
 		property "Owner" { Type = Table }
 
-		doc [======[
-			@name Event
-			@type property
-			@desc The event type of the handler
-		]======]
+		doc "Event" [[The event type of the handler]]
 		property "Event" { Type = Event }
 
-		doc [======[
-			@name Blocked
-			@type property
-			@desc Whether the event handler is blocked
-		]======]
+		doc "Blocked" [[Whether the event handler is blocked]]
 		property "Blocked" { Type = Boolean }
 
-		doc [======[
-			@name ThreadActivated
-			@type property
-			@desc Whether the event handler is thread activated
-		]======]
+		doc "ThreadActivated" [[Whether the event handler is thread activated]]
 		property "ThreadActivated" { Type = Boolean }
 
-		doc [======[
-			@name Handler
-			@type property
-			@desc description
-		]======]
+		doc "Handler" [[description]]
 		property "Handler" {
 			Get = function(self)
 				return self[0]
@@ -6716,11 +6512,7 @@ do
 	endclass "EventHandler"
 
 	class "FixedMethod"
-		doc [======[
-			@name FixedMethod
-			@type class
-			@desc Used to control method with fixed arguments
-		]======]
+		doc "FixedMethod" [[Used to control method with fixed arguments]]
 
 		-- Reduce cache table cost
 		local function keepArgs(...)
@@ -6763,12 +6555,10 @@ do
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name MatchArgs
-			@type method
-			@desc Whether the fixed method can handler the arguments
+		doc "MatchArgs" [======[
+			<desc>Whether the fixed method can handler the arguments</desc>
 			@param ...
-			@return boolean
+			<return name="boolean"></return>
 		]======]
 		function MatchArgs(self, ...)
 			local base = self.HasSelf and 1 or 0
@@ -6859,11 +6649,7 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Next
-			@type property
-			@desc The next fixed method
-		]======]
+		doc "Next" [[The next fixed method]]
 		property "Next" {
 			Field = "__Next",
 			Get = function (self)
@@ -6911,11 +6697,7 @@ do
 			Type = FixedMethod + Function + nil,
 		}
 
-		doc [======[
-			@name Usage
-			@type property
-			@desc The usage of the fixed method
-		]======]
+		doc "Usage" [[The usage of the fixed method]]
 		property "Usage" {
 			Get = function (self)
 				if self.__Usage then return self.__Usage end
@@ -7059,11 +6841,7 @@ do
 
 	class "__Attribute__"
 
-		doc [======[
-			@name __Attribute__
-			@type class
-			@desc The __Attribute__ class associates predefined system information or user-defined custom information with a target element.
-		]======]
+		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
 
 		_PreparedAttributes = {}
 		_ThreadPreparedAttributes = _ThreadPreparedAttributes or setmetatable({}, WEAK_KEY)
@@ -7231,14 +7009,14 @@ do
 		--[======[
 			@name _ApplyAttributes
 			@type method
-			@desc Apply the attributes for the target
+			<desc>Apply the attributes for the target</desc>
 			@format target, targetType[, superTarget, owner, name]
-			@param target class | event | method | property | struct | interface | enum | field
-			@param targetType System.AttributeTargets
-			@param superTarget the super target the contains several attributes to be inherited
-			@param owner the class|interface|struct object, the owner of the target
-			@param name the target's name
-			@return target
+			<param name="target">class | event | method | property | struct | interface | enum | field</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="superTarget">the super target the contains several attributes to be inherited</param>
+			<param name="owner">the class|interface|struct object, the owner of the target</param>
+			<param name="name">the target's name</param>
+			<return name="target"></return>
 		]======]
 		local function _ApplyAttributes(target, targetType, owner, name, start)
 			-- Apply the attributes
@@ -7346,11 +7124,9 @@ do
 			return target
 		end
 
-		doc [======[
-			@name _ClearPreparedAttributes
-			@type method
-			@desc Clear the prepared attributes
-			@return nil
+		doc "_ClearPreparedAttributes" [======[
+			<desc>Clear the prepared attributes</desc>
+			<return name="nil"></return>
 		]======]
 		function _ClearPreparedAttributes(noDispose)
 			local thread = running()
@@ -7374,17 +7150,15 @@ do
 			end
 		end
 
-		doc [======[
-			@name _ConsumePreparedAttributes
-			@type method
-			@desc Set the prepared attributes for target
+		doc "_ConsumePreparedAttributes" [======[
+			<desc>Set the prepared attributes for target</desc>
 			@format target, targetType[, superTarget[, owner, name]]
-			@param target class | event | method | property | struct | interface | enum
-			@param targetType System.AttributeTargets
-			@param superTarget the super target the contains several attributes to be inherited
-			@param owner the class|interface object, the owner of the target
-			@param name the target's name
-			@return target
+			<param name="target">class | event | method | property | struct | interface | enum</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="superTarget">the super target the contains several attributes to be inherited</param>
+			<param name="owner">the class|interface object, the owner of the target</param>
+			<param name="name">the target's name</param>
+			<return name="target"></return>
 		]======]
 		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
 			if not _AttributeCache[targetType] then
@@ -7547,16 +7321,14 @@ do
 			return target
 		end
 
-		doc [======[
-			@name _CloneAttributes
-			@type method
-			@desc Clone the attributes
-			@param source the source
-			@param target the target
-			@param targetType System.AttributeTargets
-			@param owner the class|interface object, the owner of the target
-			@param name the target's name
-			@return target
+		doc "_CloneAttributes" [======[
+			<desc>Clone the attributes</desc>
+			<param name="source">the source</param>
+			<param name="target">the target</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="owner">the class|interface object, the owner of the target</param>
+			<param name="name">the target's name</param>
+			<return name="target"></return>
 		]======]
 		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
 			if not _AttributeCache[targetType] then
@@ -7651,14 +7423,12 @@ do
 			return target
 		end
 
-		doc [======[
-			@name _IsDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class | event | method | property | struct | interface | enum
-			@param targetType System.AttributeTargets
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class | event | method | property | struct | interface | enum</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsDefined(target, targetType, type)
 			local config = _AttributeCache[targetType][target]
@@ -7677,13 +7447,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsClassAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsClassAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsClassAttributeDefined(target, type)
 			if Reflector.IsClass(target) then
@@ -7691,13 +7459,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsConstructorAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsConstructorAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsConstructorAttributeDefined(target, type)
 			if Reflector.IsClass(target) then
@@ -7705,13 +7471,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsEnumAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target enum
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsEnumAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">enum</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsEnumAttributeDefined(target, type)
 			if Reflector.IsEnum(target) then
@@ -7719,14 +7483,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsEventAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class | interface
-			@param event the event's name
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsEventAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class | interface</param>
+			<param name="event">the event's name</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsEventAttributeDefined(target, event, type)
 			local info = rawget(_NSInfo, target)
@@ -7736,13 +7498,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsInterfaceAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target interface
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsInterfaceAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">interface</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsInterfaceAttributeDefined(target, type)
 			if Reflector.IsInterface(target) then
@@ -7750,14 +7510,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsMethodAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class | interface
-			@param method the method's name
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsMethodAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class | interface</param>
+			<param name="method">the method's name</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsMethodAttributeDefined(target, method, type)
 			if type(target) == "function" then
@@ -7775,14 +7533,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsPropertyAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target class | interface
-			@param property the property's name
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsPropertyAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">class | interface</param>
+			<param name="property">the property's name</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsPropertyAttributeDefined(target, prop, type)
 			local info = rawget(_NSInfo, target)
@@ -7792,13 +7548,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsStructAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target struct
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsStructAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">struct</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsStructAttributeDefined(target, type)
 			if Reflector.IsStruct(target) then
@@ -7806,14 +7560,12 @@ do
 			end
 		end
 
-		doc [======[
-			@name _IsFieldAttributeDefined
-			@type method
-			@desc Check whether the target contains such type attribute
-			@param target struct
-			@param field the field's name
-			@param type the attribute class type
-			@return boolean true if the target contains attribute with the type
+		doc "_IsFieldAttributeDefined" [======[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">struct</param>
+			<param name="field">the field's name</param>
+			<param name="type">the attribute class type</param>
+			<return name="boolean">true if the target contains attribute with the type</return>
 		]======]
 		function _IsFieldAttributeDefined(target, field, type)
 			local info = rawget(_NSInfo, target)
@@ -7835,13 +7587,11 @@ do
 			return false
 		end
 
-		doc [======[
-			@name _GetCustomAttribute
-			@type method
-			@desc Return the attributes of the given type for the target
-			@param target class | event | method | property | struct | interface | enum
-			@param targetType System.AttributeTargets
-			@param type the attribute class type
+		doc "_GetCustomAttribute" [======[
+			<desc>Return the attributes of the given type for the target</desc>
+			<param name="target">class | event | method | property | struct | interface | enum</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetCustomAttribute(target, targetType, type)
@@ -7877,12 +7627,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetClassAttribute
-			@type method
-			@desc Return the attributes of the given type for the class
-			@param target class
-			@param type the attribute class type
+		doc "_GetClassAttribute" [======[
+			<desc>Return the attributes of the given type for the class</desc>
+			<param name="target">class</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetClassAttribute(target, type)
@@ -7891,12 +7639,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetConstructorAttribute
-			@type method
-			@desc Return the attributes of the given type for the class's constructor
-			@param target class
-			@param type the attribute class type
+		doc "_GetConstructorAttribute" [======[
+			<desc>Return the attributes of the given type for the class's constructor</desc>
+			<param name="target">class</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetConstructorAttribute(target, type)
@@ -7905,12 +7651,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetEnumAttribute
-			@type method
-			@desc Return the attributes of the given type for the enum
-			@param target enum
-			@param type the attribute class type
+		doc "_GetEnumAttribute" [======[
+			<desc>Return the attributes of the given type for the enum</desc>
+			<param name="target">enum</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetEnumAttribute(target, type)
@@ -7919,13 +7663,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetEventAttribute
-			@type method
-			@desc Return the attributes of the given type for the class|interface's event
-			@param target class|interface
-			@param event the event's name
-			@param type the attribute class type
+		doc "_GetEventAttribute" [======[
+			<desc>Return the attributes of the given type for the class|interface's event</desc>
+			<param name="target">class|interface</param>
+			<param name="event">the event's name</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetEventAttribute(target, event, type)
@@ -7936,12 +7678,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetInterfaceAttribute
-			@type method
-			@desc Return the attributes of the given type for the interface
-			@param target interface
-			@param type the attribute class type
+		doc "_GetInterfaceAttribute" [======[
+			<desc>Return the attributes of the given type for the interface</desc>
+			<param name="target">interface</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetInterfaceAttribute(target, type)
@@ -7950,15 +7690,13 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetMethodAttribute
-			@type method
-			@desc Return the attributes of the given type for the class|interface's method
+		doc "_GetMethodAttribute" [======[
+			<desc>Return the attributes of the given type for the class|interface's method</desc>
 			@format target, method, type
 			@format method, type
-			@param target class|interface
-			@param method the method's name(with target) or the method itself(without target)
-			@param type the attribute class type
+			<param name="target">class|interface</param>
+			<param name="method">the method's name(with target) or the method itself(without target)</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetMethodAttribute(target, method, type)
@@ -7980,13 +7718,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetPropertyAttribute
-			@type method
-			@desc Return the attributes of the given type for the class|interface's property
-			@param target class|interface
-			@param prop the property's name
-			@param type the attribute class type
+		doc "_GetPropertyAttribute" [======[
+			<desc>Return the attributes of the given type for the class|interface's property</desc>
+			<param name="target">class|interface</param>
+			<param name="prop">the property's name</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetPropertyAttribute(target, prop, type)
@@ -7997,12 +7733,10 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetStructAttribute
-			@type method
-			@desc Return the attributes of the given type for the struct
-			@param target struct
-			@param type the attribute class type
+		doc "_GetStructAttribute" [======[
+			<desc>Return the attributes of the given type for the struct</desc>
+			<param name="target">struct</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetStructAttribute(target, type)
@@ -8011,13 +7745,11 @@ do
 			end
 		end
 
-		doc [======[
-			@name _GetFieldAttribute
-			@type method
-			@desc Return the attributes of the given type for the struct's field
-			@param target struct
-			@param field the field's name
-			@param type the attribute class type
+		doc "_GetFieldAttribute" [======[
+			<desc>Return the attributes of the given type for the struct's field</desc>
+			<param name="target">struct</param>
+			<param name="field">the field's name</param>
+			<param name="type">the attribute class type</param>
 			@return ... the attribute objects
 		]======]
 		function _GetFieldAttribute(target, field, type)
@@ -8038,15 +7770,13 @@ do
 			end
 		end
 
-		doc [======[
-			@name ApplyAttribute
-			@type method
-			@desc Apply the attribute to the target, overridable
-			@param target the attribute's target
-			@param targetType System.AttributeTargets
-			@param owner the target's owner
-			@param name the target's name
-			@return nil
+		doc "ApplyAttribute" [======[
+			<desc>Apply the attribute to the target, overridable</desc>
+			<param name="target">the attribute's target</param>
+			<param name="targetType">System.AttributeTargets</param>
+			<param name="owner">the target's owner</param>
+			<param name="name">the target's name</param>
+			<return name="nil"></return>
 		]======]
 		function ApplyAttribute(self, target, targetType, owner, name)
 			-- Pass
@@ -8063,11 +7793,7 @@ do
 	class "__Unique__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Unique__
-			@type class
-			@desc Mark the class will only create one unique object, and can't be disposed, also the class can't be inherited
-		]======]
+		doc "__Unique__" [[Mark the class will only create one unique object, and can't be disposed, also the class can't be inherited]]
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) then
@@ -8080,11 +7806,7 @@ do
 	class "__Flags__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Flags__
-			@type class
-			@desc Indicates that an enumeration can be treated as a bit field; that is, a set of flags.
-		]======]
+		doc "__Flags__" [[Indicates that an enumeration can be treated as a bit field; that is, a set of flags.]]
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsEnum(target) then
@@ -8149,52 +7871,28 @@ do
 	class "__AttributeUsage__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __AttributeUsage__
-			@type class
-			@desc Specifies the usage of another attribute class.
-		]======]
+		doc "__AttributeUsage__" [[Specifies the usage of another attribute class.]]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name AttributeTarget
-			@type property
-			@desc The attribute target type, default AttributeTargets.All
-		]======]
+		doc "AttributeTarget" [[The attribute target type, default AttributeTargets.All]]
 		property "AttributeTarget" { Default = AttributeTargets.All, Type = AttributeTargets }
 
-		doc [======[
-			@name Inherited
-			@type property
-			@desc Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true
-		]======]
+		doc "Inherited" [[Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true]]
 		property "Inherited" { Default = true, Type = Boolean }
 
-		doc [======[
-			@name AllowMultiple
-			@type property
-			@desc whether multiple instances of your attribute can exist on an element. default false
-		]======]
+		doc "AllowMultiple" [[whether multiple instances of your attribute can exist on an element. default false]]
 		property "AllowMultiple" { Type = Boolean }
 
-		doc [======[
-			@name RunOnce
-			@type property
-			@desc Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation
-		]======]
+		doc "RunOnce" [[Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation]]
 		property "RunOnce" { Type = Boolean }
 	endclass "__AttributeUsage__"
 
 	class "__Final__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Final__
-			@type class
-			@desc Mark the class|interface|struct|enum to be final, and can't be re-defined again
-		]======]
+		doc "__Final__" [[Mark the class|interface|struct|enum to be final, and can't be re-defined again]]
 
 		function ApplyAttribute(self, target, targetType)
 			if rawget(_NSInfo, target) then
@@ -8206,11 +7904,7 @@ do
 	class "__NonInheritable__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __NonInheritable__
-			@type class
-			@desc Mark the class can't be inherited
-		]======]
+		doc "__NonInheritable__" [[Mark the class can't be inherited]]
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) or Reflector.IsInterface(target) then
@@ -8241,11 +7935,7 @@ do
 	class "__Arguments__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Arguments__
-			@type class
-			@desc The argument definitions of the target method or class's constructor
-		]======]
+		doc "__Arguments__" [[The argument definitions of the target method or class's constructor]]
 
 		_Error_Header = [[Usage : __Arguments__{ arg1[, arg2[, ...] ] } : ]]
 		_Error_NotArgument = [[arg%d must be System.Argument]]
@@ -8376,8 +8066,6 @@ do
 		------------------------------------------------------
 		-- For structs
 		------------------------------------------------------
-		_KeyWord4StrtEnv.structtype = nil
-
 		__Final__:ApplyAttribute(Boolean)
 		__Final__:ApplyAttribute(String)
 		__Final__:ApplyAttribute(Number)
@@ -8470,11 +8158,7 @@ do
 	__Unique__()
 	class "__Thread__"
 		inherit "__Attribute__"
-		doc [======[
-			@name __Thread__
-			@type class
-			@desc Whether the event is thread activated by defalut, or wrap the method as coroutine
-		]======]
+		doc "__Thread__" [[Whether the event is thread activated by defalut, or wrap the method as coroutine]]
 
 		------------------------------------------------------
 		-- Method
@@ -8500,11 +8184,7 @@ do
 	__Unique__()
 	class "__Cache__"
 		inherit "__Attribute__"
-		doc [======[
-			@name __Cache__
-			@type class
-			@desc Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .
-		]======]
+		doc "__Cache__" [[Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .]]
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) then
@@ -8525,11 +8205,7 @@ do
 	class "__StructType__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __StructType__
-			@type class
-			@desc Mark the struct's type, default 'Member'
-		]======]
+		doc "__StructType__" [[Mark the struct's type, default 'Member']]
 
 		------------------------------------------------------
 		-- Method
@@ -8558,11 +8234,7 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Type
-			@type property
-			@desc The struct's type
-		]======]
+		doc "Type" [[The struct's type]]
 		property "Type" { Type = StructType }
 
 		------------------------------------------------------
@@ -8588,10 +8260,8 @@ do
 	__Unique__()
 	class "__NonExpandable__"
 		inherit "__Attribute__"
-		doc [======[
-			@name __NonExpandable__
-			@type class
-			@desc Mark the class|interface can't receive functions as new methods like :
+		doc "__NonExpandable__" [======[
+			<desc>Mark the class|interface can't receive functions as new methods like :</desc>
 				System.Object.Print = function(self) print(self) end, give all object of System.Object a new method.
 				The cost should be expensive, use it carefully.
 		]======]
@@ -8609,11 +8279,7 @@ do
 	class "__InitTable__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __InitTable__
-			@type class
-			@desc Used to mark the class can use init table like: obj = cls(name) { Age = 123 }
-		]======]
+		doc "__InitTable__" [[Used to mark the class can use init table like: obj = cls(name) { Age = 123 }]]
 
 		__Arguments__{ RawTable }
 		function InitWithTable(self, initTable)
@@ -8643,11 +8309,7 @@ do
 	class "__Require__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Require__
-			@type class
-			@desc Whether the method or property of the interface is required to be override
-		]======]
+		doc "__Require__" [[Whether the method or property of the interface is required to be override]]
 
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = rawget(_NSInfo, owner)
@@ -8670,11 +8332,7 @@ do
 	class "__Optional__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Optional__
-			@type class
-			@desc Whether the method or property of the interface is optional to be override
-		]======]
+		doc "__Optional__" [[Whether the method or property of the interface is optional to be override]]
 
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = rawget(_NSInfo, owner)
@@ -8697,22 +8355,14 @@ do
 	class "__Synthesize__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Synthesize__
-			@type class
-			@desc Used to generate property accessors automatically
-		]======]
+		doc "__Synthesize__" [[Used to generate property accessors automatically]]
 
 		enum "NameCase" {
 			"Camel",	-- setName
 			"Pascal",	-- SetName
 		}
 
-		doc [======[
-			@name NameCase
-			@type property
-			@desc The name case of the generate method, in one program, only need to be set once, default is Pascal case
-		]======]
+		doc "NameCase" [[The name case of the generate method, in one program, only need to be set once, default is Pascal case]]
 		property "NameCase" { Type = NameCase, Default = NameCase.Pascal }
 
 		------------------------------------------------------
@@ -8727,11 +8377,7 @@ do
 	class "__Doc__"
 		inherit "__Attribute__"
 
-		doc [======[
-			@name __Doc__
-			@type class
-			@desc Used to document the features like : class, struct, enum, interface, property, event and method
-		]======]
+		doc "__Doc__" [[Used to document the features like : class, struct, enum, interface, property, event and method]]
 
 		------------------------------------------------------
 		-- Method
@@ -8758,32 +8404,24 @@ do
 	__Final__()
 	class "Object"
 
-		doc [======[
-			@name Object
-			@type class
-			@desc The root class of other classes. Object class contains several methodes for common use.
-		]======]
+		doc "Object" [[The root class of other classes. Object class contains several methodes for common use.]]
 
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc [======[
-			@name OnEventHandlerChanged
-			@type event
-			@desc Fired when an event's handler is changed
-			@param name the changed event handler's event name
+		doc "OnEventHandlerChanged" [======[
+			<desc>Fired when an event's handler is changed</desc>
+			<param name="name">the changed event handler's event name</param>
 		]======]
 		event "OnEventHandlerChanged"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name HasEvent
-			@type method
-			@desc Check if the event type is supported by the object
-			@param name the event's name
-			@return boolean true if the object has that event type
+		doc "HasEvent" [======[
+			<desc>Check if the event type is supported by the object</desc>
+			<param name="name">the event's name</param>
+			<return name="boolean">true if the object has that event type</return>
 		]======]
 		function HasEvent(self, name)
 			if type(name) ~= "string" then
@@ -8792,45 +8430,37 @@ do
 			return Reflector.HasEvent(Reflector.GetObjectClass(self), name) or false
 		end
 
-		doc [======[
-			@name GetClass
-			@type method
-			@desc Get the class type of the object
-			@return class the object's class
+		doc "GetClass" [======[
+			<desc>Get the class type of the object</desc>
+			<return name="class">the object's class</return>
 		]======]
 		function GetClass(self)
 			return Reflector.GetObjectClass(self)
 		end
 
-		doc [======[
-			@name IsClass
-			@type method
-			@desc Check if the object is an instance of the class
+		doc "IsClass" [======[
+			<desc>Check if the object is an instance of the class</desc>
 			@param class
-			@return boolean true if the object is an instance of the class
+			<return name="boolean">true if the object is an instance of the class</return>
 		]======]
 		function IsClass(self, cls)
 			return Reflector.ObjectIsClass(self, cls)
 		end
 
-		doc [======[
-			@name IsInterface
-			@type method
-			@desc Check if the object is extend from the interface
+		doc "IsInterface" [======[
+			<desc>Check if the object is extend from the interface</desc>
 			@param interface
-			@return boolean true if the object is extend from the interface
+			<return name="boolean">true if the object is extend from the interface</return>
 		]======]
 		function IsInterface(self, IF)
 			return Reflector.ObjectIsInterface(self, IF)
 		end
 
-		doc [======[
-			@name Fire
-			@type method
-			@desc Fire an object's event, to trigger the object's event handlers
-			@param event the event name
+		doc "Fire" [======[
+			<desc>Fire an object's event, to trigger the object's event handlers</desc>
+			<param name="event">the event name</param>
 			@param ... the event's arguments
-			@return nil
+			<return name="nil"></return>
 		]======]
 		local rawget = rawget
 		function Fire(self, sc, ...)
@@ -8840,87 +8470,73 @@ do
 			return handler and handler(self, ...)
 		end
 
-		doc [======[
-			@name ActiveThread
-			@type method
-			@desc Active the thread mode for special events
+		doc "ActiveThread" [======[
+			<desc>Active the thread mode for special events</desc>
 			@format event[, ...]
-			@param event the event name
+			<param name="event">the event name</param>
 			@param ... other event's name list
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function ActiveThread(self, ...)
 			return Reflector.ActiveThread(self, ...)
 		end
 
-		doc [======[
-			@name IsThreadActivated
-			@type method
-			@desc Check if the thread mode is actived for the event
-			@param event the event's name
-			@return boolean true if the event is in thread mode
+		doc "IsThreadActivated" [======[
+			<desc>Check if the thread mode is actived for the event</desc>
+			<param name="event">the event's name</param>
+			<return name="boolean">true if the event is in thread mode</return>
 		]======]
 		function IsThreadActivated(self, sc)
 			return Reflector.IsThreadActivated(self, sc)
 		end
 
-		doc [======[
-			@name InactiveThread
-			@type method
-			@desc Turn off the thread mode for the events
+		doc "InactiveThread" [======[
+			<desc>Turn off the thread mode for the events</desc>
 			@format event[, ...]
-			@param event the event's name
+			<param name="event">the event's name</param>
 			@param ... other event's name list
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function InactiveThread(self, ...)
 			return Reflector.InactiveThread(self, ...)
 		end
 
-		doc [======[
-			@name BlockEvent
-			@type method
-			@desc Block some events for the object
+		doc "BlockEvent" [======[
+			<desc>Block some events for the object</desc>
 			@format event[, ...]
-			@param event the event's name
+			<param name="event">the event's name</param>
 			@param ... other event's name list
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function BlockEvent(self, ...)
 			return Reflector.BlockEvent(self, ...)
 		end
 
-		doc [======[
-			@name IsEventBlocked
-			@type method
-			@desc Check if the event is blocked for the object
-			@param event the event's name
-			@return boolean true if th event is blocked
+		doc "IsEventBlocked" [======[
+			<desc>Check if the event is blocked for the object</desc>
+			<param name="event">the event's name</param>
+			<return name="boolean">true if th event is blocked</return>
 		]======]
 		function IsEventBlocked(self, sc)
 			return Reflector.IsEventBlocked(self, sc)
 		end
 
-		doc [======[
-			@name UnBlockEvent
-			@type method
-			@desc Un-Block some events for the object
+		doc "UnBlockEvent" [======[
+			<desc>Un-Block some events for the object</desc>
 			@format event[, ...]
-			@param event the event's name
+			<param name="event">the event's name</param>
 			@param ... other event's name list
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function UnBlockEvent(self, ...)
 			return Reflector.UnBlockEvent(self, ...)
 		end
 
-		doc [======[
-			@name ThreadCall
-			@type method
-			@desc Call method or function as a thread
+		doc "ThreadCall" [======[
+			<desc>Call method or function as a thread</desc>
 			@param methodname|function
 			@param ... the arguments
-			@return nil
+			<return name="nil"></return>
 		]======]
 		function ThreadCall(self, method, ...)
 			if type(method) == "string" then
@@ -8944,11 +8560,7 @@ do
 	class "Module"
 		inherit "Object"
 
-		doc [======[
-			@name Module
-			@type class
-			@desc Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"
-		]======]
+		doc "Module" [[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
 
 		_Module = _Module or {}
 		_ModuleInfo = _ModuleInfo or setmetatable({}, WEAK_KEY)
@@ -8997,22 +8609,16 @@ do
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc [======[
-			@name OnDispose
-			@type event
-			@desc Fired when the module is disposed
-		]======]
+		doc "OnDispose" [[Fired when the module is disposed]]
 		event "OnDispose"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name ValidateVersion
-			@type method
-			@desc Return true if the version is greater than the current version of the module
+		doc "ValidateVersion" [======[
+			<desc>Return true if the version is greater than the current version of the module</desc>
 			@param version
-			@return boolean true if the version is a validated version
+			<return name="boolean">true if the version is a validated version</return>
 		]======]
 		function ValidateVersion(self, version)
 			local info = _ModuleInfo[self]
@@ -9090,12 +8696,10 @@ do
 			return false
 		end
 
-		doc [======[
-			@name GetModule
-			@type method
-			@desc Get the child-module with the name
-			@param name string, the child-module's name
-			@return System.Module the child-module
+		doc "GetModule" [======[
+			<desc>Get the child-module with the name</desc>
+			<param name="name">string, the child-module's name</param>
+			<return name="System"></return>.Module the child-module
 		]======]
 		function GetModule(self, name)
 			if type(name) ~= "string" or strtrim(name) == "" then
@@ -9115,11 +8719,9 @@ do
 			return mdl
 		end
 
-		doc [======[
-			@name GetModules
-			@type method
-			@desc Get all child-modules of the module
-			@return table the list of the the child-modules
+		doc "GetModules" [======[
+			<desc>Get all child-modules of the module</desc>
+			<return name="table">the list of the the child-modules</return>
 		]======]
 		function GetModules(self)
 			if _ModuleInfo[self] and _ModuleInfo[self].Modules then
@@ -9136,44 +8738,28 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name _M
-			@type property
-			@desc The module itself
-		]======]
+		doc "_M" [[The module itself]]
 		property "_M" {
 			Get = function(self)
 				return self
 			end,
 		}
 
-		doc [======[
-			@name _Name
-			@type property
-			@desc The module's name
-		]======]
+		doc "_Name" [[The module's name]]
 		property "_Name" {
 			Get = function(self)
 				return _ModuleInfo[self].Name
 			end,
 		}
 
-		doc [======[
-			@name _Parent
-			@type property
-			@desc The module's parent module
-		]======]
+		doc "_Parent" [[The module's parent module]]
 		property "_Parent" {
 			Get = function(self)
 				return _ModuleInfo[self].Parent
 			end,
 		}
 
-		doc [======[
-			@name _Version
-			@type property
-			@desc The module's version
-		]======]
+		doc "_Version" [[The module's version]]
 		property "_Version" {
 			Get = function(self)
 				return _ModuleInfo[self].Version
@@ -9482,6 +9068,14 @@ end
 ------------------------------------------------------
 do
 	namespace "System"
+
+	------------------------------------------------------
+	-- Clear useless keywords
+	------------------------------------------------------
+	_KeyWord4IFEnv.doc = nil
+	_KeyWord4ClsEnv.doc = nil
+	_KeyWord4StrtEnv.structtype = nil
+
 
 	-- Keep the root so can't be disposed
 	System = Reflector.ForName("System")
