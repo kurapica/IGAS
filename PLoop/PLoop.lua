@@ -768,7 +768,7 @@ do
 	function SaveDocument(data, name, targetType, owner)
 		if not DOCUMENT_ENABLED or type(data) ~= "string" then return end
 
-		if not owner or type(name) ~= "string" then return end
+		if not owner then return end
 
 		local info = rawget(_NSInfo, owner)
 
@@ -782,6 +782,8 @@ do
 		end
 
 		if not targetType then return end
+
+		if not name then name = info.Name end
 
 		-- Get the head space in the first line and remove it from all lines
 		local space = data:match("^%s+")
@@ -3795,9 +3797,9 @@ do
 
 		doc "GetCurrentNameSpace" [======[
 			<desc>Get the namespace used by the environment</desc>
-			<param name="env">table</param>
-			<param name="rawOnly">boolean, rawget data from the env if true</param>
-			<return name="namespace"></return>
+			<param name="env" type="table" optional="true">the environment, default the current environment</param>
+			<param name="rawOnly" type="boolean" optional="true">skip metatable settings if true</param>
+			<return name="namespace">the namespace of the environment</return>
 		]======]
 		function GetCurrentNameSpace(env, rawOnly)
 			env = type(env) == "table" and env or getfenv(2)
@@ -3807,9 +3809,8 @@ do
 
 		doc "SetCurrentNameSpace" [======[
 			<desc>set the namespace used by the environment</desc>
-			<param name="ns">the namespace that set for the environment</param>
-			<param name="env">table</param>
-			<return name="nil"></return>
+			<param name="ns" type="namespace|string|nil">the namespace that set for the environment</param>
+			<param name="env" type="table" optional="true">the environment, default the current environment</param>
 		]======]
 		function SetCurrentNameSpace(ns, env)
 			env = type(env) == "table" and env or getfenv(2)
@@ -3817,13 +3818,13 @@ do
 			return SetNameSpace4Env(env, ns)
 		end
 
-		doc "ForName" [======[
+		doc "GetNameSpaceForName" [======[
 			<desc>Get the namespace for the name</desc>
 			<param name="name">the namespace's name, split by "."</param>
 			<return name="namespace">the namespace</return>
-			<usage>System.Reflector.ForName("System")</return>
+			<usage>System.Reflector.GetNameSpaceForName("System")</return>
 		]======]
-		function ForName(name)
+		function GetNameSpaceForName(name)
 			return GetNameSpace(GetDefaultNameSpace(), name)
 		end
 
@@ -3834,7 +3835,7 @@ do
 			<usage>System.Reflector.GetType("System.Object")</return>
 		]======]
 		function GetType(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type
 		end
@@ -3846,7 +3847,7 @@ do
 			<usage>System.Reflector.GetName(System.Object)</return>
 		]======]
 		function GetName(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Name
 		end
@@ -3858,7 +3859,7 @@ do
 			<usage>System.Reflector.GetFullName(System.Object)</return>
 		]======]
 		function GetFullName(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return GetFullName4NS(ns)
 		end
@@ -3870,7 +3871,7 @@ do
 			<usage>System.Reflector.GetSuperClass(System.Object)</return>
 		]======]
 		function GetSuperClass(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].SuperClass
 		end
@@ -3882,7 +3883,7 @@ do
 			<usage>System.Reflector.IsNameSpace(System.Object)</return>
 		]======]
 		function IsNameSpace(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and true or false
 		end
@@ -3894,7 +3895,7 @@ do
 			<usage>System.Reflector.IsClass(System.Object)</return>
 		]======]
 		function IsClass(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_CLASS or false
 		end
@@ -3906,7 +3907,7 @@ do
 			<usage>System.Reflector.IsStruct(System.Object)</return>
 		]======]
 		function IsStruct(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_STRUCT or false
 		end
@@ -3918,7 +3919,7 @@ do
 			<usage>System.Reflector.IsEnum(System.Object)</return>
 		]======]
 		function IsEnum(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_ENUM or false
 		end
@@ -3930,7 +3931,7 @@ do
 			<usage>System.Reflector.IsInterface(System.IFSocket)</return>
 		]======]
 		function IsInterface(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Type == TYPE_INTERFACE or false
 		end
@@ -3942,7 +3943,7 @@ do
 			<usage>System.Reflector.IsFinal(System.Object)</return>
 		]======]
 		function IsFinal(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFinal or false
 		end
@@ -3954,7 +3955,7 @@ do
 			<usage>System.Reflector.IsNonInheritable(System.Object)</return>
 		]======]
 		function IsNonInheritable(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].NonInheritable or false
 		end
@@ -3966,7 +3967,7 @@ do
 			<usage>System.Reflector.IsUniqueClass(System.Object)</return>
 		]======]
 		function IsUniqueClass(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].UniqueObject and true or false
 		end
@@ -3978,7 +3979,7 @@ do
 			<usage>System.Reflector.IsAutoCacheClass(System.Object)</return>
 		]======]
 		function IsAutoCacheClass(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].AutoCache or false
 		end
@@ -3990,7 +3991,7 @@ do
 			<usage>System.Reflector.IsNonExpandable(System.Object)</return>
 		]======]
 		function IsNonExpandable(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].NonExpandable or false
 		end
@@ -4002,7 +4003,7 @@ do
 			<usage>System.Reflector.GetSubNamespace(System)</return>
 		]======]
 		function GetSubNamespace(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4026,7 +4027,7 @@ do
 			<usage>System.Reflector.GetExtendInterfaces(System.Object)</return>
 		]======]
 		function GetExtendInterfaces(cls)
-			if type(cls) == "string" then cls = ForName(cls) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
 
 			local info = cls and _NSInfo[cls]
 
@@ -4048,7 +4049,7 @@ do
 			<usage>System.Reflector.GetAllExtendInterfaces(System.Object)</return>
 		]======]
 		function GetAllExtendInterfaces(cls)
-			if type(cls) == "string" then cls = ForName(cls) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
 
 			local info = cls and _NSInfo[cls]
 
@@ -4070,7 +4071,7 @@ do
 			<usage>System.Reflector.GetChildClasses(System.Object)</return>
 		]======]
 		function GetChildClasses(cls)
-			if type(cls) == "string" then cls = ForName(cls) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
 
 			local info = cls and _NSInfo[cls]
 
@@ -4094,7 +4095,7 @@ do
 			<usage>System.Reflector.GetEvents(System.Object)</return>
 		]======]
 		function GetEvents(ns, noSuper)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4122,7 +4123,7 @@ do
 			<usage>System.Reflector.GetProperties(System.Object)</return>
 		]======]
 		function GetProperties(ns, noSuper)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4150,7 +4151,7 @@ do
 			<usage>System.Reflector.GetMethods(System.Object)</return>
 		]======]
 		function GetMethods(ns, noSuper)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4183,7 +4184,7 @@ do
 			<usage>System.Reflector.GetPropertyType(System.Object, "Name")</return>
 		]======]
 		function GetPropertyType(ns, propName)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4202,7 +4203,7 @@ do
 			<usage>System.Reflector.HasProperty(System.Object, "Name")</return>
 		]======]
 		function HasProperty(ns, propName)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4221,7 +4222,7 @@ do
 			<usage>System.Reflector.IsPropertyReadable(System.Object, "Name")</return>
 		]======]
 		function IsPropertyReadable(ns, propName)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4243,7 +4244,7 @@ do
 			<usage>System.Reflector.IsPropertyWritable(System.Object, "Name")</return>
 		]======]
 		function IsPropertyWritable(ns, propName)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4264,7 +4265,7 @@ do
 			<return name="boolean"></return>
 		]======]
 		function IsRequireMethod(ns, name)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4278,7 +4279,7 @@ do
 			<return name="boolean"></return>
 		]======]
 		function IsRequireProperty(ns, name)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4292,7 +4293,7 @@ do
 			<return name="boolean"></return>
 		]======]
 		function IsOptionalMethod(ns, name)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4306,7 +4307,7 @@ do
 			<return name="boolean"></return>
 		]======]
 		function IsOptionalProperty(ns, name)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4320,7 +4321,7 @@ do
 			<usage>System.Reflector.IsFlagsEnum(System.Object)</return>
 		]======]
 		function IsFlagsEnum(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].IsFlags or false
 		end
@@ -4332,7 +4333,7 @@ do
 			<usage>System.Reflector.GetEnums(System.SampleEnum)</return>
 		]======]
 		function GetEnums(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and _NSInfo[ns]
 
@@ -4378,7 +4379,7 @@ do
 			<usage>System.Reflector.ParseEnum(System.SampleEnum, 1)</return>
 		]======]
 		function ParseEnum(ns, value)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			if ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_ENUM and _NSInfo[ns].Enum then
 				if _NSInfo[ns].IsFlags and type(value) == "number" then
@@ -4428,7 +4429,7 @@ do
 			<usage>System.Reflector.HasEvent(Addon, "OnEvent")</return>
 		]======]
 		function HasEvent(cls, sc)
-			if type(cls) == "string" then cls = ForName(cls) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
 
 			local info = _NSInfo[cls]
 
@@ -4443,7 +4444,7 @@ do
 			<return name="string"></return>
 		]======]
 		function GetStructType(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and rawget(_NSInfo, ns)
 
@@ -4458,7 +4459,7 @@ do
 			<return name="type">the array element's type</return>
 		]======]
 		function GetStructArrayElement(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and rawget(_NSInfo, ns)
 
@@ -4474,7 +4475,7 @@ do
 			<usage>System.Reflector.GetStructParts(Position)</return>
 		]======]
 		function GetStructParts(ns)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and rawget(_NSInfo, ns)
 
@@ -4513,7 +4514,7 @@ do
 			<usage>System.Reflector.GetStructPart(Position, "x")</return>
 		]======]
 		function GetStructPart(ns, part)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			local info = ns and rawget(_NSInfo, ns)
 
@@ -4542,8 +4543,8 @@ do
 			<usage>System.Reflector.IsSuperClass(UIObject, Object)</return>
 		]======]
 		function IsSuperClass(child, super)
-			if type(child) == "string" then child = ForName(child) end
-			if type(super) == "string" then super = ForName(super) end
+			if type(child) == "string" then child = GetNameSpaceForName(child) end
+			if type(super) == "string" then super = GetNameSpaceForName(super) end
 
 			return IsClass(child) and IsClass(super) and IsChildClass(super, child)
 		end
@@ -4556,8 +4557,8 @@ do
 			<usage>System.Reflector.IsExtendedInterface(UIObject, IFSocket)</return>
 		]======]
 		function IsExtendedInterface(cls, IF)
-			if type(cls) == "string" then cls = ForName(cls) end
-			if type(IF) == "string" then IF = ForName(IF) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
+			if type(IF) == "string" then IF = GetNameSpaceForName(IF) end
 
 			return IsExtend(IF, cls)
 		end
@@ -4580,7 +4581,7 @@ do
 			<usage>System.Reflector.ObjectIsClass(obj, Object)</return>
 		]======]
 		function ObjectIsClass(obj, cls)
-			if type(cls) == "string" then cls = ForName(cls) end
+			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
 			return (obj and cls and IsChildClass(cls, GetObjectClass(obj))) or false
 		end
 
@@ -4592,7 +4593,7 @@ do
 			<usage>System.Reflector.ObjectIsInterface(obj, IFSocket)</return>
 		]======]
 		function ObjectIsInterface(obj, IF)
-			if type(IF) == "string" then IF = ForName(IF) end
+			if type(IF) == "string" then IF = GetNameSpaceForName(IF) end
 			return (obj and IF and IsExtend(IF, GetObjectClass(obj))) or false
 		end
 
@@ -4977,7 +4978,7 @@ do
 		end
 
 		function Help(ns, targetType, name)
-			if type(ns) == "string" then ns = ForName(ns) end
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			if ns and rawget(_NSInfo, ns) then
 				local info = _NSInfo[ns]
@@ -5659,7 +5660,7 @@ do
 						return "nil"
 					end
 				elseif type(ns) == "string" then
-					ns = ForName(ns)
+					ns = GetNameSpaceForName(ns)
 				end
 			end
 
@@ -8374,6 +8375,8 @@ do
 	endclass "__Synthesize__"
 
 	__AttributeUsage__{Inherited = false, RunOnce = true}
+	__Final__()
+	__Unique__()
 	class "__Doc__"
 		inherit "__Attribute__"
 
@@ -8383,7 +8386,11 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
+			if type(self.Doc) == "string" and targetType and owner then
+				SaveDocument(self.Doc, name, targetType, owner)
+			end
 
+			self.Doc = nil
 		end
 
 		------------------------------------------------------
@@ -8402,14 +8409,13 @@ end
 ------------------------------------------------------
 do
 	__Final__()
+	__Doc__[[The root class of other classes. Object class contains several methodes for common use.]]
 	class "Object"
-
-		doc "Object" [[The root class of other classes. Object class contains several methodes for common use.]]
 
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc "OnEventHandlerChanged" [======[
+		__Doc__[======[
 			<desc>Fired when an event's handler is changed</desc>
 			<param name="name">the changed event handler's event name</param>
 		]======]
@@ -8418,7 +8424,7 @@ do
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc "HasEvent" [======[
+		__Doc__[======[
 			<desc>Check if the event type is supported by the object</desc>
 			<param name="name">the event's name</param>
 			<return name="boolean">true if the object has that event type</return>
@@ -8430,7 +8436,7 @@ do
 			return Reflector.HasEvent(Reflector.GetObjectClass(self), name) or false
 		end
 
-		doc "GetClass" [======[
+		__Doc__[======[
 			<desc>Get the class type of the object</desc>
 			<return name="class">the object's class</return>
 		]======]
@@ -8438,7 +8444,7 @@ do
 			return Reflector.GetObjectClass(self)
 		end
 
-		doc "IsClass" [======[
+		__Doc__[======[
 			<desc>Check if the object is an instance of the class</desc>
 			@param class
 			<return name="boolean">true if the object is an instance of the class</return>
@@ -8447,7 +8453,7 @@ do
 			return Reflector.ObjectIsClass(self, cls)
 		end
 
-		doc "IsInterface" [======[
+		__Doc__[======[
 			<desc>Check if the object is extend from the interface</desc>
 			@param interface
 			<return name="boolean">true if the object is extend from the interface</return>
@@ -8456,7 +8462,7 @@ do
 			return Reflector.ObjectIsInterface(self, IF)
 		end
 
-		doc "Fire" [======[
+		__Doc__[======[
 			<desc>Fire an object's event, to trigger the object's event handlers</desc>
 			<param name="event">the event name</param>
 			@param ... the event's arguments
@@ -8470,7 +8476,7 @@ do
 			return handler and handler(self, ...)
 		end
 
-		doc "ActiveThread" [======[
+		__Doc__[======[
 			<desc>Active the thread mode for special events</desc>
 			@format event[, ...]
 			<param name="event">the event name</param>
@@ -8481,7 +8487,7 @@ do
 			return Reflector.ActiveThread(self, ...)
 		end
 
-		doc "IsThreadActivated" [======[
+		__Doc__[======[
 			<desc>Check if the thread mode is actived for the event</desc>
 			<param name="event">the event's name</param>
 			<return name="boolean">true if the event is in thread mode</return>
@@ -8490,7 +8496,7 @@ do
 			return Reflector.IsThreadActivated(self, sc)
 		end
 
-		doc "InactiveThread" [======[
+		__Doc__[======[
 			<desc>Turn off the thread mode for the events</desc>
 			@format event[, ...]
 			<param name="event">the event's name</param>
@@ -8501,7 +8507,7 @@ do
 			return Reflector.InactiveThread(self, ...)
 		end
 
-		doc "BlockEvent" [======[
+		__Doc__[======[
 			<desc>Block some events for the object</desc>
 			@format event[, ...]
 			<param name="event">the event's name</param>
@@ -8512,7 +8518,7 @@ do
 			return Reflector.BlockEvent(self, ...)
 		end
 
-		doc "IsEventBlocked" [======[
+		__Doc__[======[
 			<desc>Check if the event is blocked for the object</desc>
 			<param name="event">the event's name</param>
 			<return name="boolean">true if th event is blocked</return>
@@ -8521,7 +8527,7 @@ do
 			return Reflector.IsEventBlocked(self, sc)
 		end
 
-		doc "UnBlockEvent" [======[
+		__Doc__[======[
 			<desc>Un-Block some events for the object</desc>
 			@format event[, ...]
 			<param name="event">the event's name</param>
@@ -8532,7 +8538,7 @@ do
 			return Reflector.UnBlockEvent(self, ...)
 		end
 
-		doc "ThreadCall" [======[
+		__Doc__[======[
 			<desc>Call method or function as a thread</desc>
 			@param methodname|function
 			@param ... the arguments
@@ -8557,10 +8563,9 @@ do
 	endclass "Object"
 
 	__Final__()
+	__Doc__[[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
 	class "Module"
 		inherit "Object"
-
-		doc "Module" [[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
 
 		_Module = _Module or {}
 		_ModuleInfo = _ModuleInfo or setmetatable({}, WEAK_KEY)
@@ -8576,7 +8581,7 @@ do
 			local ns = name
 
 			if type(name) == "string" then
-				ns = Reflector.ForName(name)
+				ns = Reflector.GetNameSpaceForName(name)
 
 				if not ns then
 					error(("no namespace is found with name : %s"):format(name), 2)
@@ -8609,13 +8614,13 @@ do
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc "OnDispose" [[Fired when the module is disposed]]
+		__Doc__[[Fired when the module is disposed]]
 		event "OnDispose"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc "ValidateVersion" [======[
+		__Doc__[======[
 			<desc>Return true if the version is greater than the current version of the module</desc>
 			@param version
 			<return name="boolean">true if the version is a validated version</return>
@@ -8696,7 +8701,7 @@ do
 			return false
 		end
 
-		doc "GetModule" [======[
+		__Doc__[======[
 			<desc>Get the child-module with the name</desc>
 			<param name="name">string, the child-module's name</param>
 			<return name="System"></return>.Module the child-module
@@ -8719,7 +8724,7 @@ do
 			return mdl
 		end
 
-		doc "GetModules" [======[
+		__Doc__[======[
 			<desc>Get all child-modules of the module</desc>
 			<return name="table">the list of the the child-modules</return>
 		]======]
@@ -8738,28 +8743,28 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc "_M" [[The module itself]]
+		__Doc__[[The module itself]]
 		property "_M" {
 			Get = function(self)
 				return self
 			end,
 		}
 
-		doc "_Name" [[The module's name]]
+		__Doc__[[The module's name]]
 		property "_Name" {
 			Get = function(self)
 				return _ModuleInfo[self].Name
 			end,
 		}
 
-		doc "_Parent" [[The module's parent module]]
+		__Doc__[[The module's parent module]]
 		property "_Parent" {
 			Get = function(self)
 				return _ModuleInfo[self].Parent
 			end,
 		}
 
-		doc "_Version" [[The module's version]]
+		__Doc__[[The module's version]]
 		property "_Version" {
 			Get = function(self)
 				return _ModuleInfo[self].Version
@@ -8921,8 +8926,8 @@ do
 			end
 
 			-- Check base namespace
-			if Reflector.ForName(key) then
-				rawset(self, key, Reflector.ForName(key))
+			if Reflector.GetNameSpaceForName(key) then
+				rawset(self, key, Reflector.GetNameSpaceForName(key))
 				return rawget(self, key)
 			end
 
@@ -9078,10 +9083,10 @@ do
 
 
 	-- Keep the root so can't be disposed
-	System = Reflector.ForName("System")
+	System = Reflector.GetNameSpaceForName("System")
 
 	function import_install(name, all)
-		local ns = Reflector.ForName(name)
+		local ns = Reflector.GetNameSpaceForName(name)
 		local env = getfenv(2)
 
 		if ns and env then
