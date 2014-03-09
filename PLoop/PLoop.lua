@@ -715,13 +715,13 @@ end
 -- Documentation
 ------------------------------------------------------
 do
-	function getSuperDoc(info, key)
+	function getSuperDoc(info, key, dkey)
 		if info.SuperClass then
 			local sinfo = _NSInfo[info.SuperClass]
 
 			while sinfo do
-				if sinfo.Documentation and sinfo.Documentation[key] then
-					return sinfo.Documentation[key]
+				if sinfo.Documentation and (sinfo.Documentation[key] or sinfo.Documentation[dkey]) then
+					return sinfo.Documentation[key] or sinfo.Documentation[dkey]
 				end
 
 				if sinfo.SuperClass then
@@ -737,29 +737,29 @@ do
 			for _, IF in ipairs(info.Cache4Interface) do
 				local sinfo = _NSInfo[IF]
 
-				if sinfo.Documentation and sinfo.Documentation[key] then
-					return sinfo.Documentation[key]
+				if sinfo.Documentation and (sinfo.Documentation[key] or sinfo.Documentation[dkey]) then
+					return sinfo.Documentation[key] or sinfo.Documentation[dkey]
 				end
 			end
 		end
 	end
 
 	function getTargetType(info, name, targetType)
-		if type(name) ~= "string" then return end
-
-		if not targetType then
+		if targetType == nil then
 			-- Find the targetType based on the name
 			if name == info.Name then
-				targetType = info.Type:upper()
+				targetType = AttributeTargets[info.Type]
 			elseif info.Cache4Event[name] then
-				targetType = "EVENT"
+				targetType = AttributeTargets.Event
 			elseif info.Cache4Property[name] then
-				targetType = "PROPERTY"
+				targetType = AttributeTargets.Property
 			elseif info.Cache4Method[name] then
-				targetType = "METHOD"
+				targetType = AttributeTargets.Method
 			end
-		elseif type(targetType) == "number" then
-			targetType = AttributeTargets(targetType)
+		elseif type(targetType) == "string" then
+			targetType = AttributeTargets[targetType]
+		elseif type(targetType) ~= "number" then
+			targetType = nil
 		end
 
 		return targetType
@@ -768,22 +768,14 @@ do
 	function SaveDocument(data, name, targetType, owner)
 		if not DOCUMENT_ENABLED or type(data) ~= "string" then return end
 
-		if not owner then return end
-
 		local info = rawget(_NSInfo, owner)
 
 		if not info then return end
 
-		-- Check the type
-		if type(targetType) == "number" then
-			targetType = AttributeTargets(targetType)
-		else
-			targetType = targetType or "METHOD"
-		end
-
-		if not targetType then return end
-
 		if not name then name = info.Name end
+
+		-- Check the type
+		targetType = getTargetType(info, name, targetType)
 
 		-- Get the head space in the first line and remove it from all lines
 		local space = data:match("^%s+")
@@ -792,30 +784,30 @@ do
 			data = data:gsub("^%s+", ""):gsub("([\n\r]+)"..space, "%1"):gsub("([\n\r]+)%s+$", "%1")
 		end
 
+		local key = name
+
+		if targetType then key = tostring(targetType) .. name end
+
 		info.Documentation = info.Documentation or {}
-		info.Documentation[targetType .. "-" .. name] = data
+		info.Documentation[key] = data
 	end
 
 	function GetDocument(owner, name, targetType)
 		if not DOCUMENT_ENABLED then return end
 
-		if type(owner) == "string" then
-			owner = GetNameSpace(GetDefaultNameSpace(), owner)
-		end
+		if type(owner) == "string" then owner = GetNameSpace(GetDefaultNameSpace(), owner) end
 
 		local info = rawget(_NSInfo, owner)
+		if not info then return end
 
-		if info and (name == nil or type(name) == "string") then
-			name = name or info.Name
+		name = name or info.Name
+		if type(name) ~= "string" then return end
 
-			targetType = getTargetType(info, name, targetType)
+		targetType = getTargetType(info, name, targetType)
 
-			if not targetType then return end
+		local key = targetType and tostring(targetType) .. name or nil
 
-			local key = targetType .. "-" .. name
-
-			return info.Documentation and info.Documentation[key]or (targetType ~= "CLASS" and targetType ~= "INTERFACE") and getSuperDoc(info, key) or nil
-		end
+		return info.Documentation and (info.Documentation[key] or info.Documentation[name]) or (targetType ~= "CLASS" and targetType ~= "INTERFACE") and getSuperDoc(info, key, name) or nil
 	end
 
 	do
@@ -825,9 +817,9 @@ do
 		local function parseDoc(data)
 			local info = _NSInfo[_owner]
 			if _name == info.Name then
-				return SaveDocument(data, _name, info.Type:upper(), _owner)
+				return SaveDocument(data, _name, AttributeTargets[info.Type], _owner)
 			else
-				return SaveDocument(data, _name, "METHOD", _owner)
+				return SaveDocument(data, _name, AttributeTargets.Method, _owner)
 			end
 		end
 
@@ -3787,6 +3779,22 @@ do
 			return value
 		end
 	endstruct "Any"
+
+	------------------------------------------------------
+	-- System.AttributeTargets
+	------------------------------------------------------
+	enum "AttributeTargets" {
+		All = 0,
+		Class = 1,
+		Constructor = 2,
+		Enum = 4,
+		Event = 8,
+		Interface = 16,
+		Method = 32,
+		Property = 64,
+		Struct = 128,
+		Field = 256,
+	}
 
 	------------------------------------------------------
 	-- System.Reflector
@@ -6768,19 +6776,6 @@ do
 	------------------------------------------------------
 	-- System.__Attribute__
 	------------------------------------------------------
-	enum "AttributeTargets" {
-		All = 0,
-		Class = 1,
-		Constructor = 2,
-		Enum = 4,
-		Event = 8,
-		Interface = 16,
-		Method = 32,
-		Property = 64,
-		Struct = 128,
-		Field = 256,
-	}
-
 	class "__Attribute__"
 
 		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
@@ -7709,6 +7704,25 @@ do
 			-- Pass
 		end
 
+		doc [[Remove self from the prepared attributes]]
+		function RemoveSelf(self)-- Send to prepared cache
+			local thread = running()
+			local prepared
+
+			if thread then
+				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
+				prepared = _ThreadPreparedAttributes[thread]
+			else
+				prepared = _PreparedAttributes
+			end
+
+			for i, v in ipairs(prepared) do
+				if v == self then
+					return tremove(prepared, i)
+				end
+			end
+		end
+
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
@@ -8318,6 +8332,22 @@ do
 
 	    	return Super(self)
 	    end
+
+		------------------------------------------------------
+		-- Meta-method
+		------------------------------------------------------
+		doc "__call" [[__Doc__ "Target" "Document"]]
+		function __call(self, data)
+			self:RemoveSelf()
+
+			local owner = getfenv(2)[OWNER_FIELD]
+
+			if type(self.Doc) == "string" and owner then
+				SaveDocument(data, self.Doc, nil, owner)
+			end
+
+			self.Doc = nil
+		end
 	endclass "__Doc__"
 end
 
