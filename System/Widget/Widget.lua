@@ -565,7 +565,7 @@ function StoreBlzMethod(cls, managerCls, managerCls2)
 
 	if managerCls2 then
 		if Reflector.IsClass(managerCls2) then
-			baseF = managerCls2(Reflector.GetName(managerCls2), baseF)
+			baseF = managerCls2(Reflector.GetNameSpaceName(managerCls2), baseF)
 		else
 			baseF = managerCls2
 		end
@@ -573,14 +573,14 @@ function StoreBlzMethod(cls, managerCls, managerCls2)
 
 	if managerCls then
 		if Reflector.IsClass(managerCls) then
-			baseF = managerCls(Reflector.GetName(managerCls), baseF)
+			baseF = managerCls(Reflector.GetNameSpaceName(managerCls), baseF)
 		else
 			baseF = managerCls
 		end
 	end
 
 	if Reflector.IsClass(cls) then
-		sample = cls(Reflector.GetName(cls), baseF)
+		sample = cls(Reflector.GetNameSpaceName(cls), baseF)
 	else
 		sample = cls
 	end

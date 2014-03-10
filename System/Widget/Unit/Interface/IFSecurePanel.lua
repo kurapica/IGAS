@@ -596,7 +596,7 @@ interface "IFSecurePanel"
 		Type = Number,
 	}
 
-	__Doc__[[The Element accessor, used like obj.Element[i]]]
+	__Doc__[[The Element accessor, used like obj.Element[i].]]
 	property "Element" {
 		Get = function(self)
 			self.__IFSecurePanel_Element = self.__IFSecurePanel_Element or Element(self)

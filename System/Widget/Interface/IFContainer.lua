@@ -71,7 +71,7 @@ interface "IFContainer"
 
 			return self.Panel:AddWidget(widget, element, ...)
 		elseif Reflector.IsClass(name) and (Reflector.IsSuperClass(name, Region) or Reflector.IsSuperClass(name, VirtualUIObject)) then
-			widget = name(Reflector.GetName(name), self.Panel)
+			widget = name(Reflector.GetNameSpaceName(name), self.Panel)
 
 			return self.Panel:AddWidget(widget, element, ...)
 		else
@@ -104,7 +104,7 @@ interface "IFContainer"
 
 			return self.Panel:InsertWidget(before, widget, element, ...)
 		elseif Reflector.IsClass(name) and (Reflector.IsSuperClass(name, Region) or Reflector.IsSuperClass(name, VirtualUIObject)) then
-			widget = name(Reflector.GetName(name), self.Panel)
+			widget = name(Reflector.GetNameSpaceName(name), self.Panel)
 
 			return self.Panel:InsertWidget(before, widget, element, ...)
 		else
@@ -122,7 +122,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -146,7 +146,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -169,7 +169,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -203,7 +203,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -237,7 +237,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -271,7 +271,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -306,7 +306,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end
@@ -340,7 +340,7 @@ interface "IFContainer"
 		local widget
 
 		if Reflector.IsClass(element) then
-			widget = Reflector.GetName(element)
+			widget = Reflector.GetNameSpaceName(element)
 		else
 			widget = element
 		end

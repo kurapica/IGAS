@@ -22,7 +22,7 @@ class "Font"
 		<return type="string">the object's class' name</return>
 	]]
 	function GetObjectType(self)
-		return Reflector.GetName(self:GetClass())
+		return Reflector.GetNameSpaceName(self:GetClass())
 	end
 
 	__Doc__[[

@@ -168,5 +168,5 @@ end
 -- @usage IGAS:GetNameSpace("System")
 ------------------------------------
 function IGAS:GetNameSpace(ns)
-	return System.Reflector.ForName(ns)
+	return System.Reflector.GetNameSpaceForName(ns)
 end

@@ -437,7 +437,7 @@ interface "IFElementPanel"
 		Type = Number,
 	}
 
-	__Doc__[[The Element accessor, used like obj.Element[i]]]
+	__Doc__[[The Element accessor, used like obj.Element[i].]]
 	property "Element" {
 		Get = function(self)
 			self.__ElementPanel_Element = self.__ElementPanel_Element or Element(self)

@@ -68,7 +68,7 @@ class "UIObject"
 		<return type="string">the object's class name</return>
 	]]
 	function GetObjectType(self)
-		return Reflector.GetName(self:GetClass())
+		return Reflector.GetNameSpaceName(self:GetClass())
 	end
 
 	__Doc__[[
@@ -88,7 +88,7 @@ class "UIObject"
 		return false
 	end
 
-	__Doc__[
+	__Doc__[[
 		<desc>Get the parent object of this widget object</desc>
 		<return type="widgetObject">the parent of the object</return>
 	]]
@@ -321,7 +321,7 @@ class "UIObject"
 		self.__Name = name
 	end
 
-	__Doc__[[The widget object's name, it's parent can use the name to access it by parent[self.Name]]]
+	__Doc__[[The widget object's name, it's parent can use the name to access it by parent[self.Name] ]]
 	property "Name" { Set = SetName, Field = "__Name", Type = String + nil }
 
 	__Doc__[[the widget object's parent widget object, can be virtual or not.]]
@@ -354,7 +354,7 @@ class "UIObject"
     --- Name Creator
 	local function NewName(cls, parent)
 		local i = 1
-		local name = Reflector.GetName(cls)
+		local name = Reflector.GetNameSpaceName(cls)
 
 		if not name or name == "" then
 			name = "Widget"
@@ -395,7 +395,7 @@ class "UIObject"
 
 		-- Check parent
 		if not Object.IsClass(parent, UIObject) then
-			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetName(cls)))
+			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetNameSpaceName(cls)))
 		end
 
 		if type(name) ~= "string" then
@@ -438,7 +438,7 @@ class "UIObject"
 
 		-- Check parent
 		if not Object.IsClass(parent, UIObject) then
-			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetName(cls)))
+			error(("Usage : %s(name, parent, ...) : 'parent' - UI element expected."):format(Reflector.GetNameSpaceName(cls)))
 		end
 
 		if type(name) == "string" then

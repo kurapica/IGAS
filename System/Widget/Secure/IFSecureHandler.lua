@@ -34,7 +34,7 @@ interface "IFSecureHandler"
 	__Doc__[[
 		<desc>Execute a snippet against a header frame</desc>
 		<param name="body">string, the snippet to be executed for the frame</param>
-		<usage>object:Execute([[print(1, 2, 3)]])</usage>
+		<usage>object:Execute("print(1, 2, 3)"</usage>
 	]]
 	function Execute(self, body)
 		self = IGAS:GetUI(self)
@@ -48,7 +48,7 @@ interface "IFSecureHandler"
 		<param name="script">string, the script handle name</param>
 		<param name="preBody">string, the snippet to be executed before the original script handler</param>
 		<param name="postBody">string, the snippet to be executed after the original script handler</param>
-		<usage>object:WrapScript(button, "OnEnter", [[]])</usage>
+		<usage>object:WrapScript(button, "OnEnter", "")</usage>
 	]]
 	function WrapScript(self, frame, script, preBody, postBody)
 		self = IGAS:GetUI(self)
