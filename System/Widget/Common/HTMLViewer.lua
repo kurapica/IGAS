@@ -9,14 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.HTMLViewer", version) then
 	return
 end
 
+__Doc__[[HTMLViewer is used to view simple html]]
 class "HTMLViewer"
 	inherit "ScrollForm"
-
-	doc [======[
-		@name HTMLViewer
-		@type class
-		@desc HTMLViewer is used to view simple html
-	]======]
 
 	------------------------------------------------------
 	-- Translate
@@ -104,350 +99,284 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnHyperlinkClick
-		@type event
-		@desc Run when the mouse clicks a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-		@param button string, name of the mouse button responsible for the click action
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse clicks a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+		<param name="button">string, name of the mouse button responsible for the click action</param>
+	]]
 	event "OnHyperlinkClick"
 
-	doc [======[
-		@name OnHyperlinkEnter
-		@type event
-		@desc Run when the mouse moves over a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse moves over a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+	]]
 	event "OnHyperlinkEnter"
 
-	doc [======[
-		@name OnHyperlinkLeave
-		@type event
-		@desc Run when the mouse moves away from a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse moves away from a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+	]]
 	event "OnHyperlinkLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetFont
-		@type method
-		@desc Returns basic properties of a font used in the frame
-		@param element Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-		@return filename string, Path to a font file (string)
-		@return fontHeight number, Height (point size) of the font to be displayed (in pixels) (number)
-		@return flags string, Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string)
-	]======]
+	__Doc__[[
+		<desc>Returns basic properties of a font used in the frame</desc>
+		<param name="element">Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default</param>
+		<return type="filename">string, Path to a font file (string)</return>
+		<return type="fontHeight">number, Height (point size) of the font to be displayed (in pixels) (number)</return>
+		<return type="flags">string, Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string)</return>
+	]]
 	function GetFont(self, ...)
 		return self.__HTMLViewer:GetFont(...)
 	end
 
-	doc [======[
-		@name GetFontObject
-		@type method
-		@desc Returns the Font object from which the properties of a font used in the frame are inherited
-		@param element string, name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-		@return System.Widget.Font the Font object from which font properties are inherited, or nil if no properties are inherited
-	]======]
+	__Doc__[[
+		<desc>Returns the Font object from which the properties of a font used in the frame are inherited</desc>
+		<param name="element">string, name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default</param>
+		<return type="System.Widget.Font">the Font object from which font properties are inherited, or nil if no properties are inherited</return>
+	]]
 	function GetFontObject(self, ...)
 		return self.__HTMLViewer:GetFontObject(...)
 	end
 
-	doc [======[
-		@name GetHyperlinkFormat
-		@type method
-		@desc Returns the format string used for displaying hyperlinks in the frame
-		@param format string, Format string used for displaying hyperlinks in the frame
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Returns the format string used for displaying hyperlinks in the frame</desc>
+		<param name="format">string, Format string used for displaying hyperlinks in the frame</param>
+	]]
 	function GetHyperlinkFormat(self, ...)
 		return self.__HTMLViewer:GetHyperlinkFormat(...)
 	end
 
-	doc [======[
-		@name GetHyperlinksEnabled
-		@type method
-		@desc Returns whether hyperlinks in the frame's text are interactive
-		@return boolean 1 if hyperlinks in the frame's text are interactive; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether hyperlinks in the frame's text are interactive</desc>
+		<return type="boolean">1 if hyperlinks in the frame's text are interactive; otherwise nil</return>
+	]]
 	function GetHyperlinksEnabled(self, ...)
 		return self.__HTMLViewer:GetHyperlinksEnabled(...)
 	end
 
-	doc [======[
-		@name GetIndentedWordWrap
-		@type method
-		@desc Returns whether long lines of text are indented when wrapping
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return boolean 1 if long lines of text are indented when wrapping; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether long lines of text are indented when wrapping</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="boolean">1 if long lines of text are indented when wrapping; otherwise nil</return>
+	]]
 	function GetIndentedWordWrap(self, ...)
 		return self.__HTMLViewer:GetIndentedWordWrap(...)
 	end
 
-	doc [======[
-		@name GetJustifyH
-		@type method
-		@desc Returns the horizontal alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return System.Widget.JustifyHType horizontal text alignment style
-	]======]
+	__Doc__[[
+		<desc>Returns the horizontal alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="System.Widget.JustifyHType">horizontal text alignment style</return>
+	]]
 	function GetJustifyH(self, ...)
 		return self.__HTMLViewer:GetJustifyH(...)
 	end
 
-	doc [======[
-		@name GetJustifyV
-		@type method
-		@desc Returns the vertical alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return System.Widget.JustifyVType vertical text alignment style
-	]======]
+	__Doc__[[
+		<desc>Returns the vertical alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="System.Widget.JustifyVType">vertical text alignment style</return>
+	]]
 	function GetJustifyV(self, ...)
 		return self.__HTMLViewer:GetJustifyV(...)
 	end
 
-	doc [======[
-		@name GetShadowColor
-		@type method
-		@desc Returns the shadow color for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the shadow color for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="shadowR">number, Red component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowG">number, Green component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetShadowColor(self, ...)
 		return self.__HTMLViewer:GetShadowColor(...)
 	end
 
-	doc [======[
-		@name GetShadowOffset
-		@type method
-		@desc Returns the offset of text shadow from text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the offset of text shadow from text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</return>
+		<return type="yOffset">number, Vertical distance between the text and its shadow (in pixels)</return>
+	]]
 	function GetShadowOffset(self, ...)
 		return self.__HTMLViewer:GetShadowOffset(...)
 	end
 
-	doc [======[
-		@name GetSpacing
-		@type method
-		@desc Returns the amount of spacing between lines of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return number amount of space between lines of text (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the amount of spacing between lines of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="number">amount of space between lines of text (in pixels)</return>
+	]]
 	function GetSpacing(self, ...)
 		return self.__HTMLViewer:GetSpacing(...)
 	end
 
-	doc [======[
-		@name GetTextColor
-		@type method
-		@desc Returns the color of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return textR number, Red component of the text color (0.0 - 1.0)
-		@return textG number, Green component of the text color (0.0 - 1.0)
-		@return textB number, Blue component of the text color (0.0 - 1.0)
-		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the color of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="textR">number, Red component of the text color (0.0 - 1.0)</return>
+		<return type="textG">number, Green component of the text color (0.0 - 1.0)</return>
+		<return type="textB">number, Blue component of the text color (0.0 - 1.0)</return>
+		<return type="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetTextColor(self, ...)
 		return self.__HTMLViewer:GetTextColor(...)
 	end
 
-	doc [======[
-		@name SetFont
-		@type method
-		@desc Sets the font instance's basic font properties
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param filename string, path to a font file
-		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
-		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
-		@return boolean 1 if filename refers to a valid font file; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Sets the font instance's basic font properties</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="filename">string, path to a font file</param>
+		<param name="fontHeight">number, height (point size) of the font to be displayed (in pixels)</param>
+		<param name="flags">string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE</param>
+		<return type="boolean">1 if filename refers to a valid font file; otherwise nil</return>
+	]]
 	function SetFont(self, ...)
 		return self.__HTMLViewer:SetFont(...)
 	end
 
-	doc [======[
-		@name SetFontObject
-		@type method
-		@desc Sets the Font object from which the font instance's properties are inherited
-		@format [element, ]fontObject|fontName
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param fontObject System.Widget.Font, a font object
-		@param fontName string, global font object's name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the Font object from which the font instance's properties are inherited</desc>
+		<format>[element, ]fontObject|fontName</format>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="fontObject">System.Widget.Font, a font object</param>
+		<param name="fontName">string, global font object's name</param>
+	]]
 	function SetFontObject(self, ...)
 		return self.__HTMLViewer:SetFontObject(...)
 	end
 
-	doc [======[
-		@name SetHyperlinkFormat
-		@type method
-		@desc Sets the format string used for displaying hyperlinks in the frame
-		@param format string, format string used for displaying hyperlinks in the frame
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the format string used for displaying hyperlinks in the frame</desc>
+		<param name="format">string, format string used for displaying hyperlinks in the frame</param>
+	]]
 	function SetHyperlinkFormat(self, ...)
 		return self.__HTMLViewer:SetHyperlinkFormat(...)
 	end
 
-	doc [======[
-		@name SetHyperlinksEnabled
-		@type method
-		@desc Enables or disables hyperlink interactivity in the frame
-		@param enable boolean, true to enable hyperlink interactivity in the frame; false to disable
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Enables or disables hyperlink interactivity in the frame</desc>
+		<param name="enable">boolean, true to enable hyperlink interactivity in the frame; false to disable</param>
+	]]
 	function SetHyperlinksEnabled(self, ...)
 		return self.__HTMLViewer:SetHyperlinksEnabled(...)
 	end
 
-	doc [======[
-		@name SetIndentedWordWrap
-		@type method
-		@desc Sets whether long lines of text are indented when wrapping
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param indent boolean, true to indent wrapped lines of text; false otherwise
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether long lines of text are indented when wrapping</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="indent">boolean, true to indent wrapped lines of text; false otherwise</param>
+	]]
 	function SetIndentedWordWrap(self, ...)
 		return self.__HTMLViewer:SetIndentedWordWrap(...)
 	end
 
-	doc [======[
-		@name SetJustifyH
-		@type method
-		@desc Sets the horizontal alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param justifyH System.Widget.JustifyHType
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the horizontal alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="justifyH">System.Widget.JustifyHType</param>
+	]]
 	function SetJustifyH(self, ...)
 		return self.__HTMLViewer:SetJustifyH(...)
 	end
 
 
-	doc [======[
-		@name SetJustifyV
-		@type method
-		@desc Sets the vertical alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param justifyV System.Widget.JustifyVType
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the vertical alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="justifyV">System.Widget.JustifyVType</param>
+	]]
 	function SetJustifyV(self, ...)
 		return self.__HTMLViewer:SetJustifyV(...)
 	end
 
-	doc [======[
-		@name SetShadowColor
-		@type method
-		@desc Sets the shadow color for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the shadow color for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="shadowR">number, Red component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowG">number, Green component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetShadowColor(self, ...)
 		return self.__HTMLViewer:SetShadowColor(...)
 	end
 
-	doc [======[
-		@name SetShadowOffset
-		@type method
-		@desc Sets the offset of text shadow from text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the offset of text shadow from text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</param>
+		<param name="yOffset">number, Vertical distance between the text and its shadow (in pixels)</param>
+	]]
 	function SetShadowOffset(self, ...)
 		return self.__HTMLViewer:SetShadowOffset(...)
 	end
 
-	doc [======[
-		@name SetSpacing
-		@type method
-		@desc Sets the amount of spacing between lines of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param spacing number, amount of space between lines of text (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the amount of spacing between lines of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="spacing">number, amount of space between lines of text (in pixels)</param>
+	]]
 	function SetSpacing(self, ...)
 		return self.__HTMLViewer:SetSpacing(...)
 	end
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.
-		<br>All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br &gt;).
-		<br>Tags are case insensitive, but closing tags must match the case of opening tags.
-		<br>Attribute values must be enclosed in single or double quotation marks (" or ').
-		<br>Characters occurring in HTML markup must be entity-escaped (&amp;quot; &amp;lt; &amp;gt; &amp;amp;); no other entity-escapes are supported.
-		<br>Unrecognized tags and their contents are ignored (e.g. given &lt;h1&gt;&lt;foo&gt;bar&lt;/foo&gt;baz&lt;/h1&gt;, only "baz" will appear).
-		<br>Any HTML parsing error will result in the raw HTML markup being displayed.
-		<br>Only the following tags and attributes are supported:
-		<br>
-		<br>p, h1, h2, h3 - Block elements; e.g. &lt;p align="left"&gt;
-		<br>
-		<br>align - Text alignment style (optional); allowed values are left, center, and right.
-		<br>img - Image; may only be used as a block element (not inline with text); e.g. &lt;img src="Interface\Icons\INV_Misc_Rune_01" /&gt;.
-		<br>
-		<br>src - Path to the image file (filename extension omitted).
-		<br>align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.
-		<br>width - Width at which to display the image (in pixels; optional).
-		<br>height - Height at which to display the image (in pixels; optional).
-		<br>a - Inline hyperlink; e.g. &lt;a href="aLink"&gt;text&lt;/a&gt;
-		<br>
-		<br>href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.
-		<br>br - Explicit line break in text; e.g. &lt;br /&gt;.
-		<br>
-		<br>
-		@param text string, text(with HTML markup) to be displayed
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>
+			For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.
+			All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br &gt;).
+			Tags are case insensitive, but closing tags must match the case of opening tags.
+			Attribute values must be enclosed in single or double quotation marks (" or ').
+			Characters occurring in HTML markup must be entity-escaped (&amp;quot; &amp;lt; &amp;gt; &amp;amp;); no other entity-escapes are supported.
+			Unrecognized tags and their contents are ignored (e.g. given &lt;h1&gt;&lt;foo&gt;bar&lt;/foo&gt;baz&lt;/h1&gt;, only "baz" will appear).
+			Any HTML parsing error will result in the raw HTML markup being displayed.
+			Only the following tags and attributes are supported:
+
+			p, h1, h2, h3 - Block elements; e.g. &lt;p align="left"&gt;
+
+			align - Text alignment style (optional); allowed values are left, center, and right.
+			img - Image; may only be used as a block element (not inline with text); e.g. &lt;img src="Interface\Icons\INV_Misc_Rune_01" /&gt;.
+
+			src - Path to the image file (filename extension omitted).
+			align - Alignment of the image block in the frame (optional); allowed values are left, center, and right.
+			width - Width at which to display the image (in pixels; optional).
+			height - Height at which to display the image (in pixels; optional).
+			a - Inline hyperlink; e.g. &lt;a href="aLink"&gt;text&lt;/a&gt;
+
+			href - String identifying the link; passed as argument to hyperlink-related scripts when the player interacts with the link.
+			br - Explicit line break in text; e.g. &lt;br /&gt;.
+		</desc>
+		<param name="text">string, text(with HTML markup) to be displayed</param>
+	]]
 	function SetText(self, text)
 		self.__HTMLContent = text
 		self.__HTMLViewer:SetText(ParseHTML(text))
 		self.Value = 0
 	end
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Gets the contents of the htmlViewer
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Gets the contents of the htmlViewer</desc>
+		<return type="string"></return>
+	]]
 	function GetText(self)
 		return self.__HTMLContent
 	end
 
-	doc [======[
-		@name SetTextColor
-		@type method
-		@desc Sets the color of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param textR number, Red component of the text color (0.0 - 1.0)
-		@param textG number, Green component of the text color (0.0 - 1.0)
-		@param textB number, Blue component of the text color (0.0 - 1.0)
-		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the color of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="textR">number, Red component of the text color (0.0 - 1.0)</param>
+		<param name="textG">number, Green component of the text color (0.0 - 1.0)</param>
+		<param name="textB">number, Blue component of the text color (0.0 - 1.0)</param>
+		<param name="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetTextColor(self, ...)
 		return self.__HTMLViewer:SetTextColor(...)
 	end
@@ -455,22 +384,14 @@ class "HTMLViewer"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HyperlinksEnabled
-		@type property
-		@desc Whether hyperlinks in the frame's text are interactive
-	]======]
+	__Doc__[[Whether hyperlinks in the frame's text are interactive]]
 	property "HyperlinksEnabled" {
 		Get = "GetHyperlinksEnabled",
 		Set = "SetHyperlinksEnabled",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc The content of the html viewer
-	]======]
+	__Doc__[[The content of the html viewer]]
 	property "Text" {
 		Get = "GetText",
 		Set = "SetText",

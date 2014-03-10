@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.MasterLooterIcon", version) then
 	return
 end
 
+__Doc__[[The master looter indicator]]
 class "MasterLooterIcon"
 	inherit "Texture"
 	extend "IFGroupLoot"
-
-	doc [======[
-		@name MasterLooterIcon
-		@type class
-		@desc The master looter indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

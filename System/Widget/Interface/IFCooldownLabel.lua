@@ -8,14 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldownLabel", version) then
 	return
 end
 
+__Doc__[[IFCooldownLabel is used to provide a label to display the cooldown]]
 interface "IFCooldownLabel"
 	extend "IFCooldown"
-
-	doc [======[
-		@name IFCooldownLabel
-		@type interface
-		@desc IFCooldownLabel is used to provide a label to display the cooldown
-	]======]
 
 	_IFCooldownLabel_List = _IFCooldownLabel_List or {}
 
@@ -89,13 +84,10 @@ interface "IFCooldownLabel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetUpCooldownLabel
-		@type method
-		@desc Custom the label
-		@param label System.Widget.FontString
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Custom the label</desc>
+		<param name="label">System.Widget.FontString</param>
+	]]
 	function SetUpCooldownLabel(self, label)
 		label:SetPoint("BOTTOM")
 		if self.Height > 0 then
@@ -106,11 +98,7 @@ interface "IFCooldownLabel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFCooldownLabelUseDecimal
-		@type property
-		@desc Whether the cooldown label using decimal format
-	]======]
+	__Doc__[[Whether the cooldown label using decimal format]]
 	property "IFCooldownLabelUseDecimal" {
 		Get = function(self)
 			return self.__IFCooldownLabelUseDecimal
@@ -121,11 +109,7 @@ interface "IFCooldownLabel"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name IFCooldownLabelAutoColor
-		@type property
-		@desc Whether the cooldown label using auto color
-	]======]
+	__Doc__[[Whether the cooldown label using auto color]]
 	property "IFCooldownLabelAutoColor" {
 		Get = function(self)
 			return self.__IFCooldownLabelAutoColor

@@ -441,19 +441,9 @@ do
 	end
 end
 
------------------------------------------------
---- Mask
--- @type class
--- @name Mask
------------------------------------------------
+__Doc__[[Mask is used to moving, resizing or key binding for other frames.]]
 class "Mask"
 	inherit "Button"
-
-	doc [======[
-		@name Mask
-		@type class
-		@desc Mask is used to moving, resizing or key binding for other frames.
-	]======]
 
 	_FrameBackdrop = {
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -465,49 +455,29 @@ class "Mask"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnMoveStarted
-		@type event
-		@desc Fired when start moving
-	]======]
+	__Doc__[[Fired when start moving]]
 	event "OnMoveStarted"
 
-	doc [======[
-		@name OnMoveFinished
-		@type event
-		@desc Fired when finish moving
-	]======]
+	__Doc__[[Fired when finish moving]]
 	event "OnMoveFinished"
 
-	doc [======[
-		@name OnResizeStarted
-		@type event
-		@desc Fired when start resizing
-	]======]
+	__Doc__[[Fired when start resizing]]
 	event "OnResizeStarted"
 
-	doc [======[
-		@name OnResizeFinished
-		@type event
-		@desc Fired when finish resizing
-	]======]
+	__Doc__[[Fired when finish resizing]]
 	event "OnResizeFinished"
 
-	doc [======[
-		@name OnKeySet
-		@type event
-		@desc Fired when binding key is Set
-		@param newkey string, the new binding key
-		@param oldkey string, the old binding key
-	]======]
+	__Doc__[[
+		<desc>Fired when binding key is Set</desc>
+		<param name="newkey">string, the new binding key</param>
+		<param name="oldkey">string, the old binding key</param>
+	]]
 	event "OnKeySet"
 
-	doc [======[
-		@name OnKeyClear
-		@type event
-		@desc Fired when binding key is clear
-		@param oldkey string, the old binding key
-	]======]
+	__Doc__[[
+		<desc>Fired when binding key is clear</desc>
+		<param name="oldkey">string, the old binding key</param>
+	]]
 	event "OnKeyClear"
 
 	------------------------------------------------------
@@ -528,21 +498,13 @@ class "Mask"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name AsMove
-		@type property
-		@desc The mask is used to move parent
-	]======]
+	__Doc__[[The mask is used to move parent]]
 	property "AsMove" {
 		Field = "__AsMove",
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name AsResize
-		@type property
-		@desc The mask is used to resize parent
-	]======]
+	__Doc__[[The mask is used to resize parent]]
 	property "AsResize" {
 		Get = function(self)
 			return self.TextureSe.Visible
@@ -553,21 +515,13 @@ class "Mask"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name AsKeyBind
-		@type event
-		@desc The mask is used to bind key
-	]======]
+	__Doc__[[The mask is used to bind key]]
 	property "AsKeyBind" {
 		Field = "__AsKeyBind",
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name BindKey
-		@type event
-		@desc The binding key
-	]======]
+	__Doc__[[The binding key]]
 	property "BindKey" {
 		Field = "__BindKey",
 		Set = function(self, value)

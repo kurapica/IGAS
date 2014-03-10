@@ -22,15 +22,12 @@ function _IFThreatUnitList:ParseEvent(event, unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFThreat is used to handle the unit threat level's update</desc>
+	<overridable name="ThreatLevel" type="property" type="number">which used to receive the unit's threat level</overridable>
+]]
 interface "IFThreat"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFThreat
-		@type interface
-		@desc IFThreat is used to handle the unit threat level's update
-		@overridable ThreatLevel property, number, which used to receive the unit's threat level
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -39,12 +36,6 @@ interface "IFThreat"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.ThreatLevel = self.Unit and UnitThreatSituation(self.Unit) or 0
 	end
@@ -52,11 +43,7 @@ interface "IFThreat"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ThreatLevel
-		@type property
-		@desc The unit's threat level
-	]======]
+	__Doc__[[The unit's threat level]]
 	property "ThreatLevel" {
 		Set = function(self, value)
 			if self:IsClass(LayeredRegion) then

@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PaladinPowerBar", version) then
 	return
 end
 
+__Doc__[[The holy power bar for the paladin]]
 class "PaladinPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
-
-	doc [======[
-		@name PaladinPowerBar
-		@type class
-		@desc The holy power bar for the paladin
-	]======]
 
 	GameTooltip = _G.GameTooltip
 	HOLY_POWER = _G.HOLY_POWER

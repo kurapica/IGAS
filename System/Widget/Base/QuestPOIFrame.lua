@@ -11,130 +11,63 @@ end
 class "QuestPOIFrame"
 	inherit "Frame"
 
-	doc [======[
-		@name QuestPOIFrame
-		@type class
-		@desc
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	-----------------------------------------------------
-
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name DrawBlob
-		@type method
-		@desc Draws the Blob for the Quest. If a quest has a area where the quest need to be completed at, this function will draw a Blob to show that area.
-		@param questId number, the Id of the quest
-		@param draw boolean, draw the Blob
-	]======]
+	__Doc__"DrawBlob" [[
+		<desc>Draws the Blob for the Quest. If a quest has a area where the quest need to be completed at, this function will draw a Blob to show that area.</desc>
+		<param name="questId">number, the Id of the quest</param>
+		<param name="draw">boolean, draw the Blob</param>
+	]]
 
-	doc [======[
-		@name DrawNone
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"DrawNone" [[
+	]]
 
-	doc [======[
-		@name EnableMerging
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"EnableMerging" [[
+	]]
 
-	doc [======[
-		@name EnableSmoothing
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"EnableSmoothing" [[
+	]]
 
-	doc [======[
-		@name GetNumTooltips
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"GetNumTooltips" [[
+	]]
 
-	doc [======[
-		@name GetTooltipIndex
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"GetTooltipIndex" [[
+	]]
 
-	doc [======[
-		@name SetBorderAlpha
-		@type method
-		@desc  Set the alpha for the border texture
-		@param alpha number, set alpha the border texture is drawn
-		@return nil
-	]======]
+	__Doc__"SetBorderAlpha" [[
+		<desc> Set the alpha for the border texture</desc>
+		<param name="alpha">number, set alpha the border texture is drawn</param>
+	]]
 
-	doc [======[
-		@name SetBorderScalar
-		@type method
-		@desc Set the Border Scalar
-		@param scalar number, set the glow(size) of the border
-		@return nil
-	]======]
+	__Doc__"SetBorderScalar" [[
+		<desc>Set the Border Scalar</desc>
+		<param name="scalar">number, set the glow(size) of the border</param>
+	]]
 
-	doc [======[
-		@name SetBorderTexture
-		@type method
-		@desc Sets the border texture for the blob
-		@param path string, the texture path for the border textureof the blob
-		@return nil
-	]======]
+	__Doc__"SetBorderTexture" [[
+		<desc>Sets the border texture for the blob</desc>
+		<param name="path">string, the texture path for the border textureof the blob</param>
+	]]
 
-	doc [======[
-		@name SetFillAlpha
-		@type method
-		@desc Set the Alpha for the fill Texture
-		@param alpha number the alpha for the fill texture
-		@return nil
-	]======]
+	__Doc__"SetFillAlpha" [[
+		<desc>Set the Alpha for the fill Texture</desc>
+		<param name="alpha">number the alpha for the fill texture</param>
+	]]
 
-	doc [======[
-		@name SetFillTexture
-		@type method
-		@desc Set the fill texture for the blob.
-		@param path string, the texture path for the fill texture
-		@return nil
-	]======]
+	__Doc__"SetFillTexture" [[
+		<desc>Set the fill texture for the blob.</desc>
+		<param name="path">string, the texture path for the fill texture</param>
+	]]
 
-	doc [======[
-		@name SetMergeThreshold
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetMergeThreshold" [[
+	]]
 
-	doc [======[
-		@name SetNumSplinePoints
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetNumSplinePoints" [[
+	]]
 
-	doc [======[
-		@name UpdateMouseOverTooltip
-		@type method
-		@desc
-		@return nil
-	]======]
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"UpdateMouseOverTooltip" [[
+	]]
 
 	------------------------------------------------------
 	-- Constructor

@@ -126,14 +126,9 @@ DebuffTypeColor[""] = DebuffTypeColor["none"]
 ------------------------------------------------------
 -- UnitList Definition
 ------------------------------------------------------
+__Doc__[[UnitList is used to contain ui elements that with the same unit for some special using]]
 class "UnitList"
 	extend "IFIterator"
-
-	doc [======[
-		@name UnitList
-		@type class
-		@desc UnitList is used to contain ui elements that with the same unit for some special using
-	]======]
 
 	------------------------------------------------------
 	-- Event Manager
@@ -176,37 +171,27 @@ class "UnitList"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnUnitListChanged
-		@type event
-		@desc Fired when the unit list's elements is added or removed
-	]======]
+	__Doc__[[Fired when the unit list's elements is added or removed]]
 	event "OnUnitListChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name ParseEvent
-		@type method
-		@desc Parse event, Overridable
-		@param event the event's name
-		@param ... the arguments
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Parse event, Overridable</desc>
+		<param name="event">the event's name</param>
+		<param name="...">the arguments</param>
+	]]
 	function ParseEvent(self, event, unit, ...)
 		if self:HasUnit(unit) then
 			return self:EachK(unit, "Refresh", ...)
 		end
 	end
 
-	doc [======[
-		@name RegisterEvent
-		@type method
-		@desc Register an event
-		@param event string, the event name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Register an event</desc>
+		<param name="event">string, the event name</param>
+	]]
 	function RegisterEvent(self, event)
 		_UnitListEventManager:RegisterEvent(event)
 
@@ -218,13 +203,10 @@ class "UnitList"
 		tinsert(_UnitListEventDistribution[event], self)
 	end
 
-	doc [======[
-		@name UnregisterEvent
-		@type method
-		@desc Undo register an event
-		@param event string, the event name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Undo register an event</desc>
+		<param name="event">string, the event name</param>
+	]]
 	function UnregisterEvent(self, event)
 		for i, lst in ipairs(_UnitListEventDistribution[event]) do
 			if lst == self then
@@ -245,13 +227,11 @@ class "UnitList"
 		end
 	end
 
-	doc [======[
-		@name HasUnit
-		@type method
-		@desc Check if UnitList contains items with the unit
-		@param unit
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Check if UnitList contains items with the unit</desc>
+		<param name="unit"></param>
+		<return type="boolean"></return>
+	]]
 	function HasUnit(self, unit)
 		unit = type(unit) == "string" and unit:lower() or nil
 

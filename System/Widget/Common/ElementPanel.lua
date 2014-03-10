@@ -7,14 +7,9 @@ if not IGAS:NewAddon("IGAS.Widget.ElementPanel", version) then
 	return
 end
 
+__Doc__[[ElementPanel is used to contains several same class ui elements like a grid.]]
 class "ElementPanel"
 	inherit "Frame"
 	extend "IFElementPanel"
-
-	doc [======[
-		@name ElementPanel
-		@type class
-		@desc ElementPanel is used to contains several same class ui elements like a grid.
-	]======]
 
 endclass "ElementPanel"

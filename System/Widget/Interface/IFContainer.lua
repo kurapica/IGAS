@@ -7,14 +7,9 @@ if not IGAS:NewAddon("IGAS.Widget.IFContainer", version) then
 	return
 end
 
+__Doc__[[IFContainer is used to provide a layout panel to contain ui elements for the ui objects]]
 interface "IFContainer"
 	extend "IFIterator"
-
-	doc [======[
-		@name IFContainer
-		@type interface
-		@desc IFContainer is used to provide a layout panel to contain ui elements for the ui objects
-	]======]
 
 	local function nextWidget(self, key)
 		key = key + 1
@@ -52,16 +47,14 @@ interface "IFContainer"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AddWidget
-		@type method
-		@desc Add element to the panel
-		@format [name, ]element[, ...]
-		@param name string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name
-		@param element System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be added
-		@param ... arguments for the layout panel's AddWidget method
-		@return number the element's index
-	]======]
+	__Doc__[[
+		<desc>Add element to the panel</desc>
+		<format>[name, ]element[, ...]</format>
+		<param name="name">string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name</param>
+		<param name="element">System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be added</param>
+		<param name="...">arguments for the layout panel's AddWidget method</param>
+		<return type="number">the element's index</return>
+	]]
 	function AddWidget(self, name, element, ...)
 		local widget
 
@@ -86,17 +79,15 @@ interface "IFContainer"
 		end
 	end
 
-	doc [======[
-		@name InsertWidget
-		@type method
-		@desc Insert element to the panel
-		@format before, [name, ]element[, ...]
-		@param before element that existed in the layout panel
-		@param name string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name
-		@param element System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be inserted
-		@param ... arguments for the layout panel's AddWidget method
-		@return number the element's index
-	]======]
+	__Doc__[[
+		<desc>Insert element to the panel</desc>
+		<format>before, [name, ]element[, ...]</format>
+		<param name="before">element that existed in the layout panel</param>
+		<param name="name">string, the element's name when created, only needed when the element is a ui element class not a ui element, default the class's name</param>
+		<param name="element">System.Widget.Region | System.Widget.VirtualUIObject | System.Widget.Region class | System.Widget.VirtualUIObject class, an ui element or ui element class to be inserted</param>
+		<param name="...">arguments for the layout panel's AddWidget method</param>
+		<return type="number">the element's index</return>
+	]]
 	function InsertWidget(self, before, name, element, ...)
 		local widget
 
@@ -121,14 +112,12 @@ interface "IFContainer"
 		end
 	end
 
-	doc [======[
-		@name GetWidget
-		@type method
-		@desc Get element from the panel
-		@param element string | System.Widget.Region class, name or or ui element class
-		@return element the ui element
-		@return number the element's index
-	]======]
+	__Doc__[[
+		<desc>Get element from the panel</desc>
+		<param name="element">string | System.Widget.Region class, name or or ui element class</param>
+		<return type="element">the ui element</return>
+		<return type="number">the element's index</return>
+	]]
 	function GetWidget(self, element)
 		local widget
 
@@ -143,18 +132,16 @@ interface "IFContainer"
 		return self.Panel:GetWidget(widget)
 	end
 
-	doc [======[
-		@name RemoveWidget
-		@type method
-		@desc Remove element from the panel
-		@format index|name|element[, withoutDispose]
-		@param index number, the index of the element
-		@param name string, the name of the element
-		@param element System.Widget.Region|System.Widget.VirtualUIObject, the element
-		@param withoutDispose boolean, true if need get the removed widget
-		@return element if withoutDispose is set to true
+	__Doc__[[
+		<desc>Remove element from the panel</desc>
+		<format>index|name|element[, withoutDispose]</format>
+		<param name="index">number, the index of the element</param>
+		<param name="name">string, the name of the element</param>
+		<param name="element">System.Widget.Region|System.Widget.VirtualUIObject, the element</param>
+		<param name="withoutDispose">boolean, true if need get the removed widget</param>
+		<return type="element">if withoutDispose is set to true</return>
 
-	]======]
+	]]
 	function RemoveWidget(self, element, withoutDispose)
 		local widget
 
@@ -169,17 +156,15 @@ interface "IFContainer"
 		return self.Panel:RemoveWidget(widget, withoutDispose)
 	end
 
-	doc [======[
-		@name SetWidgetLeftRight
-		@type method
-		@desc Set Widget's left margin and right margin
-		@param index|name|widget the ui element
-		@param left number, left margin value
-		@param leftunit string, left margin's unit
-		@param right number, right margin value
-		@param rightunit string, right margin's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's left margin and right margin</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="left">number, left margin value</param>
+		<param name="leftunit">string, left margin's unit</param>
+		<param name="right">number, right margin value</param>
+		<param name="rightunit">string, right margin's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetLeftRight(self, element, left, leftunit, right, rightunit)
 		local widget
 
@@ -194,30 +179,26 @@ interface "IFContainer"
 		return self.Panel:SetWidgetLeftRight(widget, left, leftunit, right, rightunit)
 	end
 
-	doc [======[
-		@name SWLR
-		@type method
-		@desc Short for SetWidgetLeftRight, Set Widget's left margin and right margin
-		@param index|name|widget the ui element
-		@param left number, left margin value
-		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
-		@param right number, right margin value
-		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Short for SetWidgetLeftRight, Set Widget's left margin and right margin</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="left">number, left margin value</param>
+		<param name="leftunit">System.Widget.LayoutPanel.Unit, left margin's unit</param>
+		<param name="right">number, right margin value</param>
+		<param name="rightunit">System.Widget.LayoutPanel.Unit, right margin's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	SWLR = SetWidgetLeftRight
 
-	doc [======[
-		@name SetWidgetLeftWidth
-		@type method
-		@desc Set Widget's left margin and width
-		@param index|name|widget the ui element
-		@param left number, left margin value
-		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
-		@param width number, width value
-		@param widthunit System.Widget.LayoutPanel.Unit, width unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's left margin and width</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="left">number, left margin value</param>
+		<param name="leftunit">System.Widget.LayoutPanel.Unit, left margin's unit</param>
+		<param name="width">number, width value</param>
+		<param name="widthunit">System.Widget.LayoutPanel.Unit, width unit</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetLeftWidth(self, element, left, leftunit, width, widthunit)
 		local widget
 
@@ -232,30 +213,26 @@ interface "IFContainer"
 		return self.Panel:SetWidgetLeftWidth(widget, left, leftunit, width, widthunit)
 	end
 
-	doc [======[
-		@name SWLW
-		@type method
-		@desc Short for SetWidgetLeftWidth.Set Widget's left margin and width
-		@param index|name|widget the ui element
-		@param left number, left margin value
-		@param leftunit System.Widget.LayoutPanel.Unit, left margin's unit
-		@param width number, width value
-		@param widthunit System.Widget.LayoutPanel.Unit, width unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Short for SetWidgetLeftWidth.Set Widget's left margin and width</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="left">number, left margin value</param>
+		<param name="leftunit">System.Widget.LayoutPanel.Unit, left margin's unit</param>
+		<param name="width">number, width value</param>
+		<param name="widthunit">System.Widget.LayoutPanel.Unit, width unit</param>
+		<return type="object">the panel self</return>
+	]]
 	SWLW = SetWidgetLeftWidth
 
-	doc [======[
-		@name SetWidgetRightWidth
-		@type method
-		@desc Set Widget's right margin and width
-		@param index|name|widget the ui element
-		@param right number, right margin value
-		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
-		@param width number, width value
-		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's right margin and width</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="right">number, right margin value</param>
+		<param name="rightunit">System.Widget.LayoutPanel.Unit, right margin's unit</param>
+		<param name="width">number, width value</param>
+		<param name="widthunit">System.Widget.LayoutPanel.Unit, width unitv</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetRightWidth(self, element, right, rightunit, width, widthunit)
 		local widget
 
@@ -270,30 +247,26 @@ interface "IFContainer"
 		return self.Panel:SetWidgetRightWidth(widget, right, rightunit, width, widthunit)
 	end
 
-	doc [======[
-		@name SWRW
-		@type method
-		@desc Short for SetWidgetRightWidth. Set Widget's right margin and width
-		@param index|name|widget the ui element
-		@param right number, right margin value
-		@param rightunit System.Widget.LayoutPanel.Unit, right margin's unit
-		@param width number, width value
-		@param widthunit System.Widget.LayoutPanel.Unit, width unitv
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Short for SetWidgetRightWidth. Set Widget's right margin and width</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="right">number, right margin value</param>
+		<param name="rightunit">System.Widget.LayoutPanel.Unit, right margin's unit</param>
+		<param name="width">number, width value</param>
+		<param name="widthunit">System.Widget.LayoutPanel.Unit, width unitv</param>
+		<return type="object">the panel self</return>
+	]]
 	SWRW = SetWidgetRightWidth
 
-	doc [======[
-		@name SetWidgetTopBottom
-		@type method
-		@desc Set Widget's top margin and bottom margin
-		@param index|name|widget the ui element
-		@param top number, top margin value
-		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
-		@param bottom number, bottom margin value
-		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's top margin and bottom margin</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="top">number, top margin value</param>
+		<param name="topunit">System.Widget.LayoutPanel.Unit, top margin's unit</param>
+		<param name="bottom">number, bottom margin value</param>
+		<param name="bottomunit">System.Widget.LayoutPanel.Unit, bottom margin's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetTopBottom(self, element, top, topunit, bottom, bottomunit)
 		local widget
 
@@ -308,31 +281,27 @@ interface "IFContainer"
 		return self.Panel:SetWidgetTopBottom(widget, top, topunit, bottom, bottomunit)
 	end
 
-	doc [======[
-		@name SWTB
-		@type method
-		@desc description
-		@desc Short for SetWidgetTopBottom. Set Widget's top margin and bottom margin
-		@param index|name|widget the ui element
-		@param top number, top margin value
-		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
-		@param bottom number, bottom margin value
-		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>description</desc>
+		<desc>Short for SetWidgetTopBottom. Set Widget's top margin and bottom margin</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="top">number, top margin value</param>
+		<param name="topunit">System.Widget.LayoutPanel.Unit, top margin's unit</param>
+		<param name="bottom">number, bottom margin value</param>
+		<param name="bottomunit">System.Widget.LayoutPanel.Unit, bottom margin's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	SWTB = SetWidgetTopBottom
 
-	doc [======[
-		@name SetWidgetTopHeight
-		@type method
-		@desc Set Widget's top margin and height
-		@param index|name|widget the ui element
-		@param top number, top margin value
-		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
-		@param height number, height value
-		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's top margin and height</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="top">number, top margin value</param>
+		<param name="topunit">System.Widget.LayoutPanel.Unit, top margin's unit</param>
+		<param name="height">number, height value</param>
+		<param name="heightunit">System.Widget.LayoutPanel.Unit, height's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetTopHeight(self, element, top, topunit, height, heightunit)
 		local widget
 
@@ -347,30 +316,26 @@ interface "IFContainer"
 		return self.Panel:SetWidgetTopHeight(widget, top, topunit, height, heightunit)
 	end
 
-	doc [======[
-		@name SWTH
-		@type method
-		@desc Short for SetWidgetTopHeight. Set Widget's top margin and height
-		@param index|name|widget the ui element
-		@param top number, top margin value
-		@param topunit System.Widget.LayoutPanel.Unit, top margin's unit
-		@param height number, height value
-		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Short for SetWidgetTopHeight. Set Widget's top margin and height</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="top">number, top margin value</param>
+		<param name="topunit">System.Widget.LayoutPanel.Unit, top margin's unit</param>
+		<param name="height">number, height value</param>
+		<param name="heightunit">System.Widget.LayoutPanel.Unit, height's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	SWTH = SetWidgetTopHeight
 
-	doc [======[
-		@name SetWidgetBottomHeight
-		@type method
-		@desc Set Widget's bottom margin and height
-		@param index|name|widget the ui element
-		@param bottom number, bottom margin value
-		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
-		@param height number, height value
-		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Set Widget's bottom margin and height</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="bottom">number, bottom margin value</param>
+		<param name="bottomunit">System.Widget.LayoutPanel.Unit, bottom margin's unit</param>
+		<param name="height">number, height value</param>
+		<param name="heightunit">System.Widget.LayoutPanel.Unit, height's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	function SetWidgetBottomHeight(self, element, bottom, bottomunit, height, heightunit)
 		local widget
 
@@ -385,56 +350,36 @@ interface "IFContainer"
 		return self.Panel:SetWidgetBottomHeight(widget, bottom, bottomunit, height, heightunit)
 	end
 
-	doc [======[
-		@name SWBH
-		@type method
-		@desc Short for SetWidgetBottomHeight. Set Widget's bottom margin and height
-		@param index|name|widget the ui element
-		@param bottom number, bottom margin value
-		@param bottomunit System.Widget.LayoutPanel.Unit, bottom margin's unit
-		@param height number, height value
-		@param heightunit System.Widget.LayoutPanel.Unit, height's unit
-		@return object the panel self
-	]======]
+	__Doc__[[
+		<desc>Short for SetWidgetBottomHeight. Set Widget's bottom margin and height</desc>
+		<param name="index|name|widget">the ui element</param>
+		<param name="bottom">number, bottom margin value</param>
+		<param name="bottomunit">System.Widget.LayoutPanel.Unit, bottom margin's unit</param>
+		<param name="height">number, height value</param>
+		<param name="heightunit">System.Widget.LayoutPanel.Unit, height's unit</param>
+		<return type="object">the panel self</return>
+	]]
 	SWBH = SetWidgetBottomHeight
 
-	doc [======[
-		@name RefreshLayout
-		@type method
-		@desc Refresh the layout panel
-		@return nil
-	]======]
+	__Doc__[[Refresh the layout panel]]
 	function RefreshLayout(self)
 		return self.Panel:Layout()
 	end
 
-	doc [======[
-		@name SuspendLayout
-		@type method
-		@desc Stop the refresh of the layout panel
-		@return nil
-	]======]
+	__Doc__[[Stop the refresh of the layout panel]]
 	function SuspendLayout(self)
 		return self.Panel:SuspendLayout()
 	end
 
-	doc [======[
-		@name ResumeLayout
-		@type method
-		@desc Resume the refresh of the layout panel
-		@return nil
-	]======]
+	__Doc__[[Resume the refresh of the layout panel]]
 	function ResumeLayout(self)
 		return self.Panel:ResumeLayout()
 	end
 
-	doc [======[
-		@name SetLayout
-		@type method
-		@desc Set the layout panel's type
-		@param layout System.Widget.LayoutPanel class
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the layout panel's type</desc>
+		<param name="layout">System.Widget.LayoutPanel class</param>
+		]]
 	function SetLayout(self, layout)
 		layout = Reflector.Validate(-LayoutPanel, layout, "layout", "Usage : IFContainer:SetLayout(layout) : ")
 
@@ -464,24 +409,20 @@ interface "IFContainer"
 		obj.AutoLayout = self.AutoLayout
 	end
 
-	doc [======[
-		@name GetLayout
-		@type method
-		@desc Get the layout panel's type
-		@return class the layout panel's type
-	]======]
+	__Doc__[[
+		<desc>Get the layout panel's type</desc>
+		<return type="class">the layout panel's type</return>
+	]]
 	function GetLayout(self)
 		local obj = self:GetChild("Panel")
 
 		return obj and obj:GetClass() or LayoutPanel
 	end
 
-	doc [======[
-		@name GetPanel
-		@type method
-		@desc Get the layout panel
-		@return System.Widget.LayoutPanel
-	]======]
+	__Doc__[[
+		<desc>Get the layout panel</desc>
+		<return type="System.Widget.LayoutPanel"></return>
+	]]
 	function GetPanel(self)
 		local obj = self:GetChild("Panel")
 
@@ -504,12 +445,7 @@ interface "IFContainer"
 		return obj
 	end
 
-	doc [======[
-		@name UpdatePanelPosition
-		@type method
-		@desc Update the container's panel's postion, Overridable
-		@return nil
-	]======]
+	__Doc__[[Update the container's panel's postion, Overridable]]
 	function UpdatePanelPosition(self)
 		self.Panel:ClearAllPoints()
 		self.Panel:SetAllPoints(self)
@@ -522,42 +458,26 @@ interface "IFContainer"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Panel
-		@type property
-		@desc The layout panel
-	]======]
+	__Doc__[[The layout panel]]
 	property "Panel" {
 		Get = GetPanel,	-- don't want use custom GetPanel
 	}
 
-	doc [======[
-		@name Layout
-		@type property
-		@desc The layout panel's type
-	]======]
+	__Doc__[[The layout panel's type]]
 	property "Layout" {
 		Set = SetLayout,
 		Get = GetLayout,
 		Type = - LayoutPanel,
 	}
 
-	doc [======[
-		@name Count
-		@type property
-		@desc The element's count in the layout panel
-	]======]
+	__Doc__[[The element's count in the layout panel]]
 	property "Count" {
 		Get = function(self)
 			return self.Panel.Count
 		end,
 	}
 
-	doc [======[
-		@name AutoLayout
-		@type property
-		@desc Whether the layout panel is auto update
-	]======]
+	__Doc__[[Whether the layout panel is auto update]]
 	property "AutoLayout" {
 		Get = function(self)
 			return self.__AutoLayout or false

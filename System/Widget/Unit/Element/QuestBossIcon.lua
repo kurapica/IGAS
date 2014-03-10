@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.QuestBossIcon", version) then
 	return
 end
 
+__Doc__[[The quest boss indicator]]
 class "QuestBossIcon"
 	inherit "Texture"
 	extend "IFClassification"
-
-	doc [======[
-		@name QuestBossIcon
-		@type class
-		@desc The quest boss indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

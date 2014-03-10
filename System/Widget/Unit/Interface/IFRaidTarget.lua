@@ -21,14 +21,9 @@ function _IFRaidTargetUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[IFRaidTarget is used to handle the unit's raid target icon's updating(only for texture)]]
 interface "IFRaidTarget"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFRaidTarget
-		@type interface
-		@desc IFRaidTarget is used to handle the unit's raid target icon's updating(only for texture)
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -37,12 +32,7 @@ interface "IFRaidTarget"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if self:IsClass(Texture) then
 			local index = self.Unit and GetRaidTargetIndex(self.Unit)

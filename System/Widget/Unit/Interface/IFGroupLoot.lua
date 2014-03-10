@@ -22,15 +22,12 @@ function _IFGroupLootUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFGroupLoot is used to handle the root master indicator's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the root master indicator should be shown</overridable>
+]]
 interface "IFGroupLoot"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFGroupLoot
-		@type interface
-		@desc IFGroupLoot is used to handle the root master indicator's updating
-		@overridable Visible property, boolean, used to receive the result that whether the root master indicator should be shown
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -39,12 +36,6 @@ interface "IFGroupLoot"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		local unit = self.Unit
 		if unit and (UnitInParty(unit) or UnitInRaid(unit)) then

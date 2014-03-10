@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.DisconnectIcon", version) then
 	return
 end
 
+__Doc__[[The disconnect indicator]]
 class "DisconnectIcon"
 	inherit "Texture"
 	extend "IFConnect"
-
-	doc [======[
-		@name DisconnectIcon
-		@type class
-		@desc The disconnect indicator
-	]======]
 
 	------------------------------------------------------
 	-- Event

@@ -9,95 +9,44 @@ if not IGAS:NewAddon("IGAS.Widget.PlayerModel", version) then
 	return
 end
 
+__Doc__[[PlayerModels are the most commonly used subtype of Model frame. They expand on the Model type by adding functions to quickly set the model to represent a particular player or creature, by unitID or creature ID.]]
 class "PlayerModel"
 	inherit "Model"
-
-	doc [======[
-		@name PlayerModel
-		@type class
-		@desc PlayerModels are the most commonly used subtype of Model frame. They expand on the Model type by adding functions to quickly set the model to represent a particular player or creature, by unitID or creature ID.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	-----------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name RefreshCamera
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"RefreshCamera" [[
+	]]
 
-	doc [======[
-		@name RefreshUnit
-		@type method
-		@desc Updates the model's appearance to match that of its unit. Used in the default UI's inspect window when the player's target changes (changing the model to match the "new appearance" of the unit "target") or when the UNIT_MODEL_CHANGED event fires for the inspected unit (updating the model's appearance to reflect changes in the unit's equipment or shapeshift form).
-		@return nil
-	]======]
+	__Doc__"RefreshUnit" [[Updates the model's appearance to match that of its unit. Used in the default UI's inspect window when the player's target changes (changing the model to match the "new appearance" of the unit "target") or when the UNIT_MODEL_CHANGED event fires for the inspected unit (updating the model's appearance to reflect changes in the unit's equipment or shapeshift form).]]
 
-	doc [======[
-		@name SetBarberShopAlternateForm
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetBarberShopAlternateForm" [[
+	]]
 
-	doc [======[
-		@name SetCamDistanceScale
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetCamDistanceScale" [[
+	]]
 
-	doc [======[
-		@name SetCreature
-		@type method
-		@desc Sets the model to display the 3D model of a specific creature. Used in the default UI to set the model used for previewing non-combat pets and mounts (see GetCompanionInfo()), but can also be used to display the model for any creature whose data is cached by the client.
-		@param creatureID number, numeric ID of a creature
-		@return nil
-	]======]
+	__Doc__"SetCreature" [[
+		<desc>Sets the model to display the 3D model of a specific creature. Used in the default UI to set the model used for previewing non-combat pets and mounts (see GetCompanionInfo()), but can also be used to display the model for any creature whose data is cached by the client.</desc>
+		<param name="creatureID">number, numeric ID of a creature</param>
+	]]
 
-	doc [======[
-		@name SetDisplayInfo
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetDisplayInfo" [[
+	]]
 
-	doc [======[
-		@name SetPortraitZoom
-		@type method
-		@desc
-		@return nil
-	]======]
+	__Doc__"SetPortraitZoom" [[
+	]]
 
-	doc [======[
-		@name SetRotation
-		@type method
-		@desc Sets the model's current rotation by animating the model. This method is similar to Model:SetFacing() in that it rotates the 3D model displayed about its vertical axis; however, since the PlayerModel object displays a unit's model, this method is provided to allow for animating the rotation using the model's built-in animations for turning right and left.
-		@param facing number, rotation angle for the model (in radians)
-		@return nil
-	]======]
+	__Doc__"SetRotation" [[
+		<desc>Sets the model's current rotation by animating the model. This method is similar to Model:SetFacing() in that it rotates the 3D model displayed about its vertical axis; however, since the PlayerModel object displays a unit's model, this method is provided to allow for animating the rotation using the model's built-in animations for turning right and left.</desc>
+		<param name="facing">number, rotation angle for the model (in radians)</param>
+	]]
 
-	doc [======[
-		@name SetUnit
-		@type method
-		@desc Sets the model to display the 3D model of a specific unit
-		@param unit string, unit ID of a visible unit
-		@return nil
-	]======]
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"SetUnit" [[
+		<desc>Sets the model to display the 3D model of a specific unit</desc>
+		<param name="unit">string, unit ID of a visible unit</param>
+	]]
 
 	------------------------------------------------------
 	-- Constructor

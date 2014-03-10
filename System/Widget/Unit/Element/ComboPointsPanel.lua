@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ComboPointsPanel", version) then
 	return
 end
 
+__Doc__[[The panel to show the combo points on the target, abandoned]]
 class "ComboPointsPanel"
 	inherit "LayoutPanel"
 	extend "IFComboPoint"
-
-	doc [======[
-		@name ComboPointsPanel
-		@type class
-		@desc The panel to show the combo points on the target, abandoned
-	]======]
 
 	MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 

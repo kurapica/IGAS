@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PetUnitPanel", version) then
 	return
 end
 
+__Doc__[[The unit panel for pets]]
 class "PetUnitPanel"
 	inherit "SecureFrame"
 	extend "IFPetGroup"
-
-	doc [======[
-		@name PetUnitPanel
-		@type class
-		@desc The unit panel for pets
-	]======]
 
 	MAX_RAID_MEMBERS = _G.MAX_RAID_MEMBERS
 	NUM_RAID_GROUPS = _G.NUM_RAID_GROUPS

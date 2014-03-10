@@ -90,38 +90,26 @@ function UpdateAuraState(unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFDebuffState is used to handle the unit debuff's update</desc>
+	<overridable name="HasMagic" type="property" valuetype="boolean">used to receive the result for whether the unit has a magic debuff</overridable>
+	<overridable name="HasCurse" type="property" valuetype="boolean">used to receive the result for whether the unit has a curse debuff</overridable>
+	<overridable name="HasDisease" type="property" valuetype="boolean">used to receive the result for whether the unit has a disease debuff</overridable>
+	<overridable name="HasPoison" type="property" valuetype="boolean">used to receive the result for whether the unit has a poison debuff</overridable>
+]]
 interface "IFDebuffState"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFDebuffState
-		@type interface
-		@desc IFDebuffState is used to handle the unit debuff's update
-		@overridable HasMagic property, boolean, used to receive the result for whether the unit has a magic debuff
-		@overridable HasCurse property, boolean, used to receive the result for whether the unit has a curse debuff
-		@overridable HasDisease property, boolean, used to receive the result for whether the unit has a disease debuff
-		@overridable HasPoison property, boolean, used to receive the result for whether the unit has a poison debuff
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnStateChanged
-		@type event
-		@desc Fired when the unit's debuff state is changed
-	]======]
+	__Doc__[[Fired when the unit's debuff state is changed]]
 	event "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if self.Unit then
 			UpdateAuraState(self.Unit)

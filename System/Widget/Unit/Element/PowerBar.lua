@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PowerBar", version) then
 	return
 end
 
+__Doc__[[The power bar]]
 class "PowerBar"
 	inherit "StatusBar"
 	extend "IFPower"
-
-	doc [======[
-		@name PowerBar
-		@type class
-		@desc The power bar
-	]======]
 
 	------------------------------------------------------
 	-- Constructor
@@ -29,15 +24,10 @@ class "PowerBar"
 	end
 endclass "PowerBar"
 
+__Doc__[[The frequent power bar]]
 class "PowerBarFrequent"
 	inherit "StatusBar"
 	extend "IFPowerFrequent"
-
-	doc [======[
-		@name PowerBarFrequent
-		@type class
-		@desc The frequent power bar
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

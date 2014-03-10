@@ -8,34 +8,20 @@ if not IGAS:NewAddon("IGAS.Widget.Action.SpellActivationAlert", version) then
 	return
 end
 
+__Doc__[[SpellActivationAlert is used to alert the activation of the action button]]
 class "SpellActivationAlert"
 	inherit "Frame"
-
-	doc [======[
-		@name SpellActivationAlert
-		@type class
-		@desc SpellActivationAlert is used to alert the activation of the action button
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnFinished
-		@type event
-		@desc Fired when the animation finished
-	]======]
+	__Doc__[[Fired when the animation finished]]
 	event "OnFinished"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name StopAnimation
-		@type method
-		@desc Stop all animation
-		@return nil
-	]======]
+	__Doc__[[Stop all animation]]
 	function StopAnimation(self)
 		self.Spark.AnimIn.Playing = false
 		self.InnerGlow.AnimIn.Playing = false
@@ -52,11 +38,7 @@ class "SpellActivationAlert"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name AnimInPlaying
-		@type property
-		@desc whether the fadein animation is playing
-	]======]
+	__Doc__[[whether the fadein animation is playing]]
 	property "AnimInPlaying" {
 		Get = function(self)
 			return self.InnerGlow.AnimIn.Playing
@@ -76,11 +58,7 @@ class "SpellActivationAlert"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name AnimOutPlaying
-		@type property
-		@desc whether the fadeout animation is playing
-	]======]
+	__Doc__[[whether the fadeout animation is playing]]
 	property "AnimOutPlaying" {
 		Get = function(self)
 			return self.OuterGlowOver.AnimOut.Playing

@@ -47,16 +47,13 @@ function _IFPowerFrequentUnitList:ParseEvent(event, unit, type)
 	end
 end
 
+__Doc__[[
+	<desc>IFPowerFrequent is used to handle the unit frequent power updating</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the power</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the power's value</overridable>
+]]
 interface "IFPowerFrequent"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFPowerFrequent
-		@type interface
-		@desc IFPowerFrequent is used to handle the unit frequent power updating
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the power
-		@overridable Value property, number, used to receive the power's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -65,12 +62,6 @@ interface "IFPowerFrequent"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		local unit = self.Unit
 		if not unit or not UnitExists(unit) then return end
@@ -112,11 +103,7 @@ interface "IFPowerFrequent"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name UsePowerColor
-		@type property
-		@desc Whether the object use auto power color, the object should be a fontstring or texture
-	]======]
+	__Doc__[[Whether the object use auto power color, the object should be a fontstring or texture]]
 	property "UsePowerColor" {
 		Get = function(self)
 			return self.__UsePowerColor

@@ -36,18 +36,18 @@ function _IFTotemUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFTotem is used to handle the unit's totem updating</desc>
+	<usage>
+		For default, the object need contains MAX_TOTEMS elements, these elements should extend from System.Widget.IFCooldown, and with several properties:
+			Icon property, string, used to receive the totem's image file path
+			Slot property, number, used to receive the totem's slot index
+			Visible property, boolean, used to receive the check result for whether should show the totem
+	</usage>
+]]
 interface "IFTotem"
 	extend "IFUnitElement"
 
-	doc [======[
-		@name IFTotem
-		@type interface
-		@desc IFTotem is used to handle the unit's totem updating
-		@usage For default, the object need contains MAX_TOTEMS elements, these elements should extend from System.Widget.IFCooldown, and with several properties:
-		<br><br>Icon property, string, used to receive the totem's image file path
-		<br><br>Slot property, number, used to receive the totem's slot index
-		<br><br>Visible property, boolean, used to receive the check result for whether should show the totem
-	]======]
 
 	MAX_TOTEMS = MAX_TOTEMS
 
@@ -58,12 +58,7 @@ interface "IFTotem"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		local btn
 

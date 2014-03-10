@@ -9,14 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.CheckBox", version) then
 	return
 end
 
+__Doc__[[CheckBox is a widget type using for boolean selection with a label]]
 class "CheckBox"
 	inherit "Button"
-
-	doc [======[
-		@name CheckBox
-		@type class
-		@desc CheckBox is a widget type using for boolean selection with a label
-	]======]
 
     GameTooltip = IGAS.GameTooltip
 
@@ -85,85 +80,61 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnValueChanged
-		@type event
-		@desc Run when the checkbox's checking state is changed
-		@param checked boolean, true if the checkbox is checked
-	]======]
+	__Doc__[[
+		<desc>Run when the checkbox's checking state is changed</desc>
+		<param name="checked">boolean, true if the checkbox is checked</param>
+	]]
 	event "OnValueChanged"
 
-	doc [======[
-		@name OnGameTooltipShow
-		@type event
-		@desc Run when the mouse is over an item, and the tooltip is setted
-		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse is over an item, and the tooltip is setted</desc>
+		<param name="gameTooltip">System.Widget.GameTooltip, the GameTooltip object</param>
+	]]
 	event "OnGameTooltipShow"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetChecked
-		@type method
-		@desc Sets the checkbox's checking state
-		@param checked boolean, true if set the checkbox to be checked
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the checkbox's checking state</desc>
+		<param name="checked">boolean, true if set the checkbox to be checked</param>
+	]]
 	function SetChecked(self, flag)
 		self:GetChild("ChkBtn").Checked = (flag and true) or false
 		UpdateText(self)
 	end
 
-	doc [======[
-		@name GetChecked
-		@type method
-		@desc  Gets the checkbox's checking state
-		@return boolean true if set the checkbox to be checked
-	]======]
+	__Doc__[[
+		<desc> Gets the checkbox's checking state</desc>
+		<return type="boolean">true if set the checkbox to be checked</return>
+	]]
 	function GetChecked(self)
 		return self:GetChild("ChkBtn").Checked or false
 	end
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the checkbox's label
-		@param text string, the text to be displyed
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the checkbox's label</desc>
+		<param name="text">string, the text to be displyed</param>
+	]]
 	function SetText(self, text)
 		self:GetChild("Text").Text = text
 	end
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Gets the checkbox's label
-		@return string the text to be displyed
-	]======]
+	__Doc__[[
+		<desc>Gets the checkbox's label</desc>
+		<return type="string">the text to be displyed</return>
+	]]
 	function GetText(self)
 		return self:GetChild("Text").Text
 	end
 
-	doc [======[
-		@name Enable
-		@type method
-		@desc Enable the checkbox, make it clickable
-		@return nil
-	]======]
+	__Doc__[[Enable the checkbox, make it clickable]]
 	function Enable(self)
 		self.__UI:Enable()
 		self:GetChild("ChkBtn"):Enable()
 	end
 
-	doc [======[
-		@name Disable
-		@type method
-		@desc Disable the checkbox, make it un-clickable
-		@return nil
-	]======]
+	__Doc__[[Disable the checkbox, make it un-clickable]]
 	function Disable(self)
 		self.__UI:Disable()
 		self:GetChild("ChkBtn"):Disable()
@@ -172,22 +143,14 @@ class "CheckBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Checked
-		@type property
-		@desc whether the CheckBox is checked
-	]======]
+	__Doc__[[whether the CheckBox is checked]]
 	property "Checked" {
 		Set = "SetChecked",
 		Get = "GetChecked",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the default text to be displyed
-	]======]
+	__Doc__[[the default text to be displyed]]
 	property "Text" {
 		Set = function(self, text)
 			self:SetText(text)
@@ -197,11 +160,7 @@ class "CheckBox"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name TrueText
-		@type property
-		@desc the text to be displyed when checked if set
-	]======]
+	__Doc__[[the text to be displyed when checked if set]]
 	property "TrueText" {
 		Set = function(self, text)
 			self.__TrueText = text
@@ -215,11 +174,7 @@ class "CheckBox"
 		Type = LocaleString + nil,
 	}
 
-	doc [======[
-		@name FalseText
-		@type property
-		@desc the text to be displyed when un-checked if set
-	]======]
+	__Doc__[[the text to be displyed when un-checked if set]]
 	property "FalseText" {
 		Set = function(self, text)
 			self.__FalseText = text
@@ -233,11 +188,7 @@ class "CheckBox"
 		Type = LocaleString + nil,
 	}
 
-	doc [======[
-		@name Tooltip
-		@type property
-		@desc the tooltip to be displyed when mouse over
-	]======]
+	__Doc__[[the tooltip to be displyed when mouse over]]
 	property "Tooltip" {
 		Set = function(self, tip)
 			self.__Tooltip = tip

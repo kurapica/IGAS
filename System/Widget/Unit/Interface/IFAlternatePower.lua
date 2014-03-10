@@ -46,18 +46,15 @@ function UpdateBar(self)
 	end
 end
 
+__Doc__[[
+	<desc>IFAlternatePower is used to handle the unit alternate power's update</desc>
+	<overridable name="BarType" type="property" valuetype="string">the alternate power bar's type</overridable>
+	<overridable name="MinMaxValue" type="property" valuetype="MinMax">the min and max power value</overridable>
+	<overridable name="Value" type="property" valuetype="number">the alternate power's value</overridable>
+	<overridable name="Visible" type="property" valuetype="boolean">the alternate power bar's visible</overridable>
+]]
 interface "IFAlternatePower"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFAlternatePower
-		@type interface
-		@desc IFAlternatePower is used to handle the unit alternate power's update
-		@overridable BarType, string, the alternate power bar's type
-		@overridable MinMaxValue, MinMax, the min and max power value
-		@overridable Value, number, the alternate power's value
-		@overridable Visible, boolean, the alternate power bar's visible
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -66,12 +63,7 @@ interface "IFAlternatePower"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		return UpdateBar(self)
 	end

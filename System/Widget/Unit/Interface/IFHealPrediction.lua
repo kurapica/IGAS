@@ -140,16 +140,13 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFMyHealPrediction is used to handle the unit's prediction health by the player</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+]]
 interface "IFMyHealPrediction"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFMyHealPrediction
-		@type interface
-		@desc IFMyHealPrediction is used to handle the unit's prediction health by the player
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
-		@overridable Value property, number, used to receive the prediction health's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -208,16 +205,13 @@ interface "IFMyHealPrediction"
 	end
 endinterface "IFMyHealPrediction"
 
+__Doc__[[
+	<desc>IFOtherHealPrediction is used to handle the unit's prediction health by other players</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+]]
 interface "IFOtherHealPrediction"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFOtherHealPrediction
-		@type interface
-		@desc IFOtherHealPrediction is used to handle the unit's prediction health by other players
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
-		@overridable Value property, number, used to receive the prediction health's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -276,16 +270,13 @@ interface "IFOtherHealPrediction"
 	end
 endinterface "IFOtherHealPrediction"
 
+__Doc__[[
+	<desc>IFAllHealPrediction is used to handle the unit's prediction health by all player</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+]]
 interface "IFAllHealPrediction"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFAllHealPrediction
-		@type interface
-		@desc IFAllHealPrediction is used to handle the unit's prediction health by all player
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
-		@overridable Value property, number, used to receive the prediction health's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -344,17 +335,14 @@ interface "IFAllHealPrediction"
 	end
 endinterface "IFAllHealPrediction"
 
+__Doc__[[
+	<desc>IFAbsorb is used to handle the unit's total absorb value</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the total absorb value</overridable>
+	<overridable name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</overridable>
+]]
 interface "IFAbsorb"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFAbsorb
-		@type interface
-		@desc IFAbsorb is used to handle the unit's total absorb value
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
-		@overridable Value property, number, used to receive the total absorb value
-		@overridable OverAbsorb Property, boolean, used to receive the result whether the unit's absorb effect is overdose
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -414,17 +402,14 @@ interface "IFAbsorb"
 	end
 endinterface "IFAbsorb"
 
+__Doc__[[
+	<desc>IFHealAbsorb is used to handle the unit's total absorb value</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the total absorb value</overridable>
+	<overridable name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</overridable>
+]]
 interface "IFHealAbsorb"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFHealAbsorb
-		@type interface
-		@desc IFHealAbsorb is used to handle the unit's total absorb value
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the unit's health
-		@overridable Value property, number, used to receive the total absorb value
-		@overridable OverAbsorb Property, boolean, used to receive the result whether the unit's absorb effect is overdose
-	]======]
 
 	------------------------------------------------------
 	-- Event

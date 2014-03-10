@@ -15,112 +15,58 @@ if not IGAS:NewAddon("IGAS.Widget.ArchaeologyDigSiteFrame", version) then
 	return
 end
 
+__Doc__[[
+	ArchaeologyDigSiteFrame is a frame that is used to display digsites. Any one frame can be used to display any number of digsites, called blobs. Each blob is a polygon with a border and a filling texture.
+	To draw a blob onto the frame use the DrawBlob function. This will draw a polygon representing the specified digsite. It seems that it's only possible to draw digsites where you can dig and is on the current map.
+	Changes to how the blobs should render will only affect newly drawn blobs. That means that if you want to change the opacity of a blob you must first clear all blobs using the DrawNone function and then redraw the blobs.
+]]
 class "ArchaeologyDigSiteFrame"
 	inherit "Frame"
-
-	doc [======[
-		@name ArchaeologyDigSiteFrame
-		@type class
-		@desc ArchaeologyDigSiteFrame is a frame that is used to display digsites. Any one frame can be used to display any number of digsites, called blobs. Each blob is a polygon with a border and a filling texture.
-		<br><br>To draw a blob onto the frame use the DrawBlob function. This will draw a polygon representing the specified digsite. It seems that it's only possible to draw digsites where you can dig and is on the current map.
-		<br><br>Changes to how the blobs should render will only affect newly drawn blobs. That means that if you want to change the opacity of a blob you must first clear all blobs using the DrawNone function and then redraw the blobs.
-		<br>
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	-----------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name function_name
-		@type method
-		@desc  Draws a blob onto the frame. This will render the specified blob onto the frame with the current settings.
-		@param blobId numeric, the numeric ID of the blob to draw
-		@param draw boolean, draw the blob
-		@return nil
-	]======]
+	__Doc__"DrawBlob" [[
+		<desc>Draws a blob onto the frame. This will render the specified blob onto the frame with the current settings.</desc>
+		<param name="blobId">numeric, the numeric ID of the blob to draw</param>
+		<param name="draw">boolean, draw the blob</param>
+	]]
 
-	doc [======[
-		@name DrawNone
-		@type method
-		@desc Removes all drawn blobs on the frame. Removes all blobs from the frame.
-		@return nil
-	]======]
+	__Doc__"DrawNone" [[Removes all drawn blobs on the frame. Removes all blobs from the frame.]]
 
-	doc [======[
-		@name EnableMerging
-		@type method
-		@desc
-		@param boolean
-		@return nil
-	]======]
+	__Doc__"EnableMerging" [[
+		<param name="boolean"></param>
+	]]
 
-	doc [======[
-		@name EnableSmoothing
-		@type method
-		@desc
-		@param boolean
-		@return nil
-	]======]
+	__Doc__"EnableSmoothing" [[
+		<param name="boolean"></param>
+	]]
 
-	doc [======[
-		@name SetBorderAlpha
-		@type method
-		@desc
-		@param alpha number, (0-255)
-		@return nil
-	]======]
+	__Doc__"SetBorderAlpha" [[
+		<param name="alpha">number, (0-255)</param>
+	]]
 
-	doc [======[
-		@name SetBorderScalar
-		@type method
-		@desc
-		@param scala number
-		@return nil
-	]======]
+	__Doc__"SetBorderScalar" [[
+		<param name="scala">number</param>
+	]]
 
-	doc [======[
-		@name SetBorderTexture
-		@type method
-		@desc
-		@param filename string
-		@return nil
-	]======]
+	__Doc__"SetBorderTexture" [[
+		<param name="filename">string</param>
+	]]
 
-	doc [======[
-		@name SetFillAlpha
-		@type method
-		@desc
-		@param
-		@return nil
-	]======]
+	__Doc__"SetFillAlpha" [[
+	]]
 
-	doc [======[
-		@name SetFillTexture
-		@type method
-		@desc
-		@param
-		@return nil
-	]======]
+	__Doc__"SetFillTexture" [[
+	]]
 
-	doc [======[
-		@name SetMergeThreshold
-		@type method
-		@desc
-		@param
-		@return nil
-	]======]
+	__Doc__"SetMergeThreshold" [[
+	]]
 
-	doc [======[
-		@name SetNumSplinePoints
-		@type method
-		@desc Sets the number of points used in the blob polygon. Sets the number of corners of the polygon used when a drawing a blob using the DrawBlob function.The blob will allways have a minimum of 8 points, any number below that will default to 8.
-		@param points number, the number of points in the polygon used to draw the blobs.
-		@return nil
-	]======]
+	__Doc__"SetNumSplinePoints" [[
+		<desc>Sets the number of points used in the blob polygon. Sets the number of corners of the polygon used when a drawing a blob using the DrawBlob function.The blob will allways have a minimum of 8 points, any number below that will default to 8.</desc>
+		<param name="points">number, the number of points in the polygon used to draw the blobs.</param>
+	]]
 
 	------------------------------------------------------
 	-- Property

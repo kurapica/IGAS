@@ -10,14 +10,9 @@ if not IGAS:NewAddon("IGAS.Widget.NormalButton", version) then
 	return
 end
 
+__Doc__[[NormalButton is inherited from Button with custom style to help author creating useful buttons]]
 class "NormalButton"
 	inherit "Button"
-
-	doc [======[
-		@name NormalButton
-		@type class
-		@desc NormalButton is inherited from Button with custom style to help author creating useful buttons
-	]======]
 
     -- Button Template
     TEMPLATE_NONE = "NONE"
@@ -146,34 +141,26 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Set the Button's style
-		@param style System.Widget.NormalButton.NormalButtonStyle, the button's style
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the Button's style</desc>
+		<param name="style">System.Widget.NormalButton.NormalButtonStyle, the button's style</param>
+	]]
 	function SetStyle(self, style)
 		return SetButtonStyle(self, style)
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Get the button's style
-		@return System.Widget.NormalButton.NormalButtonStyle
-	]======]
+	__Doc__[[
+		<desc>Get the button's style</desc>
+		<return type="System.Widget.NormalButton.NormalButtonStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the text displayed as the button's label
-		@param text string, text to be displayed as the button's label
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the text displayed as the button's label</desc>
+		<param name="text">string, text to be displayed as the button's label</param>
+	]]
 	function SetText(self, text)
 		text = text or ""
 
@@ -199,22 +186,14 @@ class "NormalButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Style
-		@type property
-		@desc The button's style
-	]======]
+	__Doc__[[The button's style]]
 	property "Style" {
 		Get = "GetStyle",
 		Set = "SetStyle",
 		Type = NormalButtonStyle,
 	}
 
-	doc [======[
-		@name AutoSize
-		@type property
-		@desc Whether should auto change the button's size when text is changed
-	]======]
+	__Doc__[[Whether should auto change the button's size when text is changed]]
 	property "AutoSize" {
 		Field = "__AutoSize",
 		Set = function(self, value)

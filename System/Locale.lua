@@ -13,15 +13,8 @@ if _GameLocale == "enGB" then
 	_GameLocale = "enUS"
 end
 
+__Doc__[[Locale object is used as localization strings storage and manager]]
 class "Locale"
-
-	doc [======[
-		@name Locale
-		@type class
-		@desc Locale object is used as localization strings storage and manager.
-		@format name
-		@param name the Locale's name, must be an unique string
- 	 ]======]
 
 	_Locale = _Locale or {}
 
@@ -115,11 +108,11 @@ endclass "Locale"
 --- Create or get a localization file
 -- @name IGAS:NewLocale
 -- @class function
--- @param name always be the addon's name
--- @param language the language' name, such as "zhCN"
--- @param asDefault if this language is default, always set to true if the locale is "enUS"
--- @return if "locale" is setted and equal to the game's version or "isDefault" is true, return the local table, else nil
--- @usage L = IGAS:NewLocale("HelloWorld", "zhCN")
+-- <param name="name">always be the addon's name</param>
+-- <param name="language">the language' name, such as "zhCN"</param>
+-- <param name="asDefault">if this language is default, always set to true if the locale is "enUS"</param>
+-- <return type="if">"locale" is setted and equal to the game's version or "isDefault" is true, return the local table, else nil</return>
+-- <usage>L = IGAS:NewLocale("HelloWorld", "zhCN")</usage>
 ------------------------------------
 function IGAS:NewLocale(name, language, asDefault)
 	if type(name) ~= "string" then

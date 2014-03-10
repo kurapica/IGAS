@@ -43,35 +43,23 @@ function UpdateConnectState(unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFConnect is used to check whether the unit is connected</desc>
+	<overridable name="Connected" type="property" valuetype="boolean">which used to receive the check result for whether the unit is connected</overridable>
+]]
 interface "IFConnect"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFConnect
-		@type interface
-		@desc IFConnect is used to check whether the unit is connected
-		@overridable Connected property, boolean, which used to receive the check result for whether the unit is connected
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnStateChanged
-		@type event
-		@desc Fired when the unit's connecting state is changed
-	]======]
+	__Doc__[[Fired when the unit's connecting state is changed]]
 	event "OnStateChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if self.Unit then
 			self.Connected = UnitIsConnected(self.Unit)

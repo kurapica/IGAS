@@ -159,18 +159,15 @@ function RefreshActivePower(trueLevel)
 	end
 end
 
+__Doc__[[
+	<desc>IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check value for whether the class power need to be shown</overridable>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">which used to receive the unit's class power's min and max value</overridable>
+	<overridable name="Value" type="property" valuetype="number">which is used to receive the unit's class power's value</overridable>
+	<overridable name="ClassPowerType" type="property" valuetype="number | nil">which is used to receive the unit's class power's type</overridable>
+]]
 interface "IFClassPower"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFClassPower
-		@type interface
-		@desc IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.
-		@overridable Visible property, boolean, which used to receive the check value for whether the class power need to be shown
-		@overridable MinMaxValue property, System.Widget.MinMax, which used to receive the unit's class power's min and max value
-		@overridable Value property, number, which is used to receive the unit's class power's value
-		@overridable ClassPowerType property, number | nil, which is used to receive the unit's class power's type
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -179,12 +176,7 @@ interface "IFClassPower"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if _M._PlayerClassMap then
 			return RefreshActivePower()

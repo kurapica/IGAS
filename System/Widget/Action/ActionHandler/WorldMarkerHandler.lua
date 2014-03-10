@@ -54,11 +54,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name WorldMarker
-		@type property
-		@desc The action button's content if its type is 'worldmarker'
-	]======]
+	__Doc__[[The action button's content if its type is 'worldmarker']]
 	property "WorldMarker" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "worldmarker" and tonumber(self:GetAttribute("marker")) or nil
@@ -69,11 +65,7 @@ interface "IFActionHandler"
 		Type = System.Number + nil,
 	}
 
-	doc [======[
-		@name WorldMarkerActionType
-		@type property
-		@desc The world marker action type
-	]======]
+	__Doc__[[The world marker action type]]
 	property "WorldMarkerActionType" {
 		Get = function (self)
 			return self:GetAttribute("actiontype") == "worldmarker" and self:GetAttribute("action")

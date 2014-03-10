@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ReadyCheckIcon", version) then
 	return
 end
 
+__Doc__[[The ready check indicator]]
 class "ReadyCheckIcon"
 	inherit "Texture"
 	extend "IFReadyCheck"
-
-	doc [======[
-		@name ReadyCheckIcon
-		@type class
-		@desc The ready check indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

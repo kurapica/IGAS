@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.CombatIcon", version) then
 	return
 end
 
+__Doc__[[The combat indicator]]
 class "CombatIcon"
 	inherit "Texture"
 	extend "IFCombat"
-
-	doc [======[
-		@name CombatIcon
-		@type class
-		@desc The combat indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

@@ -10,14 +10,9 @@ if not IGAS:NewAddon("IGAS.Widget.GameTooltip", version) then
 	return
 end
 
+__Doc__[[GameTooltips are used to display explanatory information relevant to a particular element of the game world.]]
 class "GameTooltip"
 	inherit "Frame"
-
-	doc [======[
-		@name GameTooltip
-		@type class
-		@desc GameTooltips are used to display explanatory information relevant to a particular element of the game world.
-	]======]
 
 	COPPER_PER_SILVER = COPPER_PER_SILVER
 	SILVER_PER_GOLD = SILVER_PER_GOLD
@@ -25,750 +20,476 @@ class "GameTooltip"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnTooltipAddMoney
-		@type event
-		@desc Run when an amount of money should be added to the tooltip
-		@param amount number, amount of money to be added to the tooltip (in copper)
-		@param maxAmount number, a second amount of money to be added to the tooltip (in copper); if non-nil, the first amount is treated as the minimum and this amount as the maximum of a price range
-	]======]
+	__Doc__[[
+		<desc>Run when an amount of money should be added to the tooltip</desc>
+		<param name="amount">number, amount of money to be added to the tooltip (in copper)</param>
+		<param name="maxAmount">number, a second amount of money to be added to the tooltip (in copper); if non-nil, the first amount is treated as the minimum and this amount as the maximum of a price range</param>
+	]]
 	event "OnTooltipAddMoney"
 
-	doc [======[
-		@name OnTooltipCleared
-		@type event
-		@desc Run when the tooltip is hidden or its content is cleared
-	]======]
+	__Doc__[[Run when the tooltip is hidden or its content is cleared]]
 	event "OnTooltipCleared"
 
-	doc [======[
-		@name OnTooltipSetAchievement
-		@type event
-		@desc Run when the tooltip is filled with information about an achievement
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about an achievement]]
 	event "OnTooltipSetAchievement"
 
-	doc [======[
-		@name OnTooltipSetDefaultAnchor
-		@type event
-		@desc Run when the tooltip is repositioned to its default anchor location
-	]======]
+	__Doc__[[Run when the tooltip is repositioned to its default anchor location]]
 	event "OnTooltipSetDefaultAnchor"
 
-	doc [======[
-		@name OnTooltipSetEquipmentSet
-		@type event
-		@desc Run when the tooltip is filled with information about an equipment set
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about an equipment set]]
 	event "OnTooltipSetEquipmentSet"
 
-	doc [======[
-		@name OnTooltipSetFrameStack
-		@type event
-		@desc Run when the tooltip is filled with a list of frames under the mouse cursor
-	]======]
+	__Doc__[[Run when the tooltip is filled with a list of frames under the mouse cursor]]
 	event "OnTooltipSetFrameStack"
 
-	doc [======[
-		@name OnTooltipSetItem
-		@type event
-		@desc Run when the tooltip is filled with information about an item
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about an item]]
 	event "OnTooltipSetItem"
 
-	doc [======[
-		@name OnTooltipSetQuest
-		@type event
-		@desc Run when the tooltip is filled with information about a quest
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about a quest]]
 	event "OnTooltipSetQuest"
 
-	doc [======[
-		@name OnTooltipSetSpell
-		@type event
-		@desc Run when the tooltip is filled with information about a spell
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about a spell]]
 	event "OnTooltipSetSpell"
 
-	doc [======[
-		@name OnTooltipSetUnit
-		@type event
-		@desc Run when the tooltip is filled with information about a unit
-	]======]
+	__Doc__[[Run when the tooltip is filled with information about a unit]]
 	event "OnTooltipSetUnit"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AddDoubleLine
-		@type method
-		@desc Adds a line to the tooltip with both left-side and right-side portions. The tooltip is not automatically resized to fit the added line; to do so, call the tooltip's :Show() method after adding lines.
-		@param textLeft string, text to be displayed on the left side of the new line
-		@param textRight string, text to be displayed on the right side of the new line
-		@param rL number, red component of the color for the left-side text (0.0 - 1.0)
-		@param gL number, green component of the color for the left-side text (0.0 - 1.0)
-		@param bL number, blue component of the color for the left-side text (0.0 - 1.0)
-		@param rR number, red component of the color for the right-side text (0.0 - 1.0)
-		@param gR number, green component of the color for the right-side text (0.0 - 1.0)
-		@param bR number, blue component of the color for the right-side text (0.0 - 1.0)
-		@return nil
-	]======]
+	__Doc__"AddDoubleLine" [[
+		<desc>Adds a line to the tooltip with both left-side and right-side portions. The tooltip is not automatically resized to fit the added line; to do so, call the tooltip's :Show() method after adding lines.</desc>
+		<param name="textLeft">string, text to be displayed on the left side of the new line</param>
+		<param name="textRight">string, text to be displayed on the right side of the new line</param>
+		<param name="rL">number, red component of the color for the left-side text (0.0 - 1.0)</param>
+		<param name="gL">number, green component of the color for the left-side text (0.0 - 1.0)</param>
+		<param name="bL">number, blue component of the color for the left-side text (0.0 - 1.0)</param>
+		<param name="rR">number, red component of the color for the right-side text (0.0 - 1.0)</param>
+		<param name="gR">number, green component of the color for the right-side text (0.0 - 1.0)</param>
+		<param name="bR">number, blue component of the color for the right-side text (0.0 - 1.0)</param>
+	]]
 
-	doc [======[
-		@name AddFontStrings
-		@type method
-		@desc  Adds FontString objects to the tooltip, allowing it to display an additional line of text. This method is of little utility outside of Blizzard scripts, as the tooltip automatically creates new font strings for additional lines as needed.
-		@param left System.Widget.FontString, reference to a FontString object for the left-side text of a new line
-		@param right System.Widget.FontString, reference to a FontString object for the right-side text of a new line
-		@return nil
-	]======]
+	__Doc__"AddFontStrings" [[
+		<desc> Adds FontString objects to the tooltip, allowing it to display an additional line of text. This method is of little utility outside of Blizzard scripts, as the tooltip automatically creates new font strings for additional lines as needed.</desc>
+		<param name="left">System.Widget.FontString, reference to a FontString object for the left-side text of a new line</param>
+		<param name="right">System.Widget.FontString, reference to a FontString object for the right-side text of a new line</param>
+	]]
 
-	doc [======[
-		@name AddLine
-		@type method
-		@desc Adds a line of text to the tooltip. The tooltip is not automatically resized to fit the added line (and wrap it, if applicable); to do so, call the tooltip's :Show() method after adding lines.
-		@param text string, text to be added as a new line in the tooltip
-		@param r number, red component of the text color (0.0 - 1.0)
-		@param g number, green component of the text color (0.0 - 1.0)
-		@param b number, blue component of the text color (0.0 - 1.0)
-		@param wrap boolean, true to cause the line to wrap if it is longer than other, non-wrapping lines in the tooltip or longer than the tooltip's forced width
-		@return nil
-	]======]
+	__Doc__"AddLine" [[
+		<desc>Adds a line of text to the tooltip. The tooltip is not automatically resized to fit the added line (and wrap it, if applicable); to do so, call the tooltip's :Show() method after adding lines.</desc>
+		<param name="text">string, text to be added as a new line in the tooltip</param>
+		<param name="r">number, red component of the text color (0.0 - 1.0)</param>
+		<param name="g">number, green component of the text color (0.0 - 1.0)</param>
+		<param name="b">number, blue component of the text color (0.0 - 1.0)</param>
+		<param name="wrap">boolean, true to cause the line to wrap if it is longer than other, non-wrapping lines in the tooltip or longer than the tooltip's forced width</param>
+	]]
 
-	doc [======[
-		@name AddSpellByID
-		@type method
-		@desc
-		@param spellId number
-		@return nil
-	]======]
+	__Doc__"AddSpellByID" [[
+		<param name="spellId">number</param>
+	]]
 
-	doc [======[
-		@name AddTexture
-		@type method
-		@desc Adds a texture to the last tooltip line. The texture is sized to match the height of the line's text and positioned to the left of the text (indenting the text to provide room).
-		@param texture string, path to a texture image file
-		@return nil
-	]======]
+	__Doc__"AddTexture" [[
+		<desc>Adds a texture to the last tooltip line. The texture is sized to match the height of the line's text and positioned to the left of the text (indenting the text to provide room).</desc>
+		<param name="texture">string, path to a texture image file</param>
+	]]
 
-	doc [======[
-		@name AppendText
-		@type method
-		@desc Adds text to the first line of the tooltip
-		@param text string, text to be appended to the tooltip's first line
-		@return nil
-	]======]
+	__Doc__"AppendText" [[
+		<desc>Adds text to the first line of the tooltip</desc>
+		<param name="text">string, text to be appended to the tooltip's first line</param>
+	]]
 
-	doc [======[
-		@name ClearLines
-		@type method
-		@desc Clears the tooltip's contents. Scripts scanning the tooltip contents should be aware that this method clears the text of all the tooltip's left-side font strings but hides the right-side font strings without clearing their text.
-		@return nil
-	]======]
+	__Doc__"ClearLines" [[Clears the tooltip's contents. Scripts scanning the tooltip contents should be aware that this method clears the text of all the tooltip's left-side font strings but hides the right-side font strings without clearing their text.]]
 
-	doc [======[
-		@name FadeOut
-		@type method
-		@desc Causes the tooltip to begin fading out
-		@return nil
-	]======]
+	__Doc__"FadeOut" [[Causes the tooltip to begin fading out]]
 
-	doc [======[
-		@name GetAnchorType
-		@type method
-		@desc Returns the method for anchoring the tooltip relative to its owner
-		@return System.Widget.AnchorType
-	]======]
+	__Doc__"GetAnchorType" [[
+		<desc>Returns the method for anchoring the tooltip relative to its owner</desc>
+		<return type="System.Widget.AnchorType"></return>
+	]]
 
-	doc [======[
-		@name GetItem
-		@type method
-		@desc Returns the name and hyperlink for the item displayed in the tooltip
-		@return name string, name of the item whose information is displayed in the tooltip, or nil.
-		@return link string, a hyperlink for the item
-	]======]
+	__Doc__"GetItem" [[
+		<desc>Returns the name and hyperlink for the item displayed in the tooltip</desc>
+		<return type="name">string, name of the item whose information is displayed in the tooltip, or nil.</return>
+		<return type="link">string, a hyperlink for the item</return>
+	]]
 
-	doc [======[
-		@name GetMinimumWidth
-		@type method
-		@desc Returns the minimum width of the tooltip
-		@return number Minimum width of the tooltip frame (in pixels)
-	]======]
+	__Doc__"GetMinimumWidth" [[
+		<desc>Returns the minimum width of the tooltip</desc>
+		<return type="number">Minimum width of the tooltip frame (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetOwner
-		@type method
-		@desc Returns the frame to which the tooltip refers and is anchored
-		@return System.Widget.Region Reference to the Frame object to which the tooltip is anchored
-	]======]
+	__Doc__[[
+		<desc>Returns the frame to which the tooltip refers and is anchored</desc>
+		<return type="System.Widget.Region">Reference to the Frame object to which the tooltip is anchored</return>
+	]]
 	function GetOwner(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetOwner(...))
 	end
 
-	doc [======[
-		@name GetPadding
-		@type method
-		@desc Returns the amount of space between tooltip's text and its right-side edge
-		@return padding number, amount of space between the right-side edge of the tooltip's text and the right-side edge of the tooltip frame (in pixels)
-	]======]
+	__Doc__"GetPadding" [[
+		<desc>Returns the amount of space between tooltip's text and its right-side edge</desc>
+		<return type="padding">number, amount of space between the right-side edge of the tooltip's text and the right-side edge of the tooltip frame (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetSpell
-		@type method
-		@desc Returns information about the spell displayed in the tooltip
-		@return spellName string, name of the spell, or nil if the information in the tooltip is not for a spell
-		@return spellRank string, secondary text associated with the spell name (often a rank, e.g. "Rank 8")
-		@return spellID number, numeric identifier for the spell and rank
-	]======]
+	__Doc__"GetSpell" [[
+		<desc>Returns information about the spell displayed in the tooltip</desc>
+		<return type="spellName">string, name of the spell, or nil if the information in the tooltip is not for a spell</return>
+		<return type="spellRank">string, secondary text associated with the spell name (often a rank, e.g. "Rank 8")</return>
+		<return type="spellID">number, numeric identifier for the spell and rank</return>
+	]]
 
-	doc [======[
-		@name GetUnit
-		@type method
-		@desc Returns information about the unit displayed in the tooltip
-		@return name string, name of the unit displayed in the tooltip, or nil
-		@return unit string, unit identifier of the unit, or nil if the unit cannot be referenced by a unitID
-	]======]
+	__Doc__"GetUnit" [[
+		<desc>Returns information about the unit displayed in the tooltip</desc>
+		<return type="name">string, name of the unit displayed in the tooltip, or nil</return>
+		<return type="unit">string, unit identifier of the unit, or nil if the unit cannot be referenced by a unitID</return>
+	]]
 
-	doc [======[
-		@name IsEquippedItem
-		@type method
-		@desc Returns whether the tooltip is displaying an item currently equipped by the player
-		@return boolean 1 if the tooltip is displaying information about an item currently equipped by the player; otherwise nil
-	]======]
+	__Doc__"IsEquippedItem" [[
+		<desc>Returns whether the tooltip is displaying an item currently equipped by the player</desc>
+		<return type="boolean">1 if the tooltip is displaying information about an item currently equipped by the player; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsOwned
-		@type method
-		@desc Returns whether the tooltip has an owner frame
-		@return boolean 1 if the tooltip has an owner frame; otherwise nil
-	]======]
+	__Doc__"IsOwned" [[
+		<desc>Returns whether the tooltip has an owner frame</desc>
+		<return type="boolean">1 if the tooltip has an owner frame; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsUnit
-		@type method
-		@desc Returns whether the tooltip is displaying information for a given unit
-		@return boolean 1 if the tooltip is displaying information for the unit; otherwise nil
-	]======]
+	__Doc__"IsUnit" [[
+		<desc>Returns whether the tooltip is displaying information for a given unit</desc>
+		<return type="boolean">1 if the tooltip is displaying information for the unit; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name NumLines
-		@type method
-		@desc Returns the number of lines of text currently shown in the tooltip
-		@return number Number of lines currently shown in the tooltip
-	]======]
+	__Doc__"NumLines" [[
+		<desc>Returns the number of lines of text currently shown in the tooltip</desc>
+		<return type="number">Number of lines currently shown in the tooltip</return>
+	]]
 
-	doc [======[
-		@name SetAction
-		@type method
-		@desc Fills the tooltip with information about the contents of an action slot
-		@param slot number, an action bar slot
-		@return nil
-	]======]
+	__Doc__"SetAction" [[
+		<desc>Fills the tooltip with information about the contents of an action slot</desc>
+		<param name="slot">number, an action bar slot</param>
+	]]
 
-	doc [======[
-		@name SetAnchorType
-		@type method
-		@desc Sets the method for anchoring the tooltip relative to its owner
-		@param anchor System.Widget.AnchorType
-		@return nil
-	]======]
+	__Doc__"SetAnchorType" [[
+		<desc>Sets the method for anchoring the tooltip relative to its owner</desc>
+		<param name="anchor">System.Widget.AnchorType</param>
+	]]
 
-	doc [======[
-		@name SetAuctionItem
-		@type method
-		@desc Fills the tooltip with information about an item in the auction house
-		@param list string, type of auction listing: bidder|list|owner
-		@param index number, index of an auction in the listing
-		@return nil
-	]======]
+	__Doc__"SetAuctionItem" [[
+		<desc>Fills the tooltip with information about an item in the auction house</desc>
+		<param name="list">string, type of auction listing: bidder|list|owner</param>
+		<param name="index">number, index of an auction in the listing</param>
+	]]
 
-	doc [======[
-		@name function_name
-		@type method
-		@desc Fills the tooltip with information about the item currently being set up for auction. Return values 2 and higher are only available if the item to be auctioned is actually a battle pet.
-		@return hasCooldown boolean, 1 or nil
-		@return speciesID number, speciesID to identify a battle pet's species
-		@return level number, the level of this battle pet
-		@return breedQuality number, quality (rarity) level of the battle pet
-		@return health number, maximum health of this battle pet
-		@return power number, attack power of this battle pet
-		@return speed number, attack speed of this battle pet
-		@return petName string, the name of this battle pet.
-	]======]
+	__Doc__"function_name" [[
+		<desc>Fills the tooltip with information about the item currently being set up for auction. Return values 2 and higher are only available if the item to be auctioned is actually a battle pet.</desc>
+		<return type="hasCooldown">boolean, 1 or nil</return>
+		<return type="speciesID">number, speciesID to identify a battle pet's species</return>
+		<return type="level">number, the level of this battle pet</return>
+		<return type="breedQuality">number, quality (rarity) level of the battle pet</return>
+		<return type="health">number, maximum health of this battle pet</return>
+		<return type="power">number, attack power of this battle pet</return>
+		<return type="speed">number, attack speed of this battle pet</return>
+		<return type="petName">string, the name of this battle pet.</return>
+	]]
 
-	doc [======[
-		@name SetBackpackToken
-		@type method
-		@desc Fills the tooltip with information about a currency marked for watching on the Backpack UI
-		@param index number, index of a 'slot' for displaying currencies on the backpack (between 1 and MAX_WATCHED_TOKENS)
-		@return nil
-	]======]
+	__Doc__"SetBackpackToken" [[
+		<desc>Fills the tooltip with information about a currency marked for watching on the Backpack UI</desc>
+		<param name="index">number, index of a 'slot' for displaying currencies on the backpack (between 1 and MAX_WATCHED_TOKENS)</param>
+	]]
 
-	doc [======[
-		@name SetBagItem
-		@type method
-		@desc Fills the tooltip with information about an item in the player's bags
-		@param container number, index of one of the player's bags or other containers
-		@param slot number, index of an item slot within the container
-		@return hasCooldown boolean, 1 if the item is currently on cooldown, otherwise nil
-		@return repairCost number, cost of repairing the item (in copper, ignoring faction discounts)
-	]======]
+	__Doc__"SetBagItem" [[
+		<desc>Fills the tooltip with information about an item in the player's bags</desc>
+		<param name="container">number, index of one of the player's bags or other containers</param>
+		<param name="slot">number, index of an item slot within the container</param>
+		<return type="hasCooldown">boolean, 1 if the item is currently on cooldown, otherwise nil</return>
+		<return type="repairCost">number, cost of repairing the item (in copper, ignoring faction discounts)</return>
+	]]
 
-	doc [======[
-		@name SetBuybackItem
-		@type method
-		@desc Fills the tooltip with information about item recently sold to a vendor and available to be repurchased
-		@param index number, ndex of an item in the buyback listing (between 1 and GetNumBuybackItems())
-		@return nil
-	]======]
+	__Doc__"SetBuybackItem" [[
+		<desc>Fills the tooltip with information about item recently sold to a vendor and available to be repurchased</desc>
+		<param name="index">number, ndex of an item in the buyback listing (between 1 and GetNumBuybackItems())</param>
+	]]
 
-	doc [======[
-		@name SetCurrencyByID
-		@type method
-		@desc Fills the tooltip with information about a specified currency
-		@param currencyID number, a currencyID. All currently known currencyIDs
-		@return nil
-	]======]
+	__Doc__"SetCurrencyByID" [[
+		<desc>Fills the tooltip with information about a specified currency</desc>
+		<param name="currencyID">number, a currencyID. All currently known currencyIDs</param>
+	]]
 
-	doc [======[
-		@name SetCurrencyToken
-		@type method
-		@desc Fills the tooltip with information about a special currency type. Note that passing the index of a header will crash the client.
-		@param index number, index of a currency type in the currency list (between 1 and GetCurrencyListSize())
-		@return nil
-	]======]
+	__Doc__"SetCurrencyToken" [[
+		<desc>Fills the tooltip with information about a special currency type. Note that passing the index of a header will crash the client.</desc>
+		<param name="index">number, index of a currency type in the currency list (between 1 and GetCurrencyListSize())</param>
+	]]
 
-	doc [======[
-		@name SetEquipmentSet
-		@type method
-		@desc Fills the tooltip with information about an equipment set
-		@param name string, name of the equipment set
-		@return nil
-	]======]
+	__Doc__"SetEquipmentSet" [[
+		<desc>Fills the tooltip with information about an equipment set</desc>
+		<param name="name">string, name of the equipment set</param>
+	]]
 
-	doc [======[
-		@name SetExistingSocketGem
-		@type method
-		@desc Fills the tooltip with information about a permanently socketed gem
-		@param index number, index of a gem socket (between 1 and GetNumSockets())
-		@param toDestroy boolean, true to alter the tooltip display to indicate that this gem will be destroyed by socketing a new gem; false to show the normal tooltip for the gem
-		@return nil
-	]======]
+	__Doc__"SetExistingSocketGem" [[
+		<desc>Fills the tooltip with information about a permanently socketed gem</desc>
+		<param name="index">number, index of a gem socket (between 1 and GetNumSockets())</param>
+		<param name="toDestroy">boolean, true to alter the tooltip display to indicate that this gem will be destroyed by socketing a new gem; false to show the normal tooltip for the gem</param>
+	]]
 
-	doc [======[
-		@name SetFrameStack
-		@type method
-		@desc Fills the tooltip with a list of frames under the mouse cursor. Not relevant outside of addon development and debugging.
-		@param includeHidden boolean, true to include hidden frames in the list; false to list only visible frames
-		@return nil
-	]======]
+	__Doc__"SetFrameStack" [[
+		<desc>Fills the tooltip with a list of frames under the mouse cursor. Not relevant outside of addon development and debugging.</desc>
+		<param name="includeHidden">boolean, true to include hidden frames in the list; false to list only visible frames</param>
+	]]
 
-	doc [======[
-		@name SetGlyph
-		@type method
-		@desc Fills the tooltip with information about one of the player's glyphs
-		@param socket number, which socket's glyph to display (between 1 and NUM_GLYPH_SLOTS)
-		@param talentGroup number, which set of glyphs to display, if the player has Dual Talent Specialization enabled, 1 - Primary Talents, 2 - Secondary Talents, nil - Currently active talents
-		@return nil
-	]======]
+	__Doc__"SetGlyph" [[
+		<desc>Fills the tooltip with information about one of the player's glyphs</desc>
+		<param name="socket">number, which socket's glyph to display (between 1 and NUM_GLYPH_SLOTS)</param>
+		<param name="talentGroup">number, which set of glyphs to display, if the player has Dual Talent Specialization enabled, 1 - Primary Talents, 2 - Secondary Talents, nil - Currently active talents</param>
+	]]
 
-	doc [======[
-		@name SetGlyphByID
-		@type method
+	__Doc__"SetGlyphByID" [[
+		<param name="id">numbr</param>
+	]]
+
+	__Doc__"SetGuildBankItem" [[
+		<desc>Fills the tooltip with information about an item in the guild bank. Information is only available if the guild bank tab has been opened in the current play session.</desc>
+		<param name="tab">number, index of a guild bank tab (between 1 and GetNumGuildBankTabs())</param>
+		<param name="slot">number, index of an item slot in the guild bank tab (between 1 and MAX_GUILDBANK_SLOTS_PER_TAB)</param>
+	]]
+
+	__Doc__"SetHyperlink" [[
+		<desc>Fills the tooltip with information about an item, quest, spell, or other entity represented by a hyperlink</desc>
+		<param name="hyperlink">string, a full hyperlink, or the linktype:linkdata portion thereof</param>
+	]]
+
+	__Doc__"SetHyperlinkCompareItem" [[
+		<desc>Fills the tooltip with information about the item currently equipped in the slot used the supplied item</desc>
+		<param name="hyperlink">string, a full hyperlink, or the linktype:linkdata portion thereof, for an item to compare against the player's equipped similar item</param>
+		<param name="index">number, index of the slot to compare against (1, 2, or 3), if more than one item of the equipment type can be equipped at once (e.g. rings and trinkets)</param>
+		<return type="boolean">1 if an item's information was loaded into the tooltip; otherwise nil</return>
+	]]
+
+	__Doc__"SetInboxItem" [[
+		<desc>Fills the tooltip with information about an item attached to a message in the player's inbox</desc>
+		<param name="mailID">number, index of a message in the player's inbox (between 1 and GetInboxNumItems())</param>
+		<param name="attachmentIndex">number, index of an attachment to the message (between 1 and select(8,GetInboxHeaderInfo(mailID)))</param>
+	]]
+
+	__Doc__"SetInstanceLockEncountersComplete" [[
+		<param name="id">number</param>
+	]]
+
+	__Doc__"SetInventoryItem" [[
+		<desc>Fills the tooltip with information about an equipped item</desc>
+		<param name="unit">string, a unit to query; only valid for 'player' or the unit currently being inspected</param>
+		<param name="slot">number, an inventory slot number, as can be obtained from GetInventorySlotInfo</param>
+		<param name="nameOnly">boolean, true to omit much of the item's information (stat bonuses, sockets, and binding) from the tooltip; false to show all of the item's information</param>
+		<return type="hasItem">boolean, 1 if the unit has an item in the given slot; otherwise nil</return>
+		<return type="hasCooldown">boolean, 1 if the item is currently on cooldown; otherwise nil</return>
+		<return type="repairCost">number, Cost to repair the item (in copper, ignoring faction discounts)</return>
+	]]
+
+	__Doc__"SetInventoryItemByID" [[
+		<param name="id">number</param>
+	]]
+
+	__Doc__"SetLFGCompletionReward" [[
+		<desc>Fills the tooltip with the information about the LFG completion reward</desc>
+		<param name="index">number reward ID</param>
+	]]
+
+	__Doc__"SetLFGDungeonReward" [[
+		<desc>Fills the tooltip with the information about the LFD completion reward</desc>
+		<param name="index">number reward ID</param>
+	]]
+
+	__Doc__"SetLootCurrency" [[
+		<desc>Fills the tooltip with information about the loot currency</desc>
+		<param name="slot">number</param>
+	]]
+
+	__Doc__"SetLootItem" [[
+		<desc>Fills the tooltip with information about an item available as loot</desc>
+		<param name="slot">number, index of a loot slot (between 1 and GetNumLootItems())</param>
+	]]
+
+	__Doc__"SetLootRollItem" [[
+		<desc>Fills the tooltip with information about an item currently up for loot rolling</desc>
+		<param name="id">number, index of an item currently up for loot rolling (as provided in the START_LOOT_ROLL event)</param>
+	]]
+
+	__Doc__"SetMerchantCostItem" [[
+		<desc>Fills the tooltip with information about an alternate currency required to purchase an item from a vendor. Only applies to item-based currencies, not honor or arena points.</desc>
+		<param name="index">number, index of an item in the vendor's listing (between 1 and GetMerchantNumItems()) (number)</param>
+		<param name="currency">number, index of one of the item currencies required to purchase the item (between 1 and select(3,GetMerchantItemCostInfo(index))) (number)</param>
+	]]
+
+	__Doc__"SetMerchantItem" [[
+		<desc>Fills the tooltip with information about an item available for purchase from a vendor</desc>
+		<param name="merchantIndex">number, the index of an item in the merchant window, between 1 and GetMerchantNumItems().</param>
+	]]
+
+	__Doc__"SetMinimumWidth" [[
+		<desc>Sets the minimum width of the tooltip. Normally, a tooltip is automatically sized to match the width of its shortest line of text; setting a minimum width can be useful if the tooltip also contains non-text frames (such as an amount of money or a status bar)</desc>
+		<param name="width">number, minimum width of the tooltip frame (in pixels)</param>
+	]]
+
+	__Doc__"SetOwner" [[
+		<desc>Sets the frame to which the tooltip refers and is anchored</desc>
+		<format>frame [, anchorType[, xOffset [, yOffset] ] ]</format>
+		<param name="frame">System.Widget.Region, reference to the Frame to which the tooltip refers</param>
+		<param name="anchorType">System.Widget.AnchorType, token identifying the positioning method for the tooltip relative to its owner frame</param>
+		<param name="xOffset">number, the horizontal offset for the tooltip anchor</param>
+		<param name="yOffset">number, the vertical offset for the tooltip anchor</param>
+	]]
+
+	__Doc__"SetPadding" [[
+		<desc>Sets the amount of space between tooltip's text and its right-side edge. Used in the default UI's ItemRefTooltip to provide space for a close button.</desc>
+		<param name="padding">number, amount of space between the right-side edge of the tooltip's text and the right-side edge of the tooltip frame (in pixels)</param>
+	]]
+
+	__Doc__"SetPetAction" [[
+		<desc>Fills the tooltip with information about a pet action. Only provides information for pet action slots containing pet spells -- in the default UI, the standard pet actions (attack, follow, passive, aggressive, etc) are special-cased to show specific tooltip text.</desc>
+		<param name="index">number, index of a pet action button (between 1 and NUM_PET_ACTION_SLOTS)</param>
+	]]
+
+	__Doc__"SetPossession" [[
+		<desc>Fills the tooltip with information about one of the special actions available while the player possesses another unit</desc>
+		<param name="index">number, index of a possession bar action (between 1 and NUM_POSSESS_SLOTS)</param>
+	]]
+
+	__Doc__"SetQuestCurrency" [[
 		@desc
-		@param id numbr
-		@return nil
-	]======]
+		<param name="type">string</param>
+		<param name="id">number</param>
+	]]
 
-	doc [======[
-		@name SetGuildBankItem
-		@type method
-		@desc Fills the tooltip with information about an item in the guild bank. Information is only available if the guild bank tab has been opened in the current play session.
-		@param tab number, index of a guild bank tab (between 1 and GetNumGuildBankTabs())
-		@param slot number, index of an item slot in the guild bank tab (between 1 and MAX_GUILDBANK_SLOTS_PER_TAB)
-		@return nil
-	]======]
+	__Doc__"SetQuestItem" [[
+		<desc>Fills the tooltip with information about an item in a questgiver dialog</desc>
+		<param name="itemType">string, token identifying one of the possible sets of items : choice|required|reward</param>
+		<param name="index">number, index of an item in the set (between 1 and GetNumQuestChoices(), GetNumQuestItems(), or GetNumQuestRewards(), according to itemType)</param>
+	]]
 
-	doc [======[
-		@name SetHyperlink
-		@type method
-		@desc Fills the tooltip with information about an item, quest, spell, or other entity represented by a hyperlink
-		@param hyperlink string, a full hyperlink, or the linktype:linkdata portion thereof
-		@return nil
-	]======]
+	__Doc__"SetQuestLogCurrency" [[
+		<param name="type">string</param>
+		<param name="id">number</param>
+	]]
 
-	doc [======[
-		@name SetHyperlinkCompareItem
-		@type method
-		@desc Fills the tooltip with information about the item currently equipped in the slot used the supplied item
-		@param hyperlink string, a full hyperlink, or the linktype:linkdata portion thereof, for an item to compare against the player's equipped similar item
-		@param index number, index of the slot to compare against (1, 2, or 3), if more than one item of the equipment type can be equipped at once (e.g. rings and trinkets)
-		@return boolean 1 if an item's information was loaded into the tooltip; otherwise nil
-	]======]
+	__Doc__"SetQuestLogItem" [[
+		<desc>Fills the tooltip with information about an item related to the selected quest in the quest log</desc>
+		<param name="itemType">string, token identifying one of the possible sets of items : choice|reward</param>
+		<param name="index">number, index of an item in the set (between 1 and GetNumQuestLogChoices() or GetNumQuestLogRewards(), according to itemType)</param>
+	]]
 
-	doc [======[
-		@name SetInboxItem
-		@type method
-		@desc Fills the tooltip with information about an item attached to a message in the player's inbox
-		@param mailID number, index of a message in the player's inbox (between 1 and GetInboxNumItems())
-		@param attachmentIndex number, index of an attachment to the message (between 1 and select(8,GetInboxHeaderInfo(mailID)))
-		@return nil
-	]======]
+	__Doc__"function_name" [[Fills the tooltip with information about the reward spell for the selected quest in the quest log]]
 
-	doc [======[
-		@name SetInstanceLockEncountersComplete
-		@type method
-		@desc
-		@param id number
-		@return nil
-	]======]
+	__Doc__"SetQuestLogSpecialItem" [[
+		<desc>Fills the tooltip with information about a usable item associated with a current quest</desc>
+		<param name="questIndex">number, index of a quest log entry with an associated usable item (between 1 and GetNumQuestLogEntries())</param>
+	]]
 
-	doc [======[
-		@name SetInventoryItem
-		@type method
-		@desc Fills the tooltip with information about an equipped item
-		@param unit string, a unit to query; only valid for 'player' or the unit currently being inspected
-		@param slot number, an inventory slot number, as can be obtained from GetInventorySlotInfo
-		@param nameOnly boolean, true to omit much of the item's information (stat bonuses, sockets, and binding) from the tooltip; false to show all of the item's information
-		@return hasItem boolean, 1 if the unit has an item in the given slot; otherwise nil
-		@return hasCooldown boolean, 1 if the item is currently on cooldown; otherwise nil
-		@return repairCost number, Cost to repair the item (in copper, ignoring faction discounts)
-	]======]
+	__Doc__"SetQuestRewardSpell" [[Fills the tooltip with information about the spell reward in a questgiver dialog]]
 
-	doc [======[
-		@name SetInventoryItemByID
-		@type method
-		@desc
-		@param id number
-		@return nil
-	]======]
+	__Doc__"SetReforgeItem" [[Fills the tooltip with information about the reforged item]]
 
-	doc [======[
-		@name SetLFGCompletionReward
-		@type method
-		@desc Fills the tooltip with the information about the LFG completion reward
-		@param index number reward ID
-		@return nil
-	]======]
+	__Doc__"SetSendMailItem" [[
+		<desc>Fills the tooltip with information about an item attached to the outgoing mail message</desc>
+		<param name="slot">number, index of an outgoing attachment slot (between 1 and ATTACHMENTS_MAX_SEND)</param>
+	]]
 
-	doc [======[
-		@name SetLFGDungeonReward
-		@type method
-		@desc Fills the tooltip with the information about the LFD completion reward
-		@param index number reward ID
-		@return nil
-	]======]
+	__Doc__"SetShapeshift" [[
+		<desc>Fills the tooltip with information about an ability on the stance/shapeshift bar</desc>
+		<param name="index">number, index of an ability on the stance/shapeshift bar (between 1 and GetNumShapeshiftForms())</param>
+	]]
 
-	doc [======[
-		@name SetLootCurrency
-		@type method
-		@desc Fills the tooltip with information about the loot currency
-		@param slot number
-		@return nil
-	]======]
+	__Doc__"SetSocketedItem" [[Fills the tooltip with information about the item currently being socketed]]
 
-	doc [======[
-		@name SetLootItem
-		@type method
-		@desc Fills the tooltip with information about an item available as loot
-		@param slot number, index of a loot slot (between 1 and GetNumLootItems())
-		@return nil
-	]======]
+	__Doc__"SetSocketGem" [[
+		<desc>Fills the tooltip with information about a gem added to a socket</desc>
+		<param name="index">number, index of a gem socket (between 1 and GetNumSockets())</param>
+	]]
 
-	doc [======[
-		@name SetLootRollItem
-		@type method
-		@desc Fills the tooltip with information about an item currently up for loot rolling
-		@param id number, index of an item currently up for loot rolling (as provided in the START_LOOT_ROLL event)
-		@return nil
-	]======]
+	__Doc__"SetSpellBookItem" [[
+		<param name="slot"></param>
+		<param name="bookType"></param>
+	]]
 
-	doc [======[
-		@name SetMerchantCostItem
-		@type method
-		@desc Fills the tooltip with information about an alternate currency required to purchase an item from a vendor. Only applies to item-based currencies, not honor or arena points.
-		@param index number, index of an item in the vendor's listing (between 1 and GetMerchantNumItems()) (number)
-		@param currency number, index of one of the item currencies required to purchase the item (between 1 and select(3,GetMerchantItemCostInfo(index))) (number)
-		@return nil
-	]======]
+	__Doc__"SetSpellByID" [[
+		<desc>Fills the tooltip with information about a spell specified by ID</desc>
+		<param name="id">number, spell id</param>
+	]]
 
-	doc [======[
-		@name SetMerchantItem
-		@type method
-		@desc Fills the tooltip with information about an item available for purchase from a vendor
-		@param merchantIndex number, the index of an item in the merchant window, between 1 and GetMerchantNumItems().
-		@return nil
-	]======]
+	__Doc__"SetTalent" [[
+		<desc>Fills the tooltip with information about a talent</desc>
+		<param name="tabIndex">number, index of a talent tab (between 1 and GetNumTalentTabs())</param>
+		<param name="talentIndex">number, index of a talent option (between 1 and GetNumTalents())</param>
+		<param name="inspect">boolean, true to return information for the currently inspected unit; false to return information for the player</param>
+		<param name="pet">boolean, true to return information for the player's pet; false to return information for the player</param>
+		<param name="talentGroup">number, Which set of talents to edit, if the player has Dual Talent Specialization enabled: 1 - Primary Talents, 2 - Secondary Talents, nil - Currently active talents</param>
+	]]
 
-	doc [======[
-		@name SetMinimumWidth
-		@type method
-		@desc Sets the minimum width of the tooltip. Normally, a tooltip is automatically sized to match the width of its shortest line of text; setting a minimum width can be useful if the tooltip also contains non-text frames (such as an amount of money or a status bar)
-		@param width number, minimum width of the tooltip frame (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetText" [[
+		<desc>Sets the tooltip's text. Any other content currently displayed in the tooltip will be removed or hidden, and the tooltip's size will be adjusted to fit the new text.</desc>
+		<format>text[, r, g, b[, a] ]</format>
+		<param name="text">string, text to be displayed in the tooltip</param>
+		<param name="r">number, red component of the text color (0.0 - 1.0)</param>
+		<param name="g">number, green component of the text color (0.0 - 1.0)</param>
+		<param name="b">number, blue component of the text color (0.0 - 1.0)</param>
+		<param name="a">number, alpha (opacity) for the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name SetOwner
-		@type method
-		@desc Sets the frame to which the tooltip refers and is anchored
-		@format frame [, anchorType[, xOffset [, yOffset]]]
-		@param frame System.Widget.Region, reference to the Frame to which the tooltip refers
-		@param anchorType System.Widget.AnchorType, token identifying the positioning method for the tooltip relative to its owner frame
-		@param xOffset number, the horizontal offset for the tooltip anchor
-		@param yOffset number, the vertical offset for the tooltip anchor
-		@return nil
-	]======]
+	__Doc__"SetTotem" [[
+		<desc>Fills the tooltip with information about one of the player's active totems.</desc>
+		<param name="slot">number, which totem to query</param>
+	]]
 
-	doc [======[
-		@name SetPadding
-		@type method
-		@desc Sets the amount of space between tooltip's text and its right-side edge. Used in the default UI's ItemRefTooltip to provide space for a close button.
-		@param padding number, amount of space between the right-side edge of the tooltip's text and the right-side edge of the tooltip frame (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetTradePlayerItem" [[
+		<desc>Fills the tooltip with information about an item offered for trade by the player.</desc>
+		<param name="index">number, index of an item offered for trade by the player (between 1 and MAX_TRADE_ITEMS)</param>
+	]]
 
-	doc [======[
-		@name SetPetAction
-		@type method
-		@desc Fills the tooltip with information about a pet action. Only provides information for pet action slots containing pet spells -- in the default UI, the standard pet actions (attack, follow, passive, aggressive, etc) are special-cased to show specific tooltip text.
-		@param index number, index of a pet action button (between 1 and NUM_PET_ACTION_SLOTS)
-		@return nil
-	]======]
+	__Doc__"SetTradeSkillItem" [[
+		<desc>Fills the tooltip with information about an item created by a trade skill recipe or a reagent in the recipe</desc>
+		<param name="skillIndex">number, index of a recipe in the trade skill list (between 1 and GetNumTradeSkills())</param>
+		<param name="reagentIndex">number, index of a reagent in the recipe (between 1 and GetTradeSkillNumReagents()); if omitted, displays a tooltip for the item created by the recipe</param>
+	]]
 
-	doc [======[
-		@name SetPossession
-		@type method
-		@desc Fills the tooltip with information about one of the special actions available while the player possesses another unit
-		@param index number, index of a possession bar action (between 1 and NUM_POSSESS_SLOTS)
-		@return nil
-	]======]
+	__Doc__"SetTradeTargetItem" [[
+		<desc>Fills the tooltip with information about an item offered for trade by the target. See :SetTradePlayerItem() for items to be traded away by the player.</desc>
+		<param name="index">number, index of an item offered for trade by the target (between 1 and MAX_TRADE_ITEMS)</param>
+	]]
 
-	doc [======[
-		@name SetQuestCurrency
-		@type method
-		@desc
-		@param type string
-		@param id number
-		@return nil
-	]======]
+	__Doc__"SetTrainerService" [[
+		<desc>Fills the tooltip with information about a trainer service</desc>
+		<param name="index">number, index of an entry in the trainer service listing (between 1 and GetNumTrainerServices())</param>
+	]]
 
-	doc [======[
-		@name SetQuestItem
-		@type method
-		@desc Fills the tooltip with information about an item in a questgiver dialog
-		@param itemType string, token identifying one of the possible sets of items : choice|required|reward
-		@param index number, index of an item in the set (between 1 and GetNumQuestChoices(), GetNumQuestItems(), or GetNumQuestRewards(), according to itemType)
-		@return nil
-	]======]
+	__Doc__"SetUnit" [[
+		<desc>Fills the tooltip with information about a unit</desc>
+		<param name="unit">string, a unit to query</param>
+	]]
 
-	doc [======[
-		@name SetQuestLogCurrency
-		@type method
-		@desc
-		@param type string
-		@param id number
-		@return nil
-	]======]
+	__Doc__"SetUnitAura" [[
+		<desc>Fills the tooltip with information about a buff or debuff on a unit</desc>
+		<param name="unit">string, a unit to query</param>
+		<param name="index">number, index of a buff or debuff on the unit</param>
+		<param name="filter">string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "RAID|PLAYER" will query group buffs cast by the player</param>
+	]]
 
-	doc [======[
-		@name SetQuestLogItem
-		@type method
-		@desc Fills the tooltip with information about an item related to the selected quest in the quest log
-		@param itemType string, token identifying one of the possible sets of items : choice|reward
-		@param index number, index of an item in the set (between 1 and GetNumQuestLogChoices() or GetNumQuestLogRewards(), according to itemType)
-		@return nil
-	]======]
+	__Doc__"SetUnitBuff" [[
+		<desc>Fills the tooltip with information about a buff on a unit.</desc>
+		<param name="unit">string, a unit to query</param>
+		<param name="index">number, index of a buff or debuff on the unit</param>
+		<param name="filter">string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "RAID|PLAYER" will query group buffs cast by the player</param>
+	]]
 
-	doc [======[
-		@name function_name
-		@type method
-		@desc Fills the tooltip with information about the reward spell for the selected quest in the quest log
-		@return nil
-	]======]
+	__Doc__"SetUnitDebuff" [[
+		<desc>Fills the tooltip with information about a debuff on a unit.</desc>
+		<param name="unit">string, a unit to query</param>
+		<param name="index">number, index of a buff or debuff on the unit</param>
+		<param name="filter">string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "CANCELABLE|PLAYER" will query cancelable debuffs cast by the player</param>
+	]]
 
-	doc [======[
-		@name SetQuestLogSpecialItem
-		@type method
-		@desc Fills the tooltip with information about a usable item associated with a current quest
-		@param questIndex number, index of a quest log entry with an associated usable item (between 1 and GetNumQuestLogEntries())
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetQuestRewardSpell
-		@type method
-		@desc Fills the tooltip with information about the spell reward in a questgiver dialog
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetReforgeItem
-		@type method
-		@desc Fills the tooltip with information about the reforged item
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetSendMailItem
-		@type method
-		@desc Fills the tooltip with information about an item attached to the outgoing mail message
-		@param slot number, index of an outgoing attachment slot (between 1 and ATTACHMENTS_MAX_SEND)
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetShapeshift
-		@type method
-		@desc Fills the tooltip with information about an ability on the stance/shapeshift bar
-		@param index number, index of an ability on the stance/shapeshift bar (between 1 and GetNumShapeshiftForms())
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetSocketedItem
-		@type method
-		@desc Fills the tooltip with information about the item currently being socketed
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetSocketGem
-		@type method
-		@desc Fills the tooltip with information about a gem added to a socket
-		@param index number, index of a gem socket (between 1 and GetNumSockets())
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetSpellBookItem
-		@type method
-		@desc
-		@param slot
-		@param bookType
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetSpellByID
-		@type method
-		@desc Fills the tooltip with information about a spell specified by ID
-		@param id number, spell id
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTalent
-		@type method
-		@desc Fills the tooltip with information about a talent
-		@param tabIndex number, index of a talent tab (between 1 and GetNumTalentTabs())
-		@param talentIndex number, index of a talent option (between 1 and GetNumTalents())
-		@param inspect boolean, true to return information for the currently inspected unit; false to return information for the player
-		@param pet boolean, true to return information for the player's pet; false to return information for the player
-		@param talentGroup number, Which set of talents to edit, if the player has Dual Talent Specialization enabled: 1 - Primary Talents, 2 - Secondary Talents, nil - Currently active talents
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the tooltip's text. Any other content currently displayed in the tooltip will be removed or hidden, and the tooltip's size will be adjusted to fit the new text.
-		@format text[, r, g, b[, a]]
-		@param text string, text to be displayed in the tooltip
-		@param r number, red component of the text color (0.0 - 1.0)
-		@param g number, green component of the text color (0.0 - 1.0)
-		@param b number, blue component of the text color (0.0 - 1.0)
-		@param a number, alpha (opacity) for the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTotem
-		@type method
-		@desc Fills the tooltip with information about one of the player's active totems.
-		@param slot number, which totem to query
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTradePlayerItem
-		@type method
-		@desc Fills the tooltip with information about an item offered for trade by the player.
-		@param index number, index of an item offered for trade by the player (between 1 and MAX_TRADE_ITEMS)
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTradeSkillItem
-		@type method
-		@desc Fills the tooltip with information about an item created by a trade skill recipe or a reagent in the recipe
-		@param skillIndex number, index of a recipe in the trade skill list (between 1 and GetNumTradeSkills())
-		@param reagentIndex number, index of a reagent in the recipe (between 1 and GetTradeSkillNumReagents()); if omitted, displays a tooltip for the item created by the recipe
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTradeTargetItem
-		@type method
-		@desc Fills the tooltip with information about an item offered for trade by the target. See :SetTradePlayerItem() for items to be traded away by the player.
-		@param index number, index of an item offered for trade by the target (between 1 and MAX_TRADE_ITEMS)
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetTrainerService
-		@type method
-		@desc Fills the tooltip with information about a trainer service
-		@param index number, index of an entry in the trainer service listing (between 1 and GetNumTrainerServices())
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetUnit
-		@type method
-		@desc Fills the tooltip with information about a unit
-		@param unit string, a unit to query
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetUnitAura
-		@type method
-		@desc Fills the tooltip with information about a buff or debuff on a unit
-		@param unit string, a unit to query
-		@param index number, index of a buff or debuff on the unit
-		@param filter string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "RAID|PLAYER" will query group buffs cast by the player
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetUnitBuff
-		@type method
-		@desc Fills the tooltip with information about a buff on a unit.
-		@param unit string, a unit to query
-		@param index number, index of a buff or debuff on the unit
-		@param filter string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "RAID|PLAYER" will query group buffs cast by the player
-		@return nil
-	]======]
-
-	doc [======[
-		@name SetUnitDebuff
-		@type method
-		@desc Fills the tooltip with information about a debuff on a unit.
-		@param unit string, a unit to query
-		@param index number, index of a buff or debuff on the unit
-		@param filter string, a list of filters to use when resolving the index, separated by the pipe '|' character; e.g. "CANCELABLE|PLAYER" will query cancelable debuffs cast by the player
-		@return nil
-	]======]
-
-	doc [======[
-		@name GetLeftText
-		@type method
-		@desc Get the left text of the given index line
-		@param index number, between 1 and self:NumLines()
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Get the left text of the given index line</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<return type="string"></return>
+	]]
 	function GetLeftText(self, index)
 		local name = self:GetName()
 
@@ -783,13 +504,11 @@ class "GameTooltip"
 		end
 	end
 
-	doc [======[
-		@name GetRightText
-		@type method
-		@desc Get the right text of the given index line
-		@param index number, between 1 and self:NumLines()
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Get the right text of the given index line</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<return type="string"></return>
+	]]
 	function GetRightText(self, index)
 		local name = self:GetName()
 
@@ -804,13 +523,11 @@ class "GameTooltip"
 		end
 	end
 
-	doc [======[
-		@name GetTexture
-		@type method
-		@desc Get the texutre of the given index line
-		@param index number, between 1 and self:NumLines()
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Get the texutre of the given index line</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<return type="string"></return>
+	]]
 	function GetTexture(self, index)
 		local name = self:GetName()
 
@@ -825,13 +542,11 @@ class "GameTooltip"
 		end
 	end
 
-	doc [======[
-		@name GetMoney
-		@type method
-		@desc Get the money of the given index, default 1
-		@param index number, between 1 and self:NumLines()
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Get the money of the given index, default 1</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<return type="number"></return>
+	]]
 	function GetMoney(self, index)
 		local name = self:GetName()
 
@@ -914,11 +629,7 @@ class "GameTooltip"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Owner
-		@type property
-		@desc The owner of this gametooltip
-	]======]
+	__Doc__[[The owner of this gametooltip]]
 	property "Owner" { Type = UIObject + nil }
 
 endclass "GameTooltip"

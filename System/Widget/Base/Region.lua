@@ -11,55 +11,31 @@ if not IGAS:NewAddon("IGAS.Widget.Region", version) then
 	return
 end
 
+__Doc__[[Region is the basic type for anything that can occupy an area of the screen. As such, Frames, Textures and FontStrings are all various kinds of Region. Region provides most of the functions that support size, position and anchoring, including animation. It is a "real virtual" type; it cannot be instantiated, but objects can return true when asked if they are Regions.]]
 class "Region"
 	inherit "UIObject"
-
-	doc [======[
-		@name Region
-		@type class
-		@desc Region is the basic type for anything that can occupy an area of the screen. As such, Frames, Textures and FontStrings are all various kinds of Region. Region provides most of the functions that support size, position and anchoring, including animation. It is a "real virtual" type; it cannot be instantiated, but objects can return true when asked if they are Regions.
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnShow
-		@type event
-		@desc Run when the Region becomes visible
-	]======]
+	__Doc__[[Run when the Region becomes visible]]
 	event "OnShow"
 
-	doc [======[
-		@name OnHide
-		@type event
-		@desc Run when the Region's visbility changes to hidden
-	]======]
+	__Doc__[[Run when the Region's visbility changes to hidden]]
 	event "OnHide"
 
-	doc [======[
-		@name OnVisibleChanged
-		@type event
-		@desc Run when the Region's visible state is changed
-	]======]
+	__Doc__[[Run when the Region's visible state is changed]]
 	event "OnVisibleChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetAlpha
-		@type method
-		@desc Returns the opacity of the region relative to its parent
-		@return number Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetAlpha" [[
+		<desc>Returns the opacity of the region relative to its parent</desc>
+		<return type="number">Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name Hide
-		@type method
-		@desc Hide the region
-		@return nil
-	]======]
+	__Doc__[[Hide the region]]
 	function Hide(self)
 		local flag = self:IsShown()
 
@@ -76,34 +52,22 @@ class "Region"
 		return self.__ShowDialogThread and self.__ShowDialogThread()
 	end
 
-	doc [======[
-		@name IsShown
-		@type method
-		@desc Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.
-		@return boolean 1 if the region is shown; otherwise nil
-	]======]
+	__Doc__"IsShown" [[
+		<desc>Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.</desc>
+		<return type="boolean">1 if the region is shown; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsVisible
-		@type method
-		@desc Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)
-		@return boolean 1 if the region is visible; otherwise nil
-	]======]
+	__Doc__"IsVisible" [[
+		<desc>Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)</desc>
+		<return type="boolean">1 if the region is visible; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetAlpha
-		@type method
-		@desc Sets the opacity of the region relative to its parent
-		@param alpha number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetAlpha" [[
+		<desc>Sets the opacity of the region relative to its parent</desc>
+		<param name="alpha">number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name Show
-		@type method
-		@desc Show the region
-		@return nil
-	]======]
+	__Doc__[[Show the region]]
 	function Show(self)
 		local flag = self:IsShown()
 
@@ -118,12 +82,7 @@ class "Region"
 		end
 	end
 
-	doc [======[
-		@name ShowDialog
-		@type method
-		@desc Show the region and stop parent's calling thread
-		@return nil
-	]======]
+	__Doc__[[Show the region and stop parent's calling thread]]
 	function ShowDialog(self)
 		local flag = self:IsShown()
 
@@ -141,38 +100,27 @@ class "Region"
 		return self.__ShowDialogThread:Yield()
 	end
 
-	doc [======[
-		@name CanChangeProtectedState
-		@type method
-		@desc Returns whether protected properties of the region can be changed by non-secure scripts. Addon scripts are allowed to change protected properties for non-secure frames, or for secure frames while the player is not in combat.
-		@return boolean 1 if addon scripts are currently allowed to change protected properties of the region (e.g. showing or hiding it, changing its position, or altering frame attributes); otherwise nil
-	]======]
+	__Doc__"CanChangeProtectedState" [[
+		<desc>Returns whether protected properties of the region can be changed by non-secure scripts. Addon scripts are allowed to change protected properties for non-secure frames, or for secure frames while the player is not in combat.</desc>
+		<return type="boolean">1 if addon scripts are currently allowed to change protected properties of the region (e.g. showing or hiding it, changing its position, or altering frame attributes); otherwise nil</return>
+	]]
 
-	doc [======[
-		@name ClearAllPoints
-		@type method
-		@desc Removes all anchor points from the region
-		@return nil
-	]======]
+	__Doc__"ClearAllPoints" [[Removes all anchor points from the region]]
 
-	doc [======[
-		@name CreateAnimationGroup
-		@type method
-		@desc Creates a new AnimationGroup as a child of the region
-		@param name string, name to use for the new animation group
-		@param inheritsFrom string, template from which the new animation group should inherit
-		@return System.Widget.AnimationGroup The newly created AnimationGroup
-	]======]
+	__Doc__[[
+		<desc>Creates a new AnimationGroup as a child of the region</desc>
+		<param name="name">string, name to use for the new animation group</param>
+		<param name="inheritsFrom">string, template from which the new animation group should inherit</param>
+		<return type="System.Widget.AnimationGroup">The newly created AnimationGroup</return>
+	]]
 	function CreateAnimationGroup(self, name, inheritsFrom)
 		return Widget["AnimationGroup"] and Widget["AnimationGroup"](name, self, inheritsFrom)
 	end
 
-	doc [======[
-		@name GetAnimationGroups
-		@type method
-		@desc Returns a list of animation groups belonging to the region
-		@return ... - A list of AnimationGroup objects for which the region is parent
-	]======]
+	__Doc__[[
+		<desc>Returns a list of animation groups belonging to the region</desc>
+		<return type="...">- A list of AnimationGroup objects for which the region is parent</return>
+	]]
 	function GetAnimationGroups(self)
 		local lst = {self.__UI:GetAnimationGroups()}
 
@@ -183,191 +131,139 @@ class "Region"
 		return unpack(lst)
 	end
 
-	doc [======[
-		@name GetBottom
-		@type method
-		@desc Returns the distance from the bottom of the screen to the bottom of the region
-		@return number Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)
-	]======]
+	__Doc__"GetBottom" [[
+		<desc>Returns the distance from the bottom of the screen to the bottom of the region</desc>
+		<return type="number">Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetCenter
-		@type method
-		@desc Returns the screen coordinates of the region's center
-		@return x number, distance from the left edge of the screen to the center of the region (in pixels)
-		@return y number, distance from the bottom edge of the screen to the center of the region (in pixels)
-	]======]
+	__Doc__"GetCenter" [[
+		<desc>Returns the screen coordinates of the region's center</desc>
+		<return type="x">number, distance from the left edge of the screen to the center of the region (in pixels)</return>
+		<return type="y">number, distance from the bottom edge of the screen to the center of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetHeight
-		@type method
-		@desc Returns the height of the region
-		@return number Height of the region (in pixels)
-	]======]
+	__Doc__"GetHeight" [[
+		<desc>Returns the height of the region</desc>
+		<return type="number">Height of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetLeft
-		@type method
-		@desc Returns the distance from the left edge of the screen to the left edge of the region
-		@return number Distance from the left edge of the screen to the left edge of the region (in pixels)
-	]======]
+	__Doc__"GetLeft" [[
+		<desc>Returns the distance from the left edge of the screen to the left edge of the region</desc>
+		<return type="number">Distance from the left edge of the screen to the left edge of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetNumPoints
-		@type method
-		@desc Returns the number of anchor points defined for the region
-		@return number Number of defined anchor points for the region
-	]======]
+	__Doc__"GetNumPoints" [[
+		<desc>Returns the number of anchor points defined for the region</desc>
+		<return type="number">Number of defined anchor points for the region</return>
+	]]
 
-	doc [======[
-		@name GetPoint
-		@type method
-		@desc Returns information about one of the region's anchor points
-		@param index number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())
-		@return point System.Widget.FramePoint, point on this region at which it is anchored to another
-		@return relativeTo System.Widget.Region, reference to the other region to which this region is anchored
-		@return relativePoint System.Widget.FramePoint, point on the other region to which this region is anchored
-		@return xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)
-		@return yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)
-	]======]
+	__Doc__[[
+		<desc>Returns information about one of the region's anchor points</desc>
+		<param name="index">number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())</param>
+		<return type="point">System.Widget.FramePoint, point on this region at which it is anchored to another</return>
+		<return type="relativeTo">System.Widget.Region, reference to the other region to which this region is anchored</return>
+		<return type="relativePoint">System.Widget.FramePoint, point on the other region to which this region is anchored</return>
+		<return type="xOffset">number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)</return>
+		<return type="yOffset">number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)</return>
+	]]
 	function GetPoint(self, pointNum)
 		local point, frame, relativePoint, x, y = self.__UI:GetPoint(pointNum)
 		frame = IGAS:GetWrapper(frame)
 		return point, frame, relativePoint, x, y
 	end
 
-	doc [======[
-		@name GetRect
-		@type method
-		@desc Returns the position and dimensions of the region
-		@return left number, Distance from the left edge of the screen to the left edge of the region (in pixels)
-		@return bottom number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)
-		@return width number, Width of the region (in pixels)
-		@return height number, Height of the region (in pixels)
-	]======]
+	__Doc__"GetRect" [[
+		<desc>Returns the position and dimensions of the region</desc>
+		<return type="left">number, Distance from the left edge of the screen to the left edge of the region (in pixels)</return>
+		<return type="bottom">number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)</return>
+		<return type="width">number, Width of the region (in pixels)</return>
+		<return type="height">number, Height of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetRight
-		@type method
-		@desc Returns the distance from the left edge of the screen to the right edge of the region
-		@return number Distance from the left edge of the screen to the right edge of the region (in pixels)
-	]======]
+	__Doc__"GetRight" [[
+		<desc>Returns the distance from the left edge of the screen to the right edge of the region</desc>
+		<return type="number">Distance from the left edge of the screen to the right edge of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetSize
-		@type method
-		@desc Returns the width and height of the region
-		@return width number, the width of the region
-		@return height number, the height of the region
-	]======]
+	__Doc__"GetSize" [[
+		<desc>Returns the width and height of the region</desc>
+		<return type="width">number, the width of the region</return>
+		<return type="height">number, the height of the region</return>
+	]]
 
-	doc [======[
-		@name GetTop
-		@type method
-		@desc Returns the distance from the bottom of the screen to the top of the region
-		@return number Distance from the bottom edge of the screen to the top edge of the region (in pixels)
-	]======]
+	__Doc__"GetTop" [[
+		<desc>Returns the distance from the bottom of the screen to the top of the region</desc>
+		<return type="number">Distance from the bottom edge of the screen to the top edge of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetWidth
-		@type method
-		@desc Returns the width of the region
-		@return number Width of the region (in pixels)
-	]======]
+	__Doc__"GetWidth" [[
+		<desc>Returns the width of the region</desc>
+		<return type="number">Width of the region (in pixels)</return>
+	]]
 
-	doc [======[
-		@name IsDragging
-		@type method
-		@desc Returns whether the region is currently being dragged
-		@return boolean 1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil
-	]======]
+	__Doc__"IsDragging" [[
+		<desc>Returns whether the region is currently being dragged</desc>
+		<return type="boolean">1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsMouseOver
-		@type method
-		@desc Returns whether the mouse cursor is over the given region. This function replaces the previous MouseIsOver FrameXML function.
-		@param topOffset number, the amount by which to displace the top edge of the test rectangle
-		@param leftOffset number, the amount by which to displace the left edge of the test rectangle
-		@param bottomOffset number, the amount by which to displace the bottom edge of the test rectangle
-		@param rightOffset number, the amount by which to displace the right edge of the test rectangle
-		@return boolean 1 if the mouse is over the region; otherwise nil
-	]======]
+	__Doc__"IsMouseOver" [[
+		<desc>Returns whether the mouse cursor is over the given region. This function replaces the previous MouseIsOver FrameXML function.</desc>
+		<param name="topOffset">number, the amount by which to displace the top edge of the test rectangle</param>
+		<param name="leftOffset">number, the amount by which to displace the left edge of the test rectangle</param>
+		<param name="bottomOffset">number, the amount by which to displace the bottom edge of the test rectangle</param>
+		<param name="rightOffset">number, the amount by which to displace the right edge of the test rectangle</param>
+		<return type="boolean">1 if the mouse is over the region; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsProtected
-		@type method
-		@desc Returns whether the region is protected. Non-secure scripts may change certain properties of a protected region (e.g. showing or hiding it, changing its position, or altering frame attributes) only while the player is not in combat. Regions may be explicitly protected by Blizzard scripts or XML; other regions can become protected by becoming children of protected regions or by being positioned relative to protected regions.
-		@return isProtected boolean, 1 if the region is protected; otherwise nil
-		@return explicit boolean, 1 if the region is explicitly protected; nil if the frame is only protected due to relationship with a protected region
-	]======]
+	__Doc__"IsProtected" [[
+		<desc>Returns whether the region is protected. Non-secure scripts may change certain properties of a protected region (e.g. showing or hiding it, changing its position, or altering frame attributes) only while the player is not in combat. Regions may be explicitly protected by Blizzard scripts or XML; other regions can become protected by becoming children of protected regions or by being positioned relative to protected regions.</desc>
+		<return type="isProtected">boolean, 1 if the region is protected; otherwise nil</return>
+		<return type="explicit">boolean, 1 if the region is explicitly protected; nil if the frame is only protected due to relationship with a protected region</return>
+	]]
 
-	doc [======[
-		@name SetAllPoints
-		@type method
-		@desc Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.
-		@format [name|region]
-		@param name global name of a System.Widget.Region
-		@param region System.Widget.Region
-		@return nil
-	]======]
+	__Doc__"SetAllPoints" [[
+		<desc>Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.</desc>
+		<format>[name|region]</format>
+		<param name="name">global name of a System.Widget.Region</param>
+		<param name="region">System.Widget.Region</param>
+	]]
 
-	doc [======[
-		@name SetHeight
-		@type method
-		@desc Sets the region's height
-		@param height number, New height for the region (in pixels); if 0, causes the region's height to be determined automatically according to its anchor points
-		@return nil
-	]======]
+	__Doc__"SetHeight" [[
+		<desc>Sets the region's height</desc>
+		<param name="height">number, New height for the region (in pixels); if 0, causes the region's height to be determined automatically according to its anchor points</param>
+	]]
 
-	doc [======[
-		@name GetHeight
-		@type method
-		@desc Gets the region's height
-		@return number the height of the region
-	]======]
+	__Doc__"GetHeight" [[
+		<desc>Gets the region's height</desc>
+		<return type="number">the height of the region</return>
+	]]
 
-	doc [======[
-		@name SetPoint
-		@type method
-		@desc Sets an anchor point for the region
-		@param point System.Widget.FramePoint, point on this region at which it is to be anchored to another
-		@param relativeTo System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)
-		@param relativePoint System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point
-		@param xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0
-		@param yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0
-	]======]
+	__Doc__"SetPoint" [[
+		<desc>Sets an anchor point for the region</desc>
+		<param name="point">System.Widget.FramePoint, point on this region at which it is to be anchored to another</param>
+		<param name="relativeTo">System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)</param>
+		<param name="relativePoint">System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point</param>
+		<param name="xOffset">number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0</param>
+		<param name="yOffset">number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0</param>
+	]]
 
-	doc [======[
-		@name SetSize
-		@type method
-		@desc Sets the size of the region to the specified values
-		@param width number, the width to set for the region
-		@param height number, the height to set for the region
-	]======]
+	__Doc__"SetSize" [[
+		<desc>Sets the size of the region to the specified values</desc>
+		<param name="width">number, the width to set for the region</param>
+		<param name="height">number, the height to set for the region</param>
+	]]
 
-	doc [======[
-		@name SetWidth
-		@type method
-		@desc Sets the region's width
-		@param width number,New width for the region (in pixels); if 0, causes the region's width to be determined automatically according to its anchor points
-		@return nil
-	]======]
+	__Doc__"SetWidth" [[
+		<desc>Sets the region's width</desc>
+		<param name="width">number,New width for the region (in pixels); if 0, causes the region's width to be determined automatically according to its anchor points</param>
+	]]
 
-	doc [======[
-		@name StopAnimating
-		@type method
-		@desc Stops any active animations involving the region or its children
-		@return nil
-	]======]
+	__Doc__"StopAnimating" [[Stops any active animations involving the region or its children]]
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Alpha
-		@type property
-		@desc the frame's transparency value(0-1)
-	]======]
+	__Doc__[[the frame's transparency value(0-1)]]
 	property "Alpha" {
 		Get = function(self)
 			return self:GetAlpha()
@@ -378,11 +274,7 @@ class "Region"
 		Type = ColorFloat,
 	}
 
-	doc [======[
-		@name Height
-		@type property
-		@desc the height of the region
-	]======]
+	__Doc__[[the height of the region]]
 	property "Height" {
 		Get = function(self)
 			return self:GetHeight()
@@ -393,11 +285,7 @@ class "Region"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Width
-		@type property
-		@desc the width of the region
-	]======]
+	__Doc__[[the width of the region]]
 	property "Width" {
 		Get = function(self)
 			return self:GetWidth()
@@ -408,11 +296,7 @@ class "Region"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Visible
-		@type property
-		@desc wheter the region is shown or not.
-	]======]
+	__Doc__[[wheter the region is shown or not.]]
 	property "Visible" {
 		Get = function(self)
 			return self:IsShown() and true or false
@@ -427,11 +311,7 @@ class "Region"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Size
-		@type property
-		@desc the size of the region
-	]======]
+	__Doc__[[the size of the region]]
 	property "Size" {
 		Get = function(self)
 			return System.Widget.Size(self:GetWidth(), self:GetHeight())
@@ -443,11 +323,7 @@ class "Region"
 		Type = System.Widget.Size,
 	}
 
-	doc [======[
-		@name Location
-		@type property
-		@desc the location of the region
-	]======]
+	__Doc__[[the location of the region]]
 	property "Location" {
 		Get = function(self)
 			local ret = {}

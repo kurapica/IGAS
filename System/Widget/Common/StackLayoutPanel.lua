@@ -7,14 +7,9 @@ if not IGAS:NewAddon("IGAS.Widget.StackLayoutPanel", version) then
 	return
 end
 
+__Doc__[[Auto stack elements into the layout panel]]
 class "StackLayoutPanel"
 	inherit "LayoutPanel"
-
-	doc [======[
-		@name StackLayoutPanel
-		@type class
-		@desc Auto stack elements into the layout panel
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -26,20 +21,16 @@ class "StackLayoutPanel"
 
 	------------------------------------
 	--- Add Widget to the panel
-	-- @name LayoutPanel:AddWidget
-	-- @class function
-	-- @param widget
-	-- @return index
+	-- <param name="widget"></param>
+	-- <return type="index"></return>
 	------------------------------------
 	function AddWidget(self, widget)
 	end
 
 	------------------------------------
 	--- Insert Widget to the panel
-	-- @name LayoutPanel:InsertWidget
-	-- @class function
-	-- @param before the index to be insert
-	-- @param widget
+	-- <param name="before">the index to be insert</param>
+	-- <param name="widget"></param>
 	------------------------------------
 	function InsertWidget(self, before, widget)
 	end

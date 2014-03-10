@@ -44,13 +44,10 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name UpdatePanelPosition
-		@type method
-		@desc Update the container's postion, needed by the IFContainer
-		@param ...
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Update the container's postion, needed by the IFContainer</desc>
+		<param name="..."></param>
+	]]
 	function UpdatePanelPosition(self)
 		self.Panel:ClearAllPoints()
 		self.Panel:SetPoint("BOTTOMLEFT")
@@ -61,11 +58,7 @@ class "GroupBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Caption
-		@type property
-		@desc the caption text for the groupbox
-	]======]
+	__Doc__[[the caption text for the groupbox]]
 	property "Caption" {
 		Set = function(self, text)
 			self:GetChild("Text").Text = text
@@ -78,11 +71,7 @@ class "GroupBox"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the groupbox's style
-	]======]
+	__Doc__[[the groupbox's style]]
 	property "Style" {
 		Field = "__Style",
 		Set = function(self, style)
@@ -110,11 +99,7 @@ class "GroupBox"
 		Type = GroupBoxStyle,
 	}
 
-	doc [======[
-		@name ShowBorder
-		@type property
-		@desc whether show the groupbox's border
-	]======]
+	__Doc__[[whether show the groupbox's border]]
 	property "ShowBorder" {
 		Set = function(self, flag)
 			if flag then

@@ -40,15 +40,12 @@ function _IFRangeTimer:OnTimer()
 	end
 end
 
+__Doc__[[
+	<desc>IFRange is used to check whether the unit is in the spell range of the player</desc>
+	<overridable name="InRange" type="property" valuetype="boolean">used to receive the result, whether the unit is in the spell range of the player</overridable>
+]]
 interface "IFRange"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFRange
-		@type interface
-		@desc IFRange is used to check whether the unit is in the spell range of the player
-		@overridable InRange property, boolean, used to receive the result, whether the unit is in the spell range of the player
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -57,12 +54,6 @@ interface "IFRange"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.InRange = _IFRangeCache[self.Unit]
 	end

@@ -10,101 +10,60 @@ if not IGAS:NewAddon("IGAS.Widget.EditBox", version) then
 	return
 end
 
+__Doc__[[EditBoxes are used to allow the player to type text into a UI component.]]
 class "EditBox"
 	inherit "Frame"
 	extend "IFFont"
 
-	doc [======[
-		@name EditBox
-		@type class
-		@desc EditBoxes are used to allow the player to type text into a UI component.
-	]======]
-
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnCharComposition
-		@type event
-		@desc Run when the edit box's input composition mode changes
-		@param text string, The text entered
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's input composition mode changes</desc>
+		<param name="text">string, The text entered</param>
+	]]
 	event "OnCharComposition"
 
-	doc [======[
-		@name OnCursorChanged
-		@type event
-		@desc Run when the position of the text insertion cursor in the edit box changes
-		@param x number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
-		@param y number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)
-		@param width number, width of the cursor graphic (in pixels)
-		@param height number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
-	]======]
+	__Doc__[[
+		<desc>Run when the position of the text insertion cursor in the edit box changes</desc>
+		<param name="x">number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)</param>
+		<param name="y">number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)</param>
+		<param name="width">number, width of the cursor graphic (in pixels)</param>
+		<param name="height">number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box</param>
+	]]
 	event "OnCursorChanged"
 
-	doc [======[
-		@name OnEditFocusGained
-		@type event
-		@desc Run when the edit box becomes focused for keyboard input
-	]======]
+	__Doc__ [[Run when the edit box becomes focused for keyboard input]]
 	event "OnEditFocusGained"
 
-	doc [======[
-		@name OnEditFocusLost
-		@type event
-		@desc Run when the edit box loses keyboard input focus
-	]======]
+	__Doc__[[Run when the edit box loses keyboard input focus]]
 	event "OnEditFocusLost"
 
-	doc [======[
-		@name OnEnterPressed
-		@type event
-		@desc Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Enter (or Return) key is pressed while the edit box has keyboard focus]]
 	event "OnEnterPressed"
 
-	doc [======[
-		@name OnEscapePressed
-		@type event
-		@desc Run when the Escape key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Escape key is pressed while the edit box has keyboard focus]]
 	event "OnEscapePressed"
 
-	doc [======[
-		@name OnInputLanguageChanged
-		@type event
-		@desc Run when the edit box's language input mode changes
-		@param language string, name of the new input language
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's language input mode changes</desc>
+		<param name="language">string, name of the new input language</param>
+	]]
 	event "OnInputLanguageChanged"
 
-	doc [======[
-		@name OnSpacePressed
-		@type event
-		@desc Run when the space bar is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the space bar is pressed while the edit box has keyboard focus]]
 	event "OnSpacePressed"
 
-	doc [======[
-		@name OnTabPressed
-		@type event
-		@desc Run when the Tab key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Tab key is pressed while the edit box has keyboard focus]]
 	event "OnTabPressed"
 
-	doc [======[
-		@name OnTextChanged
-		@type event
-		@desc Run when the edit box's text is changed
-		@param isUserInput boolean
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's text is changed</desc>
+		<param name="isUserInput">boolean</param>
+	]]
 	event "OnTextChanged"
 
-	doc [======[
-		@name OnTextSet
-		@type event
-		@desc Run when the edit box's text is set programmatically
-	]======]
+	__Doc__[[Run when the edit box's text is set programmatically]]
 	event "OnTextSet"
 
 	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
@@ -112,306 +71,198 @@ class "EditBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AddHistoryLine
-		@type method
-		@desc Add text to the edit history
-		@param text string, text to be added to the edit box's list of history lines
-		@return nil
-	]======]
+	__Doc__"AddHistoryLine" [[
+		<desc>Add text to the edit history</desc>
+		<param name="text">string, text to be added to the edit box's list of history lines</param>
+	]]
 
-	doc [======[
-		@name ClearHistory
-		@type method
-		@desc Clear history
-		@return nil
-	]======]
+	__Doc__"ClearHistory" [[Clear history]]
 
-	doc [======[
-		@name ClearFocus
-		@type method
-		@desc Releases keyboard input focus from the edit box
-		@return nil
-	]======]
+	__Doc__"ClearFocus" [[Releases keyboard input focus from the edit box]]
 
-	doc [======[
-		@name GetAltArrowKeyMode
-		@type method
-		@desc Returns whether arrow keys are ignored by the edit box unless the Alt key is held
-		@return boolean 1 if arrow keys are ignored by the edit box unless the Alt key is held; otherwise nil
-	]======]
+	__Doc__"GetAltArrowKeyMode" [[
+		<desc>Returns whether arrow keys are ignored by the edit box unless the Alt key is held</desc>
+		<return type="boolean">1 if arrow keys are ignored by the edit box unless the Alt key is held; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name GetBlinkSpeed
-		@type method
-		@desc Returns the rate at which the text insertion blinks when the edit box is focused
-		@return number Amount of time for which the cursor is visible during each "blink" (in seconds)
-	]======]
+	__Doc__"GetBlinkSpeed" [[
+		<desc>Returns the rate at which the text insertion blinks when the edit box is focused</desc>
+		<return type="number">Amount of time for which the cursor is visible during each "blink" (in seconds)</return>
+	]]
 
-	doc [======[
-		@name GetCursorPosition
-		@type method
-		@desc Returns the current cursor position inside edit box
-		@return number Current position of the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
-	]======]
+	__Doc__"GetCursorPosition" [[
+		<desc>Returns the current cursor position inside edit box</desc>
+		<return type="number">Current position of the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)</return>
+	]]
 
-	doc [======[
-		@name GetHistoryLines
-		@type method
-		@desc Returns the maximum number of history lines stored by the edit box
-		@return number Maximum number of history lines stored by the edit box
-	]======]
+	__Doc__"GetHistoryLines" [[
+		<desc>Returns the maximum number of history lines stored by the edit box</desc>
+		<return type="number">Maximum number of history lines stored by the edit box</return>
+	]]
 
-	doc [======[
-		@name GetIndentedWordWrap
-		@type method
-		@desc Returns whether long lines of text are indented when wrapping
-		@return boolean 1 if long lines of text are indented when wrapping; otherwise nil
-	]======]
+	__Doc__"GetIndentedWordWrap" [[
+		<desc>Returns whether long lines of text are indented when wrapping</desc>
+		<return type="boolean">1 if long lines of text are indented when wrapping; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name GetInputLanguage
-		@type method
-		@desc Returns the currently selected keyboard input language (character set / input method). Applies to keyboard input methods, not in-game languages or client locales.
-		@return string the input language
-	]======]
+	__Doc__"GetInputLanguage" [[
+		<desc>Returns the currently selected keyboard input language (character set / input method). Applies to keyboard input methods, not in-game languages or client locales.</desc>
+		<return type="string">the input language</return>
+	]]
 
-	doc [======[
-		@name GetMaxBytes
-		@type method
-		@desc Returns the maximum number of bytes of text allowed in the edit box. Note: Unicode characters may consist of more than one byte each, so the behavior of a byte limit may differ from that of a character limit in practical use.
-		@return number Maximum number of text bytes allowed in the edit box
-	]======]
+	__Doc__"GetMaxBytes" [[
+		<desc>Returns the maximum number of bytes of text allowed in the edit box. Note: Unicode characters may consist of more than one byte each, so the behavior of a byte limit may differ from that of a character limit in practical use.</desc>
+		<return type="number">Maximum number of text bytes allowed in the edit box</return>
+	]]
 
-	doc [======[
-		@name GetMaxLetters
-		@type method
-		@desc Returns the maximum number of text characters allowed in the edit box
-		@return number Maximum number of text characters allowed in the edit box
-	]======]
+	__Doc__"GetMaxLetters" [[
+		<desc>Returns the maximum number of text characters allowed in the edit box</desc>
+		<return type="number">Maximum number of text characters allowed in the edit box</return>
+	]]
 
-	doc [======[
-		@name GetNumber
-		@type method
-		@desc Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.
-		@return number Contents of the edit box as a number
-	]======]
+	__Doc__"GetNumber" [[
+		<desc>Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.</desc>
+		<return type="number">Contents of the edit box as a number</return>
+	]]
 
-	doc [======[
-		@name GetNumLetters
-		@type method
-		@desc Returns the number of text characters in the edit box
-		@return number Number of text characters in the edit box
-	]======]
+	__Doc__"GetNumLetters" [[
+		<desc>Returns the number of text characters in the edit box</desc>
+		<return type="number">Number of text characters in the edit box</return>
+	]]
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Returns the edit box's text contents
-		@return string Text contained in the edit box
-	]======]
+	__Doc__"GetText" [[
+		<desc>Returns the edit box's text contents</desc>
+		<return type="string">Text contained in the edit box</return>
+	]]
 
-	doc [======[
-		@name GetTextInsets
-		@type method
-		@desc Returns the insets from the edit box's edges which determine its interactive text area
-		@return left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-		@return right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-		@return top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-		@return bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-	]======]
+	__Doc__"GetTextInsets" [[
+		<desc>Returns the insets from the edit box's edges which determine its interactive text area</desc>
+		<return type="left">number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)</return>
+		<return type="right">number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)</return>
+		<return type="top">number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)</return>
+		<return type="bottom">number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetUTF8CursorPosition
-		@type method
-		@desc Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.
-		@return number The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account.
-	]======]
+	__Doc__"GetUTF8CursorPosition" [[
+		<desc>Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.</desc>
+		<return type="number">The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account.</return>
+	]]
 
-	doc [======[
-		@name HasFocus
-		@type method
-		@desc Returns whether the edit box is currently focused for keyboard input
-		@return boolean 1 if the edit box is currently focused for keyboard input; otherwise nil
-	]======]
+	__Doc__"HasFocus" [[
+		<desc>Returns whether the edit box is currently focused for keyboard input</desc>
+		<return type="boolean">1 if the edit box is currently focused for keyboard input; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name HighlightText
-		@type method
-		@desc Selects all or a portion of the text in the edit box
-		@param start number, character position at which to begin the selection (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified
-		@param end number, character position at which to end the selection; if not specified or if less than start, selects all characters after the start position; if equal to start, selects nothing and positions the cursor at the start position
-		@return nil
-	]======]
+	__Doc__"HighlightText" [[
+		<desc>Selects all or a portion of the text in the edit box</desc>
+		<param name="start">number, character position at which to begin the selection (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified</param>
+		<param name="end">number, character position at which to end the selection; if not specified or if less than start, selects all characters after the start position; if equal to start, selects nothing and positions the cursor at the start position</param>
+	]]
 
-	doc [======[
-		@name Insert
-		@type method
-		@desc Inserts text into the edit box at the current cursor position
-		@param text string, text to be inserted
-		@return nil
-	]======]
+	__Doc__"Insert" [[
+		<desc>Inserts text into the edit box at the current cursor position</desc>
+		<param name="text">string, text to be inserted</param>
+	]]
 
-	doc [======[
-		@name IsAutoFocus
-		@type method
-		@desc Returns whether the edit box automatically acquires keyboard input focus
-		@return boolean 1 if the edit box automatically acquires keyboard input focus; otherwise nil
-	]======]
+	__Doc__"IsAutoFocus" [[
+		<desc>Returns whether the edit box automatically acquires keyboard input focus</desc>
+		<return type="boolean">1 if the edit box automatically acquires keyboard input focus; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsCountInvisibleLetters
-		@type method
-		@desc
-		@return boolean
-	]======]
+	__Doc__"IsCountInvisibleLetters" [[
+		<return type="boolean"></return>
+	]]
 
-	doc [======[
-		@name IsInIMECompositionMode
-		@type method
-		@desc Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress
-		@return boolean 1 if the edit box is in IME character composition mode; otherwise nil
-	]======]
+	__Doc__"IsInIMECompositionMode" [[
+		<desc>Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress</desc>
+		<return type="boolean">1 if the edit box is in IME character composition mode; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsMultiLine
-		@type method
-		@desc Returns whether the edit box shows more than one line of text
-		@return boolean 1 if the edit box shows more than one line of text; otherwise nil
-	]======]
+	__Doc__"IsMultiLine" [[
+		<desc>Returns whether the edit box shows more than one line of text</desc>
+		<return type="boolean">1 if the edit box shows more than one line of text; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsNumeric
-		@type method
-		@desc Returns whether the edit box only accepts numeric input
-		@return boolean 1 if only numeric input is allowed; otherwise nil
-	]======]
+	__Doc__"IsNumeric" [[
+		<desc>Returns whether the edit box only accepts numeric input</desc>
+		<return type="boolean">1 if only numeric input is allowed; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name IsPassword
-		@type method
-		@desc Returns whether the text entered in the edit box is masked
-		@return boolean 1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil
-	]======]
+	__Doc__"IsPassword" [[
+		<desc>Returns whether the text entered in the edit box is masked</desc>
+		<return type="boolean">1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetAltArrowKeyMode
-		@type method
-		@desc Sets whether arrow keys are ignored by the edit box unless the Alt key is held
-		@param enable boolean, true to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement
-		@return nil
-	]======]
+	__Doc__"SetAltArrowKeyMode" [[
+		<desc>Sets whether arrow keys are ignored by the edit box unless the Alt key is held</desc>
+		<param name="enable">boolean, true to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement</param>
+	]]
 
-	doc [======[
-		@name SetAutoFocus
-		@type method
-		@desc Sets whether the edit box automatically acquires keyboard input focus. If auto-focus behavior is enabled, the edit box automatically acquires keyboard focus when it is shown and when no other edit box is focused.
-		@param enable boolean, true to enable the edit box to automatically acquire keyboard input focus; false to disable
-		@return nil
-	]======]
+	__Doc__"SetAutoFocus" [[
+		<desc>Sets whether the edit box automatically acquires keyboard input focus. If auto-focus behavior is enabled, the edit box automatically acquires keyboard focus when it is shown and when no other edit box is focused.</desc>
+		<param name="enable">boolean, true to enable the edit box to automatically acquire keyboard input focus; false to disable</param>
+	]]
 
-	doc [======[
-		@name SetBlinkSpeed
-		@type method
-		@desc Sets the rate at which the text insertion blinks when the edit box is focused. The speed indicates how long the cursor stays in each state (shown and hidden); e.g. if the blink speed is 0.5 (the default, the cursor is shown for one half second and then hidden for one half second (thus, a one-second cycle); if the speed is 1.0, the cursor is shown for one second and then hidden for one second (a two-second cycle).
-		@param duration number, Amount of time for which the cursor is visible during each "blink" (in seconds)
-		@return nil
-	]======]
+	__Doc__"SetBlinkSpeed" [[
+		<desc>Sets the rate at which the text insertion blinks when the edit box is focused. The speed indicates how long the cursor stays in each state (shown and hidden); e.g. if the blink speed is 0.5 (the default, the cursor is shown for one half second and then hidden for one half second (thus, a one-second cycle); if the speed is 1.0, the cursor is shown for one second and then hidden for one second (a two-second cycle).</desc>
+		<param name="duration">number, Amount of time for which the cursor is visible during each "blink" (in seconds)</param>
+	]]
 
-	doc [======[
-		@name SetCountInvisibleLetters
-		@type method
-		@desc
-		@param ...
-		@return nil
-	]======]
+	__Doc__"SetCountInvisibleLetters" [[
+		<param name="..."></param>
+	]]
 
-	doc [======[
-		@name SetCursorPosition
-		@type method
-		@desc Sets the cursor position in the edit box
-		@param position number, new position for the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
-		@return nil
-	]======]
+	__Doc__"SetCursorPosition" [[
+		<desc>Sets the cursor position in the edit box</desc>
+		<param name="position">number, new position for the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)</param>
+	]]
 
-	doc [======[
-		@name SetFocus
-		@type method
-		@desc Focuses the edit box for keyboard input. Only one edit box may be focused at a time; setting focus to one edit box will remove it from the currently focused edit box.
-		@return nil
-	]======]
+	__Doc__"SetFocus" [[Focuses the edit box for keyboard input. Only one edit box may be focused at a time; setting focus to one edit box will remove it from the currently focused edit box.]]
 
-	doc [======[
-		@name SetHistoryLines
-		@type method
-		@desc Sets the maximum number of history lines stored by the edit box. Lines of text can be added to the edit box's history by calling :AddHistoryLine(); once added, the user can quickly set the edit box's contents to one of these lines by pressing the up or down arrow keys. (History lines are only accessible via the arrow keys if the edit box is not in multi-line mode.)
-		@param count number, Maximum number of history lines to be stored by the edit box
-		@return nil
-	]======]
+	__Doc__"SetHistoryLines" [[
+		<desc>Sets the maximum number of history lines stored by the edit box. Lines of text can be added to the edit box's history by calling :AddHistoryLine(); once added, the user can quickly set the edit box's contents to one of these lines by pressing the up or down arrow keys. (History lines are only accessible via the arrow keys if the edit box is not in multi-line mode.)</desc>
+		<param name="count">number, Maximum number of history lines to be stored by the edit box</param>
+	]]
 
-	doc [======[
-		@name SetIndentedWordWrap
-		@type method
-		@desc Sets whether long lines of text are indented when wrapping
-		@param indent boolean, true to indent wrapped lines of text; false otherwise
-		@return nil
-	]======]
+	__Doc__"SetIndentedWordWrap" [[
+		<desc>Sets whether long lines of text are indented when wrapping</desc>
+		<param name="indent">boolean, true to indent wrapped lines of text; false otherwise</param>
+	]]
 
-	doc [======[
-		@name SetMaxBytes
-		@type method
-		@desc Sets the maximum number of bytes of text allowed in the edit box
-		@param maxBytes number, Maximum number of text bytes allowed in the edit box, or 0 for no limit
-		@return nil
-	]======]
+	__Doc__"SetMaxBytes" [[
+		<desc>Sets the maximum number of bytes of text allowed in the edit box</desc>
+		<param name="maxBytes">number, Maximum number of text bytes allowed in the edit box, or 0 for no limit</param>
+	]]
 
-	doc [======[
-		@name SetMaxLetters
-		@type method
-		@desc Sets the maximum number of text characters allowed in the edit box.
-		@param maxLetters number, Maximum number of text characters allowed in the edit box, or 0 for no limit
-		@return nil
-	]======]
+	__Doc__"SetMaxLetters" [[
+		<desc>Sets the maximum number of text characters allowed in the edit box.</desc>
+		<param name="maxLetters">number, Maximum number of text characters allowed in the edit box, or 0 for no limit</param>
+	]]
 
-	doc [======[
-		@name SetMultiLine
-		@type method
-		@desc Sets whether the edit box shows more than one line of text. When in multi-line mode, the edit box's height is determined by the number of lines shown and cannot be set directly -- enclosing the edit box in a ScrollFrame may prove useful in such cases.
-		@param multiLine boolean, true to allow the edit box to display more than one line of text; false for single-line display
-		@return nil
-	]======]
+	__Doc__"SetMultiLine" [[
+		<desc>Sets whether the edit box shows more than one line of text. When in multi-line mode, the edit box's height is determined by the number of lines shown and cannot be set directly -- enclosing the edit box in a ScrollFrame may prove useful in such cases.</desc>
+		<param name="multiLine">boolean, true to allow the edit box to display more than one line of text; false for single-line display</param>
+	]]
 
-	doc [======[
-		@name SetNumber
-		@type method
-		@desc Sets the contents of the edit box to a number
-		@param num number, new numeric content for the edit box
-		@return nil
-	]======]
+	__Doc__"SetNumber" [[
+		<desc>Sets the contents of the edit box to a number</desc>
+		<param name="num">number, new numeric content for the edit box</param>
+	]]
 
-	doc [======[
-		@name SetNumeric
-		@type method
-		@desc Sets whether the edit box only accepts numeric input. Note: an edit box in numeric mode <em>only</em> accepts numeral input -- all other characters, including those commonly used in numeric representations (such as ., E, and -) are not allowed.
-		@param enable boolean, true to allow only numeric input; false to allow any text
-		@return nil
-	]======]
+	__Doc__"SetNumeric" [[
+		<desc>Sets whether the edit box only accepts numeric input. Note: an edit box in numeric mode <em>only</em> accepts numeral input -- all other characters, including those commonly used in numeric representations (such as ., E, and -) are not allowed.</desc>
+		<param name="enable">boolean, true to allow only numeric input; false to allow any text</param>
+		]]
 
-	doc [======[
-		@name SetPassword
-		@type method
-		@desc Sets whether the text entered in the edit box is masked
-		@param enable boolean, true to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered
-		@return nil
-	]======]
+	__Doc__"SetPassword" [[
+		<desc>Sets whether the text entered in the edit box is masked</desc>
+		<param name="enable">boolean, true to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered</param>
+		]]
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the edit box's text contents
-		@param text string, text to be placed in the edit box
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the edit box's text contents</desc>
+		<param name="text">string, text to be placed in the edit box</param>
+	]]
 	function SetText(self, text)
 		self.__UI:SetText(text)
 
@@ -422,23 +273,15 @@ class "EditBox"
 		end
 	end
 
-	doc [======[
-		@name SetTextInsets
-		@type method
-		@desc Sets the insets from the edit box's edges which determine its interactive text area
-		@param left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-		@param right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-		@param top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-		@param bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetTextInsets" [[
+		<desc>Sets the insets from the edit box's edges which determine its interactive text area</desc>
+		<param name="left">number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)</param>
+		<param name="right">number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)</param>
+		<param name="top">number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)</param>
+		<param name="bottom">number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)</param>
+	]]
 
-	doc [======[
-		@name ToggleInputLanguage
-		@type method
-		@desc Switches the edit box's language input mode. If the edit box is in ROMAN mode and an alternate Input Method Editor composition mode is available (as determined by the client locale and system settings), switches to the alternate input mode. If the edit box is in IME composition mode, switches back to ROMAN.
-		@return nil
-	]======]
+	__Doc__"ToggleInputLanguage" [[Switches the edit box's language input mode. If the edit box is in ROMAN mode and an alternate Input Method Editor composition mode is available (as determined by the client locale and system settings), switches to the alternate input mode. If the edit box is in IME composition mode, switches back to ROMAN.]]
 
 	------------------------------------------------------
 	-- Event Handler
@@ -468,46 +311,22 @@ class "EditBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name MultiLine
-		@type property
-		@desc true if the edit box shows more than one line of text
-	]======]
+	__Doc__[[true if the edit box shows more than one line of text]]
 	property "MultiLine" { Type = Boolean }
 
-	doc [======[
-		@name Numeric
-		@type property
-		@desc true if the edit box only accepts numeric input
-	]======]
+	__Doc__[[true if the edit box only accepts numeric input]]
 	property "Numeric" { Type = Boolean }
 
-	doc [======[
-		@name Password
-		@type property
-		@desc true if the text entered in the edit box is masked
-	]======]
+	__Doc__[[true if the text entered in the edit box is masked]]
 	property "Password" { Type = Boolean }
 
-	doc [======[
-		@name AutoFocus
-		@type property
-		@desc true if the edit box automatically acquires keyboard input focus
-	]======]
+	__Doc__[[true if the edit box automatically acquires keyboard input focus]]
 	property "AutoFocus" { Type = Boolean }
 
-	doc [======[
-		@name HistoryLines
-		@type property
-		@desc the maximum number of history lines stored by the edit box
-	]======]
+	__Doc__[[the maximum number of history lines stored by the edit box]]
 	property "HistoryLines" { Type = Number }
 
-	doc [======[
-		@name Focused
-		@type property
-		@desc true if the edit box is currently focused
-	]======]
+	__Doc__[[true if the edit box is currently focused]]
 	property "Focused" {
 		Get = "HasFocus",
 		Set = function(self, focus)
@@ -520,60 +339,28 @@ class "EditBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name AltArrowKeyMode
-		@type property
-		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
-	]======]
+	__Doc__[[true if the arrow keys are ignored by the edit box unless the Alt key is held]]
 	property "AltArrowKeyMode" { Type = Boolean }
 
-	doc [======[
-		@name BlinkSpeed
-		@type property
-		@desc the rate at which the text insertion blinks when the edit box is focused
-	]======]
+	__Doc__[[the rate at which the text insertion blinks when the edit box is focused]]
 	property "BlinkSpeed" { Type = Number }
 
-	doc [======[
-		@name CursorPosition
-		@type property
-		@desc the current cursor position inside edit box
-	]======]
+	__Doc__[[the current cursor position inside edit box]]
 	property "CursorPosition" { Type = Number }
 
-	doc [======[
-		@name MaxBytes
-		@type property
-		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
-	]======]
+	__Doc__[[the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)]]
 	property "MaxBytes" { Type = Number }
 
-	doc [======[
-		@name MaxLetters
-		@type property
-		@desc the maximum number of text characters allowed in the edit box
-	]======]
+	__Doc__[[the maximum number of text characters allowed in the edit box]]
 	property "MaxLetters" { Type = Number }
 
-	doc [======[
-		@name Number
-		@type property
-		@desc the contents of the edit box as a number
-	]======]
+	__Doc__[[the contents of the edit box as a number]]
 	property "Number" { Type = Number }
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the edit box's text contents
-	]======]
+	__Doc__[[the edit box's text contents]]
 	property "Text" { Type = String + Number }
 
-	doc [======[
-		@name TextInsets
-		@type property
-		@desc the insets from the edit box's edges which determine its interactive text area
-	]======]
+	__Doc__[[the insets from the edit box's edges which determine its interactive text area]]
 	property "TextInsets" {
 		Get = function(self)
 			return Inset(self:GetTextInsets())
@@ -584,11 +371,7 @@ class "EditBox"
 		Type = Inset,
 	}
 
-	doc [======[
-		@name Editable
-		@type property
-		@desc true if the edit box is editable
-	]======]
+	__Doc__[[true if the edit box is editable]]
 	property "Editable" {
 		Get = function(self)
 			return self.MouseEnabled

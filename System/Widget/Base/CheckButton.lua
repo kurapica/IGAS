@@ -9,76 +9,52 @@ if not IGAS:NewAddon("IGAS.Widget.CheckButton", version) then
 	return
 end
 
+__Doc__[[CheckButtons are a specialized form of Button; they maintain an on/off state, which toggles automatically when they are clicked, and additional textures for when they are checked, or checked while disabled.]]
 class "CheckButton"
 	inherit "Button"
-
-	doc [======[
-		@name CheckButton
-		@type class
-		@desc CheckButtons are a specialized form of Button; they maintain an on/off state, which toggles automatically when they are clicked, and additional textures for when they are checked, or checked while disabled.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	-----------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetChecked
-		@type method
-		@desc Returns whether the check button is checked
-		@return boolean 1 if the button is checked; nil if the button is unchecked
-	]======]
+	__Doc__"GetChecked" [[
+		<desc>Returns whether the check button is checked</desc>
+		<return type="boolean">1 if the button is checked; nil if the button is unchecked</return>
+	]]
 
-	doc [======[
-		@name GetCheckedTexture
-		@type method
-		@desc Returns the texture used when the button is checked
-		@return System.Widget.Texture Reference to the Texture object used when the button is checked
-	]======]
+	__Doc__[[
+		<desc>Returns the texture used when the button is checked</desc>
+		<return type="System.Widget.Texture">Reference to the Texture object used when the button is checked</return>
+	]]
 	function GetCheckedTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetCheckedTexture(...))
 	end
 
-	doc [======[
-		@name GetDisabledCheckedTexture
-		@type method
-		@desc Returns the texture used when the button is disabled and checked
-		@return  System.Widget.Texture Reference to the Texture object used when the button is disabled and checked
-	]======]
+	__Doc__[[
+		<desc>Returns the texture used when the button is disabled and checked</desc>
+		<return type="System.Widget.Texture">Reference to the Texture object used when the button is disabled and checked</return>
+	]]
 	function GetDisabledCheckedTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetDisabledCheckedTexture(...))
 	end
 
-	doc [======[
-		@name SetChecked
-		@type method
-		@desc Sets whether the check button is checked
-		@param enable boolean, true to check the button; false to uncheck
-		@return nil
-	]======]
+	__Doc__"SetChecked" [[
+		<desc>Sets whether the check button is checked</desc>
+		<param name="enable">boolean, true to check the button; false to uncheck</param>
+	]]
 
-	doc [======[
-		@name SetCheckedTexture
-		@type method
-		@desc Sets the texture used when the button is checked
-		@format texture|filename
-		@param texture System.Widget.Texture, reference to an existing Texture object
-		@param filename string, path to a texture image file
-		@return nil
-	]======]
+	__Doc__"SetCheckedTexture" [[
+		<desc>Sets the texture used when the button is checked</desc>
+		<format>texture|filename</format>
+		<param name="texture">System.Widget.Texture, reference to an existing Texture object</param>
+		<param name="filename">string, path to a texture image file</param>
+	]]
 
-	doc [======[
-		@name SetDisabledCheckedTexture
-		@type method
-		@desc Sets the texture used when the button is disabled and checked
-		@format texture|filename
-		@param texture System.Widget.Texture, reference to an existing Texture object
-		@param filename string, path to a texture image file
-		@return nil
-	]======]
+	__Doc__"SetDisabledCheckedTexture" [[
+		<desc>Sets the texture used when the button is disabled and checked</desc>
+		<format>texture|filename</format>
+		<param name="texture">System.Widget.Texture, reference to an existing Texture object</param>
+		<param name="filename">string, path to a texture image file</param>
+	]]
 
 	------------------------------------------------------
 	-- Event Handler
@@ -101,25 +77,13 @@ class "CheckButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Checked
-		@type property
-		@desc true if the checkbutton is checked
-	]======]
+	__Doc__[[true if the checkbutton is checked]]
 	property "Checked" { Type = Boolean }
 
-	doc [======[
-		@name CheckedTexture
-		@type property
-		@desc the texture object used when the button is checked
-	]======]
+	__Doc__[[the texture object used when the button is checked]]
 	property "CheckedTexture" { Type = Texture + nil }
 
-	doc [======[
-		@name CheckedTexturePath
-		@type property
-		@desc the texture file path used when the button is checked
-	]======]
+	__Doc__[[the texture file path used when the button is checked]]
 	property "CheckedTexturePath" {
 		Get = function(self)
 			return self:GetCheckedTexture() and self:GetCheckedTexture().TexturePath
@@ -130,18 +94,10 @@ class "CheckButton"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name DisabledCheckedTexture
-		@type property
-		@desc the texture object used when the button is disabled and checked
-	]======]
+	__Doc__[[the texture object used when the button is disabled and checked]]
 	property "DisabledCheckedTexture" { Type = Texture + nil }
 
-	doc [======[
-		@name DisabledCheckedTexturePath
-		@type property
-		@desc the texture file path used when the button is disabled and checked
-	]======]
+	__Doc__[[the texture file path used when the button is disabled and checked]]
 	property "DisabledCheckedTexturePath" {
 		Get = function(self)
 			return self:GetDisabledCheckedTexture() and self:GetDisabledCheckedTexture().TexturePath

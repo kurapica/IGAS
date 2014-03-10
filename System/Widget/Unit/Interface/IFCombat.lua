@@ -21,15 +21,12 @@ function _IFCombatUnitList:ParseEvent(event, unit)
 	self:EachK("player", "Refresh")
 end
 
+	__Doc__[[
+		<desc>IFCombat is used to check whether the player is in the combat</desc>
+		<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check result</overridable>
+	]]
 interface "IFCombat"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFCombat
-		@type interface
-		@desc IFCombat is used to check whether the player is in the combat
-		@overridable Visible property, boolean, which used to receive the check result
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -38,12 +35,7 @@ interface "IFCombat"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		self.Visible = self.Unit == 'player' and UnitAffectingCombat('player')
 	end

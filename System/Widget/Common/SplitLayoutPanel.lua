@@ -7,14 +7,9 @@ if not IGAS:NewAddon("IGAS.Widget.SplitLayoutPanel", version) then
 	return
 end
 
+__Doc__[[Add split line between dock elements]]
 class "SplitLayoutPanel"
 	inherit "DockLayoutPanel"
-
-	doc [======[
-		@name SplitLayoutPanel
-		@type class
-		@desc Add split line between dock elements
-	]======]
 
 	local function OnEnter(self)
 		self:GetChild("HighLight").Visible = true

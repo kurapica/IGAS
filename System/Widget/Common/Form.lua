@@ -12,24 +12,14 @@ if not IGAS:NewAddon("IGAS.Widget.Form", version) then
 	return
 end
 
+__Doc__[[Form is used to create base frames to contain other ui elements. It can move, resize, has a caption, a close button, and a message bar.]]
 class "Form"
 	inherit "Frame"
 	extend "IFContainer"
 
-	doc [======[
-		@name Form
-		@type class
-		@desc Form is used to create base frames to contain other ui elements. It can move, resize, has a caption, a close button, and a message bar.
-	]======]
-
+	__Doc__[[DockHeader is used to attach the form to the screen border]]
 	class "DockHeader"
 		inherit "VirtualUIObject"
-
-		doc [======[
-			@name DockHeader
-			@type class
-			@desc DockHeader is used to attach the form to the screen border
-		]======]
 
 		_Form_DockHeader = _Form_DockHeader or Frame("IGAS_FORM_DOCKHEADER")
 		_Form_DockHeader.Visible = true
@@ -254,23 +244,16 @@ class "Form"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnPositionChanged
-		@type event
-		@desc Run when the form is moved by cursor
-	]======]
+	__Doc__[[Run when the form is moved by cursor]]
 	event "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the Form's style
-		@param style System.Widget.Form.FormStyle the style of the Form
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the Form's style</desc>
+		<param name="style">System.Widget.Form.FormStyle the style of the Form</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -347,12 +330,10 @@ class "Form"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the Form's style
-		@return System.Widget.Form.FormStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the Form's style</desc>
+		<return type="System.Widget.Form.FormStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
@@ -365,12 +346,7 @@ class "Form"
 		return Super.SetResizable(self, enabled)
 	end
 
-	doc [======[
-		@name UpdatePanelPosition
-		@type method
-		@desc Update the container's postion, needed by IFContainer
-		@return nil
-	]======]
+	__Doc__[[Update the container's postion, needed by IFContainer]]
 	function UpdatePanelPosition(self)
 		local panel = self.Panel
 
@@ -384,22 +360,14 @@ class "Form"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Style
-		@type property
-		@desc the style of the form
-	]======]
+	__Doc__[[the style of the form]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = FormStyle,
 	}
 
-	doc [======[
-		@name CaptionAlign
-		@type property
-		@desc the caption's align:LEFT, RIGHT, CENTER
-	]======]
+	__Doc__[[the caption's align:LEFT, RIGHT, CENTER]]
 	property "CaptionAlign" {
 		Get = function(self)
 			return self:GetChild("Form_Caption"):GetChild("Text").JustifyH
@@ -412,11 +380,7 @@ class "Form"
 		Type = JustifyHType,
 	}
 
-	doc [======[
-		@name TitleBarColor
-		@type property
-		@desc the title bar's color, default alpha is 0, so make it can't be see
-	]======]
+	__Doc__[[the title bar's color, default alpha is 0, so make it can't be see]]
 	property "TitleBarColor" {
 		Get = function(self)
 			return self:GetChild("Form_Caption").BackdropColor
@@ -427,11 +391,7 @@ class "Form"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name ShowCloseButton
-		@type property
-		@desc whether the close button is shown
-	]======]
+	__Doc__[[whether the close button is shown]]
 	property "ShowCloseButton" {
 		Get = function(self)
 			return self:GetChild("Form_Btn_Close").Visible
@@ -442,11 +402,7 @@ class "Form"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Caption
-		@type property
-		@desc The text to be displayed at the top of the form.
-	]======]
+	__Doc__[[The text to be displayed at the top of the form.]]
 	property "Caption" {
 		Set = function(self, title)
 			self:GetChild("Form_Caption"):GetChild("Text").Text = title
@@ -465,11 +421,7 @@ class "Form"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Message
-		@type property
-		@desc The text to be displayed at the bottom of the form.
-	]======]
+	__Doc__[[The text to be displayed at the bottom of the form.]]
 	property "Message" {
 		Set = function(self, mes)
 			self:GetChild("Form_StatusBar_Text").Text = mes
@@ -480,11 +432,7 @@ class "Form"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Position
-		@type property
-		@desc the position of the form, simple from property Location
-	]======]
+	__Doc__[[the position of the form, simple from property Location]]
 	property "Position" {
 		Set = function(self, pos)
 			self:ClearAllPoints()
@@ -497,11 +445,7 @@ class "Form"
 		Type = Point,
 	}
 
-	doc [======[
-		@name DockMode
-		@type property
-		@desc true if the form should be attached to the screen border
-	]======]
+	__Doc__[[true if the form should be attached to the screen border]]
 	property "DockMode" {
 		Get = function(self)
 			return self.__DockHeader and true or false
@@ -518,11 +462,7 @@ class "Form"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name HideForCombat
-		@type property
-		@desc true if the form should not be shown in combat with DockMode on
-	]======]
+	__Doc__[[true if the form should not be shown in combat with DockMode on]]
 	property "HideForCombat" {
 		Field = "__HideForCombat",
 		Type = System.Boolean,

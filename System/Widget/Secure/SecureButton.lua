@@ -10,27 +10,10 @@ if not IGAS:NewAddon("IGAS.Widget.SecureButton", version) then
 	return
 end
 
+__Doc__[[SecureButton is used as the root widget class for secure buttons]]
 class "SecureButton"
 	inherit "Button"
 	extend "IFSecureHandler"
-
-	doc [======[
-		@name SecureButton
-		@type class
-		@desc SecureButton is used as the root widget class for secure buttons
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Constructor

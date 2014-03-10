@@ -44,14 +44,9 @@ do
 	end
 end
 
+__Doc__[[IFPetGroup is used to handle the pet group's updating]]
 interface "IFPetGroup"
 	extend "IFGroup"
-
-	doc [======[
-		@name IFPetGroup
-		@type interface
-		@desc IFPetGroup is used to handle the pet group's updating
-	]======]
 
 	local function UpdateGroupHeader(self)
 		if self.Activated and (not self.DeactivateInRaid or not IsInRaid()) then
@@ -64,12 +59,7 @@ interface "IFPetGroup"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Activate
-		@type method
-		@desc Activate the unit panel
-		@return nil
-	]======]
+	__Doc__[[Activate the unit panel]]
 	function Activate(self)
 		if not self.Activated then
 			self.__GroupHeaderActivated = true
@@ -78,12 +68,7 @@ interface "IFPetGroup"
 		end
 	end
 
-	doc [======[
-		@name Deactivate
-		@type method
-		@desc Deactivate the unit panel
-		@return nil
-	]======]
+	__Doc__[[Deactivate the unit panel]]
 	function Deactivate(self)
 		if self.Activated then
 			self.__GroupHeaderActivated = false
@@ -95,11 +80,7 @@ interface "IFPetGroup"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Activated
-		@type property
-		@desc Whether the unit panel is activated
-	]======]
+	__Doc__[[Whether the unit panel is activated]]
 	property "Activated" {
 		Get = function(self)
 			return self.__GroupHeaderActivated or false
@@ -114,11 +95,7 @@ interface "IFPetGroup"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name FilterOnPet
-		@type property
-		@desc if true, then pet names are used when sorting the list
-	]======]
+	__Doc__[[if true, then pet names are used when sorting the list]]
 	property "FilterOnPet" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("filterOnPet") or false
@@ -129,11 +106,7 @@ interface "IFPetGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name DeactivateInRaid
-		@type property
-		@desc description
-	]======]
+	__Doc__[[description]]
 	property "DeactivateInRaid" {
 		Get = function(self)
 			return self.__DeactivateInRaid or false
@@ -154,11 +127,7 @@ interface "IFPetGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name GroupHeader
-		@type property
-		@desc The group header based on the blizzard's SecureGroupHeader
-	]======]
+	__Doc__[[The group header based on the blizzard's SecureGroupHeader]]
 	property "GroupHeader" {
 		Get = function(self)
 			return self:GetChild("ShadowGroupHeader") or IFGroup.ShadowGroupHeader("ShadowGroupHeader", self, "SecureGroupPetHeaderTemplate")

@@ -48,16 +48,13 @@ function _IFHealthFrequentUnitList:ParseEvent(event, unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFHealthFrequent is used to handle the unit frequent health updating</desc>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the health's value</overridable>
+]]
 interface "IFHealthFrequent"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFHealthFrequent
-		@type interface
-		@desc IFHealthFrequent is used to handle the unit frequent health updating
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value of the health
-		@overridable Value property, number, used to receive the health's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -66,12 +63,6 @@ interface "IFHealthFrequent"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		if self.Unit then
 			_MinMax.max = UnitHealthMax(self.Unit)

@@ -320,13 +320,8 @@ do
 	end
 end
 
+__Doc__[[IFKeyBinding is used to manage key bindings]]
 interface "IFKeyBinding"
-
-	doc [======[
-		@name IFKeyBinding
-		@type interface
-		@desc IFKeyBinding is used to manage key bindings
-	]======]
 
 	local function Clear4key(key)
 		if not key then return end
@@ -346,12 +341,10 @@ interface "IFKeyBinding"
 	------------------------------------------------------
 	-- Interface Method
 	------------------------------------------------------
-	doc [======[
-		@name _Export
-		@type method
-		@desc Export key binding settings
-		@return table the key binding settings
-	]======]
+	__Doc__[[
+		<desc>Export key binding settings</desc>
+		<return type="table">the key binding settings</return>
+	]]
 	function _Export()
 		local exp = {}
 
@@ -362,13 +355,10 @@ interface "IFKeyBinding"
 		return exp
 	end
 
-	doc [======[
-		@name _Import
-		@type method
-		@desc Import key binding settings
-		@param settings table, contains the key bindings
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Import key binding settings</desc>
+		<param name="settings">table, contains the key bindings</param>
+		]]
 	function _Import(setting)
 		_Clear()
 
@@ -383,24 +373,14 @@ interface "IFKeyBinding"
 		end
 	end
 
-	doc [======[
-		@name _Clear
-		@type method
-		@desc Clear all key bindings
-		@return nil
-	]======]
+	__Doc__[[Clear all key bindings]]
 	function _Clear()
 		wipe(_DBChar)
 		wipe(_IFKeyBinding_KeyMap)
 		_IFKeyBinding_ButtonList:Each(ClearBindingKey)
 	end
 
-	doc [======[
-		@name _ModeOn
-		@type method
-		@desc Turn binding mode on
-		@return nil
-	]======]
+	__Doc__[[Turn binding mode on]]
 	function _ModeOn()
 		if not _IFKeyBinding_MsgBox.Visible and not InCombatLockdown() then
 			_M._IFKeyBinding_InBindingMode = true
@@ -408,32 +388,20 @@ interface "IFKeyBinding"
 		end
 	end
 
-	doc [======[
-		@name _ModeOff
-		@type method
-		@desc Turn binding mode off
-		@return nil
-	]======]
+	__Doc__[[Turn binding mode off]]
 	function _ModeOff()
 		_IFKeyBinding_MsgBox.Visible = false
 	end
 
-	doc [======[
-		@name _IsModeOn
-		@type method
-		@desc Whether if key binding mode is on
-		@return boolean true if the key binding mode is on
-	]======]
+	__Doc__[[
+		<desc>Whether if key binding mode is on</desc>
+		<return type="boolean">true if the key binding mode is on</return>
+	]]
 	function _IsModeOn()
 		return _M._IFKeyBinding_InBindingMode
 	end
 
-	doc [======[
-		@name _Toggle
-		@type method
-		@desc Toggle the key binding mode
-		@return nil
-	]======]
+	__Doc__[[Toggle the key binding mode]]
 	function _Toggle()
 		if _M._IFKeyBinding_InBindingMode then
 			_ModeOff()
@@ -445,13 +413,10 @@ interface "IFKeyBinding"
 	------------------------------------------------------
 	-- Object Method
 	------------------------------------------------------
-	doc [======[
-		@name SetBindingKey
-		@type method
-		@desc Set the binding key
-		@param key string, the binding key
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the binding key</desc>
+		<param name="key">string, the binding key</param>
+		]]
 	function SetBindingKey(self, key)
 		local name = self:GetName()
 		key = ParseBindKey(key)
@@ -470,22 +435,15 @@ interface "IFKeyBinding"
 		UpdateBindingKey(self)
 	end
 
-	doc [======[
-		@name GetBindingKey
-		@type method
-		@desc Get the binding key
-		@return string the binding key
-	]======]
+	__Doc__[[
+		<desc>Get the binding key</desc>
+		<return type="string">the binding key</return>
+	]]
 	function GetBindingKey(self)
 		return _DBChar[self:GetName()]
 	end
 
-	doc [======[
-		@name UpdateBindingKey
-		@type method
-		@desc Update the binding key
-		@return nil
-	]======]
+	__Doc__[[Update the binding key]]
 	function UpdateBindingKey(self)
 		local name = self:GetName()
 		local key = _DBChar[name]
@@ -507,12 +465,7 @@ interface "IFKeyBinding"
 		end
 	end
 
-	doc [======[
-		@name ClearBindingKey
-		@type method
-		@desc Clear the binding key
-		@return nil
-	]======]
+	__Doc__[[Clear the binding key]]
 	function ClearBindingKey(self)
 		local name = self:GetName()
 		ClearOverrideBindings(IGAS:GetUI(self))
@@ -524,11 +477,7 @@ interface "IFKeyBinding"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HotKey
-		@type property
-		@desc the hotkey property, need override
-	]======]
+	__Doc__[[the hotkey property, need override]]
 	property "HotKey" {
 		Get = function(self)
 			return self.__HotKey

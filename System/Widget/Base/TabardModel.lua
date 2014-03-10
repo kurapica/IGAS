@@ -9,83 +9,52 @@ if not IGAS:NewAddon("IGAS.Widget.TabardModel", version) then
 	return
 end
 
+__Doc__[[TabardModel is a frame type provided specifically for designing or modifying guild tabards.]]
 class "TabardModel"
 	inherit "PlayerModel"
-
-	doc [======[
-		@name TabardModel
-		@type class
-		@desc TabardModel is a frame type provided specifically for designing or modifying guild tabards.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	-----------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetLowerBackgroundFileName
-		@type method
-		@desc Returns the image file for the lower portion of the tabard model's current background design
-		@return string the image file for the lower portion of the tabard model's current background design
-	]======]
+	__Doc__"GetLowerBackgroundFileName" [[
+		<desc>Returns the image file for the lower portion of the tabard model's current background design</desc>
+		<return type="string">the image file for the lower portion of the tabard model's current background design</return>
+	]]
 
-	doc [======[
-		@name GetLowerEmblemFileName
-		@type method
-		@desc Returns the image file for the lower portion of the tabard model's current emblem design
-		@return string the image file for the lower portion of the tabard model's current emblem design
-	]======]
+	__Doc__"GetLowerEmblemFileName" [[
+		<desc>Returns the image file for the lower portion of the tabard model's current emblem design</desc>
+		<return type="string">the image file for the lower portion of the tabard model's current emblem design</return>
+	]]
 
-	doc [======[
-		@name GetLowerEmblemTexture
-		@type method
-		@desc Gets the texture object to display the lower portion of the tabard model's current emblem design
-		@return System.Widget.Texture the texture object to display the lower portion of the tabard model's current emblem design
-	]======]
+	__Doc__[[
+		<desc>Gets the texture object to display the lower portion of the tabard model's current emblem design</desc>
+		<return type="System.Widget.Texture">the texture object to display the lower portion of the tabard model's current emblem design</return>
+	]]
 	function GetLowerEmblemTexture(self)
 		return IGAS:GetWrapper(self.__UI:GetLowerEmblemTexture())
 	end
 
-	doc [======[
-		@name GetUpperBackgroundFileName
-		@type method
-		@desc Returns the image file for the upper portion of the tabard model's current background design
-		@return string the image file path for the upper portion of the tabard model's current background design
-	]======]
+	__Doc__"GetUpperBackgroundFileName" [[
+		<desc>Returns the image file for the upper portion of the tabard model's current background design</desc>
+		<return type="string">the image file path for the upper portion of the tabard model's current background design</return>
+	]]
 
-	doc [======[
-		@name GetUpperEmblemFileName
-		@type method
-		@desc Returns the image file for the upper portion of the tabard model's current emblem design
-		@return string the image file path for the upper portion of the tabard model's current emblem design
-	]======]
+	__Doc__"GetUpperEmblemFileName" [[
+		<desc>Returns the image file for the upper portion of the tabard model's current emblem design</desc>
+		<return type="string">the image file path for the upper portion of the tabard model's current emblem design</return>
+	]]
 
-	doc [======[
-		@name GetUpperEmblemTexture
-		@type method
-		@desc Gets a Texture object to display the upper portion of the tabard model's current emblem design
-		@return System.Widget.Texture the texture object to display the upper portion of the tabard model's current emblem design
-	]======]
+	__Doc__[[
+		<desc>Gets a Texture object to display the upper portion of the tabard model's current emblem design</desc>
+		<return type="System.Widget.Texture">the texture object to display the upper portion of the tabard model's current emblem design</return>
+	]]
 	function GetUpperEmblemTexture(self)
 		return IGAS:GetWrapper(self.__UI:GetUpperEmblemTexture())
 	end
 
-	doc [======[
-		@name InitializeTabardColors
-		@type method
-		@desc Sets the tabard model's design to match the player's guild tabard. If the player is not in a guild or the player's guild does not yet have a tabard design, randomizes the tabard model's design.
-		@return nil
-	]======]
+	__Doc__"InitializeTabardColors" [[Sets the tabard model's design to match the player's guild tabard. If the player is not in a guild or the player's guild does not yet have a tabard design, randomizes the tabard model's design.]]
 
-	doc [======[
-		@name Save
-		@type method
-		@desc Saves the current tabard model design as the player's guild tabard. Has no effect if the player is not a guild leader.
-		@return nil
-	]======]
+	__Doc__"Save" [[Saves the current tabard model design as the player's guild tabard. Has no effect if the player is not a guild leader.]]
 
 	------------------------------------------------------
 	-- Property

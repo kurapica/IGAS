@@ -38,11 +38,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Macro
-		@type property
-		@desc The action button's content if its type is 'macro'
-	]======]
+	__Doc__[[The action button's content if its type is 'macro']]
 	property "Macro" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "macro" and self:GetAttribute("macro") or nil

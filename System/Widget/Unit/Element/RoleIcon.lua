@@ -29,24 +29,17 @@ function PLAYER_REGEN_ENABLED(self)
 	end
 end
 
+__Doc__[[The group role indicator]]
 class "RoleIcon"
 	inherit "Texture"
 	extend "IFGroupRole"
-
-	doc [======[
-		@name RoleIcon
-		@type class
-		@desc The group role indicator
-	]======]
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	-- -- ------------------------------------
 	function Refresh(self)
 		if not _M._InCombat or self.ShowInCombat then
 			local role = self.Unit and UnitGroupRolesAssigned(self.Unit)

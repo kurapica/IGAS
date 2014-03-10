@@ -13,23 +13,14 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollForm", version) then
 	return
 end
 
+__Doc__[[ScrollForm is used as a scrollable container]]
 class "ScrollForm"
 	inherit "ScrollFrame"
 
-	doc [======[
-		@name ScrollForm
-		@type class
-		@desc ScrollForm is used as a scrollable container
-	]======]
-
+	__Doc__[[The container used for scroll form]]
 	class "Container"
 		inherit "Frame"
 
-		doc [======[
-			@name Container
-			@type class
-			@desc The container used for scroll form
-		]======]
 		local function DoFixHeight(self)
 			local top = self:GetTop()
 			local bottom = top
@@ -55,12 +46,7 @@ class "ScrollForm"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name UpdateSize
-			@type method
-			@desc Update the size based on child elements
-			@return nil
-		]======]
+		__Doc__[[Update the size based on child elements]]
 		function UpdateSize(self)
 			return DoFixHeight(self)
 		end
@@ -89,13 +75,10 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetScrollChild
-		@type method
-		@desc Sets the scroll child frame
-		@param frame System.Widget.Region
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the scroll child frame</desc>
+		<param name="frame">System.Widget.Region</param>
+	]]
 	function SetScrollChild(self, frame)
 		if not Reflector.ObjectIsClass(frame, System.Widget.Region) then
 			frame = nil
@@ -125,12 +108,7 @@ class "ScrollForm"
     	end
 	end
 
-	doc [======[
-		@name GetScrollChild
-		@type method
-		@desc Gets the scoll child frame
-		@return nil
-	]======]
+	__Doc__[[Gets the scoll child frame]]
 	function GetScrollChild(self)
 		if not self.__ScrollChild then
 			local container = Container("Container", self)
@@ -143,11 +121,7 @@ class "ScrollForm"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ValueStep
-		@type property
-		@desc the minimum increment between allowed slider values
-	]======]
+	__Doc__[[the minimum increment between allowed slider values]]
 	property "ValueStep" {
 		Set = function(self, value)
 			if value > 1 then
@@ -164,11 +138,7 @@ class "ScrollForm"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Value
-		@type property
-		@desc the value representing the current position of the slider thumb
-	]======]
+	__Doc__[[the value representing the current position of the slider thumb]]
 	property "Value" {
 		Set = function(self, value)
 			self:GetChild("Bar").Value = value
@@ -181,11 +151,7 @@ class "ScrollForm"
 		Type = Number,
 	}
 
-	doc [======[
-		@name ScrollChild
-		@type property
-		@desc The scroll child frame
-	]======]
+	__Doc__[[The scroll child frame]]
 	property "ScrollChild" {
 		Get = "GetScrollChild",
 		Set = "SetScrollChild",

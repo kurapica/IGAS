@@ -9,14 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
 end
 
+__Doc__[[CodeEditor object is used as a lua code editor]]
 class "CodeEditor"
 	inherit "MultiLineTextBox"
-
-	doc [======[
-		@name CodeEditor
-		@type class
-		@desc CodeEditor object is used as a lua code editor
-	]======]
 
 	_IndentNone = 0
 	_IndentRight = 1
@@ -1800,13 +1795,10 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the code editor's code content
-		@param text string, the lua code
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the code editor's code content</desc>
+		<param name="text">string, the lua code</param>
+	]]
 	function SetText(self, str)
 		if type(str) ~= "string" then
 			error("Usage : CodeEditor:SetText(text) : 'text' - string expected.", 2)
@@ -1817,12 +1809,10 @@ class "CodeEditor"
 		MultiLineTextBox.SetText(self, FormatAll(str, self))
 	end
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Get the content lua code
-		@return string the lua code
-	]======]
+	__Doc__[[
+		<desc>Get the content lua code</desc>
+		<return type="string">the lua code</return>
+	]]
 	function GetText(self)
 		local str = RemoveColor(self.FullText)
         str = str:gsub("\124\124", "\124")
@@ -1832,11 +1822,7 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name DefaultColor
-		@type property
-		@desc color for normal code
-	]======]
+	__Doc__[[color for normal code]]
 	property "DefaultColor" {
 		Get = function(self)
 			return self.__DefaultColor or _DefaultColor
@@ -1850,11 +1836,7 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
-	doc [======[
-		@name CommentColor
-		@type property
-		@desc color for comment
-	]======]
+	__Doc__[[color for comment]]
 	property "CommentColor" {
 		Get = function(self)
 			return self.__CommentColor or _CommentColor
@@ -1868,11 +1850,7 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
-	doc [======[
-		@name StringColor
-		@type property
-		@desc color for string
-	]======]
+	__Doc__[[color for string]]
 	property "StringColor" {
 		Get = function(self)
 			return self.__StringColor or _StringColor
@@ -1886,11 +1864,7 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
-	doc [======[
-		@name NumberColor
-		@type property
-		@desc color for number
-	]======]
+	__Doc__[[color for number]]
 	property "NumberColor" {
 		Get = function(self)
 			return self.__NumberColor or _NumberColor
@@ -1904,11 +1878,7 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
-	doc [======[
-		@name InstructionColor
-		@type property
-		@desc color for instruction
-	]======]
+	__Doc__[[color for instruction]]
 	property "InstructionColor" {
 		Get = function(self)
 			return self.__InstructionColor or _InstructionColor
@@ -1922,11 +1892,7 @@ class "CodeEditor"
 		Type = System.Widget.ColorType + nil,
 	}
 
-	doc [======[
-		@name FullText
-		@type property
-		@desc the full text contains color token
-	]======]
+	__Doc__[[the full text contains color token]]
 	property "FullText" {
 		Set = function(self, text)
 			MultiLineTextBox.AdjustText(self, text)

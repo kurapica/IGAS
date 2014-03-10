@@ -76,11 +76,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name BattlePet
-		@type property
-		@desc The action button's content if its type is 'battlepet'
-	]======]
+	__Doc__[[The action button's content if its type is 'battlepet']]
 	property "BattlePet" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil

@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.RuneBar", version) then
 	return
 end
 
+__Doc__[[The rune bar for the deathknight]]
 class "RuneBar"
 	inherit "LayoutPanel"
 	extend "IFRune"
-
-	doc [======[
-		@name RuneBar
-		@type class
-		@desc The rune bar for the deathknight
-	]======]
 
 	GameTooltip = _G.GameTooltip
 	RUNES_TOOLTIP = _G.RUNES_TOOLTIP
@@ -89,9 +84,8 @@ class "RuneBar"
 		------------------------------------------------------
 		------------------------------------
 		--- Custom the indicator
-		-- @name SetUpCooldownIndicator
-		-- @class function
-		-- @param indicator the cooldown object
+		-- -- @class function
+		-- <param name="indicator">the cooldown object</param>
 		------------------------------------
 		function SetUpCooldownIndicator(self, indicator)
 			indicator.FrameStrata = "LOW"

@@ -28,14 +28,9 @@ function _IFFactionUnitList:ParseEvent(event, unit)
 	end
 end
 
+__Doc__[[IFFaction is used to handle the unit faction state's updating]]
 interface "IFFaction"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFFaction
-		@type interface
-		@desc IFFaction is used to handle the unit faction state's updating
-	]======]
 
 	------------------------------------------------------
 	-- Event

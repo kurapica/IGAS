@@ -20,15 +20,12 @@ function _IFRestingUnitList:ParseEvent(event)
 	self:EachK("player", "Refresh")
 end
 
+__Doc__[[
+	<desc>IFResting is used to handle the unit resting state's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resting indicator should be shown</overridable>
+]]
 interface "IFResting"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFResting
-		@type interface
-		@desc IFResting is used to handle the unit resting state's updating
-		@overridable Visible property, boolean, used to receive the result that whether the resting indicator should be shown
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -37,12 +34,6 @@ interface "IFResting"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.Visible = self.Unit == "player" and IsResting()
 	end

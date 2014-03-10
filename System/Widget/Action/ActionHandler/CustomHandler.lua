@@ -48,11 +48,7 @@ interface "IFActionHandler"
 		return old_SetAction(self, kind, target, ...)
 	end
 
-	doc [======[
-		@name Custom
-		@type property
-		@desc The custom action
-	]======]
+	__Doc__[[The custom action]]
 	property "Custom" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "custom" and self.custom or self:GetAttribute("custom") or nil
@@ -63,24 +59,12 @@ interface "IFActionHandler"
 		Type = String + Function + nil,
 	}
 
-	doc [======[
-		@name CustomText
-		@type property
-		@desc The custom text
-	]======]
+	__Doc__[[The custom text]]
 	property "CustomText" { Type = String + nil }
 
-	doc [======[
-		@name CustomTexture
-		@type property
-		@desc The custom texture path
-	]======]
+	__Doc__[[The custom texture path]]
 	property "CustomTexture" { Type = String + nil }
 
-	doc [======[
-		@name CustomTooltip
-		@type property
-		@desc The custom tooltip
-	]======]
+	__Doc__[[The custom tooltip]]
 	property "CustomTooltip" { Type = String + nil }
 endinterface "IFActionHandler"

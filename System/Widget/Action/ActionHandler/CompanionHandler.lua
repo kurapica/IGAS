@@ -158,11 +158,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Mount
-		@type property
-		@desc The action button's content if its type is 'mount'
-	]======]
+	__Doc__[[The action button's content if its type is 'mount']]
 	property "Mount" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "companion" and tonumber(self:GetAttribute("companion")) or nil

@@ -9,27 +9,10 @@ if not IGAS:NewAddon("IGAS.Widget.SecureFrame", version) then
 	return
 end
 
+__Doc__[[SecureFrame is a root widget class for secure frames]]
 class "SecureFrame"
 	inherit "Frame"
 	extend "IFSecureHandler"
-
-	doc [======[
-		@name SecureFrame
-		@type class
-		@desc SecureFrame is a root widget class for secure frames
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Constructor

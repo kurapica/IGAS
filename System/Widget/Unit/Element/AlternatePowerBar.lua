@@ -8,29 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.AlternatePowerBar", version) then
 	return
 end
 
+__Doc__[[the alternate power bar]]
 class "AlternatePowerBar"
 	inherit "StatusBar"
 	extend "IFAlternatePower"
 
-	doc [======[
-		@name AlternatePowerBar
-		@type class
-		@desc the alternate power bar
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
 endclass "AlternatePowerBar"

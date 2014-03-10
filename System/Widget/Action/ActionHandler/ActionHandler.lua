@@ -267,13 +267,10 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetActionPage
-		@type method
-		@desc Set Action Page for actionbutton
-		@param page number|nil, the action page for the action button
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set Action Page for actionbutton</desc>
+		<param name="page">number|nil, the action page for the action button</param>
+	]]
 	function SetActionPage(self, page)
 		page = tonumber(page) or 0
 		page = page and floor(page)
@@ -296,23 +293,18 @@ interface "IFActionHandler"
 		end
 	end
 
-	doc [======[
-		@name GetActionPage
-		@type method
-		@desc Get Action Page of action button
-		@return number the action button's action page if set, or nil
-	]======]
+	__Doc__[[
+		<desc>Get Action Page of action button</desc>
+		<return type="number">the action button's action page if set, or nil</return>
+	]]
 	function GetActionPage(self)
 		return tonumber(self:GetAttribute("actionpage"))
 	end
 
-	doc [======[
-		@name SetMainPage
-		@type method
-		@desc Set if this action button belongs to main page
-		@param isMain boolean, true if the action button belongs to main page, so its content will be automatically changed under several conditions.
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set if this action button belongs to main page</desc>
+		<param name="isMain">boolean, true if the action button belongs to main page, so its content will be automatically changed under several conditions.</param>
+	]]
 	function SetMainPage(self, isMain)
 		isMain = isMain and true or nil
 		if self.__IFActionHandler_IsMainPage ~= isMain then
@@ -350,12 +342,10 @@ interface "IFActionHandler"
 		end
 	end
 
-	doc [======[
-		@name IsMainPage
-		@type method
-		@desc Whether if the action button is belong to main page
-		@return boolean true if the action button is belong to main page
-	]======]
+	__Doc__[[
+		<desc>Whether if the action button is belong to main page</desc>
+		<return type="boolean">true if the action button is belong to main page</return>
+	]]
 	function IsMainPage(self)
 		return self.__IFActionHandler_IsMainPage or false
 	end
@@ -363,11 +353,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Action
-		@type property
-		@desc The action button's content if its type is 'action'
-	]======]
+	__Doc__[[The action button's content if its type is 'action']]
 	property "Action" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "action" and tonumber(self:GetAttribute("action")) or nil
@@ -378,18 +364,10 @@ interface "IFActionHandler"
 		Type = System.Number + nil,
 	}
 
-	doc [======[
-		@name ActionPage
-		@type property
-		@desc The action page of the action button if type is 'action'
-	]======]
+	__Doc__[[The action page of the action button if type is 'action']]
 	property "ActionPage" { Type = System.Number + nil }
 
-	doc [======[
-		@name MainPage
-		@type property
-		@desc Whether the action button is used in the main page
-	]======]
+	__Doc__[[Whether the action button is used in the main page]]
 	property "MainPage" { Type = System.Boolean }
 
 endinterface "IFActionHandler"

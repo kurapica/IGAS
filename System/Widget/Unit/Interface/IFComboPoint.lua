@@ -51,16 +51,13 @@ function CheckVisible()
 	end
 end
 
+__Doc__[[
+	<desc>IFComboPoint is used to handle the unit's combo points</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the check result for whether the combo points should be shown(only for rogue and cat)</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the unit's combo points's count</overridable>
+]]
 interface "IFComboPoint"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFComboPoint
-		@type interface
-		@desc IFComboPoint is used to handle the unit's combo points
-		@overridable Visible property, boolean, used to receive the check result for whether the combo points should be shown(only for rogue and cat)
-		@overridable Value property, number, used to receive the unit's combo points's count
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -69,12 +66,7 @@ interface "IFComboPoint"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		self.Value = GetComboPoint()
 		self.Visible = CheckVisible()

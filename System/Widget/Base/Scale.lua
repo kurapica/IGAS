@@ -9,59 +9,38 @@ if not IGAS:NewAddon("IGAS.Widget.Scale", version) then
 	return
 end
 
+__Doc__[[Scale is an Animation type that automatically applies an affine scalar transformation to the region being animated as it progresses. You can set both the multiplier by which it scales, and the point from which it is scaled.]]
 class "Scale"
 	inherit "Animation"
-
-	doc [======[
-		@name Scale
-		@type class
-		@desc Scale is an Animation type that automatically applies an affine scalar transformation to the region being animated as it progresses. You can set both the multiplier by which it scales, and the point from which it is scaled.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetOrigin
-		@type method
-		@desc Returns the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
-		@return point System.Widget.FramePoint, Anchor point for the scale origin
-		@return xOffset number, Horizontal distance from the anchor point to the scale origin (in pixels)
-		@return yOffset number, Vertical distance from the anchor point to the scale origin (in pixels)
-	]======]
+	__Doc__"GetOrigin" [[
+		<desc>Returns the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.</desc>
+		<return type="point">System.Widget.FramePoint, Anchor point for the scale origin</return>
+		<return type="xOffset">number, Horizontal distance from the anchor point to the scale origin (in pixels)</return>
+		<return type="yOffset">number, Vertical distance from the anchor point to the scale origin (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetScale
-		@type method
-		@desc Returns the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
-		@return xFactor number, Horizontal scaling factor
-		@return yFactor number, Vertical scaling factor
-	]======]
+	__Doc__"GetScale" [[
+		<desc>Returns the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.</desc>
+		<return type="xFactor">number, Horizontal scaling factor</return>
+		<return type="yFactor">number, Vertical scaling factor</return>
+	]]
 
-	doc [======[
-		@name SetOrigin
-		@type method
-		@desc Sets the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.
-		@param point System.Widget.FramePoint, anchor point for the scale origin
-		@param xOffset number, horizontal distance from the anchor point to the scale origin (in pixels)
-		@param yOffset number, vertical distance from the anchor point to the scale origin (in pixels)
-	]======]
+	__Doc__"SetOrigin" [[
+		<desc>Sets the scale animation's origin point. During a scale animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the scale factor.</desc>
+		<param name="point">System.Widget.FramePoint, anchor point for the scale origin</param>
+		<param name="xOffset">number, horizontal distance from the anchor point to the scale origin (in pixels)</param>
+		<param name="yOffset">number, vertical distance from the anchor point to the scale origin (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetScale
-		@type method
-		@desc Sets the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.
-		@param xFactor number, Horizontal scaling factor
-		@param yFactor number, Vertical scaling factor
-	]======]
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"SetScale" [[
+		<desc>Sets the animation's scaling factors. At the end of the scale animation, the animated region's dimensions are equal to its initial dimensions multiplied by its scaling factors.</desc>
+		<param name="xFactor">number, Horizontal scaling factor</param>
+		<param name="yFactor">number, Vertical scaling factor</param>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -84,11 +63,7 @@ class "Scale"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Scale
-		@type property
-		@desc the animation's scaling factors
-	]======]
+	__Doc__[[the animation's scaling factors]]
 	property "Scale" {
 		Get = function(self)
 			return Dimension(self:GetScale())
@@ -99,11 +74,7 @@ class "Scale"
 		Type = Dimension,
 	}
 
-	doc [======[
-		@name Origin
-		@type property
-		@desc the scale animation's origin point
-	]======]
+	__Doc__[[the scale animation's origin point]]
 	property "Origin" {
 		Get = function(self)
 			return AnimOriginType(self:GetOrigin())

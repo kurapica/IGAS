@@ -21,15 +21,12 @@ function _IFPhaseUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFPhase is used to check whether the unit is in the same phase with the player</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the unit is in the same phase with the player</overridable>
+]]
 interface "IFPhase"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFPhase
-		@type interface
-		@desc IFPhase is used to check whether the unit is in the same phase with the player
-		@overridable Visible property, boolean, used to receive the result that whether the unit is in the same phase with the player
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -38,12 +35,6 @@ interface "IFPhase"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.Visible = self.Unit and UnitInPhase(self.Unit)
 	end

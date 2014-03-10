@@ -64,12 +64,8 @@ do
 	end
 end
 
+__Doc__[[IFAutoPosition provide a position &amp; size control system for frames.]]
 interface "IFAutoPosition"
-	doc [======[
-		@name IFAutoPosition
-		@type interface
-		@desc IFAutoPosition provide a position &amp; size control system for frames.
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -106,12 +102,7 @@ interface "IFAutoPosition"
 	-- Method
 	------------------------------------------------------
 
-	doc [======[
-		@name ClearPosition
-		@type method
-		@desc Clear the position data
-		@return nil
-	]======]
+	__Doc__[[Clear the position data]]
 	function ClearPosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't clear position for auto position frame.", 2)
@@ -138,12 +129,7 @@ interface "IFAutoPosition"
 		end
 	end
 
-	doc [======[
-		@name ClearSize
-		@type method
-		@desc Clear the size data
-		@return nil
-	]======]
+	__Doc__[[Clear the size data]]
 	function ClearSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't clear size for auto size frame.", 2)
@@ -170,12 +156,7 @@ interface "IFAutoPosition"
 		end
 	end
 
-	doc [======[
-		@name LoadPosition
-		@type method
-		@desc Load the position data
-		@return nil
-	]======]
+	__Doc__[[Load the position data]]
 	function LoadPosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't load position for auto position frame.", 2)
@@ -194,12 +175,7 @@ interface "IFAutoPosition"
 		end
 	end
 
-	doc [======[
-		@name LoadSize
-		@type method
-		@desc Load the size data
-		@return nil
-	]======]
+	__Doc__[[Load the size data]]
 	function LoadSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't load size for auto size frame.", 2)
@@ -218,12 +194,7 @@ interface "IFAutoPosition"
 		end
 	end
 
-	doc [======[
-		@name SavePosition
-		@type method
-		@desc Save the position data
-		@return nil
-	]======]
+	__Doc__[[Save the position data]]
 	function SavePosition(self)
 		if self.IFAutoPositionAutoPosition then
 			error("Can't save position for auto position frame.", 2)
@@ -240,12 +211,7 @@ interface "IFAutoPosition"
 		end
 	end
 
-	doc [======[
-		@name SaveSize
-		@type method
-		@desc Save the size data
-		@return nil
-	]======]
+	__Doc__[[Save the size data]]
 	function SaveSize(self)
 		if self.IFAutoPositionAutoSize then
 			error("Can't save size for auto size frame.", 2)
@@ -265,33 +231,21 @@ interface "IFAutoPosition"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFAutoPositionForCharacter
-		@type property
-		@desc Whether the data is stored for the character, default true
-	]======]
+	__Doc__[[Whether the data is stored for the character, default true]]
 	property "IFAutoPositionForCharacter" {
 		Get = function(self)
 			return true
 		end,
 	}
 
-	doc [======[
-		@name IFAutoPositionAutoSize
-		@type property
-		@desc Whether should load and save the size data automatically, default true
-	]======]
+	__Doc__[[Whether should load and save the size data automatically, default true]]
 	property "IFAutoPositionAutoSize" {
 		Get = function(self)
 			return true
 		end,
 	}
 
-	doc [======[
-		@name IFAutoPositionAutoPosition
-		@type property
-		@desc Whether should load and save the position data automatically, default true
-	]======]
+	__Doc__[[Whether should load and save the position data automatically, default true]]
 	property "IFAutoPositionAutoPosition" {
 		Get = function(self)
 			return true

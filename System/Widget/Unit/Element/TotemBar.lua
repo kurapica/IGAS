@@ -8,23 +8,16 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.TotemBar", version) then
 	return
 end
 
+__Doc__[[The totem bar]]
 class "TotemBar"
 	inherit "LayoutPanel"
 	extend "IFTotem"
-
-	doc [======[
-		@name TotemBar
-		@type class
-		@desc The totem bar
-	]======]
 
 	MAX_TOTEMS = _G.MAX_TOTEMS
 
 	-----------------------------------------------
 	--- Totem
-	-- @type class
-	-- @name Totem
-	-----------------------------------------------
+	-- -- -----------------------------------------------
 	class "Totem"
 		inherit "Button"
 		extend "IFCooldownIndicator"

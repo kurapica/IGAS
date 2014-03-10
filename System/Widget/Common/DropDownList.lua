@@ -13,21 +13,20 @@ if not IGAS:NewAddon("IGAS.Widget.DropDownList", version) then
 	return
 end
 
+__Doc__[[
+	<desc>DropDownList is used to create pop-up menus.</desc>
+	<usage>
+		menu = DropDownList("Menu", myForm)      -- Create a pop-up menu
+		mnuEdit = menu:AddMenuButton("Edit")     -- Create a menu button to the menu and displayed 'Edit' on it
+		mnuHide = mnuEdit:AddMenuButton("Hide")  -- Create a sub pop-up menu for mnuEdit, and add a 'Hide' menu button to the sub pop-up menu
+
+		function mnuHide:OnClick()
+		    myForm.Visible = false               -- Hide myForm when click the 'Hide' menu button
+		end
+	</usage>
+]]
 class "DropDownList"
 	inherit "VirtualUIObject"
-
-	doc [======[
-		@name DropDownList
-		@type class
-		@desc DropDownList is used to create pop-up menus.
-		@usage
-			menu = DropDownList("Menu", myForm)      -- Create a pop-up menu
-		<br>mnuEdit = menu:AddMenuButton("Edit")     -- Create a menu button to the menu and displayed 'Edit' on it
-		<br>mnuHide = mnuEdit:AddMenuButton("Hide")  -- Create a sub pop-up menu for mnuEdit, and add a 'Hide' menu button to the sub pop-up menu
-		<br>function mnuHide:OnClick()
-		<br>    myForm.Visible = false               -- Hide myForm when click the 'Hide' menu button
-		<br>end
-	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -53,14 +52,9 @@ class "DropDownList"
 		end
 	end
 
+	__Doc__[[DropDownMenuButton is used to create menu buttons to the DropDownList]]
 	class "DropDownMenuButton"
 		inherit "Button"
-
-		doc [======[
-			@name DropDownMenuButton
-			@type class
-			@desc DropDownMenuButton is used to create menu buttons to the DropDownList
-		]======]
 
 		itemHeight = 16
 
@@ -246,36 +240,28 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc [======[
-			@name OnCheckChanged
-			@type event
-			@desc Run when the button's checking state is changed
-		]======]
+		__Doc__[[Run when the button's checking state is changed]]
 		event "OnCheckChanged"
 
-		doc [======[
-			@name OnColorPicked
-			@type event
-			@desc Run when the color is selected
-			@param r number, [0-1], the red part of the color
-			@param g number, [0-1], the green part of the color
-			@param b number, [0-1], the blue part of the color
-			@param a number, [0-1], the alpha part of the color
-		]======]
+		__Doc__[[
+			<desc>Run when the color is selected</desc>
+			<param name="r">number, [0-1], the red part of the color</param>
+			<param name="g">number, [0-1], the green part of the color</param>
+			<param name="b">number, [0-1], the blue part of the color</param>
+			<param name="a">number, [0-1], the alpha part of the color</param>
+		]]
 		event "OnColorPicked"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name AddMenuButton
-			@type method
-			@desc Add or get a dropDownMenuButton with the given name list
-			@param name string, the name of the menu button
-			@param ... the sub menu item's name list
-			@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
-			@usage btn = object:AddMenuButton("File", "New", "Lua")
-		]======]
+		__Doc__[[
+			<desc>Add or get a dropDownMenuButton with the given name list</desc>
+			<param name="name">string, the name of the menu button</param>
+			<param name="...">the sub menu item's name list</param>
+			<return type="System.Widget.DropDownList.DropDownMenuButton">Reference to the new dropdown menu button</return>
+			<usage>btn = object:AddMenuButton("File", "New", "Lua")</usage>
+		]]
 		function AddMenuButton(self, ...)
 			local name, mnuBtn, menu
 
@@ -307,15 +293,13 @@ class "DropDownList"
 			return mnuBtn
 		end
 
-		doc [======[
-			@name GetMenuButton
-			@type method
-			@desc Get a dropDownMenuButton with the given name list
-			@param name string, the name of the menu button
-			@param ... the sub menu item's name list
-			@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
-			@usage btn = object:GetMenuButton("File", "New", "Lua")
-		]======]
+		__Doc__[[
+			<desc>Get a dropDownMenuButton with the given name list</desc>
+			<param name="name">string, the name of the menu button</param>
+			<param name="...">the sub menu item's name list</param>
+			<return type="System.Widget.DropDownList.DropDownMenuButton">Reference to the new dropdown menu button</return>
+			<usage>btn = object:GetMenuButton("File", "New", "Lua")</usage>
+		]]
 		function GetMenuButton(self, ...)
 			local name, mnuBtn, menu
 
@@ -363,28 +347,22 @@ class "DropDownList"
 			return mnuBtn
 		end
 
-		doc [======[
-			@name RemoveMenuButton
-			@type method
-			@desc Remove dropDownMenuButton with the given name list
-			@param name string, the name of the menu button
-			@param ... the sub menu item's name list
-			@return nil
-			@usage object:RemoveMenuButton("File", "New", "Lua")
-		]======]
+		__Doc__[[
+			<desc>Remove dropDownMenuButton with the given name list</desc>
+			<param name="name">string, the name of the menu button</param>
+			<param name="...">the sub menu item's name list</param>
+			<usage>object:RemoveMenuButton("File", "New", "Lua")</usage>
+		]]
 		function RemoveMenuButton(self, ...)
 			local mnuBtn = self:GetMenuButton(...)
 
 			return mnuBtn and mnuBtn:Dispose()
 		end
 
-		doc [======[
-			@name SetText
-			@type method
-			@desc Sets the button's display text
-			@param text string, tht text to be displayed
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Sets the button's display text</desc>
+			<param name="text">string, tht text to be displayed</param>
+			]]
 		function SetText(self, text)
 			if self.__TextColor and next(self.__TextColor) then
 				self:GetChild("Text").Text = string.format("|cFF%02x%02x%02x", floor(self.__TextColor.red * 255), floor(self.__TextColor.green * 255), floor(self.__TextColor.blue * 255))..text.."|r"
@@ -395,25 +373,20 @@ class "DropDownList"
 			updateWidth(self.Parent)
 		end
 
-		doc [======[
-			@name GetText
-			@type method
-			@desc Gets the button's display text
-			@return string
-		]======]
+		__Doc__[[
+			<desc>Gets the button's display text</desc>
+			<return type="string"></return>
+		]]
 		function GetText(self)
 			return self.__Text or ""
 		end
 
-		doc [======[
-			@name SetDropDownList
-			@type method
-			@desc Set the sub menu for the button
-			@format dropdownList|list
-			@param dropDownList System.Widget.DropDownList
-			@param list System.Widget.List
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Set the sub menu for the button</desc>
+			<format>dropdownList|list</format>
+			<param name="dropDownList">System.Widget.DropDownList</param>
+			<param name="list">System.Widget.List</param>
+			]]
 		function SetDropDownList(self, list)
 			if list == nil or (type(list) == "table" and list.IsObjectType and list.Show and list.Hide) then
 				if self.__DropDownList == list then
@@ -445,47 +418,37 @@ class "DropDownList"
 			end
 		end
 
-		doc [======[
-			@name GetDropDownList
-			@type method
-			@desc Get the sub menu for the button
-			@return dropDownList|list
-		]======]
+		__Doc__[[
+			<desc>Get the sub menu for the button</desc>
+			<return type="dropDownList|list"></return>
+		]]
 		function GetDropDownList(self)
 			return self.__DropDownList
 		end
 
-		doc [======[
-			@name SetIcon
-			@type method
-			@desc Set the icon to be displayed on the button
-			@param icon string, the texture path to be displayed
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Set the icon to be displayed on the button</desc>
+			<param name="icon">string, the texture path to be displayed</param>
+			]]
 		function SetIcon(self, texture)
 			self:GetChild("Icon").Visible = (texture and true) or false
 			self:GetChild("Icon").TexturePath = texture
 		end
 
-		doc [======[
-			@name GetIcon
-			@type method
-			@desc Get the icon to be displayed on the button
-			@return string the texture's path
-		]======]
+		__Doc__[[
+			<desc>Get the icon to be displayed on the button</desc>
+			<return type="string">the texture's path</return>
+		]]
 		function GetIcon(self)
 			return self:GetChild("Icon").TexturePath
 		end
 
-		doc [======[
-			@name SetTextColor
-			@type method
-			@desc Set the text color for the button
-			@param red number, red component of the color (0.0 - 1.0)
-			@param green number, green component of the color (0.0 - 1.0)
-			@param blue number, blue component of the color (0.0 - 1.0)
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Set the text color for the button</desc>
+			<param name="red">number, red component of the color (0.0 - 1.0)</param>
+			<param name="green">number, green component of the color (0.0 - 1.0)</param>
+			<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
+		]]
 		function SetTextColor(self, r, g, b)
 			if r and type(r) == "number" and r >= 0 and r <= 1
 				and g and type(g) == "number" and g >=0 and g <= 1
@@ -507,27 +470,22 @@ class "DropDownList"
 			end
 		end
 
-		doc [======[
-			@name GetTextColor
-			@type method
-			@desc Get the text color for the button
-			@return red number, red component of the color (0.0 - 1.0)
-			@return green number, green component of the color (0.0 - 1.0)
-			@return blue number, blue component of the color (0.0 - 1.0)
-		]======]
+		__Doc__[[
+			<desc>Get the text color for the button</desc>
+			<return type="red">number, red component of the color (0.0 - 1.0)</return>
+			<return type="green">number, green component of the color (0.0 - 1.0)</return>
+			<return type="blue">number, blue component of the color (0.0 - 1.0)</return>
+		]]
 		function GetTextColor(self)
 			if self.__TextColor then
 				return self.__TextColor.red, self.__TextColor.green, self.__TextColor.blue
 			end
 		end
 
-		doc [======[
-			@name SetIndex
-			@type method
-			@desc Set the menu button's index
-			@param index number
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Set the menu button's index</desc>
+			<param name="index">number</param>
+		]]
 		function SetIndex(self, index)
 			if type(index) ~= "number" or index <= 0 then
 				error("The Index must be more than 0.", 2)
@@ -566,12 +524,10 @@ class "DropDownList"
 			self:SetPoint("TOP", self.Parent, "TOP", 0, -(16 + itemHeight * (index - 1)))
 		end
 
-		doc [======[
-			@name GetIndex
-			@type method
-			@desc Return the menu button's index
-			@return number
-		]======]
+		__Doc__[[
+			<desc>Return the menu button's index</desc>
+			<return type="number"></return>
+		]]
 		function GetIndex(self)
 			return self.__Index
 		end
@@ -579,22 +535,14 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Index
-			@type property
-			@desc the index of the dropDownMenuButton
-		]======]
+		__Doc__[[the index of the dropDownMenuButton]]
 		property "Index" {
 			Set = "SetIndex",
 			Get = "GetIndex",
 			Type = Number,
 		}
 
-		doc [======[
-			@name TextColor
-			@type property
-			@desc the text color of the dropDownMenuButton
-		]======]
+		__Doc__[[the text color of the dropDownMenuButton]]
 		property "TextColor" {
 			Set = function(self, color)
 				self:SetTextColor(color.red, color.green, color.blue)
@@ -607,44 +555,28 @@ class "DropDownList"
 			Type = ColorType,
 		}
 
-		doc [======[
-			@name Icon
-			@type property
-			@desc the icon to be displayed on the dropDownMenuButton
-		]======]
+		__Doc__[[the icon to be displayed on the dropDownMenuButton]]
 		property "Icon" {
 			Set = "SetIcon",
 			Get = "GetIcon",
 			Type = String + nil,
 		}
 
-		doc [======[
-			@name DropDownList
-			@type property
-			@desc the sub pop-up menu for the dropDownMenuButton
-		]======]
+		__Doc__[[the sub pop-up menu for the dropDownMenuButton]]
 		property "DropDownList" {
 			Set = "SetDropDownList",
 			Get = "GetDropDownList",
 			Type = DropDownList + Region + nil,
 		}
 
-		doc [======[
-			@name Text
-			@type property
-			@desc the displayed text
-		]======]
+		__Doc__[[the displayed text]]
 		property "Text" {
 			Set = "SetText",
 			Get = "GetText",
 			Type = LocaleString,
 		}
 
-		doc [======[
-			@name IsCheckButton
-			@type property
-			@desc whether the dropDownMenuButton is a checkButton
-		]======]
+		__Doc__[[whether the dropDownMenuButton is a checkButton]]
 		property "IsCheckButton" {
 			Field = "__IsCheckButton",
 			Set = function(self, flag)
@@ -656,11 +588,7 @@ class "DropDownList"
 			Type = Boolean,
 		}
 
-		doc [======[
-			@name Checked
-			@type property
-			@desc whether the dropDownMenuButton is checked
-		]======]
+		__Doc__[[whether the dropDownMenuButton is checked]]
 		property "Checked" {
 			Set = function(self, flag)
 				self:GetChild("Check").Visible = flag
@@ -674,11 +602,7 @@ class "DropDownList"
 			Type = Boolean,
 		}
 
-		doc [======[
-			@name IsColorPicker
-			@type property
-			@desc whether the dropDownMenuButton is used as a colorpicker
-		]======]
+		__Doc__[[whether the dropDownMenuButton is used as a colorpicker]]
 		property "IsColorPicker" {
 			Set = function(self, flag)
 				self.ColorSwatch.Visible = flag
@@ -691,11 +615,7 @@ class "DropDownList"
 			Type = Boolean,
 		}
 
-		doc [======[
-			@name Color
-			@type property
-			@desc the color used to for the ColorPicker
-		]======]
+		__Doc__[[the color used to for the ColorPicker]]
 		property "Color" {
 			Get = function(self)
 				return self.ColorSwatch.NormalTexture.VertexColor
@@ -962,48 +882,34 @@ class "DropDownList"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnShow
-		@type event
-		@desc Run when the Region becomes visible
-	]======]
+	__Doc__[[Run when the Region becomes visible]]
 	event "OnShow"
 
-	doc [======[
-		@name OnHide
-		@type event
-		@desc Run when the Region's visbility changes to hidden
-	]======]
+	__Doc__[[Run when the Region's visbility changes to hidden]]
 	event "OnHide"
 
-	doc [======[
-		@name OnEnter
-		@type event
-		@desc Run when the mouse cursor enters the frame's interactive area
-		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse cursor enters the frame's interactive area</desc>
+		<param name="motion">boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)</param>
+	]]
 	event "OnEnter"
 
-	doc [======[
-		@name OnLeave
-		@type event
-		@desc Run when the mouse cursor leaves the frame's interactive area
-		@param motion boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse cursor leaves the frame's interactive area</desc>
+		<param name="motion">boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)</param>
+	]]
 	event "OnLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AddMenuButton
-		@type method
-		@desc Add or get a dropDownMenuButton with the given name list
-		@param name string, the name of the menu button
-		@param ... the sub menu item's name list
-		@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
-		@usage btn = object:AddMenuButton("File", "New", "Lua")
-	]======]
+	__Doc__[[
+		<desc>Add or get a dropDownMenuButton with the given name list</desc>
+		<param name="name">string, the name of the menu button</param>
+		<param name="...">the sub menu item's name list</param>
+		<return type="System.Widget.DropDownList.DropDownMenuButton">Reference to the new dropdown menu button</return>
+		<usage>btn = object:AddMenuButton("File", "New", "Lua")</usage>
+	]]
 	function AddMenuButton(self, ...)
 		local name, mnuBtn, menu
 
@@ -1035,15 +941,13 @@ class "DropDownList"
 		return mnuBtn
 	end
 
-	doc [======[
-		@name GetMenuButton
-		@type method
-		@desc Get a dropDownMenuButton with the given name list
-		@param name string, the name of the menu button
-		@param ... the sub menu item's name list
-		@return System.Widget.DropDownList.DropDownMenuButton Reference to the new dropdown menu button
-		@usage btn = object:GetMenuButton("File", "New", "Lua")
-	]======]
+	__Doc__[[
+		<desc>Get a dropDownMenuButton with the given name list</desc>
+		<param name="name">string, the name of the menu button</param>
+		<param name="...">the sub menu item's name list</param>
+		<return type="System.Widget.DropDownList.DropDownMenuButton">Reference to the new dropdown menu button</return>
+		<usage>btn = object:GetMenuButton("File", "New", "Lua")</usage>
+	]]
 	function GetMenuButton(self, ...)
 		local name, mnuBtn, menu
 
@@ -1091,197 +995,149 @@ class "DropDownList"
 		return mnuBtn
 	end
 
-	doc [======[
-		@name RemoveMenuButton
-		@type method
-		@desc Remove dropDownMenuButton with the given name list
-		@param name string, the name of the menu button
-		@param ... the sub menu item's name list
-		@return nil
-		@usage object:RemoveMenuButton("File", "New", "Lua")
-	]======]
+	__Doc__[[
+		<desc>Remove dropDownMenuButton with the given name list</desc>
+		<param name="name">string, the name of the menu button</param>
+		<param name="...">the sub menu item's name list</param>
+		<usage>object:RemoveMenuButton("File", "New", "Lua")</usage>
+	]]
 	function RemoveMenuButton(self, ...)
 		local mnuBtn = self:GetMenuButton(...)
 
 		return mnuBtn and mnuBtn:Dispose()
 	end
 
-	doc [======[
-		@name GetAlpha
-		@type method
-		@desc Returns the opacity of the region relative to its parent
-		@return number Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the opacity of the region relative to its parent</desc>
+		<return type="number">Alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetAlpha(self)
 		return self.__DdList:GetAlpha() or 1
 	end
 
-	doc [======[
-		@name SetAlpha
-		@type method
-		@desc Sets the opacity of the region relative to its parent
-		@param alpha number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the opacity of the region relative to its parent</desc>
+		<param name="alpha">number, alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)</param>
+		]]
 	function SetAlpha(self, alpha)
 		self.__DdList:SetAlpha(alpha)
 	end
 
-	doc [======[
-		@name ClearAllPoints
-		@type method
-		@desc Removes all anchor points from the region
-		@return nil
-	]======]
+	__Doc__[[Removes all anchor points from the region]]
 	function ClearAllPoints(self)
 		self.__DdList:ClearAllPoints()
 	end
 
-	doc [======[
-		@name GetBottom
-		@type method
-		@desc Returns the distance from the bottom of the screen to the bottom of the region
-		@return number Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the distance from the bottom of the screen to the bottom of the region</desc>
+		<return type="number">Distance from the bottom edge of the screen to the bottom edge of the region (in pixels)</return>
+	]]
 	function GetBottom(self)
 		return self.__DdList:GetBottom()
 	end
 
-	doc [======[
-		@name GetCenter
-		@type method
-		@desc Returns the screen coordinates of the region's center
-		@return x number, distance from the left edge of the screen to the center of the region (in pixels)
-		@return y number, distance from the bottom edge of the screen to the center of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the screen coordinates of the region's center</desc>
+		<return type="x">number, distance from the left edge of the screen to the center of the region (in pixels)</return>
+		<return type="y">number, distance from the bottom edge of the screen to the center of the region (in pixels)</return>
+	]]
 	function GetCenter(self)
 		return self.__DdList:GetCenter()
 	end
 
-	doc [======[
-		@name GetHeight
-		@type method
-		@desc Returns the height of the region
-		@return number Height of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the height of the region</desc>
+		<return type="number">Height of the region (in pixels)</return>
+	]]
 	function GetHeight(self)
 		return self.__DdList:GetHeight()
 	end
 
-	doc [======[
-		@name GetLeft
-		@type method
-		@desc Returns the distance from the left edge of the screen to the left edge of the region
-		@return number Distance from the left edge of the screen to the left edge of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the distance from the left edge of the screen to the left edge of the region</desc>
+		<return type="number">Distance from the left edge of the screen to the left edge of the region (in pixels)</return>
+	]]
 	function GetLeft(self)
 		return self.__DdList:GetLeft()
 	end
 
-	doc [======[
-		@name GetNumPoints
-		@type method
-		@desc Returns the number of anchor points defined for the region
-		@return number Number of defined anchor points for the region
-	]======]
+	__Doc__[[
+		<desc>Returns the number of anchor points defined for the region</desc>
+		<return type="number">Number of defined anchor points for the region</return>
+	]]
 	function GetNumPoints(self)
 		return self.__DdList:GetNumPoints()
 	end
 
-	doc [======[
-		@name GetPoint
-		@type method
-		@desc Returns information about one of the region's anchor points
-		@param index number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())
-		@return point System.Widget.FramePoint, point on this region at which it is anchored to another
-		@return relativeTo System.Widget.Region, reference to the other region to which this region is anchored
-		@return relativePoint System.Widget.FramePoint, point on the other region to which this region is anchored
-		@return xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)
-		@return yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)
-	]======]
+	__Doc__[[
+		<desc>Returns information about one of the region's anchor points</desc>
+		<param name="index">number, index of an anchor point defined for the region (between 1 and region:GetNumPoints())</param>
+		<return type="point">System.Widget.FramePoint, point on this region at which it is anchored to another</return>
+		<return type="relativeTo">System.Widget.Region, reference to the other region to which this region is anchored</return>
+		<return type="relativePoint">System.Widget.FramePoint, point on the other region to which this region is anchored</return>
+		<return type="xOffset">number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint)</return>
+		<return type="yOffset">number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint)</return>
+	]]
 	function GetPoint(self, pointNum)
 		return self.__DdList:GetPoint(pointNum)
 	end
 
-	doc [======[
-		@name GetRight
-		@type method
-		@desc Returns the distance from the left edge of the screen to the right edge of the region
-		@return number Distance from the left edge of the screen to the right edge of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the distance from the left edge of the screen to the right edge of the region</desc>
+		<return type="number">Distance from the left edge of the screen to the right edge of the region (in pixels)</return>
+	]]
 	function GetRight(self)
 		return self.__DdList:GetRight()
 	end
 
-	doc [======[
-		@name GetTop
-		@type method
-		@desc Returns the distance from the bottom of the screen to the top of the region
-		@return number Distance from the bottom edge of the screen to the top edge of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the distance from the bottom of the screen to the top of the region</desc>
+		<return type="number">Distance from the bottom edge of the screen to the top edge of the region (in pixels)</return>
+	]]
 	function GetTop(self)
 		return self.__DdList:GetTop()
 	end
 
-	doc [======[
-		@name GetWidth
-		@type method
-		@desc Returns the width of the region
-		@return number Width of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the width of the region</desc>
+		<return type="number">Width of the region (in pixels)</return>
+	]]
 	function GetWidth(self)
 		return self.__DdList:GetWidth()
 	end
 
-	doc [======[
-		@name Hide
-		@type method
-		@desc Hide the region
-		@return nil
-	]======]
+	__Doc__[[Hide the region]]
 	function Hide(self)
 		return self.__DdList:Hide()
 	end
 
-	doc [======[
-		@name Show
-		@type method
-		@desc Show the region
-		@return nil
-	]======]
+	__Doc__[[Show the region]]
 	function Show(self)
 		self.__DdList:Show()
 	end
 
-	doc [======[
-		@name IsShown
-		@type method
-		@desc Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.
-		@return boolean 1 if the region is shown; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the region is shown. Indicates only whether the region has been explicitly shown or hidden -- a region may be explicitly shown but not appear on screen because its parent region is hidden. See VisibleRegion:IsVisible() to test for actual visibility.</desc>
+		<return type="boolean">1 if the region is shown; otherwise nil</return>
+	]]
 	function IsShown(self)
 		return self.__DdList:IsShown()
 	end
 
-	doc [======[
-		@name IsVisible
-		@type method
-		@desc Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)
-		@return boolean 1 if the region is visible; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the region is visible. A region is "visible" if it has been explicitly shown (or not explicitly hidden) and its parent is visible (that is, all of its ancestor frames (parent, parent's parent, etc) are also shown)</desc>
+		<return type="boolean">1 if the region is visible; otherwise nil</return>
+	]]
 	function IsVisible(self)
 		return self.__DdList:IsVisible()
 	end
 
-	doc [======[
-		@name SetAllPoints
-		@type method
-		@desc Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.
-		@format [name|region]
-		@param name global name of a System.Widget.Region
-		@param region System.Widget.Region
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets all anchor points of the region to match those of another region. If no region is specified, the region's anchor points are set to those of its parent.</desc>
+		<format>[name|region]</format>
+		<param name="name">global name of a System.Widget.Region</param>
+		<param name="region">System.Widget.Region</param>
+		]]
 	function SetAllPoints(self, frame)
 		if frame and type(frame) == "string" then
 			frame = _G[frame]
@@ -1294,304 +1150,242 @@ class "DropDownList"
 		self.__DdList:SetAllPoints(frame)
 	end
 
-	doc [======[
-		@name SetPoint
-		@type method
-		@desc Sets an anchor point for the region
-		@param point System.Widget.FramePoint, point on this region at which it is to be anchored to another
-		@param relativeTo System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)
-		@param relativePoint System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point
-		@param xOffset number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0
-		@param yOffset number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0
-	]======]
+	__Doc__[[
+		<desc>Sets an anchor point for the region</desc>
+		<param name="point">System.Widget.FramePoint, point on this region at which it is to be anchored to another</param>
+		<param name="relativeTo">System.Widget.Region, reference to the other region to which this region is to be anchored; if nil or omitted, anchors the region relative to its parent (or to the screen dimensions if the region has no parent)</param>
+		<param name="relativePoint">System.Widget.FramePoint, point on the other region to which this region is to be anchored; if nil or omitted, defaults to the same value as point</param>
+		<param name="xOffset">number, horizontal distance between point and relativePoint (in pixels; positive values put point to the right of relativePoint); if nil or omitted, defaults to 0</param>
+		<param name="yOffset">number, vertical distance between point and relativePoint (in pixels; positive values put point below relativePoint); if nil or omitted, defaults to 0</param>
+	]]
 	function SetPoint(self, point, relativeObject, relativePoint, xOfs, yOfs)
 		self.__DdList:SetPoint(point, relativeObject, relativePoint, xOfs, yOfs)
 	end
 
-	doc [======[
-		@name GetRect
-		@type method
-		@desc Returns the position and dimensions of the region
-		@return left number, Distance from the left edge of the screen to the left edge of the region (in pixels)
-		@return bottom number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)
-		@return width number, Width of the region (in pixels)
-		@return height number, Height of the region (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the position and dimensions of the region</desc>
+		<return type="left">number, Distance from the left edge of the screen to the left edge of the region (in pixels)</return>
+		<return type="bottom">number, Distance from the bottom edge of the screen to the bottom of the region (in pixels)</return>
+		<return type="width">number, Width of the region (in pixels)</return>
+		<return type="height">number, Height of the region (in pixels)</return>
+	]]
 	function GetRect(self)
 		return self.__DdList:GetRect()
 	end
 
-	doc [======[
-		@name IsDragging
-		@type method
-		@desc Returns whether the region is currently being dragged
-		@return boolean 1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the region is currently being dragged</desc>
+		<return type="boolean">1 if the region (or its parent or ancestor) is currently being dragged; otherwise nil</return>
+	]]
 	function IsDragging(self)
 		return self.__DdList:IsDragging()
 	end
 
-	doc [======[
-		@name DisableDrawLayer
-		@type method
-		@desc Prevents display of all child objects of the frame on a specified graphics layer
-		@param layer System.Widget.DrawLayer, name of a graphics layer
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Prevents display of all child objects of the frame on a specified graphics layer</desc>
+		<param name="layer">System.Widget.DrawLayer, name of a graphics layer</param>
+	]]
 	function DisableDrawLayer(self, ...)
 		return self.__DdList:DisableDrawLayer(...)
 	end
 
-	doc [======[
-		@name EnableDrawLayer
-		@type method
-		@desc Allows display of all child objects of the frame on a specified graphics layer
-		@param layer System.Widget.DrawLayer, name of a graphics layer
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Allows display of all child objects of the frame on a specified graphics layer</desc>
+		<param name="layer">System.Widget.DrawLayer, name of a graphics layer</param>
+	]]
 	function EnableDrawLayer(self, ...)
 		return self.__DdList:EnableDrawLayer(...)
 	end
 
-	doc [======[
-		@name GetBackdrop
-		@type method
-		@desc Returns information about the frame's backdrop graphic.
-		@return System.Widget.BackdropType A table containing the backdrop settings, or nil if the frame has no backdrop
-	]======]
+	__Doc__[[
+		<desc>Returns information about the frame's backdrop graphic.</desc>
+		<return type="System.Widget.BackdropType">A table containing the backdrop settings, or nil if the frame has no backdrop</return>
+	]]
 	function GetBackdrop(self, ...)
 		return self.__DdList:GetBackdrop(...)
 	end
 
-	doc [======[
-		@name SetBackdrop
-		@type method
-		@desc Sets a backdrop graphic for the frame. See example for details of the backdrop table format.
-		@param backdrop System.Widget.BackdropType A table containing the backdrop settings, or nil to remove the frame's backdrop
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets a backdrop graphic for the frame. See example for details of the backdrop table format.</desc>
+		<param name="backdrop">System.Widget.BackdropType A table containing the backdrop settings, or nil to remove the frame's backdrop</param>
+	]]
 	function SetBackdrop(self, backdropTable)
 		return self.__DdList:SetBackdrop(backdropTable or nil)
 	end
 
-	doc [======[
-		@name GetBackdropBorderColor
-		@type method
-		@desc Returns the shading color for the frame's border graphic
-		@return red number, red component of the color (0.0 - 1.0)
-		@return green number, green component of the color (0.0 - 1.0)
-		@return blue number, blue component of the color (0.0 - 1.0)
-		@return alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the shading color for the frame's border graphic</desc>
+		<return type="red">number, red component of the color (0.0 - 1.0)</return>
+		<return type="green">number, green component of the color (0.0 - 1.0)</return>
+		<return type="blue">number, blue component of the color (0.0 - 1.0)</return>
+		<return type="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetBackdropBorderColor(self, ...)
 		return self.__DdList:GetBackdropBorderColor(...)
 	end
 
-	doc [======[
-		@name SetBackdropBorderColor
-		@type method
-		@desc Sets a shading color for the frame's border graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.
-		@param red number, red component of the color (0.0 - 1.0)
-		@param green number, green component of the color (0.0 - 1.0)
-		@param blue number, blue component of the color (0.0 - 1.0)
-		@param alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets a shading color for the frame's border graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.</desc>
+		<param name="red">number, red component of the color (0.0 - 1.0)</param>
+		<param name="green">number, green component of the color (0.0 - 1.0)</param>
+		<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
+		<param name="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetBackdropBorderColor(self, ...)
 		return self.__DdList:SetBackdropBorderColor(...)
 	end
 
-	doc [======[
-		@name GetBackdropColor
-		@type method
-		@desc Returns the shading color for the frame's background graphic
-		@return red number, red component of the color (0.0 - 1.0)
-		@return green number, green component of the color (0.0 - 1.0)
-		@return blue number, blue component of the color (0.0 - 1.0)
-		@return alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the shading color for the frame's background graphic</desc>
+		<return type="red">number, red component of the color (0.0 - 1.0)</return>
+		<return type="green">number, green component of the color (0.0 - 1.0)</return>
+		<return type="blue">number, blue component of the color (0.0 - 1.0)</return>
+		<return type="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetBackdropColor(self, ...)
 		return self.__DdList:GetBackdropColor(...)
 	end
 
-	doc [======[
-		@name SetBackdropColor
-		@type method
-		@desc Sets a shading color for the frame's background graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.
-		@param red number, red component of the color (0.0 - 1.0)
-		@param green number, green component of the color (0.0 - 1.0)
-		@param blue number, blue component of the color (0.0 - 1.0)
-		@param alpha number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets a shading color for the frame's background graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.</desc>
+		<param name="red">number, red component of the color (0.0 - 1.0)</param>
+		<param name="green">number, green component of the color (0.0 - 1.0)</param>
+		<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
+		<param name="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetBackdropColor(self, ...)
 		return self.__DdList:SetBackdropColor(...)
 	end
 
-	doc [======[
-		@name GetClampRectInsets
-		@type method
-		@desc Returns offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the values are all offsets along the normal axes, so to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.
-		@return left number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)
-		@return right number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)
-		@return top number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)
-		@return bottom number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the values are all offsets along the normal axes, so to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.</desc>
+		<return type="left">number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)</return>
+		<return type="right">number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)</return>
+		<return type="top">number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)</return>
+		<return type="bottom">number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)</return>
+	]]
 	function GetClampRectInsets(self, ...)
 		return self.__DdList:GetClampRectInsets(...)
 	end
 
-	doc [======[
-		@name SetClampRectInsets
-		@type method
-		@desc Sets offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the parameters are offsets along the normal axes -- to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.
-		@param left number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)
-		@param right number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)
-		@param top number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)
-		@param bottom number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets offsets from the frame's edges used when limiting user movement or resizing of the frame. Note: despite the name of this method, the parameters are offsets along the normal axes -- to inset the frame's clamping area from its edges, the left and bottom measurements should be positive and the right and top measurements should be negative.</desc>
+		<param name="left">number, offset from the left edge of the frame to the left edge of its clamping area (in pixels)</param>
+		<param name="right">number, offset from the right edge of the frame's clamping area to the right edge of the frame (in pixels)</param>
+		<param name="top">number, offset from the top edge of the frame's clamping area to the top edge of the frame (in pixels)</param>
+		<param name="bottom">number, offset from the bottom edge of the frame to the bottom edge of its clamping area (in pixels)</param>
+	]]
 	function SetClampRectInsets(self, ...)
 		return self.__DdList:SetClampRectInsets(...)
 	end
 
-	doc [======[
-		@name GetDepth
-		@type method
-		@desc Returns the 3D depth of the frame (for stereoscopic 3D setups)
-		@return number apparent 3D depth of this frame relative to that of its parent frame
-	]======]
+	__Doc__[[
+		<desc>Returns the 3D depth of the frame (for stereoscopic 3D setups)</desc>
+		<return type="number">apparent 3D depth of this frame relative to that of its parent frame</return>
+	]]
 	function GetDepth(self, ...)
 		return self.__DdList:GetDepth(...)
 	end
 
-	doc [======[
-		@name SetDepth
-		@type method
-		@desc Sets the 3D depth of the frame (for stereoscopic 3D configurations)
-		@param depth number, apparent 3D depth of this frame relative to that of its parent frame
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the 3D depth of the frame (for stereoscopic 3D configurations)</desc>
+		<param name="depth">number, apparent 3D depth of this frame relative to that of its parent frame</param>
+	]]
 	function SetDepth(self, ...)
 		return self.__DdList:SetDepth(...)
 	end
 
-	doc [======[
-		@name GetEffectiveAlpha
-		@type method
-		@desc Returns the overall opacity of the frame. Unlike :GetAlpha() which returns the opacity of the frame relative to its parent, this function returns the absolute opacity of the frame, taking into account the relative opacity of parent frames.
-		@return number, effective alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the overall opacity of the frame. Unlike :GetAlpha() which returns the opacity of the frame relative to its parent, this function returns the absolute opacity of the frame, taking into account the relative opacity of parent frames.</desc>
+		<return type="number,">effective alpha (opacity) of the region (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetEffectiveAlpha(self, ...)
 		return self.__DdList:GetEffectiveAlpha(...)
 	end
 
-	doc [======[
-		@name GetEffectiveDepth
-		@type method
-		@desc Returns the overall 3D depth of the frame (for stereoscopic 3D configurations). Unlike :GetDepth() which returns the apparent depth of the frame relative to its parent, this function returns the absolute depth of the frame, taking into account the relative depths of parent frames.
-		@return number, apparent 3D depth of this frame relative to the screen
-	]======]
+	__Doc__[[
+		<desc>Returns the overall 3D depth of the frame (for stereoscopic 3D configurations). Unlike :GetDepth() which returns the apparent depth of the frame relative to its parent, this function returns the absolute depth of the frame, taking into account the relative depths of parent frames.</desc>
+		<return type="number,">apparent 3D depth of this frame relative to the screen</return>
+	]]
 	function GetEffectiveDepth(self, ...)
 		return self.__DdList:GetEffectiveDepth(...)
 	end
 
-	doc [======[
-		@name GetEffectiveScale
-		@type method
-		@desc Returns the overall scale factor of the frame. Unlike :GetScale() which returns the scale factor of the frame relative to its parent, this function returns the absolute scale factor of the frame, taking into account the relative scales of parent frames.
-		@return number, scale factor for the frame relative to its parent
-	]======]
+	__Doc__[[
+		<desc>Returns the overall scale factor of the frame. Unlike :GetScale() which returns the scale factor of the frame relative to its parent, this function returns the absolute scale factor of the frame, taking into account the relative scales of parent frames.</desc>
+		<return type="number,">scale factor for the frame relative to its parent</return>
+	]]
 	function GetEffectiveScale(self, ...)
 		return self.__DdList:GetEffectiveScale(...)
 	end
 
-	doc [======[
-		@name GetHitRectInsets
-		@type method
-		@desc Returns the insets from the frame's edges which determine its mouse-interactable area
-		@return left number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)
-		@return right number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)
-		@return top number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)
-		@return bottom number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the insets from the frame's edges which determine its mouse-interactable area</desc>
+		<return type="left">number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)</return>
+		<return type="right">number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)</return>
+		<return type="top">number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)</return>
+		<return type="bottom">number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)</return>
+	]]
 	function GetHitRectInsets(self, ...)
 		return self.__DdList:GetHitRectInsets(...)
 	end
 
-	doc [======[
-		@name SetHitRectInsets
-		@type method
-		@desc Sets the insets from the frame's edges which determine its mouse-interactable area
-		@param left number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)
-		@param right number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)
-		@param top number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)
-		@param bottom number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the insets from the frame's edges which determine its mouse-interactable area</desc>
+		<param name="left">number, distance from the left edge of the frame to the left edge of its mouse-interactive area (in pixels)</param>
+		<param name="right">number, distance from the right edge of the frame to the right edge of its mouse-interactive area (in pixels)</param>
+		<param name="top">number, distance from the top edge of the frame to the top edge of its mouse-interactive area (in pixels)</param>
+		<param name="bottom">number, distance from the bottom edge of the frame to the bottom edge of its mouse-interactive area (in pixels)</param>
+	]]
 	function SetHitRectInsets(self, ...)
 		return self.__DdList:SetHitRectInsets(...)
 	end
 
-	doc [======[
-		@name GetID
-		@type method
-		@desc Returns the frame's numeric identifier. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).
-		@return number, a numeric identifier for the frame
-	]======]
+	__Doc__[[
+		<desc>Returns the frame's numeric identifier. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).</desc>
+		<return type="number,">a numeric identifier for the frame</return>
+	]]
 	function GetID(self, ...)
 		return self.__DdList:GetID(...)
 	end
 
-	doc [======[
-		@name SetID
-		@type method
-		@desc Sets a numeric identifier for the frame. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).
-		@param id number, a numeric identifier for the frame
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets a numeric identifier for the frame. Frame IDs have no effect on frame behavior, but can be a useful way to keep track of multiple similar frames, especially in cases where a list of frames is created from a template (such as for action buttons, loot slots, or lines in a FauxScrollFrame).</desc>
+		<param name="id">number, a numeric identifier for the frame</param>
+	]]
 	function SetID(self, ...)
 		return self.__DdList:SetID(...)
 	end
 
-	doc [======[
-		@name IgnoreDepth
-		@type method
-		@desc Sets whether the frame's depth property is ignored (for stereoscopic 3D setups). If a frame's depth property is ignored, the frame itself is not rendered with stereoscopic 3D separation, but 3D graphics within the frame may be; this property is used on the default UI's WorldFrame.
-		@param enable boolean, true to ignore the frame's depth property; false to disable
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether the frame's depth property is ignored (for stereoscopic 3D setups). If a frame's depth property is ignored, the frame itself is not rendered with stereoscopic 3D separation, but 3D graphics within the frame may be; this property is used on the default UI's WorldFrame.</desc>
+		<param name="enable">boolean, true to ignore the frame's depth property; false to disable</param>
+	]]
 	function IgnoreDepth(self, ...)
 		return self.__DdList:IgnoreDepth(...)
 	end
 
-	doc [======[
-		@name IsIgnoringDepth
-		@type method
-		@desc Returns whether the frame's depth property is ignored (for stereoscopic 3D setups)
-		@return boolean 1 if the frame's depth property is ignored; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the frame's depth property is ignored (for stereoscopic 3D setups)</desc>
+		<return type="boolean">1 if the frame's depth property is ignored; otherwise nil</return>
+	]]
 	function IsIgnoringDepth(self, ...)
 		return self.__DdList:IsIgnoringDepth(...)
 	end
 
-	doc [======[
-		@name GetChilds
-		@type method
-		@desc Get the child list of the widget object, !!!IMPORTANT!!!, don't do any change to the return table, this table is the real table that contains the child objects.
-		@return table the child objects list
-	]======]
+	__Doc__[[
+		<desc>Get the child list of the widget object, !!!IMPORTANT!!!, don't do any change to the return table, this table is the real table that contains the child objects.</desc>
+		<return type="table">the child objects list</return>
+	]]
 	function GetChilds(self, ...)
 		return self.__DdList:GetChilds()
 	end
 
-	doc [======[
-		@name GetChild
-		@type method
-		@desc Get the child object for the given name
-		@param name string, the child's name
-		@return widgetObject the child widget object if existed
-	]======]
+	__Doc__[[
+		<desc>Get the child object for the given name</desc>
+		<param name="name">string, the child's name</param>
+		<return type="widgetObject">the child widget object if existed</return>
+	]]
 	function GetChild(self, ob)
 		return self.__DdList:GetChild(ob)
 	end
@@ -1599,22 +1393,14 @@ class "DropDownList"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Alpha
-		@type property
-		@desc the frame's transparency value(0-1)
-	]======]
+	__Doc__[[the frame's transparency value(0-1)]]
 	property "Alpha" {
 		Set ="SetAlpha",
 		Get = "GetAlpha",
 		Type = ColorFloat,
 	}
 
-	doc [======[
-		@name ShowOnCursor
-		@type property
-		@desc whether show on the cursor position
-	]======]
+	__Doc__[[whether show on the cursor position]]
 	property "ShowOnCursor" {
 		Set = function(self, flag)
 			self = self.__DdList
@@ -1629,11 +1415,7 @@ class "DropDownList"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name MultiSelect
-		@type property
-		@desc whether the checkButton on the dropDownList can be multi-selected
-	]======]
+	__Doc__[[whether the checkButton on the dropDownList can be multi-selected]]
 	property "MultiSelect" {
 		Set = function(self, flag)
 			self = self.__DdList
@@ -1648,11 +1430,7 @@ class "DropDownList"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Height
-		@type property
-		@desc the height of the region
-	]======]
+	__Doc__[[the height of the region]]
 	property "Height" {
 		Get = function(self)
 			self = self.__DdList
@@ -1662,11 +1440,7 @@ class "DropDownList"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Width
-		@type property
-		@desc the width of the region
-	]======]
+	__Doc__[[the width of the region]]
 	property "Width" {
 		Get = function(self)
 			self = self.__DdList
@@ -1676,11 +1450,7 @@ class "DropDownList"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Visible
-		@type property
-		@desc wheter the region is shown or not.
-	]======]
+	__Doc__[[wheter the region is shown or not.]]
 	property "Visible" {
 		Set = function(self, visible)
 			self.__DdList.Visible = visible
@@ -1693,22 +1463,14 @@ class "DropDownList"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Backdrop
-		@type property
-		@desc the backdrop graphic for the frame
-	]======]
+	__Doc__[[the backdrop graphic for the frame]]
 	property "Backdrop" {
 		Set = "SetBackdrop",
 		Get = "GetBackdrop",
 		Type = BackdropType,
 	}
 
-	doc [======[
-		@name BackdropBorderColor
-		@type property
-		@desc the shading color for the frame's border graphic
-	]======]
+	__Doc__[[the shading color for the frame's border graphic]]
 	property "BackdropBorderColor" {
 		Set = function(self, colorTable)
 			self:SetBackdropBorderColor(colorTable.red, colorTable.green, colorTable.blue, colorTable.alpha)
@@ -1723,11 +1485,7 @@ class "DropDownList"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name BackdropColor
-		@type property
-		@desc the shading color for the frame's background graphic
-	]======]
+	__Doc__[[the shading color for the frame's background graphic]]
 	property "BackdropColor" {
 		Set = function(self, colorTable)
 			self:SetBackdropColor(colorTable.red, colorTable.green, colorTable.blue, colorTable.alpha)
@@ -1742,11 +1500,7 @@ class "DropDownList"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name ClampRectInsets
-		@type property
-		@desc offsets from the frame's edges used when limiting user movement or resizing of the frame
-	]======]
+	__Doc__[[offsets from the frame's edges used when limiting user movement or resizing of the frame]]
 	property "ClampRectInsets" {
 		Set = function(self, RectInset)
 			self:SetClampRectInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -1761,11 +1515,7 @@ class "DropDownList"
 		Type = Inset,
 	}
 
-	doc [======[
-		@name HitRectInsets
-		@type property
-		@desc the insets from the frame's edges which determine its mouse-interactable area
-	]======]
+	__Doc__[[the insets from the frame's edges which determine its mouse-interactable area]]
 	property "HitRectInsets" {
 		Set = function(self, RectInset)
 			self:SetHitRectInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -1780,44 +1530,28 @@ class "DropDownList"
 		Type = Inset,
 	}
 
-	doc [======[
-		@name ID
-		@type property
-		@desc a numeric identifier for the frame
-	]======]
+	__Doc__[[a numeric identifier for the frame]]
 	property "ID" {
 		Set = "SetID",
 		Get = "GetID",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Depth
-		@type property
-		@desc the 3D depth of the frame (for stereoscopic 3D setups)
-	]======]
+	__Doc__[[the 3D depth of the frame (for stereoscopic 3D setups)]]
 	property "Depth" {
 		Set = "SetDepth",
 		Get = "GetDepth",
 		Type = Number,
 	}
 
-	doc [======[
-		@name DepthIgnored
-		@type property
-		@desc whether the frame's depth property is ignored (for stereoscopic 3D setups)
-	]======]
+	__Doc__[[whether the frame's depth property is ignored (for stereoscopic 3D setups)]]
 	property "DepthIgnored" {
 		Set = "IgnoreDepth",
 		Get = "IsIgnoringDepth",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ItemCount
-		@type property
-		@desc dropDownMenuButton's count
-	]======]
+	__Doc__[[dropDownMenuButton's count]]
 	property "ItemCount" {
 		Get = function(self)
 			return self.__DdList.__ItemCount
@@ -1826,11 +1560,7 @@ class "DropDownList"
 		Type = Number,
 	}
 
-	doc [======[
-		@name AutoHide
-		@type property
-		@desc Whether auto hide the dropdownlist
-	]======]
+	__Doc__[[Whether auto hide the dropdownlist]]
 	property "AutoHide" {
 		Get = function(self)
 			return not self.__DdList.__DisableAutoHide

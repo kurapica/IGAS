@@ -9,41 +9,27 @@ if not IGAS:NewAddon("IGAS.Widget.Font", version) then
 	return
 end
 
+__Doc__[[The Font object is to be shared between other objects that share font characteristics.]]
 __InitTable__()
 class "Font"
 	inherit "Object"
 
-	doc [======[
-		@name Font
-		@type class
-		@desc The Font object is to be shared between other objects that share font characteristics.
-		@param name the Font's name
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetObjectType
-		@type method
-		@desc Get the type of this object.
-		@return string the object's class' name
-	]======]
+	__Doc__[[
+		<desc>Get the type of this object.</desc>
+		<return type="string">the object's class' name</return>
+	]]
 	function GetObjectType(self)
 		return Reflector.GetName(self:GetClass())
 	end
 
-	doc [======[
-		@name IsObjectType
-		@type method
-		@desc Determine if this object is of the specified type, or a subclass of that type.
-		@param type string, the object type to determined
-		@return boolean true if the frame's type is the given type or the given type's sub-type.
-	]======]
+	__Doc__[[
+		<desc>Determine if this object is of the specified type, or a subclass of that type.</desc>
+		<param name="type">string, the object type to determined</param>
+		<return type="boolean">true if the frame's type is the given type or the given type's sub-type.</return>
+	]]
 	function IsObjectType(self, objType)
 		if objType then
 			if type(objType) == "string" then
@@ -56,195 +42,141 @@ class "Font"
 		return false
 	end
 
-	doc [======[
-		@name GetName
-		@type method
-		@desc Get the full path of this object.
-		@return string the full path of the object
-	]======]
+	__Doc__"GetName" [[
+		<desc>Get the full path of this object.</desc>
+		<return type="string">the full path of the object</return>
+	]]
 
-	doc [======[
-		@name GetFont
-		@type method
-		@desc Returns the font instance's basic font properties
-		@return filename string, path to a font file (string)
-		@return fontHeight number, height (point size) of the font to be displayed (in pixels) (number)
-		@return flags string, additional properties for the font specified by one or more (separated by commas)
-	]======]
+	__Doc__"GetFont" [[
+		<desc>Returns the font instance's basic font properties</desc>
+		<return type="filename">string, path to a font file (string)</return>
+		<return type="fontHeight">number, height (point size) of the font to be displayed (in pixels) (number)</return>
+		<return type="flags">string, additional properties for the font specified by one or more (separated by commas)</return>
+	]]
 
-	doc [======[
-		@name GetFontObject
-		@type method
-		@desc Returns the Font object from which the font instance's properties are inherited
-		@return System.Widget.Font the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties
-	]======]
+	__Doc__[[
+		<desc>Returns the Font object from which the font instance's properties are inherited</desc>
+		<return type="System.Widget.Font">the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties</return>
+	]]
 	function GetFontObject(self)
 		return IGAS:GetWrapper(self.__UI:GetFontObject())
 	end
 
-	doc [======[
-		@name GetJustifyH
-		@type method
-		@desc Returns the font instance's horizontal text alignment style
-		@return System.Widget.JustifyHType
-	]======]
+	__Doc__"GetJustifyH" [[
+		<desc>Returns the font instance's horizontal text alignment style</desc>
+		<return type="System.Widget.JustifyHType"></return>
+	]]
 
-	doc [======[
-		@name GetJustifyV
-		@type method
-		@desc Returns the font instance's vertical text alignment style
-		@return System.Widget.JustifyVType
-	]======]
+	__Doc__"GetJustifyV" [[
+		<desc>Returns the font instance's vertical text alignment style</desc>
+		<return type="System.Widget.JustifyVType"></return>
+	]]
 
-	doc [======[
-		@name GetShadowColor
-		@type method
-		@desc Returns the color of the font's text shadow
-		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetShadowColor" [[
+		<desc>Returns the color of the font's text shadow</desc>
+		<return type="shadowR">number, Red component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowG">number, Green component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name GetShadowOffset
-		@type method
-		@desc Returns the offset of the font instance's text shadow from its text
-		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
-	]======]
+	__Doc__"GetShadowOffset" [[
+		<desc>Returns the offset of the font instance's text shadow from its text</desc>
+		<return type="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</return>
+		<return type="yOffset">number, Vertical distance between the text and its shadow (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetSpacing
-		@type method
-		@desc Returns the font instance's amount of spacing between lines
-		@return number amount of space between lines of text (in pixels)
-	]======]
+	__Doc__"GetSpacing" [[
+		<desc>Returns the font instance's amount of spacing between lines</desc>
+		<return type="number">amount of space between lines of text (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetTextColor
-		@type method
-		@desc Returns the font instance's default text color
-		@return textR number, Red component of the text color (0.0 - 1.0)
-		@return textG number, Green component of the text color (0.0 - 1.0)
-		@return textB number, Blue component of the text color (0.0 - 1.0)
-		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetTextColor" [[
+		<desc>Returns the font instance's default text color</desc>
+		<return type="textR">number, Red component of the text color (0.0 - 1.0)</return>
+		<return type="textG">number, Green component of the text color (0.0 - 1.0)</return>
+		<return type="textB">number, Blue component of the text color (0.0 - 1.0)</return>
+		<return type="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name SetFont
-		@type method
-		@desc Sets the font instance's basic font properties
-		@param filename string, path to a font file
-		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
-		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
-		@return boolean 1 if filename refers to a valid font file; otherwise nil
-	]======]
+	__Doc__"SetFont" [[
+		<desc>Sets the font instance's basic font properties</desc>
+		<param name="filename">string, path to a font file</param>
+		<param name="fontHeight">number, height (point size) of the font to be displayed (in pixels)</param>
+		<param name="flags">string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE</param>
+		<return type="boolean">1 if filename refers to a valid font file; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetFontObject
-		@type method
-		@desc Sets the Font object from which the font instance's properties are inherited
-		@format fontObject|fontName
-		@param fontObject System.Widget.Font, a font object
-		@param fontName string, global font object's name
-		@return nil
-	]======]
+	__Doc__"SetFontObject" [[
+		<desc>Sets the Font object from which the font instance's properties are inherited</desc>
+		<format>fontObject|fontName</format>
+		<param name="fontObject">System.Widget.Font, a font object</param>
+		<param name="fontName">string, global font object's name</param>
+	]]
 
-	doc [======[
-		@name SetJustifyH
-		@type method
-		@desc Sets the font instance's horizontal text alignment style
-		@param justifyH System.Widget.JustifyHType
-		@return nil
-	]======]
+	__Doc__"SetJustifyH" [[
+		<desc>Sets the font instance's horizontal text alignment style</desc>
+		<param name="justifyH">System.Widget.JustifyHType</param>
+	]]
 
-	doc [======[
-		@name SetJustifyV
-		@type method
-		@desc Sets the font instance's vertical text alignment style
-		@param justifyV System.Widget.JustifyVType
-		@return nil
-	]======]
+	__Doc__"SetJustifyV" [[
+		<desc>Sets the font instance's vertical text alignment style</desc>
+		<param name="justifyV">System.Widget.JustifyVType</param>
+	]]
 
-	doc [======[
-		@name SetShadowColor
-		@type method
-		@desc Sets the color of the font's text shadow
-		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetShadowColor" [[
+		<desc>Sets the color of the font's text shadow</desc>
+		<param name="shadowR">number, Red component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowG">number, Green component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name SetShadowOffset
-		@type method
-		@desc Sets the offset of the font instance's text shadow from its text
-		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetShadowOffset" [[
+		<desc>Sets the offset of the font instance's text shadow from its text</desc>
+		<param name="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</param>
+		<param name="yOffset">number, Vertical distance between the text and its shadow (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetSpacing
-		@type method
-		@desc Sets the font instance's amount of spacing between lines
-		@param spacing number, amount of space between lines of text (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetSpacing" [[
+		<desc>Sets the font instance's amount of spacing between lines</desc>
+		<param name="spacing">number, amount of space between lines of text (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetTextColor
-		@type method
-		@desc Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance
-		@param textR number, Red component of the text color (0.0 - 1.0)
-		@param textG number, Green component of the text color (0.0 - 1.0)
-		@param textB number, Blue component of the text color (0.0 - 1.0)
-		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetTextColor" [[
+		<desc>Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance</desc>
+		<param name="textR">number, Red component of the text color (0.0 - 1.0)</param>
+		<param name="textG">number, Green component of the text color (0.0 - 1.0)</param>
+		<param name="textB">number, Blue component of the text color (0.0 - 1.0)</param>
+		<param name="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name CopyFontObject
-		@type method
-		@desc Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
-		@format object|name
-		@param object System.Widget.Font, reference to a Font object
-		@param name string, global name of a Font object
-		@return nil
-	]======]
+	__Doc__"CopyFontObject" [[
+		<desc>Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.</desc>
+		<format>object|name</format>
+		<param name="object">System.Widget.Font, reference to a Font object</param>
+		<param name="name">string, global name of a Font object</param>
+	]]
 
-	doc [======[
-		@name GetAlpha
-		@type method
-		@desc Returns the opacity for text displayed by the font
-		@return number Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetAlpha" [[
+		<desc>Returns the opacity for text displayed by the font</desc>
+		<return type="number">Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name GetIndentedWordWrap
-		@type method
-		@desc Gets whether long lines of text are indented when wrapping
-		@return boolean
-	]======]
+	__Doc__"GetIndentedWordWrap" [[
+		<desc>Gets whether long lines of text are indented when wrapping</desc>
+		<return type="boolean"></return>
+	]]
 
-	doc [======[
-		@name SetAlpha
-		@type method
-		@desc Sets the opacity for text displayed by the font
-		@param alpha number, alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetAlpha" [[
+		<desc>Sets the opacity for text displayed by the font</desc>
+		<param name="alpha">number, alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name SetIndentedWordWrap
-		@type method
-		@desc Sets whether long lines of text are indented when wrapping
-		@param boolean
-		@return nil
-	]======]
+	__Doc__"SetIndentedWordWrap" [[
+		<desc>Sets whether long lines of text are indented when wrapping</desc>
+		<param name="boolean"></param>
+	]]
 
 	------------------------------------------------------
 	-- Event Handler
@@ -308,18 +240,10 @@ class "Font"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Name
-		@type property
-		@desc the name of the font object
-	]======]
+	__Doc__[[the name of the font object]]
 	property "Name" { }
 
-	doc [======[
-		@name Font
-		@type property
-		@desc the font's defined table, contains font path, height and flags' settings
-	]======]
+	__Doc__[[the font's defined table, contains font path, height and flags' settings]]
 	property "Font" {
 		Get = function(self)
 			local font = {}
@@ -360,32 +284,16 @@ class "Font"
 		Type = FontType,
 	}
 
-	doc [======[
-		@name FontObject
-		@type property
-		@desc the Font object
-	]======]
+	__Doc__[[the Font object]]
 	property "FontObject" { Type = Font + String + nil }
 
-	doc [======[
-		@name JustifyH
-		@type property
-		@desc the fontstring's horizontal text alignment style
-	]======]
+	__Doc__[[the fontstring's horizontal text alignment style]]
 	property "JustifyH" { Type = JustifyHType }
 
-	doc [======[
-		@name JustifyV
-		@type property
-		@desc the fontstring's vertical text alignment style
-	]======]
+	__Doc__[[the fontstring's vertical text alignment style]]
 	property "JustifyV" { Type = JustifyVType }
 
-	doc [======[
-		@name ShadowColor
-		@type property
-		@desc the color of the font's text shadow
-	]======]
+	__Doc__[[the color of the font's text shadow]]
 	property "ShadowColor" {
 		Get = function(self)
 			return ColorType(self:GetShadowColor())
@@ -396,11 +304,7 @@ class "Font"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name ShadowOffset
-		@type property
-		@desc the offset of the fontstring's text shadow from its text
-	]======]
+	__Doc__[[the offset of the fontstring's text shadow from its text]]
 	property "ShadowOffset" {
 		Get = function(self)
 			return Dimension(self:GetShadowOffset())
@@ -411,18 +315,10 @@ class "Font"
 		Type = Dimension,
 	}
 
-	doc [======[
-		@name Spacing
-		@type property
-		@desc the fontstring's amount of spacing between lines
-	]======]
+	__Doc__[[the fontstring's amount of spacing between lines]]
 	property "Spacing" { Type = Number }
 
-	doc [======[
-		@name TextColor
-		@type property
-		@desc the fontstring's default text color
-	]======]
+	__Doc__[[the fontstring's default text color]]
 	property "TextColor" {
 		Get = function(self)
 			return ColorType(self:GetTextColor())
@@ -433,18 +329,10 @@ class "Font"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name Alpha
-		@type property
-		@desc the opacity for text displayed by the font
-	]======]
+	__Doc__[[the opacity for text displayed by the font]]
 	property "Alpha" { Type = ColorFloat }
 
-	doc [======[
-		@name IndentedWordWrap
-		@type property
-		@desc whether long lines of text are indented when wrapping
-	]======]
+	__Doc__[[whether long lines of text are indented when wrapping]]
 	property "IndentedWordWrap" { Type = Boolean }
 
 endclass "Font"

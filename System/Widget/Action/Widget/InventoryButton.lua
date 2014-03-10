@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Action.InventoryButton", version) then
 	return
 end
 
+__Doc__[[the base inventory button template]]
 class "InventoryButton"
 	inherit "CheckButton"
 	extend "IFActionHandler" "IFCooldownIndicator"
-
-	doc [======[
-		@name InventoryButton
-		@type class
-		@desc the base inventory button template
-	]======]
 
 	EQUIPPED_FIRST = 1
 	EQUIPPED_LAST = 19
@@ -28,12 +23,7 @@ class "InventoryButton"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name UpdateAction
-		@type method
-		@desc Update the action button when content is changed
-		@return nil
-	]======]
+	__Doc__[[Update the action button when content is changed]]
 	function UpdateAction(self)
 		if self:HasAction() then
 			self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot2]]
@@ -42,13 +32,10 @@ class "InventoryButton"
 		end
 	end
 
-	doc [======[
-		@name SetFlyoutDirection
-		@type method
-		@desc Set flyoutDirection for action button
-		@param dir System.Widget.Action.IFActionHandler.FlyoutDirection
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set flyoutDirection for action button</desc>
+		<param name="dir">System.Widget.Action.IFActionHandler.FlyoutDirection</param>
+		]]
 	function SetFlyoutDirection(self, dir)
 		IFActionHandler.SetFlyoutDirection(self, dir)
 
@@ -74,11 +61,7 @@ class "InventoryButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Icon
-		@type property
-		@desc the action button icon's image file path, accessed by IFActionHandler
-	]======]
+	__Doc__[[the action button icon's image file path, accessed by IFActionHandler]]
 	property "Icon" {
 		Get = function(self)
 			return self:GetChild("Icon").TexturePath
@@ -89,11 +72,7 @@ class "InventoryButton"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name Count
-		@type property
-		@desc the action's count, like item's count, accessed by IFActionHandler
-	]======]
+	__Doc__[[the action's count, like item's count, accessed by IFActionHandler]]
 	property "Count" {
 		Get = function(self)
 			return self:GetChild("Count").Text
@@ -104,11 +83,7 @@ class "InventoryButton"
 		Type = System.String + System.Number + nil,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the action's text, accessed by IFActionHandler
-	]======]
+	__Doc__[[the action's text, accessed by IFActionHandler]]
 	property "Text" {
 		Get = function(self)
 			return self:GetChild("Name").Text
@@ -119,11 +94,7 @@ class "InventoryButton"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name HotKey
-		@type property
-		@desc the action button's hotkey
-	]======]
+	__Doc__[[the action button's hotkey]]
 	property "HotKey" {
 		Get = function(self)
 			return self:GetChild("HotKey").Text
@@ -135,11 +106,7 @@ class "InventoryButton"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name FlashVisible
-		@type property
-		@desc the visible of the flash, accessed by IFActionHandler
-	]======]
+	__Doc__[[the visible of the flash, accessed by IFActionHandler]]
 	property "FlashVisible" {
 		Get = function(self)
 			return self:GetChild("Flash").Visible
@@ -149,11 +116,7 @@ class "InventoryButton"
 		end,
 	}
 
-	doc [======[
-		@name FlyoutVisible
-		@type property
-		@desc the visible of the flyout arrow, accessed by IFActionHandler
-	]======]
+	__Doc__[[the visible of the flyout arrow, accessed by IFActionHandler]]
 	property "FlyoutVisible" {
 		Get = function(self)
 			return self:GetChild("FlyoutArrow").Visible
@@ -164,11 +127,7 @@ class "InventoryButton"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name Flyouting
-		@type property
-		@desc whether the flyout action bar is shown, accessed by IFActionHandler
-	]======]
+	__Doc__[[whether the flyout action bar is shown, accessed by IFActionHandler]]
 	property "Flyouting" {
 		Get = function(self)
 			return self:GetChild("FlyoutBorder").Visible
@@ -180,11 +139,7 @@ class "InventoryButton"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name InRange
-		@type property
-		@desc whether the target is in range, accessed by IFActionHandler
-	]======]
+	__Doc__[[whether the target is in range, accessed by IFActionHandler]]
 	property "InRange" {
 		Field = "__InRange",
 		Set = function(self, value)
@@ -196,11 +151,7 @@ class "InventoryButton"
 		Type = System.Boolean+nil,
 	}
 
-	doc [======[
-		@name Usable
-		@type property
-		@desc whether the action is usable, accessed by IFActionHandler
-	]======]
+	__Doc__[[whether the action is usable, accessed by IFActionHandler]]
 	property "Usable" {
 		Field = "__Usable",
 		Set = function(self, value)
@@ -216,11 +167,7 @@ class "InventoryButton"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name AutoCastable
-		@type property
-		@desc whether the action is auto castable, accessed by IFActionHandler
-	]======]
+	__Doc__[[whether the action is auto castable, accessed by IFActionHandler]]
 	property "AutoCastable" {
 		Field = "__AutoCastable",
 		Set = function(self, value)
@@ -245,11 +192,7 @@ class "InventoryButton"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name AutoCasting
-		@type property
-		@desc whether the action is now auto-casting, accessed by IFActionHandler
-	]======]
+	__Doc__[[whether the action is now auto-casting, accessed by IFActionHandler]]
 	property "AutoCasting" {
 		Field = "__AutoCasting",
 		Set = function(self, value)
@@ -270,11 +213,7 @@ class "InventoryButton"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name EquippedItemIndicator
-		@type property
-		@desc Whether an indicator should be shown for equipped item
-	]======]
+	__Doc__[[Whether an indicator should be shown for equipped item]]
 	property "EquippedItemIndicator" {
 		Field = "__EquippedItemIndicator",
 		Set = function(self, value)

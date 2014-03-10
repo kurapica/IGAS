@@ -10,14 +10,9 @@ if not IGAS:NewAddon("IGAS.Widget.SingleTextBox", version) then
 	return
 end
 
+__Doc__[[SingleTextBox is a widget type using to contain one line text]]
 class "SingleTextBox"
 	inherit "EditBox"
-
-	doc [======[
-		@name SingleTextBox
-		@type class
-		@desc SingleTextBox is a widget type using to contain one line text
-	]======]
 
     -- Style
     TEMPLATE_CLASSIC = "CLASSIC"
@@ -56,13 +51,10 @@ class "SingleTextBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the singletextbox's style
-		@param style System.Widget.SingleTextBox.TextBoxStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the singletextbox's style</desc>
+		<param name="style">System.Widget.SingleTextBox.TextBoxStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -122,12 +114,10 @@ class "SingleTextBox"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the singletextbox's style
-		@return System.Widget.SingleTextBox
-	]======]
+	__Doc__[[
+		<desc>Gets the singletextbox's style</desc>
+		<return type="System.Widget.SingleTextBox"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
@@ -135,11 +125,7 @@ class "SingleTextBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Style
-		@type property
-		@desc the singletextbox's style
-	]======]
+	__Doc__[[the singletextbox's style]]
 	property "Style" { Type = TextBoxStyle }
 
 	------------------------------------------------------

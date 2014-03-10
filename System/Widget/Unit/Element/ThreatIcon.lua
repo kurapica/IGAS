@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ThreatIcon", version) then
 	return
 end
 
+__Doc__[[The threat indicator]]
 class "ThreatIcon"
 	inherit "Texture"
 	extend "IFThreat"
-
-	doc [======[
-		@name ThreatIcon
-		@type class
-		@desc The threat indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

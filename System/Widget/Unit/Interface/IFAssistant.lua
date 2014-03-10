@@ -21,15 +21,12 @@ function _IFAssistantUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFAssistant is used to check whether the unit is the assistant in the group</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check result</overridable>
+]]
 interface "IFAssistant"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFAssistant
-		@type interface
-		@desc IFAssistant is used to check whether the unit is the assistant in the group
-		@overridable Visible property, boolean, which used to receive the check result
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -38,12 +35,7 @@ interface "IFAssistant"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		local unit = self.Unit
 		self.Visible = unit and UnitInRaid(unit) and UnitIsGroupAssistant(unit) and not UnitIsGroupLeader(unit)

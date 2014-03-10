@@ -44,11 +44,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Macro
-		@type property
-		@desc The action button's content if its type is 'macrotext'
-	]======]
+	__Doc__[[The action button's content if its type is 'macrotext']]
 	property "MacroText" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "macrotext" and self:GetAttribute("macrotext") or nil
@@ -59,24 +55,12 @@ interface "IFActionHandler"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name CustomText
-		@type property
-		@desc The custom text
-	]======]
+	__Doc__[[The custom text]]
 	property "CustomText" { Type = String + nil }
 
-	doc [======[
-		@name CustomTexture
-		@type property
-		@desc The custom texture path
-	]======]
+	__Doc__[[The custom texture path]]
 	property "CustomTexture" { Type = String + nil }
 
-	doc [======[
-		@name CustomTooltip
-		@type property
-		@desc The custom tooltip
-	]======]
+	__Doc__[[The custom tooltip]]
 	property "CustomTooltip" { Type = String + nil }
 endinterface "IFActionHandler"

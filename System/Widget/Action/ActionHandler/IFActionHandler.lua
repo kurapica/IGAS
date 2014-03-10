@@ -67,13 +67,8 @@ end
 -- IFActionTypeHandler
 --
 ------------------------------------------------------
+__Doc__[[Interface for action type handlers]]
 interface "IFActionTypeHandler"
-
-	doc [======[
-		@name IFActionTypeHandler
-		@type interface
-		@desc Interface for action type handlers
-	]======]
 
 	_RegisterSnippetTemplate = "%s[%q] = %q"
 
@@ -86,22 +81,13 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnEnableChanged
-		@type event
-		@desc Fired when the handler is enabled or disabled
-	]======]
+	__Doc__[[Fired when the handler is enabled or disabled]]
 	event "OnEnableChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc Refresh all action buttons of the same action type
-		@return nil
-	]======]
+	__Doc__[[Refresh all action buttons of the same action type]]
 	function Refresh(self, button, mode)
 		if type(button) ~= "table" then
 			return _IFActionHandler_Buttons:EachK(self.Name, button or UpdateActionButton)
@@ -114,13 +100,10 @@ interface "IFActionTypeHandler"
 		end
 	end
 
-	doc [======[
-		@name RunSnippet
-		@type method
-		@desc Run the snippet in the global environment
-		@param code the snippet
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Run the snippet in the global environment</desc>
+		<param name="code">the snippet</param>
+		]]
 	function RunSnippet(self, code)
 		return IFNoCombatTaskHandler._RegisterNoCombatTask( SecureFrame.Execute, _IFActionHandler_ManagerFrame, code )
 	end
@@ -128,203 +111,162 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
-	doc [======[
-		@name GetActionDetail
-		@type method
-		@desc Get the actions's kind, target & detail
-		@return kind
-		@return target
-		@return detail
-	]======]
+	__Doc__[[
+		<desc>Get the actions's kind, target & detail</desc>
+		<return type="kind"></return>
+		<return type="target"></return>
+		<return type="detail"></return>
+	]]
 	function GetActionDetail(self)
 		local name = self:GetAttribute("actiontype")
 		return self:GetAttribute(_ActionTargetMap[name]), _ActionTargetDetail[name] and self:GetAttribute(_ActionTargetDetail[name])
 	end
 
-	doc [======[
-		@name PickupAction
-		@type method
-		@desc Custom pick up action
-		@param target
-		@param detail
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Custom pick up action</desc>
+		<param name="target"></param>
+		<param name="detail"></param>
+		]]
 	function PickupAction(self, target, detail)
 	end
 
-	doc [======[
-		@name HasAction
-		@type method
-		@desc Whether the action button has an action
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action button has an action</desc>
+		<return type="boolean"></return>
+	]]
 	function HasAction(self)
 		return true
 	end
 
-	doc [======[
-		@name GetActionText
-		@type method
-		@desc Get the action's text
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Get the action's text</desc>
+		<return type="string"></return>
+	]]
 	function GetActionText(self)
 		return ""
 	end
 
-	doc [======[
-		@name GetActionTexture
-		@type method
-		@desc Get the action's texture
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Get the action's texture</desc>
+		<return type="string"></return>
+	]]
 	function GetActionTexture(self)
 	end
 
-	doc [======[
-		@name GetActionCharges
-		@type method
-		@desc Get the action's charges
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Get the action's charges</desc>
+		<return type="number"></return>
+	]]
 	function GetActionCharges(self)
 	end
 
-	doc [======[
-		@name GetActionCount
-		@type method
-		@desc Get the action's count
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Get the action's count</desc>
+		<return type="number"></return>
+	]]
 	function GetActionCount(self)
 		return 0
 	end
 
-	doc [======[
-		@name GetActionCooldown
-		@type method
-		@desc Get the action's cooldown
-		@return start, duration, enable
-	]======]
+	__Doc__[[
+		<desc>Get the action's cooldown</desc>
+		<return type="start,">duration, enable</return>
+	]]
 	function GetActionCooldown(self)
 		return 0, 0, 0
 	end
 
-	doc [======[
-		@name IsAttackAction
-		@type method
-		@desc Whether the action is attackable
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is attackable</desc>
+		<return type="boolean"></return>
+	]]
 	function IsAttackAction(self)
 		return false
 	end
 
-	doc [======[
-		@name IsEquippedItem
-		@type method
-		@desc Whether the action is an item and can be equipped
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is an item and can be equipped</desc>
+		<return type="boolean"></return>
+	]]
 	function IsEquippedItem(self)
 		return false
 	end
 
-	doc [======[
-		@name IsActivedAction
-		@type method
-		@desc Whether the action is actived
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is actived</desc>
+		<return type="boolean"></return>
+	]]
 	function IsActivedAction(self)
 		return false
 	end
 
-	doc [======[
-		@name IsAutoRepeatAction
-		@type method
-		@desc Whether the action is auto-repeat
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is auto-repeat</desc>
+		<return type="boolean"></return>
+	]]
 	function IsAutoRepeatAction(self)
 		return false
 	end
 
-	doc [======[
-		@name IsUsableAction
-		@type method
-		@desc Whether the action is usable
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is usable</desc>
+		<return type="boolean"></return>
+	]]
 	function IsUsableAction(self)
 		return true
 	end
 
-	doc [======[
-		@name IsConsumableAction
-		@type method
-		@desc Whether the action is consumable
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is consumable</desc>
+		<return type="boolean"></return>
+	]]
 	function IsConsumableAction(self)
 		return false
 	end
 
-	doc [======[
-		@name IsInRange
-		@type method
-		@desc Whether the action is in range of the target
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is in range of the target</desc>
+		<return type="boolean"></return>
+	]]
 	function IsInRange(self)
 		return
 	end
 
-	doc [======[
-		@name IsAutoCastAction
-		@type method
-		@desc Whether the action is auto-castable
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is auto-castable</desc>
+		<return type="boolean"></return>
+	]]
 	function IsAutoCastAction(self)
 		return false
 	end
 
-	doc [======[
-		@name IsAutoCasting
-		@type method
-		@desc Whether the action is auto-casting now
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is auto-casting now</desc>
+		<return type="boolean"></return>
+	]]
 	function IsAutoCasting(self)
 		return false
 	end
 
-	doc [======[
-		@name SetTooltip
-		@type method
-		@desc Show the tooltip for the action
-		@param GameTooltip
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Show the tooltip for the action</desc>
+		<param name="GameTooltip"></param>
+		<return type="boolean"></return>
+	]]
 	function SetTooltip(self, GameTooltip)
 	end
 
-	doc [======[
-		@name GetSpellId
-		@type method
-		@desc Get the spell id of the action
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Get the spell id of the action</desc>
+		<return type="number"></return>
+	]]
 	function GetSpellId(self)
 	end
 
-	doc [======[
-		@name IsFlyout
-		@type method
-		@desc Whether the action is a flyout spell
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether the action is a flyout spell</desc>
+		<return type="boolean"></return>
+	]]
 	function IsFlyout(self)
 		return false
 	end
@@ -332,127 +274,59 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Enabled
-		@type property
-		@desc Whether the handler is enabled(has buttons)
-	]======]
+	__Doc__[[Whether the handler is enabled(has buttons)]]
 	property "Enabled" { Type = Boolean, Event = "OnEnableChanged" }
 
-	doc [======[
-		@name Manager
-		@type property
-		@desc The manager of the action system
-	]======]
+	__Doc__[[The manager of the action system]]
 	property "Manager" {
 		Get = function(self)
 			return _IFActionHandler_ManagerFrame
 		end,
 	}
 
-	doc [======[
-		@name Name
-		@type property
-		@desc The action's name
-	]======]
+	__Doc__[[The action's name]]
 	property "Name" { Type = String }
 
-	doc [======[
-		@name Type
-		@type property
-		@desc The action type's type
-	]======]
+	__Doc__[[The action type's type]]
 	property "Type" { Type = String + nil }
 
-	doc [======[
-		@name Target
-		@type property
-		@desc The target attribute name
-	]======]
+	__Doc__[[The target attribute name]]
 	property "Target" { Type = String + nil }
 
-	doc [======[
-		@name Detail
-		@type property
-		@desc The detail attribute name
-	]======]
+	__Doc__[[The detail attribute name]]
 	property "Detail" { Type = String + nil }
 
-	doc [======[
-		@name IsPlayerAction
-		@type property
-		@desc Whether the action is player action
-	]======]
+	__Doc__[[Whether the action is player action]]
 	property "IsPlayerAction" { Type = Boolean, Default = true }
 
-	doc [======[
-		@name IsPetAction
-		@type property
-		@desc Whether the action is pet action
-	]======]
+	__Doc__[[Whether the action is pet action]]
 	property "IsPetAction" { Type = Boolean, Default = false }
 
-	doc [======[
-		@name DragStyle
-		@type property
-		@desc The drag style of the action type
-	]======]
+	__Doc__[[The drag style of the action type]]
 	property "DragStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
 
-	doc [======[
-		@name ReceiveStyle
-		@type property
-		@desc The receive style of the action type
-	]======]
+	__Doc__[[The receive style of the action type]]
 	property "ReceiveStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
 
-	doc [======[
-		@name ReceiveMap
-		@type property
-		@desc The receive map
-	]======]
+	__Doc__[[The receive map]]
 	property "ReceiveMap" { Type = String + nil }
 
-	doc [======[
-		@name PickupMap
-		@type property
-		@desc The pickup map
-	]======]
+	__Doc__[[The pickup map]]
 	property "PickupMap" { Type = String + nil }
 
-	doc [======[
-		@name InitSnippet
-		@type property
-		@desc The snippet to setup environment for the action type
-	]======]
+	__Doc__[[The snippet to setup environment for the action type]]
 	property "InitSnippet" { Type = String + nil }
 
-	doc [======[
-		@name PickupSnippet
-		@type property
-		@desc The snippet used when pick up action
-	]======]
+	__Doc__[[The snippet used when pick up action]]
 	property "PickupSnippet" { Type = String + nil }
 
-	doc [======[
-		@name UpdateSnippet
-		@type property
-		@desc The snippet used to update for new action settings
-	]======]
+	__Doc__[[The snippet used to update for new action settings]]
 	property "UpdateSnippet" { Type = String + nil }
 
-	doc [======[
-		@name ReceiveSnippet
-		@type property
-		@desc The snippet used to receive action
-	]======]
+	__Doc__[[The snippet used to receive action]]
 	property "ReceiveSnippet" { Type = String + nil }
 
-	doc [======[
-		@name ClearSnippet
-		@type property
-		@desc The snippet used to clear action
-	]======]
+	__Doc__[[The snippet used to clear action]]
 	property "ClearSnippet" { Type = String + nil }
 
 	------------------------------------------------------
@@ -522,14 +396,9 @@ endinterface "IFActionTypeHandler"
 -- ActionTypeHandler
 --
 ------------------------------------------------------
+__Doc__[[The handler for each action types]]
 __Cache__() class "ActionTypeHandler"
 	extend "IFActionTypeHandler"
-
-	doc [======[
-		@name ActionTypeHandler
-		@type class
-		@desc The handler for each action types
-	]======]
 
 	------------------------------------------------------
 	-- Meta-methods
@@ -563,9 +432,7 @@ class "ActionList"
 	------------------------------------------------------
 	------------------------------------
 	--- Insert action button to the list
-	-- @name Insert
-	-- @type function
-	-- @param frame
+	-- -- -- <param name="frame"></param>
 	------------------------------------
 	function Insert(self, frame)
 		tinsert(self, frame)
@@ -573,9 +440,7 @@ class "ActionList"
 
 	------------------------------------
 	--- Remove action button from the list
-	-- @name Remove
-	-- @type function
-	-- @param frame
+	-- -- -- <param name="frame"></param>
 	------------------------------------
 	function Remove(self, frame)
 		for i, v in ipairs(self) do
@@ -589,12 +454,11 @@ class "ActionList"
 
 	------------------------------------
 	--- Get the next element, Overridable
-	-- @name Next
-	-- @class function
-	-- @param kind
-	-- @return nextFunc
-	-- @return self
-	-- @return firstKey
+	-- -- @class function
+	-- <param name="kind"></param>
+	-- <return type="nextFunc"></return>
+	-- <return type="self"></return>
+	-- <return type="firstKey"></return>
 	------------------------------------
 	function Next(self, kind)
 		if type(kind) == "string" then
@@ -1598,15 +1462,10 @@ do
 	end
 end
 
+__Doc__[[IFActionHandler is used to manage action buttons]]
 interface "IFActionHandler"
 	extend "IFSecureHandler" "IFCooldown"
 	require "CheckButton"
-
-	doc [======[
-		@name IFActionHandler
-		@type interface
-		@desc IFActionHandler is used to manage action buttons
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -1615,23 +1474,15 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Object Method
 	------------------------------------------------------
-	doc [======[
-		@name UpdateAction
-		@type method
-		@desc Used to customize action button when it's content is changed
-		@return nil
-	]======]
+	__Doc__[[Used to customize action button when it's content is changed]]
 	__Optional__() function UpdateAction(self) end
 
-	doc [======[
-		@name SetAction
-		@type method
-		@desc Set action for the actionbutton
-		@param kind System.Widget.Action.IFActionHandler.ActionType, the action type
-		@param target the action't target
-		@param detail the action's detail
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set action for the actionbutton</desc>
+		<param name="kind">System.Widget.Action.IFActionHandler.ActionType, the action type</param>
+		<param name="target">the action't target</param>
+		<param name="detail">the action's detail</param>
+		]]
 	function SetAction(self, kind, target, detail)
 		if kind and not _ActionTypeMap[kind] then
 			error("IFActionHandler:SetAction(kind, target, detail) - no such action kind", 2)
@@ -1644,47 +1495,38 @@ interface "IFActionHandler"
 		IFNoCombatTaskHandler._RegisterNoCombatTask(SaveAction, self, kind, target, detail)
 	end
 
-	doc [======[
-		@name GetAction
-		@type method
-		@desc Get action for the actionbutton
-		@return kind System.Widget.Action.IFActionHandler.ActionType, the action type
-		@return target any, the action's target
-		@return detail any, the action's detail
-	]======]
+	__Doc__[[
+		<desc>Get action for the actionbutton</desc>
+		<return type="kind">System.Widget.Action.IFActionHandler.ActionType, the action type</return>
+		<return type="target">any, the action's target</return>
+		<return type="detail">any, the action's detail</return>
+	]]
 	function GetAction(self)
 		return self.__IFActionHandler_Kind, self.__IFActionHandler_Target, self.__IFActionHandler_Detail
 	end
 
-	doc [======[
-		@name HasAction
-		@type method
-		@desc Whether the action button has action content
-		@return boolean true if the button has action
-	]======]
+	__Doc__[[
+		<desc>Whether the action button has action content</desc>
+		<return type="boolean">true if the button has action</return>
+	]]
 	function HasAction(self)
 		return _IFActionTypeHandler[self.ActionType].HasAction(self)
 	end
 
-	doc [======[
-		@name SetFlyoutDirection
-		@type method
-		@desc Set flyoutDirection for action button
-		@param dir System.Widget.Action.IFActionHandler.FlyoutDirection
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set flyoutDirection for action button</desc>
+		<param name="dir">System.Widget.Action.IFActionHandler.FlyoutDirection</param>
+		]]
 	function SetFlyoutDirection(self, dir)
 		dir = Reflector.Validate(FlyoutDirection, dir, "dir", "Usage: IFActionHandler:SetFlyoutDirection(dir) -")
 
 		self:SetAttribute("flyoutDirection", dir)
 	end
 
-	doc [======[
-		@name SetFlyoutDirection
-		@type method
-		@desc Get flyoutDirection for action button
-		@return dir System.Widget.Action.IFActionHandler.FlyoutDirection
-	]======]
+	__Doc__[[
+		<desc>Get flyoutDirection for action button</desc>
+		<return type="dir">System.Widget.Action.IFActionHandler.FlyoutDirection</return>
+	]]
 	function GetFlyoutDirection(self)
 		return self:GetAttribute("flyoutDirection") or FlyoutDirection.UP
 	end
@@ -1692,68 +1534,52 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Interface Method
 	------------------------------------------------------
-	doc [======[
-		@name _EnableGroupDrag
-		@type method
-		@desc Make the group's action buttons draggable
-		@param group string|nil, the action button's group
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Make the group's action buttons draggable</desc>
+		<param name="group">string|nil, the action button's group</param>
+		]]
 	function _EnableGroupDrag(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(EnableDrag, group)
 	end
 
-	doc [======[
-		@name _IsGroupDragEnabled
-		@type method
-		@desc Whether if the action button group draggable
-		@param group string|nil, the action button's group
-		@return boolean true if the group's action buttons are draggable
-	]======]
+	__Doc__[[
+		<desc>Whether if the action button group draggable</desc>
+		<param name="group">string|nil, the action button's group</param>
+		<return type="boolean">true if the group's action buttons are draggable</return>
+	]]
 	function _IsGroupDragEnabled(group)
 		return IsDragEnabled(group)
 	end
 
-	doc [======[
-		@name _DisableGroupDrag
-		@type method
-		@desc Make the group's action buttons un-draggable
-		@param group string|nil, the action button's group
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Make the group's action buttons un-draggable</desc>
+		<param name="group">string|nil, the action button's group</param>
+		]]
 	function _DisableGroupDrag(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(DisableDrag, group)
 	end
 
-	doc [======[
-		@name _EnableGroupUseButtonDown
-		@type method
-		@desc Make the group's action buttons using mouse down to trigger actions
-		@param group string|nil, the action button's group
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Make the group's action buttons using mouse down to trigger actions</desc>
+		<param name="group">string|nil, the action button's group</param>
+		]]
 	function _EnableGroupUseButtonDown(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(EnableButtonDown, group)
 	end
 
-	doc [======[
-		@name function_name
-		@type method
-		@desc Whether if the action group buttons using mouse down
-		@param boolean  string|nil, the action button's group
-		@return boolean true if the group action buttons are using mouse down
-	]======]
+	__Doc__[[
+		<desc>Whether if the action group buttons using mouse down</desc>
+		<param name="boolean"> string|nil, the action button's group</param>
+		<return type="boolean">true if the group action buttons are using mouse down</return>
+	]]
 	function _IsGroupUseButtonDownEnabled(group)
 		return IsButtonDownEnabled(group)
 	end
 
-	doc [======[
-		@name _EnableGroupUseButtonDown
-		@type method
-		@desc Make the group's action buttons using mouse up to trigger actions
-		@param group string|nil, the action button's group
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Make the group's action buttons using mouse up to trigger actions</desc>
+		<param name="group">string|nil, the action button's group</param>
+		]]
 	function _DisableGroupUseButtonDown(group)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(DisableButtonDown, group)
 	end
@@ -1761,11 +1587,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Group Property
 	------------------------------------------------------
-	doc [======[
-		@name IFActionHandlerGroup
-		@type property
-		@desc Overridable, the action button's group name
-	]======]
+	__Doc__[[Overridable, the action button's group name]]
 	__Optional__() property "IFActionHandlerGroup" {
 		Set = function (self, group)
 			group = GetGroup(group)
@@ -1788,11 +1610,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Action Property
 	------------------------------------------------------
-	doc [======[
-		@name ActionType
-		@type property
-		@desc The action button's type
-	]======]
+	__Doc__[[The action button's type]]
 	property "ActionType" {
 		Default = "empty",
 		Get = function(self)
@@ -1800,22 +1618,14 @@ interface "IFActionHandler"
 		end,
 	}
 
-	doc [======[
-		@name ActionTarget
-		@type property
-		@desc The action button's content
-	]======]
+	__Doc__[[The action button's content]]
 	property "ActionTarget" {
 		Get = function(self)
 			return self.__IFActionHandler_Target
 		end,
 	}
 
-	doc [======[
-		@name ActionDetail
-		@type property
-		@desc The action button's detail
-	]======]
+	__Doc__[[The action button's detail]]
 	property "ActionDetail" {
 		Get = function(self)
 			return self.__IFActionHandler_Detail
@@ -1825,11 +1635,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Display Property
 	------------------------------------------------------
-	doc [======[
-		@name ShowGrid
-		@type property
-		@desc Whether show the action button with no content, controlled by IFActionHandler
-	]======]
+	__Doc__[[Whether show the action button with no content, controlled by IFActionHandler]]
 	property "ShowGrid" {
 		Get = function(self)
 			return self.__ShowGrid
@@ -1848,11 +1654,7 @@ interface "IFActionHandler"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowFlyOut
-		@type property
-		@desc Whether show the action button's flyout icon, controlled by IFActionHandler
-	]======]
+	__Doc__[[Whether show the action button's flyout icon, controlled by IFActionHandler]]
 	property "ShowFlyOut" {
 		Get = function(self)
 			return self.__ShowFlyOut
@@ -1864,95 +1666,43 @@ interface "IFActionHandler"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Usable
-		@type property
-		@desc Whether the action is usable, used to refresh the action button as a trigger
-	]======]
+	__Doc__[[Whether the action is usable, used to refresh the action button as a trigger]]
 	__Optional__() property "Usable" { Type = Boolean }
 
-	doc [======[
-		@name Count
-		@type property
-		@desc The action's count, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action's count, used to refresh the action count as a trigger]]
 	__Optional__() property "Count" { Type = String }
 
-	doc [======[
-		@name Flashing
-		@type property
-		@desc Whether need flash the action, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[Whether need flash the action, used to refresh the action count as a trigger]]
 	__Optional__() property "Flashing" { Type = Boolean }
 
-	doc [======[
-		@name FlashVisible
-		@type property
-		@desc The action button's flash texture's visible, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action button's flash texture's visible, used to refresh the action count as a trigger]]
 	__Optional__() property "FlashVisible" { Type = Boolean }
 
-	doc [======[
-		@name FlyoutVisible
-		@type property
-		@desc The action button's flyout's visible, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action button's flyout's visible, used to refresh the action count as a trigger]]
 	__Optional__() property "FlyoutVisible" { Type = Boolean }
 
-	doc [======[
-		@name Text
-		@type property
-		@desc The action't text, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action't text, used to refresh the action count as a trigger]]
 	__Optional__() property "Text" { Type = String }
 
-	doc [======[
-		@name Icon
-		@type property
-		@desc The action's icon path, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action's icon path, used to refresh the action count as a trigger]]
 	__Optional__() property "Icon" { Type = String }
 
-	doc [======[
-		@name InRange
-		@type property
-		@desc Whether the action is in range, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[Whether the action is in range, used to refresh the action count as a trigger]]
 	__Optional__() property "InRange" { Type = Boolean+nil }
 
-	doc [======[
-		@name FlyoutDirection
-		@type property
-		@desc The action button's flyout direction, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[The action button's flyout direction, used to refresh the action count as a trigger]]
 	property "FlyoutDirection" { Type = FlyoutDirection }
 
-	doc [======[
-		@name AutoCastable
-		@type property
-		@desc Whether the action is auto-castable, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[Whether the action is auto-castable, used to refresh the action count as a trigger]]
 	__Optional__() property "AutoCastable" { Type = Boolean }
 
-	doc [======[
-		@name AutoCasting
-		@type property
-		@desc Whether the action is now auto-casting, used to refresh the action count as a trigger
-	]======]
+	__Doc__[[Whether the action is now auto-casting, used to refresh the action count as a trigger]]
 	__Optional__() property "AutoCasting" { Type = Boolean }
 
-	doc [======[
-		@name MaxDisplayCount
-		@type property
-		@desc The max count to display
-	]======]
+	__Doc__[[The max count to display]]
 	__Optional__() property "MaxDisplayCount" { Type = Number, Default = 9999 }
 
-	doc [======[
-		@name EquippedItemIndicator
-		@type property
-		@desc Whether an indicator should be shown for equipped item
-	]======]
+	__Doc__[[Whether an indicator should be shown for equipped item]]
 	__Optional__() property "EquippedItemIndicator" { Type = Boolean }
 
 	------------------------------------------------------

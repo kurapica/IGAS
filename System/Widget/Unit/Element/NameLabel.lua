@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.NameLabel", version) then
 	return
 end
 
+__Doc__[[The unit name label with faction color settings]]
 class "NameLabel"
 	inherit "FontString"
 	extend "IFUnitName" "IFFaction"
-
-	doc [======[
-		@name NameLabel
-		@type class
-		@desc The unit name label with faction color settings
-	]======]
 
 	_DefaultColor = ColorType(1, 1, 1)
 
@@ -45,11 +40,7 @@ class "NameLabel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name UseTapColor
-		@type property
-		@desc Whether using the tap color, default false
-	]======]
+	__Doc__[[Whether using the tap color, default false]]
 	property "UseTapColor" {
 		Get = function(self)
 			return self.__UseTapColor
@@ -61,11 +52,7 @@ class "NameLabel"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name UseSelectionColor
-		@type property
-		@desc Whether using the selection color, default false
-	]======]
+	__Doc__[[Whether using the selection color, default false]]
 	property "UseSelectionColor" {
 		Get = function(self)
 			return self.__UseSelectionColor
@@ -77,11 +64,7 @@ class "NameLabel"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name UseClassColor
-		@type property
-		@desc Whether using the class color, default false
-	]======]
+	__Doc__[[Whether using the class color, default false]]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor

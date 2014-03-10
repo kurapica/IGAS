@@ -9,14 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.PopupDialog", version) then
 	return
 end
 
+__Doc__[[PopupDialog is using to show message and apply some operations like, confirm, cancel.]]
 class "PopupDialog"
 	inherit "Frame"
-
-	doc [======[
-		@name PopupDialog
-		@type class
-		@desc PopupDialog is using to show message and apply some operations like, confirm, cancel.
-	]======]
 
 	-- Only need one table to help set button's pos.
 	_CheckBtn = {}
@@ -173,44 +168,25 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnCancel
-		@type event
-		@desc Run when the popupdialog's cancel button is clicked
-	]======]
+	__Doc__[[Run when the popupdialog's cancel button is clicked]]
 	event "OnCancel"
 
-	doc [======[
-		@name OnNo
-		@type event
-		@desc Run when the popupdialog's no button is clicked
-	]======]
+	__Doc__[[Run when the popupdialog's no button is clicked]]
 	event "OnNo"
 
-	doc [======[
-		@name OnOkay
-		@type event
-		@desc Run when the popupdialog's okay button is clicked
-	]======]
+	__Doc__[[Run when the popupdialog's okay button is clicked]]
 	event "OnOkay"
 
-	doc [======[
-		@name OnTextChanged
-		@type event
-		@desc Run when the popupdialog's inputbox's text is changed
-	]======]
+	__Doc__[[Run when the popupdialog's inputbox's text is changed]]
 	event "OnTextChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the popupdialog's style
-		@param style System.Widget.PopupDialog.PopupDialogStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the popupdialog's style</desc>
+		<param name="style">System.Widget.PopupDialog.PopupDialogStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -237,12 +213,10 @@ class "PopupDialog"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the popupdialog's style
-		@return System.Widget.PopupDialog.PopupDialogStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the popupdialog's style</desc>
+		<return type="System.Widget.PopupDialog.PopupDialogStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_NONE
 	end
@@ -250,11 +224,7 @@ class "PopupDialog"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Message
-		@type property
-		@desc the message to be shown
-	]======]
+	__Doc__[[the message to be shown]]
 	property "Message" {
 		Set = function(self, text)
 			self:GetChild("AlertText").Text = text or ""
@@ -265,11 +235,7 @@ class "PopupDialog"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the text in the input edit box
-	]======]
+	__Doc__[[the text in the input edit box]]
 	property "Text" {
 		Set = function(self, text)
 			self:GetChild("InputTxt").Text = text or ""
@@ -282,11 +248,7 @@ class "PopupDialog"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name OkayButtonText
-		@type property
-		@desc the text that displayed on the okay button
-	]======]
+	__Doc__[[the text that displayed on the okay button]]
 	property "OkayButtonText" {
 		Set = function(self, text)
 			self:GetChild("OkayBtn").Text = text or "Okay"
@@ -303,11 +265,7 @@ class "PopupDialog"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name NoButtonText
-		@type property
-		@desc the text that displayed on the no button
-	]======]
+	__Doc__[[the text that displayed on the no button]]
 	property "NoButtonText" {
 		Set = function(self, text)
 			self:GetChild("NoBtn").Text = text or "No"
@@ -324,11 +282,7 @@ class "PopupDialog"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name CancelButtonText
-		@type property
-		@desc the text that displayed on the cancel button
-	]======]
+	__Doc__[[the text that displayed on the cancel button]]
 	property "CancelButtonText" {
 		Set = function(self, text)
 			self:GetChild("CancelBtn").Text = text or "Cancel"
@@ -345,11 +299,7 @@ class "PopupDialog"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name ShowAlertIcon
-		@type property
-		@desc whether show the alert icon
-	]======]
+	__Doc__[[whether show the alert icon]]
 	property "ShowAlertIcon" {
 		Set = function(self, flag)
 			self:GetChild("AlertIcon").Visible = (flag and true) or false
@@ -362,11 +312,7 @@ class "PopupDialog"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowOkayButton
-		@type property
-		@desc whether show the okay button
-	]======]
+	__Doc__[[whether show the okay button]]
 	property "ShowOkayButton" {
 		Set = function(self, flag)
 			self:GetChild("OkayBtn").Visible = (flag and true) or false
@@ -379,11 +325,7 @@ class "PopupDialog"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowNoButton
-		@type property
-		@desc whether show the no button
-	]======]
+	__Doc__[[whether show the no button]]
 	property "ShowNoButton" {
 		Set = function(self, flag)
 			self:GetChild("NoBtn").Visible = (flag and true) or false
@@ -396,11 +338,7 @@ class "PopupDialog"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowCancelButton
-		@type property
-		@desc whether show the cancel button
-	]======]
+	__Doc__[[whether show the cancel button]]
 	property "ShowCancelButton" {
 		Set = function(self, flag)
 			self:GetChild("CancelBtn").Visible = (flag and true) or false
@@ -413,11 +351,7 @@ class "PopupDialog"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowInputBox
-		@type property
-		@desc whether show the input edit box
-	]======]
+	__Doc__[[whether show the input edit box]]
 	property "ShowInputBox" {
 		Set = function(self, flag)
 			self:GetChild("InputTxt").Visible = (flag and true) or false
@@ -430,42 +364,26 @@ class "PopupDialog"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowWhileDead
-		@type property
-		@desc whether show while player is dead
-	]======]
+	__Doc__[[whether show while player is dead]]
 	property "ShowWhileDead" {
 		Field = "__ShowWhileDead",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowWhileCinematic
-		@type property
-		@desc whether show while player is in cinematic
-	]======]
+	__Doc__[[whether show while player is in cinematic]]
 	property "ShowWhileCinematic" {
 		Field = "__ShowWhileCinematic",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the popupdialog's style
-	]======]
+	__Doc__[[the popupdialog's style]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = PopupDialogStyle,
 	}
 
-	doc [======[
-		@name Input
-		@type property
-		@desc the instance of the popupdialog's input object(It's a ComboBox, can be used in special way)
-	]======]
+	__Doc__[[the instance of the popupdialog's input object(It's a ComboBox, can be used in special way)]]
 	property "Input" {
 		Get = function(self)
 			return self:GetChild("InputTxt")

@@ -8,14 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.ColorPicker", version) then
 	return
 end
 
+__Doc__[[ColorPicker is using to pick color for special using]]
 class "ColorPicker"
 	inherit "ColorSelect"
-
-	doc [======[
-		@name ColorPicker
-		@type class
-		@desc ColorPicker is using to pick color for special using
-	]======]
 
 	-- Define Style
     -- Style
@@ -94,28 +89,22 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnColorPicked
-		@type method
-		@desc Run when the color is selected
-		@param r number, [0-1] the red parent
-		@param g number, [0-1] the green parent
-		@param b number, [0-1] the blue parent
-		@param a number, [0-1] the alpha parent
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Run when the color is selected</desc>
+		<param name="r">number, [0-1] the red parent</param>
+		<param name="g">number, [0-1] the green parent</param>
+		<param name="b">number, [0-1] the blue parent</param>
+		<param name="a">number, [0-1] the alpha parent</param>
+	]]
 	event "OnColorPicked"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the ColorPicker's style
-		@param style System.Widget.ColorPicker.ColorPickerStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the ColorPicker's style</desc>
+		<param name="style">System.Widget.ColorPicker.ColorPickerStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -169,26 +158,21 @@ class "ColorPicker"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the ColorPicker's style
-		@return System.Widget.ColorPicker.ColorPickerStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the ColorPicker's style</desc>
+		<return type="System.Widget.ColorPicker.ColorPickerStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	doc [======[
-		@name SetColor
-		@type method
-		@desc Sets the ColorPicker's default color
-		@param r number, component of the color (0.0 - 1.0)
-		@param g number, component of the color (0.0 - 1.0)
-		@param b number, component of the color (0.0 - 1.0)
-		@param a number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the ColorPicker's default color</desc>
+		<param name="r">number, component of the color (0.0 - 1.0)</param>
+		<param name="g">number, component of the color (0.0 - 1.0)</param>
+		<param name="b">number, component of the color (0.0 - 1.0)</param>
+		<param name="a">number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetColor(self, r, g, b, a)
 		a = (a and type(a) == "number" and a >= 0 and a <= 1 and a) or 1
 
@@ -204,15 +188,13 @@ class "ColorPicker"
 		self.__DefaultValue.r, self.__DefaultValue.g, self.__DefaultValue.b, self.__DefaultValue.a = Format(r), Format(g), Format(b), Format(a)
 	end
 
-	doc [======[
-		@name GetColor
-		@type method
-		@desc Gets the ColorPicker's default color
-		@return r number, component of the color (0.0 - 1.0)
-		@return g number, component of the color (0.0 - 1.0)
-		@return b number, component of the color (0.0 - 1.0)
-		@return a number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Gets the ColorPicker's default color</desc>
+		<return type="r">number, component of the color (0.0 - 1.0)</return>
+		<return type="g">number, component of the color (0.0 - 1.0)</return>
+		<return type="b">number, component of the color (0.0 - 1.0)</return>
+		<return type="a">number, Optional,opacity for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetColor(self)
 		local r, g, b = self:GetColorRGB()
 
@@ -226,11 +208,7 @@ class "ColorPicker"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Color
-		@type property
-		@desc the color displayed now on the ColorPicker
-	]======]
+	__Doc__[[the color displayed now on the ColorPicker]]
 	property "Color" {
 		Set = function(self, color)
 			self:SetColor(color.r, color.g, color.b, color.a)
@@ -241,22 +219,14 @@ class "ColorPicker"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the style of the ColorPicker
-	]======]
+	__Doc__[[the style of the ColorPicker]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = ColorPickerStyle,
 	}
 
-	doc [======[
-		@name CaptionAlign
-		@type property
-		@desc the caption alignment of the ColorPicker
-	]======]
+	__Doc__[[the caption alignment of the ColorPicker]]
 	property "CaptionAlign" {
 		Get = function(self)
 			return self:GetChild("ColorPicker_Caption"):GetChild("Text").JustifyH
@@ -269,11 +239,7 @@ class "ColorPicker"
 		Type = JustifyHType,
 	}
 
-	doc [======[
-		@name TitleBarColor
-		@type property
-		@desc the title bar color of the ColorPicker
-	]======]
+	__Doc__[[the title bar color of the ColorPicker]]
 	property "TitleBarColor" {
 		Get = function(self)
 			return self:GetChild("ColorPicker_Caption").BackdropColor
@@ -284,11 +250,7 @@ class "ColorPicker"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name Caption
-		@type property
-		@desc the caption text of the ColorPicker
-	]======]
+	__Doc__[[the caption text of the ColorPicker]]
 	property "Caption" {
 		Set = function(self, title)
 			self:GetChild("ColorPicker_Caption"):GetChild("Text").Text = title
@@ -307,11 +269,7 @@ class "ColorPicker"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name OkayButtonText
-		@type property
-		@desc the okay button's text
-	]======]
+	__Doc__[[the okay button's text]]
 	property "OkayButtonText" {
 		Set = function(self, text)
 			self:GetChild("OkayBtn").Text = text or "Okay"
@@ -322,11 +280,7 @@ class "ColorPicker"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name CancelButtonText
-		@type property
-		@desc the cancel button's text
-	]======]
+	__Doc__[[the cancel button's text]]
 	property "CancelButtonText" {
 		Set = function(self, text)
 			self:GetChild("CancelBtn").Text = text or "Cancel"
@@ -337,11 +291,7 @@ class "ColorPicker"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name HasOpacity
-		@type property
-		@desc whether the ColorPicker can pick opacity
-	]======]
+	__Doc__[[whether the ColorPicker can pick opacity]]
 	property "HasOpacity" {
 		Set = function(self, flag)
 			self:GetChild("OpacitySlider").Enabled = flag

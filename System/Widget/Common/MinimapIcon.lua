@@ -9,14 +9,9 @@ if not IGAS:NewAddon("IGAS.Widget.MinimapIcon", version) then
 	return
 end
 
+__Doc__[[MinimapIcon is used to add icon to minimap]]
 class "MinimapIcon"
 	inherit "VirtualUIObject"
-
-	doc [======[
-		@name MinimapIcon
-		@type class
-		@desc MinimapIcon is used to add icon to minimap
-	]======]
 
     GameTooltip = IGAS.GameTooltip
     Minimap = IGAS.Minimap
@@ -154,106 +149,63 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnPositionChanged
-		@type event
-		@desc Run when the MinimapIcon's position is changed
-	]======]
+	__Doc__[[Run when the MinimapIcon's position is changed]]
 	event "OnPositionChanged"
 
-	doc [======[
-		@name Run when the mouse is over the icon, and the tooltip is set
-		@type event
-		@desc description
-		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
-	]======]
+	__Doc__[[
+		<desc>description</desc>
+		<param name="gameTooltip">System.Widget.GameTooltip, the GameTooltip object</param>
+	]]
 	event "OnGameTooltipShow"
 
-	doc [======[
-		@name OnClick
-		@type event
-		@desc Run when icon is clicked
-	]======]
+	__Doc__[[Run when icon is clicked]]
 	event "OnClick"
 
-	doc [======[
-		@name OnEnter
-		@type event
-		@desc Run when mouse is over the icon
-	]======]
+	__Doc__[[Run when mouse is over the icon]]
 	event "OnEnter"
 
-	doc [======[
-		@name OnLeave
-		@type event
-		@desc Run when mouse is leaving the icon
-	]======]
+	__Doc__[[Run when mouse is leaving the icon]]
 	event "OnLeave"
 
-	doc [======[
-		@name OnDragStart
-		@type event
-		@desc Run when start dragging the icon
-	]======]
+	__Doc__[[Run when start dragging the icon]]
 	event "OnDragStart"
 
-	doc [======[
-		@name OnDragStop
-		@type event
-		@desc Run when stop dragging the icon
-	]======]
+	__Doc__[[Run when stop dragging the icon]]
 	event "OnDragStop"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetIcon
-		@type method
-		@desc Sets the MinimapIcon's icon texutre
-		@param path string, the image file path
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the MinimapIcon's icon texutre</desc>
+		<param name="path">string, the image file path</param>
+	]]
 	function SetIcon(self, icon)
 		self.__MiniMapBtn:GetChild("Icon"):SetTexture(icon)
 	end
 
-	doc [======[
-		@name Hide
-		@type method
-		@desc Hide the MinimapIcon
-		@return nil
-	]======]
+	__Doc__[[Hide the MinimapIcon]]
 	function Hide(self)
 		return self.__MiniMapBtn:Hide()
 	end
 
-	doc [======[
-		@name Show
-		@type method
-		@desc Show the MinimapIcon
-		@return nil
-	]======]
+	__Doc__[[Show the MinimapIcon]]
 	function Show(self)
 		self.__MiniMapBtn:Show()
 	end
 
-	doc [======[
-		@name IsShown
-		@type method
-		@desc Whether if the MinimapIcon is shown
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether if the MinimapIcon is shown</desc>
+		<return type="boolean"></return>
+	]]
 	function IsShown(self)
 		return self.__MiniMapBtn:IsShown()
 	end
 
-	doc [======[
-		@name IsVisible
-		@type method
-		@desc Whether if the MinimapIcon is visible
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Whether if the MinimapIcon is visible</desc>
+		<return type="boolean"></return>
+	]]
 	function IsVisible(self)
 		return self.__MiniMapBtn:IsVisible()
 	end
@@ -261,11 +213,7 @@ class "MinimapIcon"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Tooltip
-		@type property
-		@desc the tooltip head to be shown when the cursor is over the icon
-	]======]
+	__Doc__[[the tooltip head to be shown when the cursor is over the icon]]
 	property "Tooltip" {
 		Set = function(self, tooltip)
 			self.__MiniMapBtn.__Tooltip = tostring(tooltip or "")
@@ -276,11 +224,7 @@ class "MinimapIcon"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Menu
-		@type property
-		@desc the menu will be shown when right-click the icon
-	]======]
+	__Doc__[[the menu will be shown when right-click the icon]]
 	property "Menu" {
 		Set = function(self, list)
 			self.__MiniMapBtn.__DropDownList = list
@@ -293,11 +237,7 @@ class "MinimapIcon"
 		Type = DropDownList,
 	}
 
-	doc [======[
-		@name Position
-		@type property
-		@desc the icon's position
-	]======]
+	__Doc__[[the icon's position]]
 	property "Position" {
 		Set = function(self, position)
 			if position then
@@ -316,11 +256,7 @@ class "MinimapIcon"
 		Type = MiniMapPosition + nil,
 	}
 
-	doc [======[
-		@name Visible
-		@type property
-		@desc the visible of the icon
-	]======]
+	__Doc__[[the visible of the icon]]
 	property "Visible" {
 		Set = function(self, visible)
 			self.__MiniMapBtn.Visible = visible
@@ -333,11 +269,7 @@ class "MinimapIcon"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the text to be diplayed on the icon
-	]======]
+	__Doc__[[the text to be diplayed on the icon]]
 	property "Text" {
 		Set = function(self, text)
 			self.__MiniMapBtn.txtInfo.Text = text

@@ -9,42 +9,24 @@ if not IGAS:NewAddon("IGAS.Widget.Translation", version) then
 	return
 end
 
+__Doc__[[Translation is an Animation type that applies an affine translation to its affected region automatically as it progresses.]]
 class "Translation"
 	inherit "Animation"
-
-	doc [======[
-		@name Translation
-		@type class
-		@desc Translation is an Animation type that applies an affine translation to its affected region automatically as it progresses.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetOffset
-		@type method
-		@desc Sets the animation's translation offsets
-		@param xOffset numner, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
-		@param yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
-		@return nil
-	]======]
+	__Doc__"SetOffset" [[
+		<desc>Sets the animation's translation offsets</desc>
+		<param name="xOffset">numner, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration</param>
+		<param name="yOffset">number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration</param>
+	]]
 
-	doc [======[
-		@name GetOffset
-		@type method
-		@desc Gets the animation's translation offsets
-		@return xOffset number, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
-		@return yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
-	]======]
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"GetOffset" [[
+		<desc>Gets the animation's translation offsets</desc>
+		<return type="xOffset">number, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration</return>
+		<return type="yOffset">number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration</return>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -67,11 +49,7 @@ class "Translation"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Offset
-		@type property
-		@desc the animation's translation offsets
-	]======]
+	__Doc__[[the animation's translation offsets]]
 	property "Offset" {
 		Get = function(self)
 			return Dimension(self:GetOffset())

@@ -29,15 +29,12 @@ function _IFUnitNameUnitList:ParseEvent(event, unit)
 	end
 end
 
+__Doc__[[
+	<desc>IFUnitName is used to handle the unit name's update</desc>
+	<overridable name="Text" type="property" valuetype="string">which used to receive the unit's name</overridable>
+]]
 interface "IFUnitName"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFUnitName
-		@type interface
-		@desc IFUnitName is used to handle the unit name's update
-		@overridable Text property, string, which used to receive the unit's name
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -46,12 +43,6 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		if self.Unit then
 			self.Text = GetUnitName(self.Unit, self.WithServerName) or self.Unit
@@ -63,11 +54,7 @@ interface "IFUnitName"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name WithServerName
-		@type property
-		@desc Whether show the server name
-	]======]
+	__Doc__[[Whether show the server name]]
 	property "WithServerName" {
 		Field = "__WithServerName",
 		Set = function(self, value)

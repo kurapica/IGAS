@@ -107,15 +107,10 @@ function HealthBar_OnStateChanged(self)
 	self:SetStatusBarColor(r, g, b)
 end
 
+__Doc__[[The health bar with debuff state]]
 class "HealthBar"
 	inherit "StatusBar"
 	extend "IFHealth" "IFDebuffState"
-
-	doc [======[
-		@name HealthBar
-		@type class
-		@desc The health bar with debuff state
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -130,9 +125,7 @@ class "HealthBar"
 	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	-- -- ------------------------------------
 	function Refresh(self)
 		IFHealth.Refresh(self)
 		IFDebuffState.Refresh(self)
@@ -142,11 +135,7 @@ class "HealthBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name UseDebuffColor
-		@type property
-		@desc Whether use the debuff color
-	]======]
+	__Doc__[[Whether use the debuff color]]
 	property "UseDebuffColor" {
 		Get = function(self)
 			return self.__UseDebuffColor or false
@@ -158,11 +147,7 @@ class "HealthBar"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name UseClassColor
-		@type property
-		@desc Whether use the unit's class color
-	]======]
+	__Doc__[[Whether use the unit's class color]]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor or false
@@ -174,11 +159,7 @@ class "HealthBar"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name Smooth
-		@type property
-		@desc Whether smoothing the color changing
-	]======]
+	__Doc__[[Whether smoothing the color changing]]
 	property "Smooth" {
 		Get = function(self)
 			return self.__Smooth or false
@@ -204,33 +185,17 @@ class "HealthBar"
 	end
 endclass "HealthBar"
 
-
+__Doc__[[The frequent health bar with debuff state]]
 class "HealthBarFrequent"
 	inherit "StatusBar"
 	extend "IFHealthFrequent" "IFDebuffState"
-
-	doc [======[
-		@name HealthBarFrequent
-		@type class
-		@desc The frequent health bar with debuff state
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	-- -- ------------------------------------
 	function Refresh(self)
 		IFHealthFrequent.Refresh(self)
 		IFDebuffState.Refresh(self)
@@ -240,11 +205,7 @@ class "HealthBarFrequent"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name UseDebuffColor
-		@type property
-		@desc Whether use the debuff color
-	]======]
+	__Doc__[[Whether use the debuff color]]
 	property "UseDebuffColor" {
 		Get = function(self)
 			return self.__UseDebuffColor or false
@@ -256,11 +217,7 @@ class "HealthBarFrequent"
 		Type = System.Any,
 	}
 
-	doc [======[
-		@name UseClassColor
-		@type property
-		@desc Whether use the unit's class color
-	]======]
+	__Doc__[[Whether use the unit's class color]]
 	property "UseClassColor" {
 		Get = function(self)
 			return self.__UseClassColor or false
@@ -272,11 +229,7 @@ class "HealthBarFrequent"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name Smooth
-		@type property
-		@desc Whether smoothing the color changing
-	]======]
+	__Doc__[[Whether smoothing the color changing]]
 	property "Smooth" {
 		Get = function(self)
 			return self.__Smooth or false

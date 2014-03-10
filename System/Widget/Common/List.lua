@@ -16,14 +16,9 @@ if not IGAS:NewAddon("IGAS.Widget.List", version) then
 	return
 end
 
+__Doc__[[List is a widget type using for show list of infomations]]
 class "List"
 	inherit "Frame"
-
-	doc [======[
-		@name List
-		@type class
-		@desc List is a widget type using for show list of infomations
-	]======]
 
     GameTooltip = IGAS.GameTooltip
 
@@ -383,47 +378,38 @@ class "List"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnGameTooltipShow
-		@type event
-		@desc Run when the mouse is over an item, and the Tooltip property is set
-		@param gameTooltip System.Widget.GameTooltip, the GameTooltip object
-		@param key any, the choosed item's value
-		@param text string, the choosed item's text
-		@param icon string, the choosed item's icon texture path
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse is over an item, and the Tooltip property is set</desc>
+		<param name="gameTooltip">System.Widget.GameTooltip, the GameTooltip object</param>
+		<param name="key">any, the choosed item's value</param>
+		<param name="text">string, the choosed item's text</param>
+		<param name="icon">string, the choosed item's icon texture path</param>
+	]]
 	event "OnGameTooltipShow"
 
-	doc [======[
-		@name OnItemChoosed
-		@type event
-		@desc Run when the choosed item is changed
-		@param key any, the choosed item's value
-		@param text string, the choosed item's text
-		@param icon string, the choosed item's icon texture path
-	]======]
+	__Doc__[[
+		<desc>Run when the choosed item is changed</desc>
+		<param name="key">any, the choosed item's value</param>
+		<param name="text">string, the choosed item's text</param>
+		<param name="icon">string, the choosed item's icon texture path</param>
+	]]
 	event "OnItemChoosed"
 
-	doc [======[
-		@name OnItemDoubleClick
-		@type method
-		@desc Run when an item is double-clicked
-		@param key any, the choosed item's value
-		@param text string, the choosed item's text
-		@param icon string, the choosed item's icon texture path
-	]======]
+	__Doc__[[
+		<desc>Run when an item is double-clicked</desc>
+		<param name="key">any, the choosed item's value</param>
+		<param name="text">string, the choosed item's text</param>
+		<param name="icon">string, the choosed item's icon texture path</param>
+	]]
 	event "OnItemDoubleClick"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the list's style
-		@param style System.Widget.List.ListStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the list's style</desc>
+		<param name="style">System.Widget.List.ListStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -450,23 +436,18 @@ class "List"
 		self.ScrollBar.Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the List's style
-		@return System.Widget.List.ListStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the List's style</desc>
+		<return type="System.Widget.List.ListStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	doc [======[
-		@name SelectItemByIndex
-		@type method
-		@desc Select a item by index
-		@param index number
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Select a item by index</desc>
+		<param name="index">number</param>
+	]]
 	function SelectItemByIndex(self, index)
 		-- Check later, maybe nil
 		if not index or type(index) ~= "number" or index <= 0 then
@@ -496,13 +477,10 @@ class "List"
 		end
 	end
 
-	doc [======[
-		@name SelectItemByText
-		@type method
-		@desc Select a item by text
-		@param text string
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Select a item by text</desc>
+		<param name="text">string</param>
+	]]
 	function SelectItemByText(self, text)
 		if text and type(text) == "string" then
 			for i =1, #self.Items do
@@ -514,13 +492,10 @@ class "List"
 		return self:SelectItemByIndex(0)
 	end
 
-	doc [======[
-		@name SelectItemByValue
-		@type method
-		@desc Select a item by value
-		@param value any
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Select a item by value</desc>
+		<param name="value">any</param>
+	]]
 	function SelectItemByValue(self, val)
 		if val ~= nil then	-- val could be false, so check with nil
 			for i = 1, #self.Keys do
@@ -532,65 +507,49 @@ class "List"
 		return self:SelectItemByIndex(0)
 	end
 
-	doc [======[
-		@name GetSelectedItemIndex
-		@type method
-		@desc Gets the selected item's index
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Gets the selected item's index</desc>
+		<return type="number"></return>
+	]]
 	function GetSelectedItemIndex(self)
 		return self.__ChooseItem or 0
 	end
 
-	doc [======[
-		@name GetSelectedItemValue
-		@type method
-		@desc Gets the selected item's value
-		@return any
-	]======]
+	__Doc__[[
+		<desc>Gets the selected item's value</desc>
+		<return type="any"></return>
+	]]
 	function GetSelectedItemValue(self)
 		return self.__ChooseItem and self.Keys[self.__ChooseItem]
 	end
 
-	doc [======[
-		@name GetSelectedItemText
-		@type method
-		@desc Gets the selected item's text
-		@return string
-	]======]
+	__Doc__[[
+		<desc>Gets the selected item's text</desc>
+		<return type="string"></return>
+	]]
 	function GetSelectedItemText(self)
 		return self.__ChooseItem and self.Items[self.__ChooseItem]
 	end
 
-	doc [======[
-		@name GetScrollStep
-		@type method
-		@desc Returns the minimum increment between allowed slider values
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Returns the minimum increment between allowed slider values</desc>
+		<return type="number"></return>
+	]]
 	function GetScrollStep(self)
 		return self:GetChild("ScrollBar").ValueStep
 	end
 
-	doc [======[
-		@name SetScrollStep
-		@type method
-		@desc Sets the minimum increment between allowed slider values
-		@param step number, minimum increment between allowed slider values
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the minimum increment between allowed slider values</desc>
+		<param name="step">number, minimum increment between allowed slider values</param>
+	]]
 	function SetScrollStep(self, step)
 		if step > 0 then
 			self:GetChild("ScrollBar").ValueStep = step
 		end
 	end
 
-	doc [======[
-		@name Refresh
-		@type method
-		@desc Refresh the list
-		@return nil
-	]======]
+	__Doc__[[Refresh the list]]
 	function Refresh(self)
 		--if not self.Visible then
 		--	return
@@ -603,34 +562,21 @@ class "List"
 		return self:SelectItemByIndex(self.__ChooseItem)
 	end
 
-	doc [======[
-		@name SuspendLayout
-		@type method
-		@desc Stop the refresh of the list
-		@param ...
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Stop the refresh of the list</desc>
+		<param name="..."></param>
+	]]
 	function SuspendLayout(self)
 		self.__Layout = false
 	end
 
-	doc [======[
-		@name ResumeLayout
-		@type method
-		@desc Resume the refresh of the list
-		@return nil
-	]======]
+	__Doc__[[Resume the refresh of the list]]
 	function ResumeLayout(self)
 		self.__Layout = true
 		self:Refresh()
 	end
 
-	doc [======[
-		@name Clear
-		@type method
-		@desc Clear the list
-		@return nil
-	]======]
+	__Doc__[[Clear the list]]
 	function Clear(self)
 		for i = #self.Keys, 1, -1 do
 			self.Keys[i] = nil
@@ -645,16 +591,13 @@ class "List"
 		--end
 	end
 
-	doc [======[
-		@name AddItem
-		@type method
-		@desc Add an item to the list
-		@format key, text[, icon]
-		@param key any, the value of the item
-		@param text string, the text of the item, to be displayed for informations
-		@param icon string ,the icon path of the item, will be shown at the left of the text if set
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Add an item to the list</desc>
+		<format>key, text[, icon]</format>
+		<param name="key">any, the value of the item</param>
+		<param name="text">string, the text of the item, to be displayed for informations</param>
+		<param name="icon">string ,the icon path of the item, will be shown at the left of the text if set</param>
+	]]
 	function AddItem(self, key, text, icon, frame)
 		if key ~= nil then
 			self.Keys[#self.Keys + 1] = key
@@ -672,16 +615,13 @@ class "List"
 		--end
 	end
 
-	doc [======[
-		@name SetItem
-		@type method
-		@desc Modify or add an item in the item list
-		@format key, text[, icon]
-		@param key any, the value of the item
-		@param text string, the text of the item, to be displayed for informations
-		@param icon string ,the icon path of the item, will be shown at the left of the text if set
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Modify or add an item in the item list</desc>
+		<format>key, text[, icon]</format>
+		<param name="key">any, the value of the item</param>
+		<param name="text">string, the text of the item, to be displayed for informations</param>
+		<param name="icon">string ,the icon path of the item, will be shown at the left of the text if set</param>
+	]]
 	function SetItem(self, key, text, icon, frame)
 		local idx = 1
 		if key == nil then
@@ -704,15 +644,13 @@ class "List"
 		--end
 	end
 
-	doc [======[
-		@name GetItem
-		@type method
-		@desc Get an item's info from the item list by key
-		@param key any, the value of the item
-		@return key any, the value of the item
-		@return text string, the text of the item, to be displayed for informations
-		@return icon string ,the icon path of the item, will be shown at the left of the text if set
-	]======]
+	__Doc__[[
+		<desc>Get an item's info from the item list by key</desc>
+		<param name="key">any, the value of the item</param>
+		<return type="key">any, the value of the item</return>
+		<return type="text">string, the text of the item, to be displayed for informations</return>
+		<return type="icon">string ,the icon path of the item, will be shown at the left of the text if set</return>
+	]]
 	function GetItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -726,31 +664,26 @@ class "List"
 		end
 	end
 
-	doc [======[
-		@name GetItemByIndex
-		@type method
-		@desc Get an item's info from the item list by index
-		@param index number, the item's index
-		@return key any, the value of the item
-		@return text string, the text of the item, to be displayed for informations
-		@return icon string ,the icon path of the item, will be shown at the left of the text if set
-	]======]
+	__Doc__[[
+		<desc>Get an item's info from the item list by index</desc>
+		<param name="index">number, the item's index</param>
+		<return type="key">any, the value of the item</return>
+		<return type="text">string, the text of the item, to be displayed for informations</return>
+		<return type="icon">string ,the icon path of the item, will be shown at the left of the text if set</return>
+	]]
 	function GetItemByIndex(self, idx)
 		if self.Keys[idx] then
 			return self.Keys[idx], self.Items[idx], self.Icons[idx], self.Frames[idx]
 		end
 	end
 
-	doc [======[
-		@name InsertItem
-		@type method
-		@desc Insert an item to the list
-		@param index number, the index to be inserted, if nil, would be insert at last
-		@param key any, the value of the item
-		@param text string, the text of the item, to be displayed for informations
-		@param icon string ,the icon path of the item, will be shown at the left of the text if set
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Insert an item to the list</desc>
+		<param name="index">number, the index to be inserted, if nil, would be insert at last</param>
+		<param name="key">any, the value of the item</param>
+		<param name="text">string, the text of the item, to be displayed for informations</param>
+		<param name="icon">string ,the icon path of the item, will be shown at the left of the text if set</param>
+	]]
 	function InsertItem(self, index, key, text, icon, frame)
 		if not index or type(index) ~= "number" or index > #self.Keys + 1 then
 			index = #self.Keys + 1
@@ -781,13 +714,10 @@ class "List"
 		--end
 	end
 
-	doc [======[
-		@name RemoveItem
-		@type method
-		@desc Remove an item from the item list by key
-		@param key any, the value of the item
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Remove an item from the item list by key</desc>
+		<param name="key">any, the value of the item</param>
+	]]
 	function RemoveItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -814,13 +744,10 @@ class "List"
 		end
 	end
 
-	doc [======[
-		@name RemoveItemByIndex
-		@type method
-		@desc Remove an item from the item list by index
-		@param index number, the item's index
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Remove an item from the item list by index</desc>
+		<param name="index">number, the item's index</param>
+	]]
 	function RemoveItemByIndex(self, idx)
 		if self.Keys[idx] then
 			if idx == self.__ChooseItem then
@@ -840,13 +767,10 @@ class "List"
 		end
 	end
 
-	doc [======[
-		@name SetList
-		@type method
-		@desc Build item list from a table
-		@param list table, a table contains key-value pairs like {[true] = "True", [false] = "False"}
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Build item list from a table</desc>
+		<param name="list">table, a table contains key-value pairs like {[true] = "True", [false] = "False"}</param>
+	]]
 	function SetList(self, list)
 		if type(list) == "table" then
 			self:SuspendLayout()
@@ -863,22 +787,14 @@ class "List"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ScrollStep
-		@type property
-		@desc the minimum increment between allowed slider values
-	]======]
+	__Doc__[[the minimum increment between allowed slider values]]
 	property "ScrollStep" {
 		Set = "SetScrollStep",
 		Get = "GetScrollStep",
 		Type = Number,
 	}
 
-	doc [======[
-		@name DisplayItemCount
-		@type property
-		@desc the display count in the list
-	]======]
+	__Doc__[[the display count in the list]]
 	property "DisplayItemCount" {
 		Field = "__DisplayItemCount",
 		Set = function(self, cnt)
@@ -893,11 +809,7 @@ class "List"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Keys
-		@type property
-		@desc a table that contains keys of the items
-	]======]
+	__Doc__[[a table that contains keys of the items]]
 	property "Keys" {
 		Set = function(self, keys)
 			self.__Keys = keys or {}
@@ -911,11 +823,7 @@ class "List"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Items
-		@type property
-		@desc a table that contains Text of the items
-	]======]
+	__Doc__[[a table that contains Text of the items]]
 	property "Items" {
 		Set = function(self, items)
 			items = items or {}
@@ -935,11 +843,7 @@ class "List"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Icons
-		@type property
-		@desc a table that contains icons of the items
-	]======]
+	__Doc__[[a table that contains icons of the items]]
 	property "Icons" {
 		Set = function(self, icons)
 			self.__Icons = icons or {}
@@ -952,11 +856,7 @@ class "List"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Frames
-		@type property
-		@desc a table that contains frames of the items
-	]======]
+	__Doc__[[a table that contains frames of the items]]
 	property "Frames" {
 		Set = function(self, frames)
 			self.__Frames = frames or {}
@@ -969,11 +869,7 @@ class "List"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name ItemCount
-		@type property
-		@desc the item's count
-	]======]
+	__Doc__[[the item's count]]
 	property "ItemCount" {
 		Get = function(self)
 			return #self.Keys
@@ -981,11 +877,7 @@ class "List"
 		Type = Number,
 	}
 
-	doc [======[
-		@name JustifyH
-		@type property
-		@desc the list's horizontal text alignment style
-	]======]
+	__Doc__[[the list's horizontal text alignment style]]
 	property "JustifyH" {
 		Field = "__JustifyH",
 		Set = function(self, justifyH)
@@ -1003,22 +895,14 @@ class "List"
 		Type = JustifyHType,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the list's style
-	]======]
+	__Doc__[[the list's style]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = ListStyle,
 	}
 
-	doc [======[
-		@name SelectedIndex
-		@type property
-		@desc the selected item's index
-	]======]
+	__Doc__[[the selected item's index]]
 	property "SelectedIndex" {
 		Set = function(self, index)
 			self:SelectItemByIndex(index)
@@ -1029,11 +913,7 @@ class "List"
 		Type = Number + nil,
 	}
 
-	doc [======[
-		@name ShowTootip
-		@type property
-		@desc whether show tooltip or not
-	]======]
+	__Doc__[[whether show tooltip or not]]
 	property "ShowTootip" {
 		Field = "__ShowTootip",
 		Type = Boolean,

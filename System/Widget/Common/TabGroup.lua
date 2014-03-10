@@ -30,8 +30,7 @@ class "TabGroup"
     ---------------------------------------------------------------------------------------------------------------------------------------
 	--- TabButton is using as button that show on the top of the TabGroup, can only be created by TabGroup
 	-- <br><br>inherit <a href="..\Base\Button.html">Button</a> For all methods, properties and scriptTypes
-	-- @name TabButton
-	-- @class table
+	-- -- @class table
 	-- @field Enabled Whether the TabButton is enabled or not
 	-- @field Selected Whether the TabButton is selected
 	-- @field Text the text that displayed on the TabButton
@@ -100,8 +99,7 @@ class "TabGroup"
 		------------------------------------------------------
 		------------------------------------
 		--- EventType, Run when the TabButton is selected
-		-- @name TabButton:OnTabSelect
-		-- @class function
+		-- -- @class function
 		-- @usage function TabButton:OnTabSelect()<br>
 		--    -- do someting<br>
 		-- end
@@ -113,9 +111,8 @@ class "TabGroup"
 		------------------------------------------------------
 		------------------------------------
 		--- Sets the tabButton's text
-		-- @name TabButton:SetText
-		-- @class function
-		-- @param text the button's text
+		-- -- @class function
+		-- <param name="text">the button's text</param>
 		-- @usage TabButton:SetText("Summary")
 		------------------------------------
 		function SetText(self, text)
@@ -129,9 +126,8 @@ class "TabGroup"
 
 		------------------------------------
 		--- Gets the tabButton's text
-		-- @name TabButton:GetText
-		-- @class function
-		-- @return the button's text
+		-- -- @class function
+		-- <return type="the">button's text</return>
 		-- @usage TabButton:GetText()
 		------------------------------------
 		function GetText(self)
@@ -140,8 +136,7 @@ class "TabGroup"
 
 		------------------------------------
 		--- Select the TabButton
-		-- @name TabButton:Select
-		-- @class function
+		-- -- @class function
 		-- @usage TabButton:Select()
 		------------------------------------
 		function Select(self)
@@ -166,9 +161,8 @@ class "TabGroup"
 
 		------------------------------------
 		--- Whether the TabButton is selected
-		-- @name TabButton:IsSelected
-		-- @class function
-		-- @return true if the TabButton is selected
+		-- -- @class function
+		-- <return type="true">if the TabButton is selected</return>
 		-- @usage TabButton:IsSelected()
 		------------------------------------
 		function IsSelected(self)
@@ -177,8 +171,7 @@ class "TabGroup"
 
 		------------------------------------
 		--- Disable the TabButton
-		-- @name TabButton:Disable
-		-- @class function
+		-- -- @class function
 		-- @usage TabButton:Disable()
 		------------------------------------
 		function Disable(self)
@@ -205,8 +198,7 @@ class "TabGroup"
 
 		------------------------------------
 		--- Enable the TabButton
-		-- @name TabButton:Enable
-		-- @class function
+		-- -- @class function
 		-- @usage TabButton:Enable()
 		------------------------------------
 		function Enable(self)
@@ -216,9 +208,8 @@ class "TabGroup"
 
 		------------------------------------
 		--- Whether the TabButton is enabled
-		-- @name TabButton:IsEnabled
-		-- @class function
-		-- @return true if the TabButton is enabled
+		-- -- @class function
+		-- <return type="true">if the TabButton is enabled</return>
 		-- @usage TabButton:IsEnabled()
 		------------------------------------
 		function IsEnabled(self)
@@ -260,8 +251,7 @@ class "TabGroup"
 
 		--[[----------------------------------
 		--- Adjust the TabButton's container's height
-		-- @name TabButton:FixHeight
-		-- @class function
+		-- -- @class function
 		-- @usage TabButton:FixHeight()
 		------------------------------------
 		function FixHeight(self)
@@ -479,10 +469,9 @@ class "TabGroup"
 	------------------------------------------------------
 	------------------------------------
 	--- EventType, Run when the an Tab is selected
-	-- @name TabGroup:OnTabChange
-	-- @class function
-	-- @param oldTab
-	-- @param newTab
+	-- -- @class function
+	-- <param name="oldTab"></param>
+	-- <param name="newTab"></param>
 	-- @usage function TabGroup:OnTabChange(oldTab, newTab)<br>
 	--    -- do someting<br>
 	-- end
@@ -491,8 +480,7 @@ class "TabGroup"
 
 	------------------------------------
 	--- EventType, Run when an tab is closed
-	-- @name TabGroup:OnTabClose
-	-- @class function
+	-- -- @class function
 	-- @usage function TabGroup:OnTabClose()<br>
 	--    -- do someting<br>
 	-- end
@@ -516,10 +504,9 @@ class "TabGroup"
 
 	------------------------------------
 	--- Add or get a TabButton with the given text
-	-- @name TabGroup:AddTab
-	-- @class function
-	-- @param text the text to be displayed on the TabButton
-	-- @return the TabButton that created
+	-- -- @class function
+	-- <param name="text">the text to be displayed on the TabButton</param>
+	-- <return type="the">TabButton that created</return>
 	-- @usage TabGroup:AddTab("Summary")
 	------------------------------------
 	function AddTab(self, name)
@@ -548,9 +535,8 @@ class "TabGroup"
 
 	------------------------------------
 	--- Remove a TabButton with the given index
-	-- @name TabGroup:RemoveTabByIndex
-	-- @class function
-	-- @param index the index of a Tab Button
+	-- -- @class function
+	-- <param name="index">the index of a Tab Button</param>
 	-- @usage TabGroup:RemoveTabByIndex(1)
 	------------------------------------
 	function RemoveTabByIndex(self, id)
@@ -569,10 +555,9 @@ class "TabGroup"
 
 	------------------------------------
 	--- Get a TabButton with the given index
-	-- @name TabGroup:GetTabByIndex
-	-- @class function
-	-- @param index the index of a Tab Button
-	-- @return the TabButton object
+	-- -- @class function
+	-- <param name="index">the index of a Tab Button</param>
+	-- <return type="the">TabButton object</return>
 	-- @usage TabGroup:GetTabByIndex(1)
 	------------------------------------
 	function GetTabByIndex(self, id)
@@ -592,9 +577,8 @@ class "TabGroup"
 
 	------------------------------------
 	--- Get the select TabButton
-	-- @name TabGroup:GetSelectTab
-	-- @class function
-	-- @return the TabButton object
+	-- -- @class function
+	-- <return type="the">TabButton object</return>
 	-- @usage TabGroup:GetSelectTab()
 	------------------------------------
 	function GetSelectTab(self)
@@ -603,8 +587,7 @@ class "TabGroup"
 
 	------------------------------------
 	--- Show the close button
-	-- @name TabGroup:ShowCloseBtn
-	-- @class function
+	-- -- @class function
 	-- @usage TabGroup:ShowCloseBtn()
 	------------------------------------
 	function ShowCloseBtn(self)
@@ -616,8 +599,7 @@ class "TabGroup"
 
 	------------------------------------
 	--- Hide the close button
-	-- @name TabGroup:HideCloseBtn
-	-- @class function
+	-- -- @class function
 	-- @usage TabGroup:HideCloseBtn()
 	------------------------------------
 	function HideCloseBtn(self)

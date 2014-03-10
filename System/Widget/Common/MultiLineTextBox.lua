@@ -20,16 +20,11 @@ end
 
 _GetCursorPosition = _G.GetCursorPosition
 
+__Doc__[[MultiLineTextBox is used as a multi-line text editor.]]
 class "MultiLineTextBox"
 	inherit "ScrollForm"
 
 	import "System.Threading"
-
-	doc [======[
-		@name MultiLineTextBox
-		@type class
-		@desc MultiLineTextBox is used as a multi-line text editor.
-	]======]
 
 	------------------------------------------------------
 	-- Local Settings
@@ -402,13 +397,10 @@ class "MultiLineTextBox"
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
 
-	doc [======[
-		@name AdjustCursorPosition
-		@type method
-		@desc Set the cursor position without change the operation list
-		@param pos number, the position of the cursor inside the MultiLineTextBox
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the cursor position without change the operation list</desc>
+		<param name="pos">number, the position of the cursor inside the MultiLineTextBox</param>
+	]]
 	function AdjustCursorPosition(self, pos)
 		self.__OldCursorPosition = pos
 		self.__Text:SetCursorPosition(pos)
@@ -1661,537 +1653,396 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnTextChanged
-		@type event
-		@desc Run when the edit box's text is changed
-		@param isUserInput boolean
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's text is changed</desc>
+		<param name="isUserInput">boolean</param>
+	]]
 	event "OnTextChanged"
 
-	doc [======[
-		@name OnCursorChanged
-		@type event
-		@desc Run when the position of the text insertion cursor in the edit box changes
-		@param x number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)
-		@param y number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)
-		@param width number, width of the cursor graphic (in pixels)
-		@param height number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box
-	]======]
+	__Doc__[[
+		<desc>Run when the position of the text insertion cursor in the edit box changes</desc>
+		<param name="x">number, horizontal position of the cursor relative to the top left corner of the edit box (in pixels)</param>
+		<param name="y">number, vertical position of the cursor relative to the top left corner of the edit box (in pixels)</param>
+		<param name="width">number, width of the cursor graphic (in pixels)</param>
+		<param name="height">number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box</param>
+	]]
 	event "OnCursorChanged"
 
-	doc [======[
-		@name OnEditFocusGained
-		@type event
-		@desc Run when the edit box becomes focused for keyboard input
-	]======]
+	__Doc__[[Run when the edit box becomes focused for keyboard input]]
 	event "OnEditFocusGained"
 
-	doc [======[
-		@name OnEditFocusLost
-		@type event
-		@desc Run when the edit box loses keyboard input focus
-	]======]
+	__Doc__[[Run when the edit box loses keyboard input focus]]
 	event "OnEditFocusLost"
 
-	doc [======[
-		@name OnEnterPressed
-		@type event
-		@desc Run when the Enter (or Return) key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Enter (or Return) key is pressed while the edit box has keyboard focus]]
 	event "OnEnterPressed"
 
-	doc [======[
-		@name OnEscapePressed
-		@type event
-		@desc Run when the Escape key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Escape key is pressed while the edit box has keyboard focus]]
 	event "OnEscapePressed"
 
-	doc [======[
-		@name OnInputLanguageChanged
-		@type event
-		@desc Run when the edit box's language input mode changes
-		@param language string, name of the new input language
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's language input mode changes</desc>
+		<param name="language">string, name of the new input language</param>
+	]]
 	event "OnInputLanguageChanged"
 
-	doc [======[
-		@name OnSpacePressed
-		@type event
-		@desc Run when the space bar is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the space bar is pressed while the edit box has keyboard focus]]
 	event "OnSpacePressed"
 
-	doc [======[
-		@name OnTabPressed
-		@type event
-		@desc Run when the Tab key is pressed while the edit box has keyboard focus
-	]======]
+	__Doc__[[Run when the Tab key is pressed while the edit box has keyboard focus]]
 	event "OnTabPressed"
 
-	doc [======[
-		@name OnTextSet
-		@type event
-		@desc Run when the edit box's text is set programmatically
-	]======]
+	__Doc__[[Run when the edit box's text is set programmatically]]
 	event "OnTextSet"
 
-	doc [======[
-		@name OnChar
-		@type event
-		@desc Run for each text character typed in the frame
-		@param char string, the text character typed
-	]======]
+	__Doc__[[
+		<desc>Run for each text character typed in the frame</desc>
+		<param name="char">string, the text character typed</param>
+	]]
 	event "OnChar"
 
-	doc [======[
-		@name OnCharComposition
-		@type event
-		@desc Run when the edit box's input composition mode changes
-		@param text string, The text entered
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's input composition mode changes</desc>
+		<param name="text">string, The text entered</param>
+	]]
 	event "OnCharComposition"
 
-	doc [======[
-		@name OnFunctionKey
-		@type event
-		@desc Run when the edit box's FunctionKey is pressed
-		@param key string, the function key (like 'F5')
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's FunctionKey is pressed</desc>
+		<param name="key">string, the function key (like 'F5')</param>
+	]]
 	event "OnFunctionKey"
 
-	doc [======[
-		@name OnControlKey
-		@type event
-		@desc Run when the edit box's control key is pressed
-		@param text string, The text entered
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's control key is pressed</desc>
+		<param name="text">string, The text entered</param>
+	]]
 	event "OnControlKey"
 
-	doc [======[
-		@name OnOperationListChanged
-		@type event
-		@desc Run when the edit box's operation list is changed
-		@param startp number, the start position
-		@param endp number, the end position
-	]======]
+	__Doc__[[
+		<desc>Run when the edit box's operation list is changed</desc>
+		<param name="startp">number, the start position</param>
+		<param name="endp">number, the end position</param>
+	]]
 	event "OnOperationListChanged"
 
-	doc [======[
-		@name OnDeleteFinished
-		@type event
-		@desc Run when the delete key is up
-	]======]
+	__Doc__[[Run when the delete key is up]]
 	event "OnDeleteFinished"
 
-	doc [======[
-		@name OnBackspaceFinished
-		@type event
-		@desc Run when the backspace key is up
-	]======]
+	__Doc__[[Run when the backspace key is up]]
 	event "OnBackspaceFinished"
 
-	doc [======[
-		@name OnPasting
-		@type event
-		@desc Run when pasting finished
-		@param startp number, the start position
-		@param endp number, the end position
-	]======]
+	__Doc__[[
+		<desc>Run when pasting finished</desc>
+		<param name="startp">number, the start position</param>
+		<param name="endp">number, the end position</param>
+	]]
 	event "OnPasting"
 
-	doc [======[
-		@name OnCut
-		@type event
-		@desc Run when cut finished
-		@param startp number, the start position
-		@param endp number, the end position
-		@param cutText string, the cut text
-	]======]
+	__Doc__[[
+		<desc>Run when cut finished</desc>
+		<param name="startp">number, the start position</param>
+		<param name="endp">number, the end position</param>
+		<param name="cutText">string, the cut text</param>
+	]]
 	event "OnCut"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetFont
-		@type method
-		@desc Returns the font instance's basic font properties
-		@return filename string, path to a font file (string)
-		@return fontHeight number, height (point size) of the font to be displayed (in pixels) (number)
-		@return flags string, additional properties for the font specified by one or more (separated by commas)
-	]======]
+	__Doc__[[
+		<desc>Returns the font instance's basic font properties</desc>
+		<return type="filename">string, path to a font file (string)</return>
+		<return type="fontHeight">number, height (point size) of the font to be displayed (in pixels) (number)</return>
+		<return type="flags">string, additional properties for the font specified by one or more (separated by commas)</return>
+	]]
 	function GetFont(self, ...)
 		return self.__Text:GetFont(...)
 	end
 
-	doc [======[
-		@name GetFontObject
-		@type method
-		@desc Returns the Font object from which the font instance's properties are inherited
-		@return System.Widget.Font the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties
-	]======]
+	__Doc__[[
+		<desc>Returns the Font object from which the font instance's properties are inherited</desc>
+		<return type="System.Widget.Font">the Font object from which the font instance's properties are inherited, or nil if the font instance has no inherited properties</return>
+	]]
 	function GetFontObject(self, ...)
 		return self.__Text:GetFontObject(...)
 	end
 
-	doc [======[
-		@name GetShadowColor
-		@type method
-		@desc Returns the color of the font's text shadow
-		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the color of the font's text shadow</desc>
+		<return type="shadowR">number, Red component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowG">number, Green component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetShadowColor(self, ...)
 		return self.__Text:GetShadowColor(...)
 	end
 
-	doc [======[
-		@name GetShadowOffset
-		@type method
-		@desc Returns the offset of the font instance's text shadow from its text
-		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the offset of the font instance's text shadow from its text</desc>
+		<return type="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</return>
+		<return type="yOffset">number, Vertical distance between the text and its shadow (in pixels)</return>
+	]]
 	function GetShadowOffset(self, ...)
 		return self.__Text:GetShadowOffset(...)
 	end
 
-	doc [======[
-		@name GetSpacing
-		@type method
-		@desc Returns the font instance's amount of spacing between lines
-		@return number amount of space between lines of text (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the font instance's amount of spacing between lines</desc>
+		<return type="number">amount of space between lines of text (in pixels)</return>
+	]]
 	function GetSpacing(self, ...)
 		return self.__Text:GetSpacing(...)
 	end
 
-	doc [======[
-		@name GetTextColor
-		@type method
-		@desc Returns the font instance's default text color
-		@return textR number, Red component of the text color (0.0 - 1.0)
-		@return textG number, Green component of the text color (0.0 - 1.0)
-		@return textB number, Blue component of the text color (0.0 - 1.0)
-		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__[[
+		<desc>Returns the font instance's default text color</desc>
+		<return type="textR">number, Red component of the text color (0.0 - 1.0)</return>
+		<return type="textG">number, Green component of the text color (0.0 - 1.0)</return>
+		<return type="textB">number, Blue component of the text color (0.0 - 1.0)</return>
+		<return type="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 	function GetTextColor(self, ...)
 		return self.__Text:GetTextColor(...)
 	end
 
-	doc [======[
-		@name SetFont
-		@type method
-		@desc Sets the font instance's basic font properties
-		@param filename string, path to a font file
-		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
-		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
-		@return boolean 1 if filename refers to a valid font file; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Sets the font instance's basic font properties</desc>
+		<param name="filename">string, path to a font file</param>
+		<param name="fontHeight">number, height (point size) of the font to be displayed (in pixels)</param>
+		<param name="flags">string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE</param>
+		<return type="boolean">1 if filename refers to a valid font file; otherwise nil</return>
+	]]
 	function SetFont(self, ...)
 		self.__Text:SetFont(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name SetFontObject
-		@type method
-		@desc Sets the Font object from which the font instance's properties are inherited
-		@format fontObject|fontName
-		@param fontObject System.Widget.Font, a font object
-		@param fontName string, global font object's name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the Font object from which the font instance's properties are inherited</desc>
+		<format>fontObject|fontName</format>
+		<param name="fontObject">System.Widget.Font, a font object</param>
+		<param name="fontName">string, global font object's name</param>
+	]]
 	function SetFontObject(self, ...)
 		self.__Text:SetFontObject(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name SetShadowColor
-		@type method
-		@desc Sets the color of the font's text shadow
-		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the color of the font's text shadow</desc>
+		<param name="shadowR">number, Red component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowG">number, Green component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetShadowColor(self, ...)
 		return self.__Text:SetShadowColor(...)
 	end
 
-	doc [======[
-		@name SetShadowOffset
-		@type method
-		@desc Sets the offset of the font instance's text shadow from its text
-		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the offset of the font instance's text shadow from its text</desc>
+		<param name="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</param>
+		<param name="yOffset">number, Vertical distance between the text and its shadow (in pixels)</param>
+	]]
 	function SetShadowOffset(self, ...)
 		return self.__Text:SetShadowOffset(...)
 	end
 
-	doc [======[
-		@name SetSpacing
-		@type method
-		@desc Sets the font instance's amount of spacing between lines
-		@param spacing number, amount of space between lines of text (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the font instance's amount of spacing between lines</desc>
+		<param name="spacing">number, amount of space between lines of text (in pixels)</param>
+	]]
 	function SetSpacing(self, ...)
 		self.__Text:SetSpacing(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name SetTextColor
-		@type method
-		@desc Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance
-		@param textR number, Red component of the text color (0.0 - 1.0)
-		@param textG number, Green component of the text color (0.0 - 1.0)
-		@param textB number, Blue component of the text color (0.0 - 1.0)
-		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the font instance's default text color. This color is used for otherwise unformatted text displayed using the font instance</desc>
+		<param name="textR">number, Red component of the text color (0.0 - 1.0)</param>
+		<param name="textG">number, Green component of the text color (0.0 - 1.0)</param>
+		<param name="textB">number, Blue component of the text color (0.0 - 1.0)</param>
+		<param name="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 	function SetTextColor(self, ...)
 		return self.__Text:SetTextColor(...)
 	end
 
-	doc [======[
-		@name CopyFontObject
-		@type method
-		@desc Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.
-		@format object|name
-		@param object System.Widget.Font, reference to a Font object
-		@param name string, global name of a Font object
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the font's properties to match those of another Font object. Unlike Font:SetFontObject(), this method allows one-time reuse of another font object's properties without continuing to inherit future changes made to the other object's properties.</desc>
+		<format>object|name</format>
+		<param name="object">System.Widget.Font, reference to a Font object</param>
+		<param name="name">string, global name of a Font object</param>
+	]]
 	function CopyFontObject(self, ...)
 		self.__Text:CopyFontObject(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name GetIndentedWordWrap
-		@type method
-		@desc Gets whether long lines of text are indented when wrapping
-		@return boolean
-	]======]
+	__Doc__[[
+		<desc>Gets whether long lines of text are indented when wrapping</desc>
+		<return type="boolean"></return>
+	]]
 	function GetIndentedWordWrap(self, ...)
 		return self.__Text:GetIndentedWordWrap(...)
 	end
 
-	doc [======[
-		@name SetIndentedWordWrap
-		@type method
-		@desc Sets whether long lines of text are indented when wrapping
-		@param boolean
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether long lines of text are indented when wrapping</desc>
+		<param name="boolean"></param>
+	]]
 	function SetIndentedWordWrap(self, ...)
 		self.__Text:SetIndentedWordWrap(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name ClearHistory
-		@type method
-		@desc Clear history
-		@return nil
-	]======]
+	__Doc__[[Clear history]]
 	function ClearHistory(self, ...)
 		return self.__Text:ClearHistory(...)
 	end
 
-	doc [======[
-		@name GetUTF8CursorPosition
-		@type method
-		@desc Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.
-		@return number The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account.
-	]======]
+	__Doc__[[
+		<desc>Returns the cursor's numeric position in the edit box, taking UTF-8 multi-byte character into account. If the EditBox contains multi-byte Unicode characters, the GetCursorPosition() method will not return correct results, as it considers each eight byte character to count as a single glyph.  This method properly returns the position in the edit box from the perspective of the user.</desc>
+		<return type="number">The cursor's numeric position (leftmost position is 0), taking UTF8 multi-byte characters into account.</return>
+	]]
 	function GetUTF8CursorPosition(self, ...)
 		return self.__Text:GetUTF8CursorPosition(...)
 	end
 
-	doc [======[
-		@name IsCountInvisibleLetters
-		@type method
+	__Doc__[[
 		@desc
-		@return boolean
-	]======]
+		<return type="boolean"></return>
+	]]
 	function IsCountInvisibleLetters(self, ...)
 		return self.__Text:IsCountInvisibleLetters(...)
 	end
 
-	doc [======[
-		@name IsInIMECompositionMode
-		@type method
-		@desc Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress
-		@return boolean 1 if the edit box is in IME character composition mode; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the edit box is in Input Method Editor composition mode. Character composition mode is used for input methods in which multiple keypresses generate one printed character. In such input methods, the edit box's OnChar script is run for each keypress</desc>
+		<return type="boolean">1 if the edit box is in IME character composition mode; otherwise nil</return>
+	]]
 	function IsInIMECompositionMode(self, ...)
 		return self.__Text:IsInIMECompositionMode(...)
 	end
 
-	doc [======[
-		@name SetCountInvisibleLetters
-		@type method
-		@desc
-		@param ...
-		@return nil
-	]======]
+	__Doc__[[
+		<param name="..."></param>
+	]]
 	function SetCountInvisibleLetters(self, ...)
 		return self.__Text:SetCountInvisibleLetters(...)
 	end
 
-	doc [======[
-		@name AddHistoryLine
-		@type method
-		@desc Add text to the edit history
-		@param text string, text to be added to the edit box's list of history lines
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Add text to the edit history</desc>
+		<param name="text">string, text to be added to the edit box's list of history lines</param>
+	]]
 	function AddHistoryLine(self, ...)
 		return self.__Text:AddHistoryLine(...)
 	end
 
-	doc [======[
-		@name ClearFocus
-		@type method
-		@desc Releases keyboard input focus from the edit box
-		@return nil
-	]======]
+	__Doc__[[Releases keyboard input focus from the edit box]]
 	function ClearFocus(self, ...)
 		return self.__Text:ClearFocus(...)
 	end
 
-	doc [======[
-		@name GetAltArrowKeyMode
-		@type method
-		@desc Returns whether arrow keys are ignored by the edit box unless the Alt key is held
-		@return boolean 1 if arrow keys are ignored by the edit box unless the Alt key is held; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether arrow keys are ignored by the edit box unless the Alt key is held</desc>
+		<return type="boolean">1 if arrow keys are ignored by the edit box unless the Alt key is held; otherwise nil</return>
+	]]
 	function GetAltArrowKeyMode(self, ...)
 		return self.__Text:GetAltArrowKeyMode(...)
 	end
 
-	doc [======[
-		@name GetBlinkSpeed
-		@type method
-		@desc Returns the rate at which the text insertion blinks when the edit box is focused
-		@return number Amount of time for which the cursor is visible during each "blink" (in seconds)
-	]======]
+	__Doc__[[
+		<desc>Returns the rate at which the text insertion blinks when the edit box is focused</desc>
+		<return type="number">Amount of time for which the cursor is visible during each "blink" (in seconds)</return>
+	]]
 	function GetBlinkSpeed(self, ...)
 		return self.__Text:GetBlinkSpeed(...)
 	end
 
-	doc [======[
-		@name GetCursorPosition
-		@type method
-		@desc Returns the current cursor position inside edit box
-		@return number Current position of the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
-	]======]
+	__Doc__[[
+		<desc>Returns the current cursor position inside edit box</desc>
+		<return type="number">Current position of the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)</return>
+	]]
 	function GetCursorPosition(self, ...)
 		return self.__Text:GetCursorPosition(...)
 	end
 
-	doc [======[
-		@name GetHistoryLines
-		@type method
-		@desc Returns the maximum number of history lines stored by the edit box
-		@return number Maximum number of history lines stored by the edit box
-	]======]
+	__Doc__[[
+		<desc>Returns the maximum number of history lines stored by the edit box</desc>
+		<return type="number">Maximum number of history lines stored by the edit box</return>
+	]]
 	function GetHistoryLines(self, ...)
 		return self.__Text:GetHistoryLines(...)
 	end
 
-	doc [======[
-		@name GetInputLanguage
-		@type method
-		@desc Returns the currently selected keyboard input language (character set / input method). Applies to keyboard input methods, not in-game languages or client locales.
-		@return string the input language
-	]======]
+	__Doc__[[
+		<desc>Returns the currently selected keyboard input language (character set / input method). Applies to keyboard input methods, not in-game languages or client locales.</desc>
+		<return type="string">the input language</return>
+	]]
 	function GetInputLanguage(self, ...)
 		return self.__Text:GetInputLanguage(...)
 	end
 
-	doc [======[
-		@name GetMaxBytes
-		@type method
-		@desc Returns the maximum number of bytes of text allowed in the edit box. Note: Unicode characters may consist of more than one byte each, so the behavior of a byte limit may differ from that of a character limit in practical use.
-		@return number Maximum number of text bytes allowed in the edit box
-	]======]
+	__Doc__[[
+		<desc>Returns the maximum number of bytes of text allowed in the edit box. Note: Unicode characters may consist of more than one byte each, so the behavior of a byte limit may differ from that of a character limit in practical use.</desc>
+		<return type="number">Maximum number of text bytes allowed in the edit box</return>
+	]]
 	function GetMaxBytes(self, ...)
 		return self.__Text:GetMaxBytes(...)
 	end
 
-	doc [======[
-		@name GetMaxLetters
-		@type method
-		@desc Returns the maximum number of text characters allowed in the edit box
-		@return number Maximum number of text characters allowed in the edit box
-	]======]
+	__Doc__[[
+		<desc>Returns the maximum number of text characters allowed in the edit box</desc>
+		<return type="number">Maximum number of text characters allowed in the edit box</return>
+	]]
 	function GetMaxLetters(self, ...)
 		return self.__Text:GetMaxLetters(...)
 	end
 
-	doc [======[
-		@name GetNumLetters
-		@type method
-		@desc Returns the number of text characters in the edit box
-		@return number Number of text characters in the edit box
-	]======]
+	__Doc__[[
+		<desc>Returns the number of text characters in the edit box</desc>
+		<return type="number">Number of text characters in the edit box</return>
+	]]
 	function GetNumLetters(self, ...)
 		return self.__Text:GetNumLetters(...)
 	end
 
-	doc [======[
-		@name GetNumber
-		@type method
-		@desc Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.
-		@return number Contents of the edit box as a number
-	]======]
+	__Doc__[[
+		<desc>Returns the contents of the edit box as a number. Similar to tonumber(editbox:GetText()); returns 0 if the contents of the edit box cannot be converted to a number.</desc>
+		<return type="number">Contents of the edit box as a number</return>
+	]]
 	function GetNumber(self, ...)
 		return self.__Text:GetNumber(...)
 	end
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Returns the edit box's text contents
-		@return string Text contained in the edit box
-	]======]
+	__Doc__[[
+		<desc>Returns the edit box's text contents</desc>
+		<return type="string">Text contained in the edit box</return>
+	]]
 	function GetText(self, ...)
 		return self.__Text:GetText(...)
 	end
 
-	doc [======[
-		@name GetTextInsets
-		@type method
-		@desc Returns the insets from the edit box's edges which determine its interactive text area
-		@return left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-		@return right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-		@return top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-		@return bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-	]======]
+	__Doc__[[
+		<desc>Returns the insets from the edit box's edges which determine its interactive text area</desc>
+		<return type="left">number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)</return>
+		<return type="right">number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)</return>
+		<return type="top">number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)</return>
+		<return type="bottom">number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)</return>
+	]]
 	function GetTextInsets(self, ...)
 		return self.__Text:GetTextInsets(...)
 	end
 
-	doc [======[
-		@name HighlightText
-		@type method
-		@desc Selects all or a portion of the text in the edit box
-		@param start number, character position at which to begin the selection (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified
-		@param end number, character position at which to end the selection; if not specified or if less than start, selects all characters after the start position; if equal to start, selects nothing and positions the cursor at the start position
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Selects all or a portion of the text in the edit box</desc>
+		<param name="start">number, character position at which to begin the selection (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character); defaults to 0 if not specified</param>
+		<param name="end">number, character position at which to end the selection; if not specified or if less than start, selects all characters after the start position; if equal to start, selects nothing and positions the cursor at the start position</param>
+	]]
 	function HighlightText(self, ...)
 		local startp, endp = ...
 
@@ -2216,97 +2067,74 @@ class "MultiLineTextBox"
 		return self.__Text:HighlightText(startp, endp)
 	end
 
-	doc [======[
-		@name Insert
-		@type method
-		@desc Inserts text into the edit box at the current cursor position
-		@param text string, text to be inserted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Inserts text into the edit box at the current cursor position</desc>
+		<param name="text">string, text to be inserted</param>
+	]]
 	function Insert(self, ...)
 		return self.__Text:Insert(...)
 	end
 
-	doc [======[
-		@name IsAutoFocus
-		@type method
-		@desc Returns whether the edit box automatically acquires keyboard input focus
-		@return boolean 1 if the edit box automatically acquires keyboard input focus; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the edit box automatically acquires keyboard input focus</desc>
+		<return type="boolean">1 if the edit box automatically acquires keyboard input focus; otherwise nil</return>
+	]]
 	function IsAutoFocus(self, ...)
 		return self.__Text:IsAutoFocus(...)
 	end
 
-	doc [======[
-		@name IsMultiLine
-		@type method
-		@desc Returns whether the edit box shows more than one line of text
-		@return boolean 1 if the edit box shows more than one line of text; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the edit box shows more than one line of text</desc>
+		<return type="boolean">1 if the edit box shows more than one line of text; otherwise nil</return>
+	]]
 	function IsMultiLine(self, ...)
 		return self.__Text:IsMultiLine(...)
 	end
 
-	doc [======[
-		@name IsNumeric
-		@type method
-		@desc Returns whether the edit box only accepts numeric input
-		@return boolean 1 if only numeric input is allowed; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the edit box only accepts numeric input</desc>
+		<return type="boolean">1 if only numeric input is allowed; otherwise nil</return>
+	]]
 	function IsNumeric(self, ...)
 		return self.__Text:IsNumeric(...)
 	end
 
-	doc [======[
-		@name IsPassword
-		@type method
-		@desc Returns whether the text entered in the edit box is masked
-		@return boolean 1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the text entered in the edit box is masked</desc>
+		<return type="boolean">1 if text entered in the edit box is masked with asterisk characters (*); otherwise nil</return>
+	]]
 	function IsPassword(self, ...)
 		return self.__Text:IsPassword(...)
 	end
 
-	doc [======[
-		@name SetAltArrowKeyMode
-		@type method
-		@desc Sets whether arrow keys are ignored by the edit box unless the Alt key is held
-		@param enable boolean, true to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether arrow keys are ignored by the edit box unless the Alt key is held</desc>
+		<param name="enable">boolean, true to cause the edit box to ignore arrow key presses unless the Alt key is held; false to allow unmodified arrow key presses for cursor movement</param>
+	]]
 	function SetAltArrowKeyMode(self, ...)
 		return self.__Text:SetAltArrowKeyMode(...)
 	end
 
-	doc [======[
-		@name SetAutoFocus
-		@type method
-		@desc Sets whether the edit box automatically acquires keyboard input focus. If auto-focus behavior is enabled, the edit box automatically acquires keyboard focus when it is shown and when no other edit box is focused.
-		@param enable boolean, true to enable the edit box to automatically acquire keyboard input focus; false to disable
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether the edit box automatically acquires keyboard input focus. If auto-focus behavior is enabled, the edit box automatically acquires keyboard focus when it is shown and when no other edit box is focused.</desc>
+		<param name="enable">boolean, true to enable the edit box to automatically acquire keyboard input focus; false to disable</param>
+	]]
 	function SetAutoFocus(self, ...)
 		return self.__Text:SetAutoFocus(...)
 	end
 
-	doc [======[
-		@name SetBlinkSpeed
-		@type method
-		@desc Sets the rate at which the text insertion blinks when the edit box is focused. The speed indicates how long the cursor stays in each state (shown and hidden); e.g. if the blink speed is 0.5 (the default, the cursor is shown for one half second and then hidden for one half second (thus, a one-second cycle); if the speed is 1.0, the cursor is shown for one second and then hidden for one second (a two-second cycle).
-		@param duration number, Amount of time for which the cursor is visible during each "blink" (in seconds)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the rate at which the text insertion blinks when the edit box is focused. The speed indicates how long the cursor stays in each state (shown and hidden); e.g. if the blink speed is 0.5 (the default, the cursor is shown for one half second and then hidden for one half second (thus, a one-second cycle); if the speed is 1.0, the cursor is shown for one second and then hidden for one second (a two-second cycle).</desc>
+		<param name="duration">number, Amount of time for which the cursor is visible during each "blink" (in seconds)</param>
+	]]
 	function SetBlinkSpeed(self, ...)
 		return self.__Text:SetBlinkSpeed(...)
 	end
 
-	doc [======[
-		@name SetCursorPosition
-		@type method
-		@desc Sets the cursor position in the edit box
-		@param position number, new position for the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the cursor position in the edit box</desc>
+		<param name="position">number, new position for the keyboard input cursor (between 0, for the position before the first character, and editbox:GetNumLetters(), for the position after the last character)</param>
+	]]
 	function SetCursorPosition(self, position)
 		if self.__OperationOnLine then
 			SaveOperation(self)
@@ -2315,100 +2143,71 @@ class "MultiLineTextBox"
 		return self.__Text:SetCursorPosition(position)
 	end
 
-	doc [======[
-		@name SetFocus
-		@type method
-		@desc Focuses the edit box for keyboard input. Only one edit box may be focused at a time; setting focus to one edit box will remove it from the currently focused edit box.
-		@return nil
-	]======]
+	__Doc__[[Focuses the edit box for keyboard input. Only one edit box may be focused at a time; setting focus to one edit box will remove it from the currently focused edit box.]]
 	function SetFocus(self, ...)
 		return self.__Text:SetFocus(...)
 	end
 
-	doc [======[
-		@name SetHistoryLines
-		@type method
-		@desc Sets the maximum number of history lines stored by the edit box. Lines of text can be added to the edit box's history by calling :AddHistoryLine(); once added, the user can quickly set the edit box's contents to one of these lines by pressing the up or down arrow keys. (History lines are only accessible via the arrow keys if the edit box is not in multi-line mode.)
-		@param count number, Maximum number of history lines to be stored by the edit box
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the maximum number of history lines stored by the edit box. Lines of text can be added to the edit box's history by calling :AddHistoryLine(); once added, the user can quickly set the edit box's contents to one of these lines by pressing the up or down arrow keys. (History lines are only accessible via the arrow keys if the edit box is not in multi-line mode.)</desc>
+		<param name="count">number, Maximum number of history lines to be stored by the edit box</param>
+	]]
 	function SetHistoryLines(self, ...)
 		return self.__Text:SetHistoryLines(...)
 	end
 
-	doc [======[
-		@name SetMaxBytes
-		@type method
-		@desc Sets the maximum number of bytes of text allowed in the edit box
-		@param maxBytes number, Maximum number of text bytes allowed in the edit box, or 0 for no limit
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the maximum number of bytes of text allowed in the edit box</desc>
+		<param name="maxBytes">number, Maximum number of text bytes allowed in the edit box, or 0 for no limit</param>
+	]]
 	function SetMaxBytes(self, ...)
 		return self.__Text:SetMaxBytes(...)
 	end
 
-	doc [======[
-		@name SetMaxLetters
-		@type method
-		@desc Sets the maximum number of text characters allowed in the edit box.
-		@param maxLetters number, Maximum number of text characters allowed in the edit box, or 0 for no limit
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the maximum number of text characters allowed in the edit box.</desc>
+		<param name="maxLetters">number, Maximum number of text characters allowed in the edit box, or 0 for no limit</param>
+	]]
 	function SetMaxLetters(self, ...)
 		return self.__Text:SetMaxLetters(...)
 	end
 
-	doc [======[
-		@name SetMultiLine
-		@type method
-		@desc Sets whether the edit box shows more than one line of text. When in multi-line mode, the edit box's height is determined by the number of lines shown and cannot be set directly -- enclosing the edit box in a ScrollFrame may prove useful in such cases.
-		@param multiLine boolean, true to allow the edit box to display more than one line of text; false for single-line display
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether the edit box shows more than one line of text. When in multi-line mode, the edit box's height is determined by the number of lines shown and cannot be set directly -- enclosing the edit box in a ScrollFrame may prove useful in such cases.</desc>
+		<param name="multiLine">boolean, true to allow the edit box to display more than one line of text; false for single-line display</param>
+	]]
 	function SetMultiLine(self, ...)
 		error("This editbox must be multi-line", 2)
 	end
 
-	doc [======[
-		@name SetNumber
-		@type method
-		@desc Sets the contents of the edit box to a number
-		@param num number, new numeric content for the edit box
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the contents of the edit box to a number</desc>
+		<param name="num">number, new numeric content for the edit box</param>
+	]]
 	function SetNumber(self, ...)
 		return self.__Text:SetNumber(...)
 	end
 
-	doc [======[
-		@name SetNumeric
-		@type method
-		@desc Sets whether the edit box only accepts numeric input. Note: an edit box in numeric mode <em>only</em> accepts numeral input -- all other characters, including those commonly used in numeric representations (such as ., E, and -) are not allowed.
-		@param enable boolean, true to allow only numeric input; false to allow any text
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether the edit box only accepts numeric input. Note: an edit box in numeric mode <em>only</em> accepts numeral input -- all other characters, including those commonly used in numeric representations (such as ., E, and -) are not allowed.</desc>
+		<param name="enable">boolean, true to allow only numeric input; false to allow any text</param>
+	]]
 	function SetNumeric(self, ...)
 		return self.__Text:SetNumeric(...)
 	end
 
-	doc [======[
-		@name SetPassword
-		@type method
-		@desc Sets whether the text entered in the edit box is masked
-		@param enable boolean, true to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets whether the text entered in the edit box is masked</desc>
+		<param name="enable">boolean, true to mask text entered in the edit box with asterisk characters (*); false to show the actual text entered</param>
+	]]
 	function SetPassword(self, ...)
 		return self.__Text:SetPassword(...)
 	end
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the edit box's text contents
-		@param text string, text to be placed in the edit box
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the edit box's text contents</desc>
+		<param name="text">string, text to be placed in the edit box</param>
+	]]
 	function SetText(self, text)
 		text = tostring(text) or ""
 
@@ -2436,68 +2235,48 @@ class "MultiLineTextBox"
 		AdjustCursorPosition(self, 0)
 	end
 
-	doc [======[
-		@name AdjustText
-		@type method
-		@desc Sets the edit box's text contents without clear the operation list
-		@param text string, text to be placed in the edit box
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the edit box's text contents without clear the operation list</desc>
+		<param name="text">string, text to be placed in the edit box</param>
+	]]
 	function AdjustText(self, text)
 		self.__Text.Text = text
 	end
 
-	doc [======[
-		@name SetTextInsets
-		@type method
-		@desc Sets the insets from the edit box's edges which determine its interactive text area
-		@param left number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)
-		@param right number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)
-		@param top number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)
-		@param bottom number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the insets from the edit box's edges which determine its interactive text area</desc>
+		<param name="left">number, distance from the left edge of the edit box to the left edge of its interactive text area (in pixels)</param>
+		<param name="right">number, distance from the right edge of the edit box to the right edge of its interactive text area (in pixels)</param>
+		<param name="top">number, distance from the top edge of the edit box to the top edge of its interactive text area (in pixels)</param>
+		<param name="bottom">number, distance from the bottom edge of the edit box to the bottom edge of its interactive text area (in pixels)</param>
+	]]
 	function SetTextInsets(self, ...)
 		self.__Text:SetTextInsets(...)
 		Ajust4Font(self)
 	end
 
-	doc [======[
-		@name ToggleInputLanguage
-		@type method
-		@desc Switches the edit box's language input mode. If the edit box is in ROMAN mode and an alternate Input Method Editor composition mode is available (as determined by the client locale and system settings), switches to the alternate input mode. If the edit box is in IME composition mode, switches back to ROMAN.
-		@return nil
-	]======]
+	__Doc__[[Switches the edit box's language input mode. If the edit box is in ROMAN mode and an alternate Input Method Editor composition mode is available (as determined by the client locale and system settings), switches to the alternate input mode. If the edit box is in IME composition mode, switches back to ROMAN.]]
 	function ToggleInputLanguage(self, ...)
 		return self.__Text:ToggleInputLanguage(...)
 	end
 
-	doc [======[
-		@name HasFocus
-		@type method
-		@desc Returns whether the edit box is currently focused for keyboard input
-		@return boolean 1 if the edit box is currently focused for keyboard input; otherwise nil
-	]======]
+	__Doc__[[
+		<desc>Returns whether the edit box is currently focused for keyboard input</desc>
+		<return type="boolean">1 if the edit box is currently focused for keyboard input; otherwise nil</return>
+	]]
 	function HasFocus(self, ...)
 		return self.__Text:HasFocus(...)
 	end
 
-	doc [======[
-		@name CanUndo
-		@type method
-		@desc Whether the MultiLineTextBox has operation can be undo
-		@return boolean true if the MultiLineTextBox can undo operations
-	]======]
+	__Doc__[[
+		<desc>Whether the MultiLineTextBox has operation can be undo</desc>
+		<return type="boolean">true if the MultiLineTextBox can undo operations</return>
+	]]
 	function CanUndo(self)
 		return self.__OperationIndex > 0
 	end
 
-	doc [======[
-		@name Undo
-		@type method
-		@desc Undo the operation
-		@return nil
-	]======]
+	__Doc__[[Undo the operation]]
 	function Undo(self)
 		SaveOperation(self)
 
@@ -2530,22 +2309,15 @@ class "MultiLineTextBox"
 		end
 	end
 
-	doc [======[
-		@name CanRedo
-		@type method
-		@desc Whether the MultiLineTextBox has operation can be redo
-		@return boolean true if the MultiLineTextBox can redo operations
-	]======]
+	__Doc__[[
+		<desc>Whether the MultiLineTextBox has operation can be redo</desc>
+		<return type="boolean">true if the MultiLineTextBox can redo operations</return>
+	]]
 	function CanRedo(self)
 		return self.__OperationIndex < self.__MaxOperationIndex
 	end
 
-	doc [======[
-		@name Redo
-		@type method
-		@desc Redo the operation
-		@return nil
-	]======]
+	__Doc__[[Redo the operation]]
 	function Redo(self)
 		if self.__OperationIndex < self.__MaxOperationIndex then
 			local idx = self.__OperationIndex + 1
@@ -2567,33 +2339,23 @@ class "MultiLineTextBox"
 		end
 	end
 
-	doc [======[
-		@name ResetModifiedState
-		@type method
-		@desc Reset the MultiLineTextBox's modified state
-		@return nil
-	]======]
+	__Doc__[[Reset the MultiLineTextBox's modified state]]
 	function ResetModifiedState(self)
 		self.__DefaultText = self.__Text.Text
 	end
 
-	doc [======[
-		@name IsModified
-		@type method
-		@desc Whether the MultiLineTextBox is modified
-		@return boolean true if the MultiLineTextBox is modified
-	]======]
+	__Doc__[[
+		<desc>Whether the MultiLineTextBox is modified</desc>
+		<return type="boolean">true if the MultiLineTextBox is modified</return>
+	]]
 	function IsModified(self)
 		return self.__DefaultText ~= self.__Text.Text
 	end
 
-	doc [======[
-		@name RegisterControlKey
-		@type method
-		@desc Register a short-key combied with ctrl
-		@param key string, the short key
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Register a short-key combied with ctrl</desc>
+		<param name="key">string, the short key</param>
+	]]
 	function RegisterControlKey(self, key)
 		if type(key) ~= "string" or strlen(key) ~= 1 then
 			error("Usage : MultiLineTextBox:RegisterControlKey(key) - 'key' must be [0-9] or [A-Z], got nil.", 2)
@@ -2609,13 +2371,10 @@ class "MultiLineTextBox"
 		self.__RegisterControl[key] = true
 	end
 
-	doc [======[
-		@name UnRegisterControlKey
-		@type method
-		@desc UnRegister a short-key combied with ctrl
-		@param key string, the short key
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>UnRegister a short-key combied with ctrl</desc>
+		<param name="key">string, the short key</param>
+	]]
 	function UnRegisterControlKey(self, key)
 		if type(key) ~= "string" or strlen(key) ~= 1 then
 			return
@@ -2631,13 +2390,10 @@ class "MultiLineTextBox"
 		self.__RegisterControl[key] = nil
 	end
 
-	doc [======[
-		@name SetTabWidth
-		@type method
-		@desc Set the tabwidth for the MultiLineTextBox
-		@param tabWidth number, the tab's width
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the tabwidth for the MultiLineTextBox</desc>
+		<param name="tabWidth">number, the tab's width</param>
+	]]
 	function SetTabWidth(self, tabWidth)
 		tabWidth = tonumber(tabWidth) and floor(tonumber(tabWidth)) or _TabWidth
 
@@ -2706,33 +2462,23 @@ class "MultiLineTextBox"
 		end
 	end
 
-	doc [======[
-		@name GetTabWidth
-		@type method
-		@desc Get the tabwidth for the MultiLineTextBox
-		@return number the tab's width
-	]======]
+	__Doc__[[
+		<desc>Get the tabwidth for the MultiLineTextBox</desc>
+		<return type="number">the tab's width</return>
+	]]
 	function GetTabWidth(self)
 		return self.__TabWidth or _TabWidth
 	end
 
-	doc [======[
-		@name ClearAutoCompleteList
-		@type method
-		@desc Clear the auto complete list
-		@return nil
-	]======]
+	__Doc__[[Clear the auto complete list]]
 	function ClearAutoCompleteList(self)
 		wipe(self.AutoCompleteList)
 	end
 
-	doc [======[
-		@name InsertAutoCompleteWord(self, word)
-		@type method
-		@desc Insert word to the auto complete list
-		@param word string, the world that need for auto complete
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Insert word to the auto complete list</desc>
+		<param name="word">string, the world that need for auto complete</param>
+	]]
 	function InsertAutoCompleteWord(self, word)
 		if type(word) == "string" and strtrim(word) ~= "" then
 			word = strtrim(word)
@@ -2752,11 +2498,7 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Font
-		@type property
-		@desc the font's defined table, contains font path, height and flags' settings
-	]======]
+	__Doc__[[the font's defined table, contains font path, height and flags' settings]]
 	property "Font" {
 		Get = function(self)
 			return self.__Text.Font
@@ -2769,22 +2511,14 @@ class "MultiLineTextBox"
 		Type = FontType,
 	}
 
-	doc [======[
-		@name FontObject
-		@type property
-		@desc the Font object
-	]======]
+	__Doc__[[the Font object]]
 	property "FontObject" {
 		Get = "GetFontObject",
 		Set = "SetFontObject",
 		Type = Font + String + nil,
 	}
 
-	doc [======[
-		@name ShadowColor
-		@type property
-		@desc the color of the font's text shadow
-	]======]
+	__Doc__[[the color of the font's text shadow]]
 	property "ShadowColor" {
 		Get = function(self)
 			return ColorType(self:GetShadowColor())
@@ -2795,11 +2529,7 @@ class "MultiLineTextBox"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name ShadowOffset
-		@type property
-		@desc the offset of the fontstring's text shadow from its text
-	]======]
+	__Doc__[[the offset of the fontstring's text shadow from its text]]
 	property "ShadowOffset" {
 		Get = function(self)
 			return Dimension(self:GetShadowOffset())
@@ -2810,22 +2540,14 @@ class "MultiLineTextBox"
 		Type = Dimension,
 	}
 
-	doc [======[
-		@name Spacing
-		@type property
-		@desc the fontstring's amount of spacing between lines
-	]======]
+	__Doc__[[the fontstring's amount of spacing between lines]]
 	property "Spacing" {
 		Get = "GetSpacing",
 		Set = "SetSpacing",
 		Type = Number,
 	}
 
-	doc [======[
-		@name TextColor
-		@type property
-		@desc the fontstring's default text color
-	]======]
+	__Doc__[[the fontstring's default text color]]
 	property "TextColor" {
 		Get = function(self)
 			return ColorType(self:GetTextColor())
@@ -2836,55 +2558,35 @@ class "MultiLineTextBox"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name Numeric
-		@type property
-		@desc true if the edit box only accepts numeric input
-	]======]
+	__Doc__[[true if the edit box only accepts numeric input]]
 	property "Numeric" {
 		Set = "SetNumeric",
 		Get = "IsNumeric",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Password
-		@type property
-		@desc true if the text entered in the edit box is masked
-	]======]
+	__Doc__[[true if the text entered in the edit box is masked]]
 	property "Password" {
 		Set = "SetPassword",
 		Get = "IsPassword",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name AutoFocus
-		@type property
-		@desc true if the edit box automatically acquires keyboard input focus
-	]======]
+	__Doc__[[true if the edit box automatically acquires keyboard input focus]]
 	property "AutoFocus" {
 		Set = "SetAutoFocus",
 		Get = "IsAutoFocus",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name HistoryLines
-		@type property
-		@desc the maximum number of history lines stored by the edit box
-	]======]
+	__Doc__[[the maximum number of history lines stored by the edit box]]
 	property "HistoryLines" {
 		Set = "HistoryLines",
 		Get = "GetHistoryLines",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Focused
-		@type property
-		@desc true if the edit box is currently focused
-	]======]
+	__Doc__[[true if the edit box is currently focused]]
 	property "Focused" {
 		Set = function(self, focus)
 			if focus then
@@ -2897,88 +2599,56 @@ class "MultiLineTextBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name AltArrowKeyMode
-		@type property
-		@desc true if the arrow keys are ignored by the edit box unless the Alt key is held
-	]======]
+	__Doc__[[true if the arrow keys are ignored by the edit box unless the Alt key is held]]
 	property "AltArrowKeyMode" {
 		Set = "SetAltArrowKeyMode",
 		Get = "GetAltArrowKeyMode",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name BlinkSpeed
-		@type property
-		@desc the rate at which the text insertion blinks when the edit box is focused
-	]======]
+	__Doc__[[the rate at which the text insertion blinks when the edit box is focused]]
 	property "BlinkSpeed" {
 		Set = "SetBlinkSpeed",
 		Get = "GetBlinkSpeed",
 		Type = Number,
 	}
 
-	doc [======[
-		@name CursorPosition
-		@type property
-		@desc the current cursor position inside edit box
-	]======]
+	__Doc__[[the current cursor position inside edit box]]
 	property "CursorPosition" {
 		Set = "SetCursorPosition",
 		Get = "GetCursorPosition",
 		Type = Number,
 	}
 
-	doc [======[
-		@name MaxBytes
-		@type property
-		@desc the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)
-	]======]
+	__Doc__[[the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)]]
 	property "MaxBytes" {
 		Set = "SetMaxBytes",
 		Get = "GetMaxBytes",
 		Type = Number,
 	}
 
-	doc [======[
-		@name MaxLetters
-		@type property
-		@desc the maximum number of text characters allowed in the edit box
-	]======]
+	__Doc__[[the maximum number of text characters allowed in the edit box]]
 	property "MaxLetters" {
 		Set = "SetMaxLetters",
 		Get = "GetMaxLetters",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Number
-		@type property
-		@desc the contents of the edit box as a number
-	]======]
+	__Doc__[[the contents of the edit box as a number]]
 	property "Number" {
 		Set = "SetNumber",
 		Get = "GetNumber",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the edit box's text contents
-	]======]
+	__Doc__[[the edit box's text contents]]
 	property "Text" {
 		Set = "SetText",
 		Get = "GetText",
 		Type = String,
 	}
 
-	doc [======[
-		@name TextInsets
-		@type property
-		@desc the insets from the edit box's edges which determine its interactive text area
-	]======]
+	__Doc__[[the insets from the edit box's edges which determine its interactive text area]]
 	property "TextInsets" {
 		Set = function(self, RectInset)
 			self:SetTextInsets(RectInset.left, RectInset.right, RectInset.top, RectInset.bottom)
@@ -2991,11 +2661,7 @@ class "MultiLineTextBox"
 		Type = Inset,
 	}
 
-	doc [======[
-		@name Editable
-		@type property
-		@desc true if the edit box is editable
-	]======]
+	__Doc__[[true if the edit box is editable]]
 	property "Editable" {
 		Set = function(self, flag)
 			self.MouseEnabled = flag
@@ -3015,11 +2681,7 @@ class "MultiLineTextBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowLineNumber
-		@type property
-		@desc Whether show line number or not
-	]======]
+	__Doc__[[Whether show line number or not]]
 	property "ShowLineNumber" {
 		Set = function(self, flag)
 			self.__LineNum.Visible = flag
@@ -3035,22 +2697,14 @@ class "MultiLineTextBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name TabWidth
-		@type property
-		@desc The tab's width
-	]======]
+	__Doc__[[The tab's width]]
 	property "TabWidth" {
 		Get = "GetTabWidth",
 		Set = "SetTabWidth",
 		Type = Number + nil,
 	}
 
-	doc [======[
-		@name AutoCompleteList
-		@type property
-		@desc The auto complete list like {"if", "then", "else"}
-	]======]
+	__Doc__[[The auto complete list like {"if", "then", "else"}]]
 	property "AutoCompleteList" {
 		Get = function(self)
 			self.__AutoCompleteList = self.__AutoCompleteList or {}

@@ -8,24 +8,17 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.RaidRosterIcon", version) then
 	return
 end
 
+__Doc__[[The raid roster indicator]]
 class "RaidRosterIcon"
 	inherit "Texture"
 	extend "IFRaidRoster"
-
-	doc [======[
-		@name RaidRosterIcon
-		@type class
-		@desc The raid roster indicator
-	]======]
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	-- -- ------------------------------------
 	function Refresh(self)
 		if IsInRaid() and self.Unit and not UnitHasVehicleUI(self.Unit) then
 			if GetPartyAssignment('MAINTANK', self.Unit) then

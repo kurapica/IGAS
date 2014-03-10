@@ -22,15 +22,12 @@ function _IFLeaderUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFLeader is used to handle the unit leader state's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the leader indicator should be shown</overridable>
+]]
 interface "IFLeader"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFLeader
-		@type interface
-		@desc IFLeader is used to handle the unit leader state's updating
-		@overridable Visible property, boolean, used to receive the result that whether the leader indicator should be shown
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -39,12 +36,6 @@ interface "IFLeader"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		local unit = self.Unit
 		self.Visible = unit and (UnitInParty(unit) or UnitInRaid(unit)) and UnitIsGroupLeader(unit)

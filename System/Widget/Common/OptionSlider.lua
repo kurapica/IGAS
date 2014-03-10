@@ -11,14 +11,9 @@ if not IGAS:NewAddon("IGAS.Widget.OptionSlider", version) then
 	return
 end
 
+__Doc__[[OptionSlider is using to make settings in numbers]]
 class "OptionSlider"
 	inherit "Frame"
-
-	doc [======[
-		@name OptionSlider
-		@type class
-		@desc OptionSlider is using to make settings in numbers
-	]======]
 
 	GameTooltip = IGAS.GameTooltip
 
@@ -56,34 +51,27 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnMinMaxChanged
-		@type event
-		@desc Run when the option slider's minimum and maximum values change
-		@param min number, minimum value of the option slider
-		@param max number, maximum value of the option slider
-	]======]
+	__Doc__[[
+		<desc>Run when the option slider's minimum and maximum values change</desc>
+		<param name="min">number, minimum value of the option slider</param>
+		<param name="max">number, maximum value of the option slider</param>
+	]]
 	event "OnMinMaxChanged"
 
-	doc [======[
-		@name OnValueChanged
-		@type event
-		@desc Run when the option slider's value changes
-		@param value number, value of the option slider
-	]======]
+	__Doc__[[
+		<desc>Run when the option slider's value changes</desc>
+		<param name="value">number, value of the option slider</param>
+	]]
 	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetMinMaxValues
-		@type method
-		@desc Sets the minimum and maximum values for the slider
-		@param minValue number, lower boundary for values represented by the slider position (number)
-		@param maxValue number, upper boundary for values represented by the slider position (number)
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the minimum and maximum values for the slider</desc>
+		<param name="minValue">number, lower boundary for values represented by the slider position (number)</param>
+		<param name="maxValue">number, upper boundary for values represented by the slider position (number)</param>
+	]]
 	function SetMinMaxValues(self, minV, maxV)
 		self = self:GetChild("Slider")
 
@@ -108,11 +96,7 @@ class "OptionSlider"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ThumbTexture
-		@type property
-		@desc the texture object for the slider thumb
-	]======]
+	__Doc__[[the texture object for the slider thumb]]
 	property "ThumbTexture" {
 		Get = function(self)
 			return self:GetChild("Slider").ThumbTexture
@@ -123,11 +107,7 @@ class "OptionSlider"
 		Type = Texture + nil,
 	}
 
-	doc [======[
-		@name ThumbTexturePath
-		@type property
-		@desc the texture file path for the slider thumb
-	]======]
+	__Doc__[[the texture file path for the slider thumb]]
 	property "ThumbTexturePath" {
 		Get = function(self)
 			return self:GetChild("Slider").ThumbTexturePath
@@ -138,11 +118,7 @@ class "OptionSlider"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name Layer
-		@type property
-		@desc the layer used for drawing the filled-in portion of the slider
-	]======]
+	__Doc__[[the layer used for drawing the filled-in portion of the slider]]
 	property "Layer" {
 		Get = function(self)
 			return self:GetChild("Slider").Layer
@@ -153,11 +129,7 @@ class "OptionSlider"
 		Type = DrawLayer,
 	}
 
-	doc [======[
-		@name Value
-		@type property
-		@desc the value representing the current position of the slider thumb
-	]======]
+	__Doc__[[the value representing the current position of the slider thumb]]
 	property "Value" {
 		Get = function(self)
 			return self:GetChild("Slider").Value
@@ -168,11 +140,7 @@ class "OptionSlider"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Enabled
-		@type property
-		@desc whether user interaction with the slider is allowed
-	]======]
+	__Doc__[[whether user interaction with the slider is allowed]]
 	property "Enabled" {
 		Get = function(self)
 			return self:GetChild("Slider").Enabled
@@ -183,11 +151,7 @@ class "OptionSlider"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name MinMaxValue
-		@type property
-		@desc the minimum and maximum values of the slider bar
-	]======]
+	__Doc__[[the minimum and maximum values of the slider bar]]
 	property "MinMaxValue" {
 		Get = function(self)
 			return self:GetChild("Slider").MinMaxValue
@@ -198,11 +162,7 @@ class "OptionSlider"
 		Type = MinMax,
 	}
 
-	doc [======[
-		@name ValueStep
-		@type property
-		@desc the minimum increment between allowed slider values
-	]======]
+	__Doc__[[the minimum increment between allowed slider values]]
 	property "ValueStep" {
 		Get = function(self)
 			return self:GetChild("Slider"):GetValueStep()
@@ -233,11 +193,7 @@ class "OptionSlider"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Title
-		@type property
-		@desc the text to be diplayed at the topleft of the slide bar
-	]======]
+	__Doc__[[the text to be diplayed at the topleft of the slide bar]]
 	property "Title" {
 		Set = function(self, title)
 			self:GetChild("Title").Text = title
@@ -256,11 +212,7 @@ class "OptionSlider"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name TooltipText
-		@type property
-		@desc the tooltip to be shown when mouse is over the silder bar
-	]======]
+	__Doc__[[the tooltip to be shown when mouse is over the silder bar]]
 	property "TooltipText" {
 		Set = function(self, text)
 			if type(text) == "string" and text ~= "" then
@@ -277,11 +229,7 @@ class "OptionSlider"
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name TooltipAnchor
-		@type property
-		@desc the tooltip's position
-	]======]
+	__Doc__[[the tooltip's position]]
 	property "TooltipAnchor" {
 		Set = function(self, anchor)
 			self:GetChild("Slider").__TooltipAnchor = anchor

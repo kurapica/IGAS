@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.HiddenManaBar", version) then
 	return
 end
 
+__Doc__[[The mana bar shown for druid and monk when the unit's power type is not mana]]
 class "HiddenManaBar"
 	inherit "StatusBar"
 	extend "IFMana"
-
-	doc [======[
-		@name HiddenManaBar
-		@type class
-		@desc The mana bar shown for druid and monk when the unit's power type is not mana
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

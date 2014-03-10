@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.AssistantIcon", version) then
 	return
 end
 
+__Doc__[[The assistant icon]]
 class "AssistantIcon"
 	inherit "Texture"
 	extend "IFAssistant"
-
-	doc [======[
-		@name AssistantIcon
-		@type class
-		@desc The assistant icon
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

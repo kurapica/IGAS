@@ -21,14 +21,9 @@ function _IFRaidRosterUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[IFRaidRoster is used to handle the unit raid roster state's updating]]
 interface "IFRaidRoster"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFRaidRoster
-		@type interface
-		@desc IFRaidRoster is used to handle the unit raid roster state's updating
-	]======]
 
 	------------------------------------------------------
 	-- Event

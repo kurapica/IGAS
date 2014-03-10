@@ -8,14 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.StatusText", version) then
 	return
 end
 
+__Doc__[[The fontstring used to display status value]]
 class "StatusText"
 	inherit "FontString"
-
-	doc [======[
-		@name StatusText
-		@type class
-		@desc The fontstring used to display status value
-	]======]
 
 	abs = math.abs
 
@@ -34,12 +29,7 @@ class "StatusText"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name RefreshStatus
-		@type method
-		@desc Refresh the status, overridable
-		@return nil
-	]======]
+	__Doc__[[Refresh the status, overridable]]
 	function RefreshStatus(self)
 		if self.__Value then
 			if self.__ShowPercent and self.__Max then
@@ -68,13 +58,10 @@ class "StatusText"
 		end
 	end
 
-	doc [======[
-		@name SetValue
-		@type method
-		@desc Sets the value of the fontstring
-		@param value number, the value
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the value of the fontstring</desc>
+		<param name="value">number, the value</param>
+		]]
 	function SetValue(self, value)
 		if type(value) == "number" and value >= 0 then
 			self.__Value = value
@@ -82,36 +69,29 @@ class "StatusText"
 		end
 	end
 
-	doc [======[
-		@name GetValue
-		@type method
-		@desc Gets the value of the fontstring
-		@return number
-	]======]
+	__Doc__[[
+		<desc>Gets the value of the fontstring</desc>
+		<return type="number"></return>
+	]]
 	function GetValue(self)
 		return self.__Value or 0
 	end
 
-	doc [======[
-		@name SetMinMaxValues
-		@type method
-		@desc Sets the minimum and maximum values for the fontstring
-		@param min number, lower boundary for the values
-		@param max number, upper boundary for the values
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the minimum and maximum values for the fontstring</desc>
+		<param name="min">number, lower boundary for the values</param>
+		<param name="max">number, upper boundary for the values</param>
+		]]
 	function SetMinMaxValues(self, min, max)
 		self.__Min, self.__Max = min, max
 		return self:RefreshStatus()
 	end
 
-	doc [======[
-		@name GetMinMaxValues
-		@type method
-		@desc Gets the minimum and maximum values
-		@return min number, the lower boundary for the values
-		@return max number, the upper boundary for the values
-	]======]
+	__Doc__[[
+		<desc>Gets the minimum and maximum values</desc>
+		<return type="min">number, the lower boundary for the values</return>
+		<return type="max">number, the upper boundary for the values</return>
+	]]
 	function GetMinMaxValues(self)
 		return self.__Min, self.__Max
 	end
@@ -119,11 +99,7 @@ class "StatusText"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ValueFormat
-		@type property
-		@desc The display value format, default "%.2f"
-	]======]
+	__Doc__[[The display value format, default "%.2f"]]
 	property "ValueFormat" {
 		Get = function(self)
 			return self.__ValueFormat or "%.2f"
@@ -134,11 +110,7 @@ class "StatusText"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name MinMaxValue
-		@type property
-		@desc The minimum and maximum values
-	]======]
+	__Doc__[[The minimum and maximum values]]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())
@@ -149,11 +121,7 @@ class "StatusText"
 		Type = System.MinMax,
 	}
 
-	doc [======[
-		@name Value
-		@type property
-		@desc The fontstring's value
-	]======]
+	__Doc__[[The fontstring's value]]
 	property "Value" {
 		Get = function(self)
 			return self:GetValue()
@@ -164,11 +132,7 @@ class "StatusText"
 		Type = System.Number,
 	}
 
-	doc [======[
-		@name ShowLost
-		@type property
-		@desc Whether show lost value
-	]======]
+	__Doc__[[Whether show lost value]]
 	property "ShowLost" {
 		Get = function(self)
 			return self.__ShowLost
@@ -182,11 +146,7 @@ class "StatusText"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name ShowMax
-		@type property
-		@desc Whether show the max value
-	]======]
+	__Doc__[[Whether show the max value]]
 	property "ShowMax" {
 		Get = function(self)
 			return self.__ShowMax
@@ -200,11 +160,7 @@ class "StatusText"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name MaxFormat
-		@type property
-		@desc The display format when ShowMax is true, default "%s / %s"
-	]======]
+	__Doc__[[The display format when ShowMax is true, default "%s / %s"]]
 	property "MaxFormat" {
 		Get = function(self)
 			return self.__MaxFormat or "%s / %s"
@@ -215,11 +171,7 @@ class "StatusText"
 		Type = System.String + nil,
 	}
 
-	doc [======[
-		@name ShowPercent
-		@type property
-		@desc Whether show percent format
-	]======]
+	__Doc__[[Whether show percent format]]
 	property "ShowPercent" {
 		Get = function(self)
 			return self.__ShowPercent
@@ -233,11 +185,7 @@ class "StatusText"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name PercentFormat
-		@type property
-		@desc The display format when ShowPercent is true, default "%d%%"
-	]======]
+	__Doc__[[The display format when ShowPercent is true, default "%d%%"]]
 	property "PercentFormat" {
 		Get = function(self)
 			return self.__PercentFormat or "%d%%"
@@ -255,42 +203,26 @@ class "StatusText"
 	end
 endclass "StatusText"
 
+__Doc__[[The status text for health]]
 class "HealthText"
 	inherit "StatusText"
 	extend "IFHealth"
-	doc [======[
-		@name HealthText
-		@type class
-		@desc The status text for health
-	]======]
 endclass "HealthText"
 
+__Doc__[[The status text for frequent health]]
 class "HealthTextFrequent"
 	inherit "StatusText"
 	extend "IFHealthFrequent"
-	doc [======[
-		@name HealthTextFrequent
-		@type class
-		@desc The status text for frequent health
-	]======]
 endclass "HealthTextFrequent"
 
+__Doc__[[The status text for power]]
 class "PowerText"
 	inherit "StatusText"
 	extend "IFPower"
-	doc [======[
-		@name PowerText
-		@type class
-		@desc The status text for power
-	]======]
 endclass "PowerText"
 
+__Doc__[[The status text for frequent power]]
 class "PowerTextFrequent"
 	inherit "StatusText"
 	extend "IFPowerFrequent"
-	doc [======[
-		@name PowerTextFrequent
-		@type class
-		@desc The status text for frequent power
-	]======]
 endclass "PowerTextFrequent"

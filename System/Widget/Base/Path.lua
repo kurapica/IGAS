@@ -8,42 +8,29 @@ if not IGAS:NewAddon("IGAS.Widget.Path", version) then
 	return
 end
 
+__Doc__[[Path is an Animation type that  combines multiple transitions into a single control path with multiple ControlPoints.]]
 class "Path"
 	inherit "Animation"
-
-	doc [======[
-		@name Path
-		@type class
-		@desc Path is an Animation type that  combines multiple transitions into a single control path with multiple ControlPoints.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name CreateControlPoint
-		@type method
-		@desc Creates a new control point for the given path
-		@format [name [, template [, order]]]
-		@param name string, the name of the object
-		@param template string, the template from which the new point should inherit
-		@param order number, the order of the new control point
-		@return System.Widget.ControlPoint Reference to the new control point object
-	]======]
+	__Doc__[[
+		<desc>Creates a new control point for the given path</desc>
+		<format>[name [, template [, order] ] ]</format>
+		<param name="name">string, the name of the object</param>
+		<param name="template">string, the template from which the new point should inherit</param>
+		<param name="order">number, the order of the new control point</param>
+		<return type="System.Widget.ControlPoint">Reference to the new control point object</return>
+	]]
 	function CreateControlPoint(self, name, ...)
 		return ControlPoint(name, self, ...)
 	end
 
-	doc [======[
-		@name GetControlPoints
-		@type method
-		@desc Returns the control points that belong to a given path
-		@return ...  A list of ControlPoint objects that belong to the given path.
-	]======]
+	__Doc__[[
+		<desc>Returns the control points that belong to a given path</desc>
+		<return type="..."> A list of ControlPoint objects that belong to the given path.</return>
+	]]
 	function GetControlPoints(self)
 		local lst = {IGAS:GetUI(self):GetControlPoints()}
 
@@ -54,27 +41,20 @@ class "Path"
 		return unpack(lst)
 	end
 
-	doc [======[
-		@name GetMaxOrder
-		@type method
-		@desc Returns the maximum order of the control points belonging to a given path
-		@return number The maximum order of the control points belonging to the given path.
-	]======]
+	__Doc__"GetMaxOrder" [[
+		<desc>Returns the maximum order of the control points belonging to a given path</desc>
+		<return type="number">The maximum order of the control points belonging to the given path.</return>
+	]]
 
-	doc [======[
-		@name SetCurve
-		@type method
-		@desc Sets the curve type for the path animation
-		@param curveType string, NONE | SMOOTH
-		@return nil
-	]======]
+	__Doc__"SetCurve" [[
+		<desc>Sets the curve type for the path animation</desc>
+		<param name="curveType">string, NONE | SMOOTH</param>
+	]]
 
-	doc [======[
-		@name GetCurve
-		@type method
-		@desc Returns the curveType of the given path
-		@return curveType string, NONE | SMOOTH
-	]======]
+	__Doc__"GetCurve" [[
+		<desc>Returns the curveType of the given path</desc>
+		<return type="curveType">string, NONE | SMOOTH</return>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -97,62 +77,39 @@ class "Path"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Curve
-		@type property
-		@desc The curveType of the given path
-	]======]
+	__Doc__[[The curveType of the given path]]
 	property "Curve" { Type = AnimCurveType }
 
 endclass "Path"
 
+__Doc__[[A special type of UIObject that represent a point in a Path Animation.]]
 class "ControlPoint"
 	inherit "UIObject"
-
-	doc [======[
-		@name ControlPoint
-		@type class
-		@desc A special type of UIObject that represent a point in a Path Animation.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetOffset
-		@type method
-		@desc Sets the offset for the control point
-		@param xOffset numner, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
-		@param yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
-		@return nil
-	]======]
+	__Doc__"SetOffset" [[
+		<desc>Sets the offset for the control point</desc>
+		<param name="xOffset">numner, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration</param>
+		<param name="yOffset">number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration</param>
+	]]
 
-	doc [======[
-		@name GetOffset
-		@type method
-		@desc Gets the offset for the control point
-		@return xOffset number, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration
-		@return yOffset number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration
-	]======]
+	__Doc__"GetOffset" [[
+		<desc>Gets the offset for the control point</desc>
+		<return type="xOffset">number, Distance away from the left edge of the screen (in pixels) to move the region over the animation's duration</return>
+		<return type="yOffset">number, Distance away from the bottom edge of the screen (in pixels) to move the region over the animation's duration</return>
+	]]
 
-	doc [======[
-		@name SetOrder
-		@type method
-		@desc Sets the order for control point to play within its parent group.
-		@param order number, position at which the animation should play relative to others in its group (between 0 and 100)
-		@return nil
-	]======]
+	__Doc__"SetOrder" [[
+		<desc>Sets the order for control point to play within its parent group.</desc>
+		<param name="order">number, position at which the animation should play relative to others in its group (between 0 and 100)</param>
+	]]
 
-	doc [======[
-		@name GetOrder
-		@type method
-		@desc Returns the order of control point within its parent group.
-		@return number Position at which the animation will play relative to others in its group (between 0 and 100)
-	]======]
+	__Doc__"GetOrder" [[
+		<desc>Returns the order of control point within its parent group.</desc>
+		<return type="number">Position at which the animation will play relative to others in its group (between 0 and 100)</return>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -174,11 +131,7 @@ class "ControlPoint"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Offset
-		@type property
-		@desc the control point offsets
-	]======]
+	__Doc__[[the control point offsets]]
 	property "Offset" {
 		Get = function(self)
 			return Dimension(elf:GetOffset())
@@ -189,11 +142,7 @@ class "ControlPoint"
 		Type = Dimension,
 	}
 
-	doc [======[
-		@name Order
-		@type property
-		@desc Position at which the animation will play relative to others in its group (between 0 and 100)
-	]======]
+	__Doc__[[Position at which the animation will play relative to others in its group (between 0 and 100)]]
 	property "Order" { Type = Number }
 
 endclass "ControlPoint"

@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ClassIcon", version) then
 	return
 end
 
+__Doc__[[The unit's class icon]]
 class "ClassIcon"
 	inherit "Texture"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name ClassIcon
-		@type property
-		@desc The unit's class icon
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -25,12 +20,7 @@ class "ClassIcon"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc Refresh the unit's class icon
-		@return nil
-	]======]
+	__Doc__[[Refresh the unit's class icon]]
 	function Refresh(self)
 		local cls = self.Unit and (select(2, UnitClassBase(self.Unit)))
 		if cls then

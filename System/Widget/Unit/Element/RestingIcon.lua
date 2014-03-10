@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.RestingIcon", version) then
 	return
 end
 
+__Doc__[[The resting indicator]]
 class "RestingIcon"
 	inherit "Texture"
 	extend "IFResting"
-
-	doc [======[
-		@name RestingIcon
-		@type class
-		@desc The resting indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

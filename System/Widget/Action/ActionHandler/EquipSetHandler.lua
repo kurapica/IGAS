@@ -121,11 +121,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name EquipmentSet
-		@type property
-		@desc The action button's content if its type is 'equipmentset'
-	]======]
+	__Doc__[[The action button's content if its type is 'equipmentset']]
 	property "EquipmentSet" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "equipmentset" and self:GetAttribute("equipmentset") or nil

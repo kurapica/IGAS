@@ -51,43 +51,25 @@ enum "Sex" {
 	["3"] = "Female",
 }
 
+__Doc__[[IFUnitElement is the root interface for the unit system, contains several useful definitions]]
 interface "IFUnitElement"
-	doc [======[
-		@name IFUnitElement
-		@type interface
-		@desc IFUnitElement is the root interface for the unit system, contains several useful definitions
-		@overridable Refresh method, used to refresh the element
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnUnitChanged
-		@type event
-		@desc Fired when the object's unit is changed
-	]======]
+	__Doc__[[Fired when the object's unit is changed]]
 	event "OnUnitChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default Refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[Refresh the element, overridable]]
+	__Optional__()
 	function Refresh(self)
 		-- need override
 	end
 
-	doc [======[
-		@name Activate
-		@type method
-		@desc Activate the unit element
-		@return nil
-	]======]
+	__Doc__[[Activate the unit element]]
 	function Activate(self)
 		if self.__IFUnitElement_Deactivated then
 			local unit = type(self.__IFUnitElement_Deactivated) == "string" and self.__IFUnitElement_Deactivated or nil
@@ -104,12 +86,7 @@ interface "IFUnitElement"
 		end
 	end
 
-	doc [======[
-		@name Deactivate
-		@type method
-		@desc Deactivate the unit element
-		@return nil
-	]======]
+	__Doc__[[Deactivate the unit element]]
 	function Deactivate(self)
 		if not self.__IFUnitElement_Deactivated then
 			local unit = self.Unit
@@ -126,11 +103,7 @@ interface "IFUnitElement"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Activated
-		@type property
-		@desc Whether the unit element is activated
-	]======]
+	__Doc__[[Whether the unit element is activated]]
 	property "Activated" {
 		Get = function(self)
 			return not self.__IFUnitElement_Deactivated
@@ -145,11 +118,7 @@ interface "IFUnitElement"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Unit
-		@type property
-		@desc The object's unit
-	]======]
+	__Doc__[[The object's unit]]
 	property "Unit" {
 		Field = "__IFUnitElement_Unit",
 		Set = function(self, unit)

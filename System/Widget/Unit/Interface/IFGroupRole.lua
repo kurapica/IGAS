@@ -22,14 +22,9 @@ function _IFGroupRoleUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[IFGroupRole is used to handle group role's updating]]
 interface "IFGroupRole"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFGroupRole
-		@type interface
-		@desc IFGroupRole is used to handle group role's updating
-	]======]
 
 	------------------------------------------------------
 	-- Event

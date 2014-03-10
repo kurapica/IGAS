@@ -475,11 +475,9 @@ endstruct "MiniMapPosition"
 ------------------------------------------------------
 ------------------------------------
 --- Get the true frame of a IGAS frame
--- @name IGAS:GetUI
--- @class function
--- @param frame the IGAS frame
--- @return the true frame of the IGAS frame
--- @usage IGAS:GetUI(MyFrame1)
+-- <param name="frame">the IGAS frame</param>
+-- <return type="the">true frame of the IGAS frame</return>
+-- <usage>IGAS:GetUI(MyFrame1)</usage>
 ------------------------------------
 function IGAS:GetUI(frame)
 	if frame == nil or type(frame) ~= "table" then
@@ -491,11 +489,9 @@ end
 
 ------------------------------------
 --- Get the IGAS frame of a frame
--- @name IGAS:GetWrapper
--- @class function
--- @param frame the frame
--- @return the IGAS frame of the frame
--- @usage IGAS:GetWrapper(UIParent)
+-- <param name="frame">the frame</param>
+-- <return type="the">IGAS frame of the frame</return>
+-- <usage>IGAS:GetWrapper(UIParent)</usage>
 ------------------------------------
 function IGAS:GetWrapper(frame)
 	if type(frame) ~= "table" or type(frame[0]) ~= "userdata" then
@@ -532,11 +528,9 @@ _G = _G
 
 ------------------------------------
 --- Get the IGAS frame for the full name
--- @name GetFrame
--- @class function
--- @param name
--- @return frame
--- @usage IGAS:GetFrame("IGAS.UIParent.TestForm.Label")
+-- <param name="name"></param>
+-- <return type="frame"></return>
+-- <usage>IGAS:GetFrame("IGAS.UIParent.TestForm.Label")</usage>
 ------------------------------------
 function IGAS:GetFrame(name)
 	local ret = _G

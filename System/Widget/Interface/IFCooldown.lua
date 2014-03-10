@@ -8,22 +8,16 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldown", version) then
 	return
 end
 
+__Doc__[[IFCooldown provide a root interface for cooldown features]]
 interface "IFCooldown"
-	doc [======[
-		@name IFCooldown
-		@type interface
-		@desc IFCooldown provide a root interface for cooldown features
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnCooldownUpdate
-		@type event
-		@desc Fired when the object's cooldown need update
-		@param start number, the start time of the cooldown
-		@param duration number, the duration of the cooldown
-	]======]
+	__Doc__[[
+		<desc>Fired when the object's cooldown need update</desc>
+		<param name="start">number, the start time of the cooldown</param>
+		<param name="duration">number, the duration of the cooldown</param>
+	]]
 	event "OnCooldownUpdate"
 endinterface "IFCooldown"

@@ -21,15 +21,12 @@ function _IFTargetUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
+__Doc__[[
+	<desc>IFTarget is used to check whether the unit is the target</desc>
+	<overridable name="IsTarget" type="property" valuetype="boolean">which used to receive the check result</overridable>
+]]
 interface "IFTarget"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFTarget
-		@type interface
-		@desc IFTarget is used to check whether the unit is the target
-		@overridable IsTarget property, boolean, which used to receive the check result
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -38,12 +35,6 @@ interface "IFTarget"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.IsTarget = self.Unit and UnitExists('target') and UnitIsUnit(self.Unit, 'target')
 	end

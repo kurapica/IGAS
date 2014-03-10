@@ -8,14 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldownIndicator", version) then
 	return
 end
 
+__Doc__[[IFCooldownLabel is used to provide a CooldownIndicator to display the cooldown]]
 interface "IFCooldownIndicator"
 	extend "IFCooldown"
-
-	doc [======[
-		@name IFCooldownIndicator
-		@type interface
-		@desc IFCooldownLabel is used to provide a CooldownIndicator to display the cooldown
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -24,13 +19,10 @@ interface "IFCooldownIndicator"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetUpCooldownIndicator
-		@type method
-		@desc Custom the cooldown indicator
-		@param indicator System.Widget.Cooldown
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Custom the cooldown indicator</desc>
+		<param name="indicator">System.Widget.Cooldown</param>
+	]]
 	function SetUpCooldownIndicator(self, indicator)
 		indicator:SetAllPoints(self)
 	end

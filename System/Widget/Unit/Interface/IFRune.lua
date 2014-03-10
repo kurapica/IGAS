@@ -68,19 +68,18 @@ function UpdatePower(self, index, isEnergize)
 	end
 end
 
+__Doc__[[
+	<desc>IFRune is used to handle the unit's rune power's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the check result that whether the rune power should be shown</overridable>
+	<usage>
+		For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
+			RuneType property, number, the rune's type
+			Ready property, boolean, whether the rune is Ready
+			Energize property, boolean, whether the rune is energized
+	</usage>
+]]
 interface "IFRune"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFRune
-		@type interface
-		@desc IFRune is used to handle the unit's rune power's updating
-		@overridable Visible property, boolean, used to receive the check result that whether the rune power should be shown
-		@usage For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
-		<br><br>RuneType property, number, the rune's type
-		<br><br>Ready property, boolean, whether the rune is Ready
-		<br><br>Energize property, boolean, whether the rune is energized
-	]======]
 
 	MAX_RUNES = MAX_RUNES
 
@@ -91,12 +90,7 @@ interface "IFRune"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		for i = 1, MAX_RUNES do
 			UpdatePowerType(self, i)

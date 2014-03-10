@@ -8,14 +8,9 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldownStatus", version) then
 	return
 end
 
+__Doc__[[IFCooldownLabel is used to provide a StatusBar to display the cooldown]]
 interface "IFCooldownStatus"
 	extend "IFCooldown"
-
-	doc [======[
-		@name IFCooldownStatus
-		@type interface
-		@desc IFCooldownLabel is used to provide a StatusBar to display the cooldown
-	]======]
 
 	_Update_Interval = 0.02
 	_MinMax = MinMax(0, 100)
@@ -27,13 +22,10 @@ interface "IFCooldownStatus"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetUpCooldownStatus
-		@type method
-		@desc Custom the status bar
-		@param status System.Widget.StatusBar
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Custom the status bar</desc>
+		<param name="status">System.Widget.StatusBar</param>
+	]]
 	function SetUpCooldownStatus(self, status)
 		status:SetPoint("TOPLEFT", self, "TOPRIGHT")
 		status:SetPoint("BOTTOMLEFT", self, "BOTTOMRIGHT")
@@ -49,11 +41,7 @@ interface "IFCooldownStatus"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFCooldownStatusReverse
-		@type property
-		@desc Whether the status bar is reversed
-	]======]
+	__Doc__[[Whether the status bar is reversed]]
 	property "IFCooldownStatusReverse" {
 		Get = function(self)
 			return self.__IFCooldownStatusReverse
@@ -64,11 +52,7 @@ interface "IFCooldownStatus"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name IFCooldownStatusAlwaysShow
-		@type property
-		@desc Whether always show the status bar
-	]======]
+	__Doc__[[Whether always show the status bar]]
 	property "IFCooldownStatusAlwaysShow" {
 		Get = function(self)
 			return self.__IFCooldownStatusAlwaysShow

@@ -12,14 +12,9 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroup", version) then
 	return
 end
 
+__Doc__[[Common features for unit group and pet group]]
 interface "IFGroup"
 	extend "IFSecurePanel"
-
-	doc [======[
-		@name IFGroup
-		@type interface
-		@desc Common features for unit group and pet group
-	]======]
 
 	enum "GroupType" {
 		"NONE",
@@ -96,11 +91,7 @@ interface "IFGroup"
 		inherit "Frame"
 		extend "IFSecureHandler"
 
-		doc [======[
-			@name ShadowGroupHeader
-			@type class
-			@desc Used to handle the refresh in shadow
-		]======]
+		__Doc__[[Used to handle the refresh in shadow]]
 
 		_InitHeader = [=[
 			Manager = self
@@ -346,12 +337,7 @@ interface "IFGroup"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name Refresh
-			@type method
-			@desc The default refresh method
-			@return nil
-		]======]
+		__Doc__[[The default refresh method]]
 		function Refresh(self)
 			if self.Visible and not InCombatLockdown() then
 				-- Well, it's ugly
@@ -360,23 +346,13 @@ interface "IFGroup"
 			end
 		end
 
-		doc [======[
-			@name RegisterUnitFrame
-			@type method
-			@desc Register an unit frame
-			@return nil
-		]======]
+		__Doc__[[Register an unit frame]]
 		function RegisterUnitFrame(self, frame)
 			self:SetFrameRef("UnitFrame", frame)
 			self:Execute(_RegisterUnitFrame)
 		end
 
-		doc [======[
-			@name Activate
-			@type method
-			@desc Activate the unit panel
-			@return nil
-		]======]
+		__Doc__[[Activate the unit panel]]
 		function Activate(self)
 			if not self.Visible then
 				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
@@ -385,12 +361,7 @@ interface "IFGroup"
 			end
 		end
 
-		doc [======[
-			@name Deactivate
-			@type method
-			@desc Deactivate the unit panel
-			@return nil
-		]======]
+		__Doc__[[Deactivate the unit panel]]
 		function Deactivate(self)
 			if self.Visible then
 				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
@@ -399,13 +370,10 @@ interface "IFGroup"
 			end
 		end
 
-		doc [======[
-			@name SetShowDeadOnly
-			@type method
-			@desc Set whether only show dead players
-			@param flag
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Set whether only show dead players</desc>
+			<param name="flag"></param>
+			]]
 		function SetShowDeadOnly(self, flag)
 			flag = flag and true or false
 
@@ -418,12 +386,10 @@ interface "IFGroup"
 			end
 		end
 
-		doc [======[
-			@name IsShowDeadOnly
-			@type method
-			@desc Whether only show the dead players
-			@return boolean true if only show dead players
-		]======]
+		__Doc__[[
+			<desc>Whether only show the dead players</desc>
+			<return type="boolean">true if only show dead players</return>
+		]]
 		function IsShowDeadOnly(self)
 			return self:GetAttribute("showDeadOnly") and true or false
 		end
@@ -431,11 +397,7 @@ interface "IFGroup"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Activated
-			@type property
-			@desc Whether the unit panel is activated
-		]======]
+		__Doc__[[Whether the unit panel is activated]]
 		property "Activated" {
 			Get = function(self)
 				return self.Visible
@@ -450,11 +412,7 @@ interface "IFGroup"
 			Type = Boolean,
 		}
 
-		doc [======[
-			@name ShowDeadOnly
-			@type property
-			@desc Whether only show the dead players
-		]======]
+		__Doc__[[Whether only show the dead players]]
 		property "ShowDeadOnly" {
 			Get = "IsShowDeadOnly",
 			Set = "SetShowDeadOnly",
@@ -560,12 +518,7 @@ interface "IFGroup"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method
-		@return nil
-	]======]
+	__Doc__[[The default refresh method]]
 	function Refresh(self)
 		if InCombatLockdown() then return end
 
@@ -574,35 +527,22 @@ interface "IFGroup"
 		return self:UpdatePanelSize()
 	end
 
-	doc [======[
-		@name InitWithCount
-		@type method
-		@desc Init the unit panel with a unit count
-		@param count number, the units count
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Init the unit panel with a unit count</desc>
+		<param name="count">number, the units count</param>
+		]]
 	function InitWithCount(self, count)
 		IFNoCombatTaskHandler._RegisterNoCombatTask(function()
 			self.Count = count
 		end)
 	end
 
-	doc [======[
-		@name Activate
-		@type method
-		@desc Activate the unit panel
-		@return nil
-	]======]
+	__Doc__[[Activate the unit panel]]
 	function Activate(self)
 		self.GroupHeader:Activate()
 	end
 
-	doc [======[
-		@name Deactivate
-		@type method
-		@desc Deactivate the unit panel
-		@return nil
-	]======]
+	__Doc__[[Deactivate the unit panel]]
 	function Deactivate(self)
 		self.GroupHeader:Deactivate()
 	end
@@ -610,11 +550,7 @@ interface "IFGroup"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Activated
-		@type property
-		@desc Whether the unit panel is activated
-	]======]
+	__Doc__[[Whether the unit panel is activated]]
 	property "Activated" {
 		Get = function(self)
 			return self.GroupHeader.Activated
@@ -629,11 +565,7 @@ interface "IFGroup"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name ShowRaid
-		@type property
-		@desc Whether the panel should be shown while in a raid
-	]======]
+	__Doc__[[Whether the panel should be shown while in a raid]]
 	property "ShowRaid" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("showRaid") or false
@@ -644,11 +576,7 @@ interface "IFGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name ShowParty
-		@type property
-		@desc Whether the panel should be shown while in a party and not in a raid
-	]======]
+	__Doc__[[Whether the panel should be shown while in a party and not in a raid]]
 	property "ShowParty" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("showParty") or false
@@ -659,11 +587,7 @@ interface "IFGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name ShowPlayer
-		@type property
-		@desc Whether the panel should show the player while not in a raid
-	]======]
+	__Doc__[[Whether the panel should show the player while not in a raid]]
 	property "ShowPlayer" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("showPlayer") or false
@@ -674,11 +598,7 @@ interface "IFGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name ShowSolo
-		@type property
-		@desc Whether the panel should be shown while not in a group
-	]======]
+	__Doc__[[Whether the panel should be shown while not in a group]]
 	property "ShowSolo" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("showSolo") or false
@@ -689,11 +609,7 @@ interface "IFGroup"
 		Type = System.Boolean,
 	}
 
-	doc [======[
-		@name GroupFilter
-		@type property
-		@desc A list of raid group numbers, used as the filter settings and order settings(if GroupBy is "GROUP")
-	]======]
+	__Doc__[[A list of raid group numbers, used as the filter settings and order settings(if GroupBy is "GROUP")]]
 	property "GroupFilter" {
 		Get = function(self)
 			return self.__GroupFilter
@@ -712,11 +628,7 @@ interface "IFGroup"
 		Type = GroupFilter + nil,
 	}
 
-	doc [======[
-		@name ClassFilter
-		@type property
-		@desc A list of uppercase class names, used as the filter settings and order settings(if GroupBy is "CLASS")
-	]======]
+	__Doc__[[A list of uppercase class names, used as the filter settings and order settings(if GroupBy is "CLASS")]]
 	property "ClassFilter" {
 		Get = function(self)
 			return self.__ClassFilter
@@ -735,11 +647,7 @@ interface "IFGroup"
 		Type = ClassFilter + nil,
 	}
 
-	doc [======[
-		@name RoleFilter
-		@type property
-		@desc A list of uppercase role names, used as the filter settings and order settings(if GroupBy is "ROLE")
-	]======]
+	__Doc__[[A list of uppercase role names, used as the filter settings and order settings(if GroupBy is "ROLE")]]
 	property "RoleFilter" {
 		Get = function(self)
 			return self.__RoleFilter
@@ -758,11 +666,7 @@ interface "IFGroup"
 		Type = RoleFilter + nil,
 	}
 
-	doc [======[
-		@name GroupBy
-		@type property
-		@desc Specifies a "grouping" type to apply before regular sorting (Default: nil)
-	]======]
+	__Doc__[[Specifies a "grouping" type to apply before regular sorting (Default: nil)]]
 	property "GroupBy" {
 		Get = function(self)
 			return self.__GroupBy or "NONE"
@@ -779,11 +683,7 @@ interface "IFGroup"
 		Type = GroupType,
 	}
 
-	doc [======[
-		@name SortBy
-		@type property
-		@desc Defines how the group is sorted (Default: "INDEX")
-	]======]
+	__Doc__[[Defines how the group is sorted (Default: "INDEX")]]
 	property "SortBy" {
 		Get = function(self)
 			return self.GroupHeader:GetAttribute("sortMethod") or "INDEX"
@@ -794,22 +694,14 @@ interface "IFGroup"
 		Type = SortType,
 	}
 
-	doc [======[
-		@name GroupHeader
-		@type property
-		@desc The group header based on the blizzard's SecureGroupHeader
-	]======]
+	__Doc__[[The group header based on the blizzard's SecureGroupHeader]]
 	property "GroupHeader" {
 		Get = function(self)
 			return self:GetChild("ShadowGroupHeader") or ShadowGroupHeader("ShadowGroupHeader", self, "SecureGroupHeaderTemplate")
 		end,
 	}
 
-	doc [======[
-		@name ShowDeadOnly
-		@type property
-		@desc Whether only show the dead players
-	]======]
+	__Doc__[[Whether only show the dead players]]
 	property "ShowDeadOnly" {
 		Get = function(self)
 			return self.GroupHeader.ShowDeadOnly

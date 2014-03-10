@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.OtherHealPredictionBar", version) then
 	return
 end
 
+__Doc__[[The prediction heal of the other players]]
 class "OtherHealPredictionBar"
 	inherit "StatusBar"
 	extend "IFOtherHealPrediction"
-
-	doc [======[
-		@name OtherHealPredictionBar
-		@type class
-		@desc The prediction heal of the other players
-	]======]
 
 	_OtherHealPredictionBarMap = _OtherHealPredictionBarMap or setmetatable({}, {__mode = "kv"})
 
@@ -32,11 +27,7 @@ class "OtherHealPredictionBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HealthBar
-		@type property
-		@desc The target health bar the prediction bar should attach to
-	]======]
+	__Doc__[[The target health bar the prediction bar should attach to]]
 	property "HealthBar" {
 		Field = "__HealthBar",
 		Set = function(self, value)

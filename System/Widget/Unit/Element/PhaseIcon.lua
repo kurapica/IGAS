@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PhaseIcon", version) then
 	return
 end
 
+__Doc__[[The phase indicator]]
 class "PhaseIcon"
 	inherit "Texture"
 	extend "IFPhase"
-
-	doc [======[
-		@name PhaseIcon
-		@type class
-		@desc The phase indicator
-	]======]
 
 	------------------------------------------------------
 	-- Event

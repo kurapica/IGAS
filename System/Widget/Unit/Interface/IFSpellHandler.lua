@@ -612,50 +612,30 @@ do
 	end
 end
 
------------------------------------------------
---- IFSpellHandler
--- @type interface
--- @name IFSpellHandler
--- Usage
---
--- IFSpellHandler._Group("GroupA").Target.Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").Focus.Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").Assist.Key = "ctrl-f"
---
--- IFSpellHandler._Group("GroupA").Spell("Holy Light").Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").MacroText("/cast Holy Light").Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").Spell("Holy Light").WithTarget.Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").Spell("Holy Light").AsHelpful.WithTarget.Key = "ctrl-f"
--- IFSpellHandler._Group("GroupA").Spell("Holy Light", "target", false).Key = "ctrl-f"
------------------------------------------------
-interface "IFSpellHandler"
-	doc [======[
-		@name IFSpellHandler
-		@type interface
-		@desc IFSpellHandler provides hover and click spell casting for secure unit frames
-		@overridable IFSpellHandlerGroup property, string, used to mark the unit frame object into a group with the same behavior
-		@usage For a group named 'GroupA', it's easy to set or clear binding keys like :
-		<br>
-		<br>IFSpellHandler._Group("GroupA").Target.Key = "ctrl-f"
-		<br>IFSpellHandler._Group("GroupA").Focus.Key = "ctrl-f"
-		<br>IFSpellHandler._Group("GroupA").Assist.Key = "ctrl-f"
-		<br>
-		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").Key = "ctrl-f"
-		<br>IFSpellHandler._Group("GroupA").MacroText("/cast Holy Light").Key = "ctrl-f"
-		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").WithTarget.Key = "ctrl-f"
-		<br>IFSpellHandler._Group("GroupA").Spell("Holy Light").AsHelpful.WithTarget.Key = "ctrl-f"
-		<br>
-		<br>IFSpellHandler._Group("GroupA"):Clear("ctrl-f")
-	]======]
 
+__Doc__[[
+	<desc>IFSpellHandler provides hover and click spell casting for secure unit frames</desc>
+	<overridable name="IFSpellHandlerGroup" type="property" valuetype="string">used to mark the unit frame object into a group with the same behavior</overridable>
+	<usage>
+		For a group named 'GroupA', it's easy to set or clear binding keys like :
+
+			IFSpellHandler._Group("GroupA").Target.Key = "ctrl-f"
+			IFSpellHandler._Group("GroupA").Focus.Key = "ctrl-f"
+			IFSpellHandler._Group("GroupA").Assist.Key = "ctrl-f"
+
+			IFSpellHandler._Group("GroupA").Spell("Holy Light").Key = "ctrl-f"
+			IFSpellHandler._Group("GroupA").MacroText("/cast Holy Light").Key = "ctrl-f"
+			IFSpellHandler._Group("GroupA").Spell("Holy Light").WithTarget.Key = "ctrl-f"
+			IFSpellHandler._Group("GroupA").Spell("Holy Light").AsHelpful.WithTarget.Key = "ctrl-f"
+
+			IFSpellHandler._Group("GroupA"):Clear("ctrl-f")
+	</usage>
+]]
+interface "IFSpellHandler"
+
+	__Doc__[[SpellHandlerGroup object is the manager for the binding key settings in a group]]
 	class "SpellHandlerGroup"
 		inherit "System.Object"
-
-		doc [======[
-			@name SpellHandlerGroup
-			@type class
-			@desc SpellHandlerGroup object is the manager for the binding key settings in a group
-		]======]
 
 		_IFSpellHandler_SpellHandlerGroup = _IFSpellHandler_SpellHandlerGroup or {}
 
@@ -685,12 +665,8 @@ interface "IFSpellHandler"
 			HelpWith = ActionWith + nil
 		endstruct "KeySet"
 
+		__Doc__[[DataAccessor is a helper class to the SpellHandlerGroup to access the binding settings]]
 		class "DataAccessor"
-			doc [======[
-				@name DataAccessor
-				@type class
-				@desc DataAccessor is a helper class to the SpellHandlerGroup to access the binding settings
-			]======]
 
 			------------------------------------------------------
 			-- Event
@@ -703,22 +679,14 @@ interface "IFSpellHandler"
 			------------------------------------------------------
 			-- Property
 			------------------------------------------------------
-			doc [======[
-				@name Group
-				@type property
-				@desc The group's name
-			]======]
+			__Doc__[[The group's name]]
 			property "Group" {
 				Get = function(self)
 					return self.__GroupHandler.Group
 				end,
 			}
 
-			doc [======[
-				@name Type
-				@type property
-				@desc The binding setting's type
-			]======]
+			__Doc__[[The binding setting's type]]
 			property "Type" {
 				Get = function(self)
 					return self.__AccessType
@@ -734,11 +702,7 @@ interface "IFSpellHandler"
 				Type = System.String,
 			}
 
-			doc [======[
-				@name AsHarmful
-				@type property
-				@desc Mark the setting is for harmful target
-			]======]
+			__Doc__[[Mark the setting is for harmful target]]
 			property "AsHarmful" {
 				Get = function(self)
 					self.__AccessHarmful = true
@@ -746,11 +710,7 @@ interface "IFSpellHandler"
 				end,
 			}
 
-			doc [======[
-				@name AsHelpful
-				@type property
-				@desc Mark the setting is for helpful target
-			]======]
+			__Doc__[[Mark the setting is for helpful target]]
 			property "AsHelpful" {
 				Get = function(self)
 					self.__AccessHarmful = false
@@ -758,11 +718,7 @@ interface "IFSpellHandler"
 				end,
 			}
 
-			doc [======[
-				@name WithTarget
-				@type property
-				@desc Mark the setting is combined with 'target' command
-			]======]
+			__Doc__[[Mark the setting is combined with 'target' command]]
 			property "WithTarget" {
 				Get = function(self)
 					self.__AccessWith = "target"
@@ -770,11 +726,7 @@ interface "IFSpellHandler"
 				end,
 			}
 
-			doc [======[
-				@name WithFocus
-				@type property
-				@desc Mark the setting is combined with 'focus' command
-			]======]
+			__Doc__[[Mark the setting is combined with 'focus' command]]
 			property "WithFocus" {
 				Get = function(self)
 					self.__AccessWith = "focus"
@@ -782,11 +734,7 @@ interface "IFSpellHandler"
 				end,
 			}
 
-			doc [======[
-				@name WithAssist
-				@type property
-				@desc Mark the setting is combined with 'assist' command
-			]======]
+			__Doc__[[Mark the setting is combined with 'assist' command]]
 			property "WithAssist" {
 				Get = function(self)
 					self.__AccessWith = "assist"
@@ -794,22 +742,14 @@ interface "IFSpellHandler"
 				end,
 			}
 
-			doc [======[
-				@name With
-				@type property
-				@desc Get the with settings for the binding setting
-			]======]
+			__Doc__[[Get the with settings for the binding setting]]
 			property "With" {
 				Get = function(self)
 					return select(2, GetBindingDB(self.Group, self.__AccessType, self.__AccessContent))
 				end,
 			}
 
-			doc [======[
-				@name Key
-				@type property
-				@desc The binding key for the setting
-			]======]
+			__Doc__[[The binding key for the setting]]
 			property "Key" {
 				Get = function(self)
 					return GetBindingDB(self.Group, self.__AccessType, self.__AccessContent)
@@ -953,45 +893,26 @@ interface "IFSpellHandler"
 		------------------------------------------------------
 		-- Event
 		------------------------------------------------------
-		doc [======[
-			@name OnSettingUpdate
-			@type event
-			@desc Fired when the settings is updateds
-		]======]
+		__Doc__[[Fired when the settings is updateds]]
 		event "OnSettingUpdate"
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name Clear
-			@type method
-			@desc Clear the settings
-			@return nil
-		]======]
+		__Doc__[[Clear the settings]]
 		function Clear(self, key)
 			if ClearBindingDB4Key(self.Group, key) then
 				self:Fire("OnSettingUpdate")
 			end
 		end
 
-		doc [======[
-			@name BeginUpdate
-			@type method
-			@desc Begin update settings and block script OnSettingUpdate
-			@return nil
-		]======]
+		__Doc__[[Begin update settings and block script OnSettingUpdate]]
 		function BeginUpdate(self)
 			self:BlockEvent("OnSettingUpdate")
 			self.__BackUp = CopyData(_DBChar[self.Group])
 		end
 
-		doc [======[
-			@name CommitUpdate
-			@type method
-			@desc Commit the changes and un-block script OnSettingUpdate
-			@return nil
-		]======]
+		__Doc__[[Commit the changes and un-block script OnSettingUpdate]]
 		function CommitUpdate(self)
 			if self.__BackUp then
 				self:UnBlockEvent("OnSettingUpdate")
@@ -1004,12 +925,7 @@ interface "IFSpellHandler"
 			end
 		end
 
-		doc [======[
-			@name CancelUpdate
-			@type method
-			@desc Cancel the changes and un-block script OnSettingUpdate
-			@return nil
-		]======]
+		__Doc__[[Cancel the changes and un-block script OnSettingUpdate]]
 		function CancelUpdate(self)
 			if self.__BackUp then
 				_DBChar[self.Group] = self.__BackUp
@@ -1019,23 +935,19 @@ interface "IFSpellHandler"
 			end
 		end
 
-		doc [======[
-			@name Export
-			@type method
-			@desc Export settings
-			@return table the settings
-		]======]
+		__Doc__[[
+			<desc>Export settings</desc>
+			<return type="table">the settings</return>
+		]]
 		function Export(self)
 			return CopyData(_DBChar[self.Group])
 		end
 
-		doc [======[
-			@name Import
-			@type method
-			@desc Import settings
-			@param set table, the key settings
-			@return boolean true if success
-		]======]
+		__Doc__[[
+			<desc>Import settings</desc>
+			<param name="set">table, the key settings</param>
+			<return type="boolean">true if success</return>
+		]]
 		function Import(self, set)
 			if type(set) == "table" and next(set) then
 				local result = {}
@@ -1071,11 +983,7 @@ interface "IFSpellHandler"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Group
-			@type property
-			@desc The group name
-		]======]
+		__Doc__[[The group name]]
 		property "Group" {
 			Get = function(self)
 				return self.__Group
@@ -1084,11 +992,9 @@ interface "IFSpellHandler"
 
 		-- Generate propeties based on the action types
 		for key in pairs(_IFSPellHandler_ActionType) do
-			doc (([======[
-				@name %s
-				@type property
-				@desc Get the data accessor of the '%s' action type
-			]======]):format(key, key))
+			__Doc__ (([[
+				<desc>Get the data accessor of the '%s' action type</desc>
+			]]):format(key, key))
 			property (key) {
 				Get = function(self)
 					self.__Accessor.Type = key
@@ -1153,13 +1059,11 @@ interface "IFSpellHandler"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name _Group
-		@type method
-		@desc Get the group setting object
-		@param group string, the group's name
-		@return System.Widget.Unit.IFSpellHandler.SpellHandlerGroup
-	]======]
+	__Doc__[[
+		<desc>Get the group setting object</desc>
+		<param name="group">string, the group's name</param>
+		<return type="System.Widget.Unit.IFSpellHandler.SpellHandlerGroup"></return>
+	]]
 	function _Group(group)
 		if group and type(group) ~= "string" then
 			return nil
@@ -1167,12 +1071,10 @@ interface "IFSpellHandler"
 		return SpellHandlerGroup(group)
 	end
 
-	doc [======[
-		@name _GetGroupList
-		@type method
-		@desc Get the all groups's name
-		@return table the name list
-	]======]
+	__Doc__[[
+		<desc>Get the all groups's name</desc>
+		<return type="table">the name list</return>
+	]]
 	function _GetGroupList(tbl)
 		local ret = type(tbl) == "table" and tbl or {}
 
@@ -1188,11 +1090,7 @@ interface "IFSpellHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFSpellHandlerGroup
-		@type property
-		@desc The object's group name, overridable
-	]======]
+	__Doc__[[The object's group name, overridable]]
 	property "IFSpellHandlerGroup" {
 		Get = function(self)
 			return _GlobalGroup

@@ -13,75 +13,50 @@ end
 
 _SetPortraitTexture = SetPortraitTexture
 
+__Doc__[[Texture is used to display pic or color]]
 class "Texture"
 	inherit "LayeredRegion"
-
-	doc [======[
-		@name Texture
-		@type class
-		@desc Texture is used to display pic or color
-		@format name, [parent], [layer], [inherits], [sublevel]
-		@param name string, the texture's name, access by it's parent
-		@param parent widgetObejct, the texture's parent, default UIParent
-		@param layer System.Widget.DrawLayer, Graphic layer on which to create the texture; defaults to ARTWORK if not specified
-		@param inherits string, Name of a template from which the new texture should inherit
-		@param sublevel number, The sub-level on the given graphics layer ranging from -8 to 7. The default value of this argument is 0
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetBlendMode
-		@type method
-		@desc Returns the blend mode of the texture
-		@return System.Widget.AlphaMode
-	]======]
+	__Doc__"GetBlendMode" [[
+		<desc>Returns the blend mode of the texture</desc>
+		<return type="System.Widget.AlphaMode"></return>
+	]]
 
-	doc [======[
-		@name GetHorizTile
-		@type method
+	__Doc__"GetHorizTile" [[
 		@desc
-		@return boolean
-	]======]
+		<return type="boolean"></return>
+	]]
 
-	doc [======[
-		@name GetNonBlocking
-		@type method
-		@desc Returns whether the texture object loads its image file in the background
-		@return boolean 1 if the texture object loads its image file in the background
-	]======]
+	__Doc__"GetNonBlocking" [[
+		<desc>Returns whether the texture object loads its image file in the background</desc>
+		<return type="boolean">1 if the texture object loads its image file in the background</return>
+	]]
 
-	doc [======[
-		@name GetTexCoord
-		@type method
-		@desc Returns corner coordinates for scaling or cropping the texture image
-		@return ULx number, Upper left corner X position, as a fraction of the image's width from the left
-		@return ULy number, Upper left corner Y position, as a fraction of the image's height from the top
-		@return LLx number, Lower left corner X position, as a fraction of the image's width from the left
-		@return LLy number, Lower left corner Y position, as a fraction of the image's height from the top
-		@return URx number, Upper right corner X position, as a fraction of the image's width from the left
-		@return URy number, Upper right corner Y position, as a fraction of the image's height from the top
-		@return LRx number, Lower right corner X position, as a fraction of the image's width from the left
-		@return LRy number, Lower right corner Y position, as a fraction of the image's height from the top
-	]======]
+	__Doc__"GetTexCoord" [[
+		<desc>Returns corner coordinates for scaling or cropping the texture image</desc>
+		<return type="ULx">number, Upper left corner X position, as a fraction of the image's width from the left</return>
+		<return type="ULy">number, Upper left corner Y position, as a fraction of the image's height from the top</return>
+		<return type="LLx">number, Lower left corner X position, as a fraction of the image's width from the left</return>
+		<return type="LLy">number, Lower left corner Y position, as a fraction of the image's height from the top</return>
+		<return type="URx">number, Upper right corner X position, as a fraction of the image's width from the left</return>
+		<return type="URy">number, Upper right corner Y position, as a fraction of the image's height from the top</return>
+		<return type="LRx">number, Lower right corner X position, as a fraction of the image's width from the left</return>
+		<return type="LRy">number, Lower right corner Y position, as a fraction of the image's height from the top</return>
+	]]
 
-	doc [======[
-		@name GetTexture
-		@type method
-		@desc Returns the path to the texture's image file or the color settings
-		@returnformat texturePath
-		@returnformat red, green, blue, alpha
-		@return texturePath string, the path of the texture's image file
-		@return red number, the color's red part
-		@return green number, the color's green part
-		@return blue number, the color's blue part
-		@return alpha number, the color's alpha
-	]======]
+	__Doc__[[
+		<desc>Returns the path to the texture's image file or the color settings</desc>
+		<returnformat>texturePath</returnformat>
+		<returnformat>red, green, blue, alpha</returnformat>
+		<return type="texturePath">string, the path of the texture's image file</return>
+		<return type="red">number, the color's red part</return>
+		<return type="green">number, the color's green part</return>
+		<return type="blue">number, the color's blue part</return>
+		<return type="alpha">number, the color's alpha</return>
+	]]
 	function GetTexture(self, ...)
 		local value = self.__UI:GetTexture(...)
 
@@ -96,132 +71,99 @@ class "Texture"
 		return value
 	end
 
-	doc [======[
-		@name GetVertexColor
-		@type method
-		@desc Returns the shading color of the texture. For details about vertex color shading
-		@return red number, the color's red part
-		@return green number, the color's green part
-		@return blue number, the color's blue part
-		@return alpha number, the color's alpha
-	]======]
+	__Doc__"GetVertexColor" [[
+		<desc>Returns the shading color of the texture. For details about vertex color shading</desc>
+		<return type="red">number, the color's red part</return>
+		<return type="green">number, the color's green part</return>
+		<return type="blue">number, the color's blue part</return>
+		<return type="alpha">number, the color's alpha</return>
+	]]
 
-	doc [======[
-		@name GetVertTile
-		@type method
+	__Doc__"GetVertTile" [[
 		@desc
-		@return boolean
-	]======]
+		<return type="boolean"></return>
+	]]
 
-	doc [======[
-		@name IsDesaturated
-		@type method
-		@desc Returns whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). The texture may not actually be displayed in grayscale if the current display hardware doesn't support that feature;
-		@return boolean 1 if the texture should be displayed in grayscale, otherwise nil
-	]======]
+	__Doc__"IsDesaturated" [[
+		<desc>Returns whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). The texture may not actually be displayed in grayscale if the current display hardware doesn't support that feature;</desc>
+		<return type="boolean">1 if the texture should be displayed in grayscale, otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetBlendMode
-		@type method
-		@desc Sets the blend mode of the texture
-		@param mode System.Widget.AlphaMode, Blend mode of the texture
-		@return nil
-	]======]
+	__Doc__"SetBlendMode" [[
+		<desc>Sets the blend mode of the texture</desc>
+		<param name="mode">System.Widget.AlphaMode, Blend mode of the texture</param>
+	]]
 
-	doc [======[
-		@name SetDesaturated
-		@type method
-		@desc Sets whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). Returns nil if the current system does not support texture desaturation; in such cases, this method has no visible effect
-		@param desaturate boolean, true to display the texture in grayscale, false to display original texture colors
-		@return nil
-	]======]
+	__Doc__"SetDesaturated" [[
+		<desc>Sets whether the texture image should be displayed with zero saturation (i.e. converted to grayscale). Returns nil if the current system does not support texture desaturation; in such cases, this method has no visible effect</desc>
+		<param name="desaturate">boolean, true to display the texture in grayscale, false to display original texture colors</param>
+	]]
 
-	doc [======[
-		@name SetGradient
-		@type method
-		@desc Sets a gradient color shading for the texture. Gradient color shading does not change the underlying color of the texture image, but acts as a filter
-		@param orientation System.Widget.Orientation, Token identifying the direction of the gradient
-		@param startR number, Red component of the start color (0.0 - 1.0)
-		@param startG number, Green component of the start color (0.0 - 1.0)
-		@param startB number, Blue component of the start color (0.0 - 1.0)
-		@param endR number, Red component of the end color (0.0 - 1.0)
-		@param endG number, Green component of the end color (0.0 - 1.0)
-		@param endB number, Blue component of the end color (0.0 - 1.0)
-		@return nil
-	]======]
+	__Doc__"SetGradient" [[
+		<desc>Sets a gradient color shading for the texture. Gradient color shading does not change the underlying color of the texture image, but acts as a filter</desc>
+		<param name="orientation">System.Widget.Orientation, Token identifying the direction of the gradient</param>
+		<param name="startR">number, Red component of the start color (0.0 - 1.0)</param>
+		<param name="startG">number, Green component of the start color (0.0 - 1.0)</param>
+		<param name="startB">number, Blue component of the start color (0.0 - 1.0)</param>
+		<param name="endR">number, Red component of the end color (0.0 - 1.0)</param>
+		<param name="endG">number, Green component of the end color (0.0 - 1.0)</param>
+		<param name="endB">number, Blue component of the end color (0.0 - 1.0)</param>
+	]]
 
-	doc [======[
-		@name SetGradientAlpha
-		@type method
-		@desc Sets a gradient color shading for the texture (including opacity in the gradient). Gradient color shading does not change the underlying color of the texture image, but acts as a filter
-		@param orientation System.Widget.Orientation, Token identifying the direction of the gradient (string)
-		@param startR number, Red component of the start color (0.0 - 1.0)
-		@param startG number, Green component of the start color (0.0 - 1.0)
-		@param startB number, Blue component of the start color (0.0 - 1.0)
-		@param startAlpha number, Alpha (opacity) for the start side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)
-		@param endR number, Red component of the end color (0.0 - 1.0)
-		@param endG number, Green component of the end color (0.0 - 1.0)
-		@param endB number, Blue component of the end color (0.0 - 1.0)
-		@param endAlpha number, Alpha (opacity) for the end side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetGradientAlpha" [[
+		<desc>Sets a gradient color shading for the texture (including opacity in the gradient). Gradient color shading does not change the underlying color of the texture image, but acts as a filter</desc>
+		<param name="orientation">System.Widget.Orientation, Token identifying the direction of the gradient (string)</param>
+		<param name="startR">number, Red component of the start color (0.0 - 1.0)</param>
+		<param name="startG">number, Green component of the start color (0.0 - 1.0)</param>
+		<param name="startB">number, Blue component of the start color (0.0 - 1.0)</param>
+		<param name="startAlpha">number, Alpha (opacity) for the start side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)</param>
+		<param name="endR">number, Red component of the end color (0.0 - 1.0)</param>
+		<param name="endG">number, Green component of the end color (0.0 - 1.0)</param>
+		<param name="endB">number, Blue component of the end color (0.0 - 1.0)</param>
+		<param name="endAlpha">number, Alpha (opacity) for the end side of the gradient (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name SetHorizTile
-		@type method
-		@desc
-		@param boolean
-		@return nil
-	]======]
+	__Doc__"SetHorizTile" [[
+		<param name="boolean"></param>
+	]]
 
-	doc [======[
-		@name SetNonBlocking
-		@type method
-		@desc Sets whether the texture object loads its image file in the background. Texture loading is normally synchronous, so that UI objects are not shown partially textured while loading; however, non-blocking (asynchronous) texture loading may be desirable in some cases where large numbers of textures need to be loaded in a short time. This feature is used in the default UI's icon chooser window for macros and equipment sets, allowing a large number of icon textures to be loaded without causing the game's frame rate to stagger.
-		@param nonBlocking boolean, true to allow texture object to load it's image file in background
-		@return nil
-	]======]
+	__Doc__"SetNonBlocking" [[
+		<desc>Sets whether the texture object loads its image file in the background. Texture loading is normally synchronous, so that UI objects are not shown partially textured while loading; however, non-blocking (asynchronous) texture loading may be desirable in some cases where large numbers of textures need to be loaded in a short time. This feature is used in the default UI's icon chooser window for macros and equipment sets, allowing a large number of icon textures to be loaded without causing the game's frame rate to stagger.</desc>
+		<param name="nonBlocking">boolean, true to allow texture object to load it's image file in background</param>
+	]]
 
-	doc [======[
-		@name SetRotation
-		@type method
-		@desc Rotates the texture image
-		@param radians number, Amount by which the texture image should be rotated, positive values for counter-clockwise rotation, negative for clockwise
-		@return nil
-	]======]
+	__Doc__"SetRotation" [[
+		<desc>Rotates the texture image</desc>
+		<param name="radians">number, Amount by which the texture image should be rotated, positive values for counter-clockwise rotation, negative for clockwise</param>
+	]]
 
-	doc [======[
-		@name SetTexCoord
-		@type method
-		@desc Sets corner coordinates for scaling or cropping the texture image
-		@format left, right, top, bottom
-		@format ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
-		@param left number, Left edge of the scaled/cropped image, as a fraction of the image's width from the left
-		@param right number, Right edge of the scaled/cropped image, as a fraction of the image's width from the left
-		@param top number, Top edge of the scaled/cropped image, as a fraction of the image's height from the top
-		@param bottom number, Bottom edge of the scaled/cropped image, as a fraction of the image's height from the top
-		@param ULx number, Upper left corner X position, as a fraction of the image's width from the left
-		@param ULy number, Upper left corner Y position, as a fraction of the image's height from the top
-		@param LLx number, Lower left corner X position, as a fraction of the image's width from the left
-		@param LLy number, Lower left corner Y position, as a fraction of the image's height from the top
-		@param URx number, Upper right corner X position, as a fraction of the image's width from the left
-		@param URy number, Upper right corner Y position, as a fraction of the image's height from the top
-		@param LRx number, Lower right corner X position, as a fraction of the image's width from the left
-		@param LRy number, Lower right corner Y position, as a fraction of the image's height from the top
-		@return nil
-	]======]
+	__Doc__"SetTexCoord" [[
+		<desc>Sets corner coordinates for scaling or cropping the texture image</desc>
+		<format>left, right, top, bottom</format>
+		<format>ULx, ULy, LLx, LLy, URx, URy, LRx, LRy</format>
+		<param name="left">number, Left edge of the scaled/cropped image, as a fraction of the image's width from the left</param>
+		<param name="right">number, Right edge of the scaled/cropped image, as a fraction of the image's width from the left</param>
+		<param name="top">number, Top edge of the scaled/cropped image, as a fraction of the image's height from the top</param>
+		<param name="bottom">number, Bottom edge of the scaled/cropped image, as a fraction of the image's height from the top</param>
+		<param name="ULx">number, Upper left corner X position, as a fraction of the image's width from the left</param>
+		<param name="ULy">number, Upper left corner Y position, as a fraction of the image's height from the top</param>
+		<param name="LLx">number, Lower left corner X position, as a fraction of the image's width from the left</param>
+		<param name="LLy">number, Lower left corner Y position, as a fraction of the image's height from the top</param>
+		<param name="URx">number, Upper right corner X position, as a fraction of the image's width from the left</param>
+		<param name="URy">number, Upper right corner Y position, as a fraction of the image's height from the top</param>
+		<param name="LRx">number, Lower right corner X position, as a fraction of the image's width from the left</param>
+		<param name="LRy">number, Lower right corner Y position, as a fraction of the image's height from the top</param>
+	]]
 
-	doc [======[
-		@name SetTexture
-		@type method
-		@desc Sets the texture object's image or color
-		@param texture string, Path to a texture image
-		@param red number, Red component of the color (0.0 - 1.0)
-		@param green number, Green component of the color (0.0 - 1.0)
-		@param blue number, Blue component of the color (0.0 - 1.0)
-		@param alpha number, Alpha (opacity) for the color (0.0 = fully transparent, 1.0 = fully opaque)
-		@return boolean 1 if the texture was successfully changed; otherwise nil (1nil)
-	]======]
+	__Doc__[[
+		<desc>Sets the texture object's image or color</desc>
+		<param name="texture">string, Path to a texture image</param>
+		<param name="red">number, Red component of the color (0.0 - 1.0)</param>
+		<param name="green">number, Green component of the color (0.0 - 1.0)</param>
+		<param name="blue">number, Blue component of the color (0.0 - 1.0)</param>
+		<param name="alpha">number, Alpha (opacity) for the color (0.0 = fully transparent, 1.0 = fully opaque)</param>
+		<return type="boolean">1 if the texture was successfully changed; otherwise nil (1nil)</return>
+	]]
 	function SetTexture(self, ...)
 		self.__R = nil
 		self.__G = nil
@@ -254,21 +196,14 @@ class "Texture"
 		return self.__UI:SetTexture(nil)
 	end
 
-	doc [======[
-		@name SetVertTile
-		@type method
-		@desc
-		@param boolean
-		@return nil
-	]======]
+	__Doc__"SetVertTile" [[
+		<param name="boolean"></param>
+	]]
 
-	doc [======[
-		@name SetPortraitUnit
-		@type method
-		@desc Paint a Texture object with the specified unit's portrait
-		@param unit string, the unit to be painted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Paint a Texture object with the specified unit's portrait</desc>
+		<param name="unit">string, the unit to be painted</param>
+	]]
 	function SetPortraitUnit(self, ...)
 		self.__R = nil
 		self.__G = nil
@@ -289,13 +224,10 @@ class "Texture"
 		end
 	end
 
-	doc [======[
-		@name SetPortraitTexture
-		@type method
-		@desc Sets the texture to be displayed from a file applying circular opacity mask making it look round like portraits
-		@param texture string, the texture file path
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the texture to be displayed from a file applying circular opacity mask making it look round like portraits</desc>
+		<param name="texture">string, the texture file path</param>
+	]]
 	function SetPortraitTexture(self, ...)
 		local path = select(1, ...)
 
@@ -309,13 +241,10 @@ class "Texture"
 		return SetPortraitToTexture(self.__UI, nil)
 	end
 
-	doc [======[
-		@name RotateRaid
-		@type method
-		@desc Rotate texture for radian with current texcoord settings
-		@param radian number, the rotation raidian
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Rotate texture for radian with current texcoord settings</desc>
+		<param name="radian">number, the rotation raidian</param>
+	]]
 	function RotateRadian(self, radian)
 		if type(radian) ~= "number" then
 			error("Usage: Texture:RotateRadian(radian) - 'radian' must be number.", 2)
@@ -419,13 +348,10 @@ class "Texture"
 		self.Height = newHeight
 	end
 
-	doc [======[
-		@name RotateDegree
-		@type method
-		@desc Rotate texture for degree with current texcoord settings
-		@param degree number, the rotation degree
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Rotate texture for degree with current texcoord settings</desc>
+		<param name="degree">number, the rotation degree</param>
+	]]
 	function RotateDegree(self, degree)
 		if type(degree) ~= "number" then
 			error("Usage: Texture:RotateDegree(degree) - 'degree' must be number.", 2)
@@ -433,13 +359,10 @@ class "Texture"
 		return RotateRadian(self, math.rad(degree))
 	end
 
-	doc [======[
-		@name Shear
-		@type method
-		@desc Shear texture for raidian
-		@param radian number, the shear radian
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Shear texture for raidian</desc>
+		<param name="radian">number, the shear radian</param>
+	]]
 	function ShearRadian(self, radian)
 		if type(radian) ~= "number" then
 			error("Usage: Texture:ShearRadian(radian) - 'radian' must be number.", 2)
@@ -479,13 +402,10 @@ class "Texture"
 		self:SetTexCoord(ULx, ULy, LLx, LLy, URx, URy, LRx, LRy)
 	end
 
-	doc [======[
-		@name Shear
-		@type method
-		@desc Shear texture with degree
-		@param degree number, the shear degree
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Shear texture with degree</desc>
+		<param name="degree">number, the shear degree</param>
+	]]
 	function ShearDegree(self, degree)
 		if type(degree) ~= "number" then
 			error("Usage: Texture:ShearDegree(degree) - 'degree' must be number.", 2)
@@ -493,10 +413,6 @@ class "Texture"
 
 		return ShearRadian(self, math.rad(degree))
 	end
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Constructor
@@ -518,18 +434,10 @@ class "Texture"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name BlendMode
-		@type property
-		@desc the blend mode of the texture
-	]======]
+	__Doc__[[the blend mode of the texture]]
 	property "BlendMode" { Type = AlphaMode }
 
-	doc [======[
-		@name Desaturated
-		@type property
-		@desc whether the texture image should be displayed with zero saturation
-	]======]
+	__Doc__[[whether the texture image should be displayed with zero saturation]]
 	property "Desaturated" {
 		Get = "IsDesaturated",
 		Set = function(self, desaturation)
@@ -540,11 +448,7 @@ class "Texture"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name TexturePath
-		@type property
-		@desc the texture object's image file path
-	]======]
+	__Doc__[[the texture object's image file path]]
 	property "TexturePath" {
 		Get = function(self)
 			local path = self:GetTexture()
@@ -557,11 +461,7 @@ class "Texture"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name PortraitUnit
-		@type property
-		@desc the unit be de displayed as a portrait, such as "player", "target"
-	]======]
+	__Doc__[[the unit be de displayed as a portrait, such as "player", "target"]]
 	property "PortraitUnit" {
 		Get = function(self)
 			local texture = self:GetTexture()
@@ -574,22 +474,14 @@ class "Texture"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name PortraitTexture
-		@type property
-		@desc the texture to be displayed from a file applying circular opacity mask making it look round like portraits.
-	]======]
+	__Doc__[[the texture to be displayed from a file applying circular opacity mask making it look round like portraits.]]
 	property "PortraitTexture" {
 		Field = "__Portrait",
 		Set = "SetPortraitTexture",
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name Color
-		@type property
-		@desc the texture's color
-	]======]
+	__Doc__[[the texture's color]]
 	property "Color" {
 		Get = function(self)
 			if self:GetTexture() and strmatch(self:GetTexture(), "^Color%-") then
@@ -602,11 +494,7 @@ class "Texture"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name VertexColor
-		@type property
-		@desc the color shading for the region's graphics
-	]======]
+	__Doc__[[the color shading for the region's graphics]]
 	property "VertexColor" {
 		Get = function(self)
 			return ColorType(self:GetVertexColor())
@@ -617,25 +505,13 @@ class "Texture"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name HorizTile
-		@type property
-		@desc
-	]======]
+	__Doc__[[]]
 	property "HorizTile" { Type = Boolean }
 
-	doc [======[
-		@name VertTile
-		@type property
-		@desc
-	]======]
+	__Doc__[[]]
 	property "VertTile" { Type = Boolean }
 
-	doc [======[
-		@name NonBlocking
-		@type property
-		@desc whether the texture object loads its image file in the background
-	]======]
+	__Doc__[[whether the texture object loads its image file in the background]]
 	property "NonBlocking" { Type = Boolean }
 
 endclass "Texture"

@@ -9,246 +9,165 @@ if not IGAS:NewAddon("IGAS.Widget.Model", version) then
 	return
 end
 
+__Doc__[[Model provide a rendering environment which is drawn into the backdrop of their frame, allowing you to display the contents of an .m2 file and set facing, scale, light and fog information, or run motions associated]]
 class "Model"
 	inherit "Frame"
-
-	doc [======[
-		@name Model
-		@type class
-		@desc Model provide a rendering environment which is drawn into the backdrop of their frame, allowing you to display the contents of an .m2 file and set facing, scale, light and fog information, or run motions associated
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnAnimFinished
-		@type event
-		@desc Run when the model's animation finishes
-	]======]
+	__Doc__[[Run when the model's animation finishes]]
 	event "OnAnimFinished"
 
-	doc [======[
-		@name OnUpdateModel
-		@type event
-		@desc Run when a model changes or animates
-	]======]
+	__Doc__[[Run when a model changes or animates]]
 	event "OnUpdateModel"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AdvanceTime
-		@type method
-		@desc Advances to the model's next animation frame. (Applies to 3D animations defined within the model file, not UI Animations.)
-		@return nil
-	]======]
+	__Doc__"AdvanceTime" [[Advances to the model's next animation frame. (Applies to 3D animations defined within the model file, not UI Animations.)]]
 
-	doc [======[
-		@name ClearFog
-		@type method
-		@desc Disables fog display for the model.
-		@return nil
-	]======]
+	__Doc__"ClearFog" [[Disables fog display for the model.]]
 
-	doc [======[
-		@name ClearModel
-		@type method
-		@desc Removes the 3D model currently displayed
-		@return nil
-	]======]
+	__Doc__"ClearModel" [[Removes the 3D model currently displayed]]
 
-	doc [======[
-		@name GetFacing
-		@type method
-		@desc Returns the model's current rotation setting. The 3D model displayed by the model object can be rotated about its vertical axis. For example, a model of a player race faces towards the viewer when its facing is set to 0; setting facing to math.pi faces it away from the viewer.
-		@return number Current rotation angle of the model (in radians)
-	]======]
+	__Doc__"GetFacing" [[
+		<desc>Returns the model's current rotation setting. The 3D model displayed by the model object can be rotated about its vertical axis. For example, a model of a player race faces towards the viewer when its facing is set to 0; setting facing to math.pi faces it away from the viewer.</desc>
+		<return type="number">Current rotation angle of the model (in radians)</return>
+	]]
 
-	doc [======[
-		@name GetFogColor
-		@type method
-		@desc Returns the model's current fog color. Does not indicate whether fog display is enabled.
-		@return red number, red component of the color (0.0 - 1.0)
-		@return green number, green component of the color (0.0 - 1.0)
-		@return blue number, blue component of the color (0.0 - 1.0)
-	]======]
+	__Doc__"GetFogColor" [[
+		<desc>Returns the model's current fog color. Does not indicate whether fog display is enabled.</desc>
+		<return type="red">number, red component of the color (0.0 - 1.0)</return>
+		<return type="green">number, green component of the color (0.0 - 1.0)</return>
+		<return type="blue">number, blue component of the color (0.0 - 1.0)</return>
+	]]
 
-	doc [======[
-		@name GetFogFar
-		@type method
-		@desc Returns the far clipping distance for the model's fog. This determines how far from the camera the fog ends.
-		@return number The distance to the fog far clipping plane
-	]======]
+	__Doc__"GetFogFar" [[
+		<desc>Returns the far clipping distance for the model's fog. This determines how far from the camera the fog ends.</desc>
+		<return type="number">The distance to the fog far clipping plane</return>
+	]]
 
-	doc [======[
-		@name GetFogNear
-		@type method
-		@desc Returns the near clipping distance for the model's fog. This determines how close to the camera the fog begins.
-		@return number The distance to the fog near clipping plane
-	]======]
+	__Doc__"GetFogNear" [[
+		<desc>Returns the near clipping distance for the model's fog. This determines how close to the camera the fog begins.</desc>
+		<return type="number">The distance to the fog near clipping plane</return>
+	]]
 
-	doc [======[
-		@name GetLight
-		@type method
-		@desc Returns properties of the light sources used when rendering the model
-		@return enabled boolean, 1 if lighting is enabled; otherwise nil
-		@return omni number, 1 if omnidirectional lighting is enabled; otherwise 0
-		@return dirX number, coordinate of the directional light in the axis perpendicular to the screen (negative values place the light in front of the model, positive values behind)
-		@return dirY number, coordinate of the directional light in the horizontal axis (negative values place the light to the left of the model, positive values to the right)
-		@return dirZ number, coordinate of the directional light in the vertical axis (negative values place the light below the model, positive values above
-		@return ambIntensity number, intensity of the ambient light (0.0 - 1.0)
-		@return ambR number, red component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@return ambG number, green component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@return ambB number, blue component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@return dirIntensity number, intensity of the directional light (0.0 - 1.0)
-		@return dirR number, red component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-		@return dirG number, green component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-		@return dirB number, blue component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-	]======]
+	__Doc__"GetLight" [[
+		<desc>Returns properties of the light sources used when rendering the model</desc>
+		<return type="enabled">boolean, 1 if lighting is enabled; otherwise nil</return>
+		<return type="omni">number, 1 if omnidirectional lighting is enabled; otherwise 0</return>
+		<return type="dirX">number, coordinate of the directional light in the axis perpendicular to the screen (negative values place the light in front of the model, positive values behind)</return>
+		<return type="dirY">number, coordinate of the directional light in the horizontal axis (negative values place the light to the left of the model, positive values to the right)</return>
+		<return type="dirZ">number, coordinate of the directional light in the vertical axis (negative values place the light below the model, positive values above</return>
+		<return type="ambIntensity">number, intensity of the ambient light (0.0 - 1.0)</return>
+		<return type="ambR">number, red component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</return>
+		<return type="ambG">number, green component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</return>
+		<return type="ambB">number, blue component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</return>
+		<return type="dirIntensity">number, intensity of the directional light (0.0 - 1.0)</return>
+		<return type="dirR">number, red component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</return>
+		<return type="dirG">number, green component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</return>
+		<return type="dirB">number, blue component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</return>
+	]]
 
-	doc [======[
-		@name GetModel
-		@type method
-		@desc Returns the model file currently displayed. May instead return a reference to the Model object itself if a filename is not available.
-		@return string Path to the model file currently displayed
-	]======]
+	__Doc__"GetModel" [[
+		<desc>Returns the model file currently displayed. May instead return a reference to the Model object itself if a filename is not available.</desc>
+		<return type="string">Path to the model file currently displayed</return>
+	]]
 
-	doc [======[
-		@name GetModelScale
-		@type method
-		@desc Returns the scale factor determining the size at which the 3D model appears
-		@return number Scale factor determining the size at which the 3D model appears
-	]======]
+	__Doc__"GetModelScale" [[
+		<desc>Returns the scale factor determining the size at which the 3D model appears</desc>
+		<return type="number">Scale factor determining the size at which the 3D model appears</return>
+	]]
 
-	doc [======[
-		@name GetPosition
-		@type method
-		@desc Returns the position of the 3D model within the frame
-		@@return x number, position of the model on the axis perpendicular to the plane of the screen (positive values make the model appear closer to the viewer; negative values place it further away)
-		@return y number, position of the model on the horizontal axis (positive values place the model to the right of its default position; negative values place it to the left)
-		@return z number, position of the model on the vertical axis (positive values place the model above its default position; negative values place it below)
-	]======]
+	__Doc__"GetPosition" [[
+		<desc>Returns the position of the 3D model within the frame</desc>
+		@<return type="x">number, position of the model on the axis perpendicular to the plane of the screen (positive values make the model appear closer to the viewer; negative values place it further away)</return>
+		<return type="y">number, position of the model on the horizontal axis (positive values place the model to the right of its default position; negative values place it to the left)</return>
+		<return type="z">number, position of the model on the vertical axis (positive values place the model above its default position; negative values place it below)</return>
+	]]
 
-	doc [======[
-		@name ReplaceIconTexture
-		@type method
-		@desc Sets the icon texture used by the model. Only affects models that use icons (e.g. the model producing the default UI's animation which appears when an item goes into a bag).
-		@param filename string, Path to an icon texture for use in the model
-		@return nil
-	]======]
+	__Doc__"ReplaceIconTexture" [[
+		<desc>Sets the icon texture used by the model. Only affects models that use icons (e.g. the model producing the default UI's animation which appears when an item goes into a bag).</desc>
+		<param name="filename">string, Path to an icon texture for use in the model</param>
+	]]
 
-	doc [======[
-		@name SetCamera
-		@type method
-		@desc Sets the view angle on the model to a pre-defined camera location. Camera view angles are defined within the model files and not otherwise available to the scripting system.
-		@param index number, index of a camera view defined by the model file
-		@return nil
-	]======]
+	__Doc__"SetCamera" [[
+		<desc>Sets the view angle on the model to a pre-defined camera location. Camera view angles are defined within the model files and not otherwise available to the scripting system.</desc>
+		<param name="index">number, index of a camera view defined by the model file</param>
+	]]
 
-	doc [======[
-		@name SetFacing
-		@type method
-		@desc Sets the model's current rotation. The 3D model displayed by the model object can be rotated about its vertical axis. For example, if the model faces towards the viewer when its facing is set to 0, setting facing to math.pi faces it away from the viewer.
-		@param facing number, rotation angle for the model (in radians)
-		@return nil
-	]======]
+	__Doc__"SetFacing" [[
+		<desc>Sets the model's current rotation. The 3D model displayed by the model object can be rotated about its vertical axis. For example, if the model faces towards the viewer when its facing is set to 0, setting facing to math.pi faces it away from the viewer.</desc>
+		<param name="facing">number, rotation angle for the model (in radians)</param>
+	]]
 
-	doc [======[
-		@name SetFogColor
-		@type method
-		@desc Sets the model's fog color, enabling fog display if disabled
-		@param red number, red component of the color (0.0 - 1.0)
-		@param green number, green component of the color (0.0 - 1.0)
-		@param blue number, blue component of the color (0.0 - 1.0)
-	]======]
+	__Doc__"SetFogColor" [[
+		<desc>Sets the model's fog color, enabling fog display if disabled</desc>
+		<param name="red">number, red component of the color (0.0 - 1.0)</param>
+		<param name="green">number, green component of the color (0.0 - 1.0)</param>
+		<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
+	]]
 
-	doc [======[
-		@name SetFogFar
-		@type method
-		@desc Sets the far clipping distance for the model's fog. This sets how far from the camera the fog ends.
-		@param distance number, the distance to the fog far clipping plane
-		@return nil
-	]======]
+	__Doc__"SetFogFar" [[
+		<desc>Sets the far clipping distance for the model's fog. This sets how far from the camera the fog ends.</desc>
+		<param name="distance">number, the distance to the fog far clipping plane</param>
+	]]
 
-	doc [======[
-		@name SetFogNear
-		@type method
-		@desc Sets the near clipping distance for the model's fog. This sets how close to the camera the fog begins.
-		@param distance number, The distance to the fog near clipping plane
-		@return nil
-	]======]
+	__Doc__"SetFogNear" [[
+		<desc>Sets the near clipping distance for the model's fog. This sets how close to the camera the fog begins.</desc>
+		<param name="distance">number, The distance to the fog near clipping plane</param>
+	]]
 
-	doc [======[
-		@name SetGlow
-		@type method
-		@desc Sets the model's glow amount
-		@param amount number, glow amount for the model
-		@return nil
-	]======]
+	__Doc__"SetGlow" [[
+		<desc>Sets the model's glow amount</desc>
+		<param name="amount">number, glow amount for the model</param>
+	]]
 
-	doc [======[
-		@name SetLight
-		@type method
-		@desc Sets properties of the light sources used when rendering the model
-		@param enabled boolean, 1 if lighting is enabled; otherwise nil
-		@param omni number, 1 if omnidirectional lighting is enabled; otherwise 0
-		@param dirX number, coordinate of the directional light in the axis perpendicular to the screen (negative values place the light in front of the model, positive values behind)
-		@param dirY number, coordinate of the directional light in the horizontal axis (negative values place the light to the left of the model, positive values to the right)
-		@param dirZ number, coordinate of the directional light in the vertical axis (negative values place the light below the model, positive values above
-		@param ambIntensity number, intensity of the ambient light (0.0 - 1.0)
-		@param ambR number, red component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@param ambG number, green component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@param ambB number, blue component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0
-		@param dirIntensity number, intensity of the directional light (0.0 - 1.0)
-		@param dirR number, red component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-		@param dirG number, green component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-		@param dirB number, blue component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0
-		@return nil
-	]======]
+	__Doc__"SetLight" [[
+		<desc>Sets properties of the light sources used when rendering the model</desc>
+		<param name="enabled">boolean, 1 if lighting is enabled; otherwise nil</param>
+		<param name="omni">number, 1 if omnidirectional lighting is enabled; otherwise 0</param>
+		<param name="dirX">number, coordinate of the directional light in the axis perpendicular to the screen (negative values place the light in front of the model, positive values behind)</param>
+		<param name="dirY">number, coordinate of the directional light in the horizontal axis (negative values place the light to the left of the model, positive values to the right)</param>
+		<param name="dirZ">number, coordinate of the directional light in the vertical axis (negative values place the light below the model, positive values above</param>
+		<param name="ambIntensity">number, intensity of the ambient light (0.0 - 1.0)</param>
+		<param name="ambR">number, red component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</param>
+		<param name="ambG">number, green component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</param>
+		<param name="ambB">number, blue component of the ambient light color (0.0 - 1.0); omitted if ambIntensity is 0</param>
+		<param name="dirIntensity">number, intensity of the directional light (0.0 - 1.0)</param>
+		<param name="dirR">number, red component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</param>
+		<param name="dirG">number, green component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</param>
+		<param name="dirB">number, blue component of the directional light color (0.0 - 1.0); omitted if dirIntensity is 0</param>
+	]]
 
-	doc [======[
-		@name SetModel
-		@type method
-		@desc Sets the model file to be displayed
-		@param filename string, path to the model file to be displayed
-		@return nil
-	]======]
+	__Doc__"SetModel" [[
+		<desc>Sets the model file to be displayed</desc>
+		<param name="filename">string, path to the model file to be displayed</param>
+	]]
 
-	doc [======[
-		@name SetModelScale
-		@type method
-		@desc Sets the scale factor determining the size at which the 3D model appears
-		@param scale number, scale factor determining the size at which the 3D model appears
-		@return nil
-	]======]
+	__Doc__"SetModelScale" [[
+		<desc>Sets the scale factor determining the size at which the 3D model appears</desc>
+		<param name="scale">number, scale factor determining the size at which the 3D model appears</param>
+	]]
 
-	doc [======[
-		@name SetPosition
-		@type method
-		@desc Set the position of the 3D model within the frame
-		@param x number, position of the model on the axis perpendicular to the plane of the screen (positive values make the model appear closer to the viewer; negative values place it further away)
-		@param y number, position of the model on the horizontal axis (positive values place the model to the right of its default position; negative values place it to the left)
-		@param z number, position of the model on the vertical axis (positive values place the model above its default position; negative values place it below)
-	]======]
+	__Doc__"SetPosition" [[
+		<desc>Set the position of the 3D model within the frame</desc>
+		<param name="x">number, position of the model on the axis perpendicular to the plane of the screen (positive values make the model appear closer to the viewer; negative values place it further away)</param>
+		<param name="y">number, position of the model on the horizontal axis (positive values place the model to the right of its default position; negative values place it to the left)</param>
+		<param name="z">number, position of the model on the vertical axis (positive values place the model above its default position; negative values place it below)</param>
+	]]
 
-	doc [======[
-		@name SetSequence
-		@type method
-		@desc Sets the animation sequence to be used by the model. The number of available sequences and behavior of each are defined within the model files and not available to the scripting system.
-		@param sequence number, index of an animation sequence defined by the model file
-		@return nil
-	]======]
+	__Doc__"SetSequence" [[
+		<desc>Sets the animation sequence to be used by the model. The number of available sequences and behavior of each are defined within the model files and not available to the scripting system.</desc>
+		<param name="sequence">number, index of an animation sequence defined by the model file</param>
+	]]
 
-	doc [======[
-		@name SetSequenceTime
-		@type method
-		@desc Sets the animation sequence and time index to be used by the model. The number of available sequences and behavior of each are defined within the model files and not available to the scripting system.
-		@param sequence number, index of an animation sequence defined by the model file
-		@param time number, time index within the sequence
-		@return nil
-	]======]
+	__Doc__"SetSequenceTime" [[
+		<desc>Sets the animation sequence and time index to be used by the model. The number of available sequences and behavior of each are defined within the model files and not available to the scripting system.</desc>
+		<param name="sequence">number, index of an animation sequence defined by the model file</param>
+		<param name="time">number, time index within the sequence</param>
+	]]
 
 	------------------------------------------------------
 	-- Event Handler
@@ -271,11 +190,7 @@ class "Model"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name FogColor
-		@type property
-		@desc the model's current fog color
-	]======]
+	__Doc__[[the model's current fog color]]
 	property "FogColor" {
 		Get = function(self)
 			return ColorType(self:GetFogColor())
@@ -286,32 +201,16 @@ class "Model"
 		Type = ColorType,
 	}
 
-	doc [======[
-		@name FogFar
-		@type property
-		@desc the far clipping distance for the model's fog
-	]======]
+	__Doc__[[the far clipping distance for the model's fog]]
 	property "FogFar" { Type = Number }
 
-	doc [======[
-		@name FogNear
-		@type property
-		@desc the near clipping distance for the model's fog
-	]======]
+	__Doc__[[the near clipping distance for the model's fog]]
 	property "FogNear" { Type = Number }
 
-	doc [======[
-		@name ModelScale
-		@type property
-		@desc the scale factor determining the size at which the 3D model appears
-	]======]
+	__Doc__[[the scale factor determining the size at which the 3D model appears]]
 	property "ModelScale" { Type = Number }
 
-	doc [======[
-		@name Model
-		@type property
-		@desc the model file to be displayed
-	]======]
+	__Doc__[[the model file to be displayed]]
 	property "Model" {
 		Set = function(self, file)
 			if file and type(file) == "string" and file ~= "" then
@@ -324,11 +223,7 @@ class "Model"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name Position
-		@type property
-		@desc the position of the 3D model within the frame
-	]======]
+	__Doc__[[the position of the 3D model within the frame]]
 	property "Position" {
 		Get = function(self)
 			return Position(self:GetPosition())
@@ -339,11 +234,7 @@ class "Model"
 		Type = Position,
 	}
 
-	doc [======[
-		@name Light
-		@type property
-		@desc the light sources used when rendering the model
-	]======]
+	__Doc__[[the light sources used when rendering the model]]
 	property "Light" {
 		Get = function(self)
 			return LightType(self:GetLight())

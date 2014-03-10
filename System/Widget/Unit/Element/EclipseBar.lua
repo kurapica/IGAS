@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.EclipseBar", version) then
 	return
 end
 
+__Doc__[[The eclipse bar]]
 class "EclipseBar"
 	inherit "Frame"
 	extend "IFEclipse"
-
-	doc [======[
-		@name EclipseBar
-		@type class
-		@desc The eclipse bar
-	]======]
 
 	SPELL_POWER_ECLIPSE = _G.SPELL_POWER_ECLIPSE
 

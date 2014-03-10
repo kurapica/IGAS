@@ -121,19 +121,16 @@ function GetEclipseActive()
 	return hasLunarEclipse, hasSolarEclipse
 end
 
+__Doc__[[
+	<desc>IFEclipse is used to handle the updating for the player's eclipse power</desc>
+	<overridable name="EclipseDirection" type="property" valuetype="System.Widget.Unit.EclipseDirection">used to receive the eclipse's Direction</overridable>
+	<overridable name="SunActivated" type="property" valuetype="boolean">used to receive whether the sun is activated</overridable>
+	<overridable name="MoonActivated" type="property" valuetype="boolean">used to receive whether the moon is activated</overridable>
+	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value</overridable>
+	<overridable name="Value" type="property" valuetype="number">used to receive the eclipse power's value</overridable>
+]]
 interface "IFEclipse"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFEclipse
-		@type interface
-		@desc IFEclipse is used to handle the updating for the player's eclipse power
-		@overridable EclipseDirection property, System.Widget.Unit.EclipseDirection, used to receive the eclipse's Direction
-		@overridable SunActivated property, boolean, used to receive whether the sun is activated
-		@overridable MoonActivated property, boolean, used to receive whether the moon is activated
-		@overridable MinMaxValue property, System.Widget.MinMax, used to receive the min and max value
-		@overridable Value property, number, used to receive the eclipse power's value
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -142,12 +139,7 @@ interface "IFEclipse"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if _M._ShowEclipse then
 			ShowEclipse(self)

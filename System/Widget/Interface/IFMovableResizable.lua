@@ -179,77 +179,56 @@ do
 	end
 end
 
+__Doc__[[IFMovable provide a frame moving system]]
 interface "IFMovable"
-	doc [======[
-		@name IFMovable
-		@type interface
-		@desc IFMovable provide a frame moving system
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnPositionChanged
-		@type event
-		@desc Fired when the object is moved by cursor
-	]======]
+	__Doc__[[Fired when the object is moved by cursor]]
 	event "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name _ModeOn
-		@type method
-		@desc Start moving registered Object
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Start moving registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _ModeOn(group)
 		return _MaskOn(IFMovable, group)
 	end
 
-	doc [======[
-		@name _ModeOff
-		@type method
-		@desc Stop moving registered Object
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Stop moving registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _ModeOff(group)
 		return _MaskOff(IFMovable, group)
 	end
 
-	doc [======[
-		@name _IsModeOn
-		@type method
-		@desc Whether the group is mode on
-		@param group string, group name
-		@return boolean true if the mode is turn on for the group
-	]======]
+	__Doc__[[
+		<desc>Whether the group is mode on</desc>
+		<param name="group">string, group name</param>
+		<return type="boolean">true if the mode is turn on for the group</return>
+	]]
 	function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFMovable_ModeOn[group]
 	end
 
-	doc [======[
-		@name _Toggle
-		@type method
-		@desc Toggle the mode
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Toggle the mode</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _Toggle(group)
 		_MaskToggle(IFMovable, group)
 	end
 
-	doc [======[
-		@name _GetGroupList
-		@type method
-		@desc Get all group name
-		@return table a list contains all groups
-	]======]
+	__Doc__[[
+		<desc>Get all group name</desc>
+		<return type="table">a list contains all groups</return>
+	]]
 	function _GetGroupList()
 		local ret = {}
 
@@ -265,22 +244,14 @@ interface "IFMovable"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFMovingGroup
-		@type property
-		@desc The object's moving group name, default "Global"
-	]======]
+	__Doc__[[The object's moving group name, default "Global"]]
 	property "IFMovingGroup" {
 		Get = function(self)
 			return _Global
 		end,
 	}
 
-	doc [======[
-		@name IFMovable
-		@type property
-		@desc Whether the object should be turn into the moving mode
-	]======]
+	__Doc__[[Whether the object should be turn into the moving mode]]
 	property "IFMovable" {
 		Get = function(self)
 			return not self.__IFMovable_Block
@@ -308,77 +279,56 @@ interface "IFMovable"
 	end
 endinterface "IFMovable"
 
+__Doc__[[IFResizable provide a frame resize system]]
 interface "IFResizable"
-	doc [======[
-		@name IFResizable
-		@type interface
-		@desc IFResizable provide a frame resize system
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnSizeChanged
-		@type event
-		@desc Fired when a frame's size changes
-	]======]
+	__Doc__[[Fired when a frame's size changes]]
 	event "OnSizeChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name _ModeOn
-		@type method
-		@desc Start resizing registered Object
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Start resizing registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _ModeOn(group)
 		return _MaskOn(IFResizable, group)
 	end
 
-	doc [======[
-		@name _ModeOff
-		@type method
-		@desc Stop resizing registered Object
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Stop resizing registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _ModeOff(group)
 		return _MaskOff(IFResizable, group)
 	end
 
-	doc [======[
-		@name _IsModeOn
-		@type method
-		@desc Whether the group is mode on
-		@param group string, group name
-		@return boolean true if the mode is turn on for the group
-	]======]
+	__Doc__[[
+		<desc>Whether the group is mode on</desc>
+		<param name="group">string, group name</param>
+		<return type="boolean">true if the mode is turn on for the group</return>
+	]]
 	function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFResizable_ModeOn[group]
 	end
 
-	doc [======[
-		@name _Toggle
-		@type method
-		@desc Toggle the mode
-		@param group string, group name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Toggle the mode</desc>
+		<param name="group">string, group name</param>
+	]]
 	function _Toggle(group)
 		_MaskToggle(IFResizable, group)
 	end
 
-	doc [======[
-		@name _GetGroupList
-		@type method
-		@desc Get all group name
-		@return table a list contains all groups
-	]======]
+	__Doc__[[
+		<desc>Get all group name</desc>
+		<return type="table">a list contains all groups</return>
+	]]
 	function _GetGroupList()
 		local ret = {}
 
@@ -394,22 +344,14 @@ interface "IFResizable"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name IFResizingGroup
-		@type property
-		@desc The object's resizing group name, default "Global"
-	]======]
+	__Doc__[[The object's resizing group name, default "Global"]]
 	property "IFResizingGroup" {
 		Get = function(self)
 			return _Global
 		end,
 	}
 
-	doc [======[
-		@name IFResizable
-		@type property
-		@desc Whether the object should be turn into the resizing mode
-	]======]
+	__Doc__[[Whether the object should be turn into the resizing mode]]
 	property "IFResizable" {
 		Get = function(self)
 			return not self.__IFResizable_Block

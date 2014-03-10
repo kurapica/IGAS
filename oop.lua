@@ -15,6 +15,7 @@ end
 
 Load("PLoop", "PLoop.lua")
 Load("PLoop", "System.lua")
+Load("PLoop", "Xml.lua")
 Load("PLoop", "Error.lua")
 Load("PLoop", "IFIterator.lua")
 Load("PLoop", "Array.lua")

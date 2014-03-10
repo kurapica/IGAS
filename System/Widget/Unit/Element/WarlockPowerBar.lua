@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.WarlockPowerBar", version) then
 	return
 end
 
+__Doc__[[The power bar for warlock]]
 class "WarlockPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
-
-	doc [======[
-		@name WarlockPowerBar
-		@type class
-		@desc The power bar for warlock
-	]======]
 
 	GameTooltip = _G.GameTooltip
 
@@ -43,14 +38,9 @@ class "WarlockPowerBar"
 		Destruction			= { left = 0.30078125, right = 0.37890625, top = 0.32812500, bottom = 0.67187500, height = 22, fileHeight = 64 },
 	}
 
+	__Doc__[[The shard element]]
 	class "Shard"
 		inherit "Frame"
-
-		doc [======[
-			@name Shard
-			@type class
-			@desc The shard element
-		]======]
 
 		------------------------------------------------------
 		-- Property
@@ -238,14 +228,9 @@ class "WarlockPowerBar"
 	    end
 	endclass "Shard"
 
+	__Doc__[[the burning ember element]]
 	class "BurningEmber"
 		inherit "Frame"
-
-		doc [======[
-			@name BurningEmber
-			@type class
-			@desc the burning ember element
-		]======]
 
 		------------------------------------------------------
 		-- Property

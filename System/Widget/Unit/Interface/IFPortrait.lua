@@ -27,14 +27,9 @@ function _IFPortraitUnitList:ParseEvent(event, unit)
 	self:EachK(unit, "Refresh", event == "UNIT_MODEL_CHANGED")
 end
 
+__Doc__[[IFPortrait is used to handle the unit's portrait updating]]
 interface "IFPortrait"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFPortrait
-		@type interface
-		@desc IFPortrait is used to handle the unit's portrait updating
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -43,12 +38,7 @@ interface "IFPortrait"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self, force)
 		if self:IsClass(PlayerModel) then
 			local unit = self.Unit

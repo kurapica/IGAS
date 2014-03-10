@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ResurrectIcon", version) then
 	return
 end
 
+__Doc__[[The resurrect indicator]]
 class "ResurrectIcon"
 	inherit "Texture"
 	extend "IFResurrect"
-
-	doc [======[
-		@name ResurrectIcon
-		@type class
-		@desc The resurrect indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

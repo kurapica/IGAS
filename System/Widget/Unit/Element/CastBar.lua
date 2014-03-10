@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.CastBar", version) then
 	return
 end
 
+__Doc__[[The cast bar]]
 class "CastBar"
 	inherit "Frame"
 	extend "IFCast" "IFCooldownLabel" "IFCooldownStatus"
-
-	doc [======[
-		@name CastBar
-		@type class
-		@desc The cast bar
-	]======]
 
 	_DELAY_TEMPLATE = FontColor.RED .. "(%.1f)" .. FontColor.CLOSE
 
@@ -241,11 +236,7 @@ class "CastBar"
 		Get = function(self) return false end
 	}
 
-	doc [======[
-		@name DelayFormatString
-		@type property
-		@desc The delay time format string like "%.1f"
-	]======]
+	__Doc__[[The delay time format string like "%.1f"]]
 	property "DelayFormatString" {
 		Get = function(self)
 			return self.__DelayFormatString or _DELAY_TEMPLATE

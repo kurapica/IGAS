@@ -123,11 +123,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name FlytoutID
-		@type property
-		@desc The action button's content if its type is 'flyout'
-	]======]
+	__Doc__[[The action button's content if its type is 'flyout']]
 	property "FlytoutID" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "flyout" and tonumber(self:GetAttribute("spell")) or nil

@@ -54,15 +54,12 @@ function _IFResurrectUnitList:ParseEvent(event)
 	self:Each(checkUnitForResurrect)
 end
 
+__Doc__[[
+	<desc>IFResurrect is used to handle the unit resurrection state's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resurrection indicator should be shown</overridable>
+]]
 interface "IFResurrect"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFResurrect
-		@type interface
-		@desc IFResurrect is used to handle the unit resurrection state's updating
-		@overridable Visible property, boolean, used to receive the result that whether the resurrection indicator should be shown
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -71,12 +68,6 @@ interface "IFResurrect"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self)
 		self.Visible = self.Unit and UnitHasIncomingResurrection(self.Unit)
 	end

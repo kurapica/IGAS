@@ -8,24 +8,17 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PvpIcon", version) then
 	return
 end
 
+__Doc__[[The pvp indicator]]
 class "PvpIcon"
 	inherit "Texture"
 	extend "IFFaction"
-
-	doc [======[
-		@name PvpIcon
-		@type class
-		@desc The pvp indicator
-	]======]
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
-	-- @name Refresh
-	-- @type function
-	------------------------------------
+	-- -- ------------------------------------
 	function Refresh(self)
 		local unit = self.Unit
 		if unit and UnitIsPVPFreeForAll(unit) then

@@ -9,43 +9,27 @@ if not IGAS:NewAddon("IGAS.Widget.VirtualUIObject", version) then
 	return
 end
 
+__Doc__[[VirtualUIObject is an abstract UI object type.]]
 __InitTable__()
 class "VirtualUIObject"
 	inherit "Object"
 
-	doc [======[
-		@name VirtualUIObject
-		@type class
-		@desc VirtualUIObject is an abstract UI object type.
-		@param name string, the name of the object
-		@param parent widgetObject, default UIParent
-		@param ... the other init parameters
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetObjectType
-		@type method
-		@desc Get the class name of the object
-		@return string the object's class name
-	]======]
+	__Doc__[[
+		<desc>Get the class name of the object</desc>
+		<return type="string">the object's class name</return>
+	]]
 	function GetObjectType(self)
 		return Reflector.GetName(self:GetClass())
 	end
 
-	doc [======[
-		@name IsObjectType
-		@type method
-		@desc Check if the object is an instance of the class.
-		@param objType string the widget class's name
-		@return boolean true if the object is an instance of the class
-	]======]
+	__Doc__[[
+		<desc>Check if the object is an instance of the class.</desc>
+		<param name="objType">string the widget class's name</param>
+		<return type="boolean">true if the object is an instance of the class</return>
+	]]
 	function IsObjectType(self, objType)
 		if objType then
 			if type(objType) == "string" then
@@ -58,23 +42,18 @@ class "VirtualUIObject"
 		return false
 	end
 
-	doc [======[
-		@name GetParent
-		@type method
-		@desc Get the parent object of this widget object
-		@return widgetObject the parent of the object
-	]======]
+	__Doc__[[
+		<desc>Get the parent object of this widget object</desc>
+		<return type="widgetObject">the parent of the object</return>
+	]]
 	function GetParent(self)
 		return self.__Parent
 	end
 
-	doc [======[
-		@name SetParent
-		@type method
-		@desc Set the parent widget object to this widget object
-		@param parent the parent widget object or nil
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the parent widget object to this widget object</desc>
+		<param name="parent">the parent widget object or nil</param>
+		]]
 	function SetParent(self, parent)
 		-- Get frame from name
 		if type(parent) == "string" then
@@ -130,13 +109,10 @@ class "VirtualUIObject"
 		end
 	end
 
-	doc [======[
-		@name AddChild
-		@type method
-		@desc Add a virtual widget object as child
-		@param child the child virtual widget object
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Add a virtual widget object as child</desc>
+		<param name="child">the child virtual widget object</param>
+		]]
 	function AddChild(self, child)
 		-- Get frame from name
 		if type(child) == "string" then
@@ -156,12 +132,10 @@ class "VirtualUIObject"
 		end
 	end
 
-	doc [======[
-		@name HasChilds
-		@type method
-		@desc Check if the widget object has child objects
-		@return boolean true if the object has child
-	]======]
+	__Doc__[[
+		<desc>Check if the widget object has child objects</desc>
+		<return type="boolean">true if the object has child</return>
+	]]
 	function HasChilds(self)
 		if type(self.__Childs) == "table" and next(self.__Childs) then
 			return true
@@ -170,24 +144,20 @@ class "VirtualUIObject"
 		end
 	end
 
-	doc [======[
-		@name GetChilds
-		@type method
-		@desc Get the child list of the widget object, !!!IMPORTANT!!!, don't do any change to the return table, this table is the real table that contains the child objects.
-		@return table the child objects list
-	]======]
+	__Doc__[[
+		<desc>Get the child list of the widget object, !!!IMPORTANT!!!, don't do any change to the return table, this table is the real table that contains the child objects.</desc>
+		<return type="table">the child objects list</return>
+	]]
 	function GetChilds(self)
 		self.__Childs = self.__Childs or {}
 		return self.__Childs
 	end
 
-	doc [======[
-		@name GetChild
-		@type method
-		@desc Get the child object for the given name
-		@param name string, the child's name
-		@return widgetObject the child widget object if existed
-	]======]
+	__Doc__[[
+		<desc>Get the child object for the given name</desc>
+		<param name="name">string, the child's name</param>
+		<return type="widgetObject">the child widget object if existed</return>
+	]]
 	function GetChild(self, name)
 		if type(name) ~= "string" then
 			error("Usage : VirtualUIObject:GetChild(name) : 'name' - string expected.", 2)
@@ -196,13 +166,10 @@ class "VirtualUIObject"
 		return rawget(self, "__Childs") and self.__Childs[name]
 	end
 
-	doc [======[
-		@name RemoveChild
-		@type method
-		@desc Remove the child for the given name
-		@param name string, the child's name
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Remove the child for the given name</desc>
+		<param name="name">string, the child's name</param>
+		]]
 	function RemoveChild(self, name)
 		local child = nil
 
@@ -237,35 +204,28 @@ class "VirtualUIObject"
 		return GetFullName(self.Parent).."."..tostring(self.Name)
 	end
 
-	doc [======[
-		@name GetName
-		@type method
-		@desc Not like property 'Name', this method return full name, it will concat the object's name with it's parent like 'UIParent.MyForm.MyObj'
-		@return string the full name of the object
-	]======]
+	__Doc__[[
+		<desc>Not like property 'Name', this method return full name, it will concat the object's name with it's parent like 'UIParent.MyForm.MyObj'</desc>
+		<return type="string">the full name of the object</return>
+	]]
 	function GetName(self)
 		return GetFullName(self)
 	end
 
-	doc [======[
-		@name GetScript
-		@type method
-		@desc Return the script handler of the given name (discarded)
-		@param name string, the script's name
-		@return function the script handler if existed
-	]======]
+	__Doc__[[
+		<desc>Return the script handler of the given name (discarded)</desc>
+		<param name="name">string, the script's name</param>
+		<return type="function">the script handler if existed</return>
+	]]
 	function GetScript(self, name)
 		error(("Usage : func = object.%s"):format(tostring(name)), 2)
 	end
 
-	doc [======[
-		@name SetScript
-		@type method
-		@desc Set the script hanlder of the given name (discarded)
-		@param name string, the script's name
-		@param handler function, the script handler
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the script hanlder of the given name (discarded)</desc>
+		<param name="name">string, the script's name</param>
+		<param name="handler">function, the script handler</param>
+		]]
 	function SetScript(self, name, func)
 		error(("Usage : object.%s = func"):format(tostring(name)), 2)
 	end
@@ -303,18 +263,10 @@ class "VirtualUIObject"
 		self.__Name = name
 	end
 
-	doc [======[
-		@name Name
-		@type property
-		@desc The virtual widget object's name, it's parent can use the name to access it by parent[self.Name]
-	]======]
+	__Doc__[[The virtual widget object's name, it's parent can use the name to access it by parent[self.Name]]]
 	property "Name" { Set = SetName, Field = "__Name", Type = String + nil }
 
-	doc [======[
-		@name Parent
-		@type property
-		@desc the virtual widget object's parent widget object, can be virtual or not.
-	]======]
+	__Doc__[[the virtual widget object's parent widget object, can be virtual or not.]]
 	property "Parent" { Type = UIObject + nil }
 
 	------------------------------------------------------

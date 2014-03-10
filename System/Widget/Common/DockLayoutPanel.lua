@@ -8,16 +8,11 @@ if not IGAS:NewAddon("IGAS.Widget.DockLayoutPanel", version) then
 	return
 end
 
+__Doc__[[DockLayoutPanel is using to contain other widget elements and manager their size &amp; position with the dock settings.]]
 class "DockLayoutPanel"
 	inherit "LayoutPanel"
 
 	import "System.Reflector"
-
-	doc [======[
-		@name DockLayoutPanel
-		@type class
-		@desc DockLayoutPanel is using to contain other widget elements and manager their size &amp; position with the dock settings.
-	]======]
 
 	_NORTH = "NORTH"
 	_EAST = "EAST"
@@ -327,59 +322,45 @@ class "DockLayoutPanel"
 	}
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 
-	doc [======[
-		@name AddWidget
-		@type method
-		@desc Add Widget to the panel
-		@format widget[, direction, size, unit]
-		@param widget System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be add
-		@param direction System.Widget.DockLayoutPanel.Direction, the dock position
-		@param size number, if direction is north or south, size means height, otherwise width
-		@param unit System.Widget.Layout.Unit, "pct" means percent, "px" means pixel, "mix" means 40.36 = 36% * panel's width + 40 pixel
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Add Widget to the panel</desc>
+		<format>widget[, direction, size, unit]</format>
+		<param name="widget">System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be add</param>
+		<param name="direction">System.Widget.DockLayoutPanel.Direction, the dock position</param>
+		<param name="size">number, if direction is north or south, size means height, otherwise width</param>
+		<param name="unit">System.Widget.Layout.Unit, "pct" means percent, "px" means pixel, "mix" means 40.36 = 36% * panel's width + 40 pixel</param>
+	]]
 	function AddWidget(self, widget, direction, size, unit)
 		local prefix = "Usage : DockLayoutPanel:AddWidget(widget, direction, size, unit) : "
 
 		return ValidateAdd(self, prefix, direction, nil, widget, size, unit)
 	end
 
-	doc [======[
-		@name InsertWidget
-		@type method
-		@desc Insert Widget to the panel
-		@format before, widget[, direction, size, unit]
-		@param before System.Widget.UIObject|System.Widget.VirtualUIObject, the position to be inserted
-		@param widget System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be add
-		@param direction System.Widget.DockLayoutPanel.Direction, the dock position
-		@param size number, if direction is north or south, size means height, otherwise width
-		@param unit System.Widget.Layout.Unit, "pct" means percent, "px" means pixel, "mix" means 40.36 = 36% * panel's width + 40 pixel
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Insert Widget to the panel</desc>
+		<format>before, widget[, direction, size, unit]</format>
+		<param name="before">System.Widget.UIObject|System.Widget.VirtualUIObject, the position to be inserted</param>
+		<param name="widget">System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be add</param>
+		<param name="direction">System.Widget.DockLayoutPanel.Direction, the dock position</param>
+		<param name="size">number, if direction is north or south, size means height, otherwise width</param>
+		<param name="unit">System.Widget.Layout.Unit, "pct" means percent, "px" means pixel, "mix" means 40.36 = 36% * panel's width + 40 pixel</param>
+	]]
 	function InsertWidget(self, before, widget, direction, size, unit)
 		local prefix = "Usage : DockLayoutPanel:InsertWidget(before, widget, direction, size, unit) : "
 
 		return ValidateAdd(self, prefix, direction, before, widget, size, unit)
 	end
 
-	doc [======[
-		@name RemoveWidget
-		@type method
-		@desc Remove Widget to the panel
-		@format widget|name[, withoutDispose]
-		@param widget System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be remove
-		@param name string, widget or the name that need to be removed
-		@param withoutDispose boolean, true if no need to dispose the removed widget
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Remove Widget to the panel</desc>
+		<format>widget|name[, withoutDispose]</format>
+		<param name="widget">System.Widget.UIObject|System.Widget.VirtualUIObject, the widget element to be remove</param>
+		<param name="name">string, widget or the name that need to be removed</param>
+		<param name="withoutDispose">boolean, true if no need to dispose the removed widget</param>
+	]]
 	function RemoveWidget(self, index, withoutDispose)
 		local obj = Super.RemoveWidget(self, index, true)
 
@@ -408,12 +389,7 @@ class "DockLayoutPanel"
 		return obj
 	end
 
-	doc [======[
-		@name Layout
-		@type method
-		@desc Refresh layout
-		@return nil
-	]======]
+	__Doc__[[Refresh layout]]
 	function Layout(self)
 		SecureUpdateLayout(self)
 	end
@@ -421,11 +397,7 @@ class "DockLayoutPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HSpacing
-		@type property
-		@desc the horizontal spacing for each elements
-	]======]
+	__Doc__[[the horizontal spacing for each elements]]
 	property "HSpacing" {
 		Get = function(self)
 			return self.__DockLayoutPanel_HSpacing or 0
@@ -439,11 +411,7 @@ class "DockLayoutPanel"
 		Type = Number,
 	}
 
-	doc [======[
-		@name VSpacing
-		@type property
-		@desc the vertical spacing for each elements
-	]======]
+	__Doc__[[the vertical spacing for each elements]]
 	property "VSpacing" {
 		Get = function(self)
 			return self.__DockLayoutPanel_VSpacing or 0
@@ -457,11 +425,7 @@ class "DockLayoutPanel"
 		Type = Number,
 	}
 
-	doc [======[
-		@name AutoLayout
-		@type property
-		@desc whether update layout when some elements is shown or hidden
-	]======]
+	__Doc__[[whether update layout when some elements is shown or hidden]]
 	property "AutoLayout" {
 		Get = function(self)
 			return self.__DockLayoutPanel__AutoLayout and true or false

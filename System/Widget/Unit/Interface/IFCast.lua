@@ -42,24 +42,21 @@ function _IFCastUnitList:ParseEvent(event, unit, ...)
 	self:EachK(unit, _IFCast_EVENT_HANDLER[event], ...)
 end
 
+__Doc__[[
+	<desc>IFCast is used to handle the unit's spell casting</desc>
+	<overridable name="Start" type="method">be called when unit begins casting a spell</overridable>
+	<overridable name="Fail" type="method">be called when unit's spell casting failed</overridable>
+	<overridable name="Stop" type="method">be called when the unit stop or cancel the spell casting</overridable>
+	<overridable name="Interrupt" type="method">be called when the unit's spell casting is interrupted</overridable>
+	<overridable name="Interruptible" type="method">be called when the unit's spell casting becomes interruptible</overridable>
+	<overridable name="UnInterruptible" type="method">be called when the unit's spell casting become uninterruptible</overridable>
+	<overridable name="Delay" type="method">be called when the unit's spell casting is delayed</overridable>
+	<overridable name="ChannelStart" type="method">be called when the unit start channeling a spell</overridable>
+	<overridable name="ChannelUpdate" type="method">be called when the unit's channeling spell is interrupted or delayed</overridable>
+	<overridable name="ChannelStop" type="method">be called when the unit stop or cancel the channeling spell</overridable>
+]]
 interface "IFCast"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFCast
-		@type interface
-		@desc IFCast is used to handle the unit's spell casting
-		@overridable Start method, be called when unit begins casting a spell
-		@overridable Fail method, be called when unit's spell casting failed
-		@overridable Stop method, be called when the unit stop or cancel the spell casting
-		@overridable Interrupt method, be called when the unit's spell casting is interrupted
-		@overridable Interruptible, method, be called when the unit's spell casting becomes interruptible
-		@overridable UnInterruptible, method, be called when the unit's spell casting become uninterruptible
-		@overridable Delay, method, be called when the unit's spell casting is delayed
-		@overridable ChannelStart, method, be called when the unit start channeling a spell
-		@overridable ChannelUpdate, method, be called when the unit's channeling spell is interrupted or delayed
-		@overridable ChannelStop, method, be called when the unit stop or cancel the channeling spell
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -68,12 +65,7 @@ interface "IFCast"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
+	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if self.Unit then
 			if UnitCastingInfo(self.Unit) then
@@ -90,134 +82,100 @@ interface "IFCast"
 		end
 	end
 
-	doc [======[
-		@name Start
-		@type method
-		@desc Be called when unit begins casting a spell
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when unit begins casting a spell</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function Start(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Start][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name Fail
-		@type method
-		@desc Be called when unit's spell casting failed
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when unit's spell casting failed</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function Fail(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Fail][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name Stop
-		@type method
-		@desc Be called when the unit stop or cancel the spell casting
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit stop or cancel the spell casting</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function Stop(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Stop][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name Interrupt
-		@type method
-		@desc Be called when the unit's spell casting is interrupted
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit's spell casting is interrupted</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function Interrupt(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Interrupt][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name Interruptible
-		@type method
-		@desc Be called when the unit's spell casting becomes interruptible
-		@return nil
-	]======]
+	__Doc__[[Be called when the unit's spell casting becomes interruptible]]
 	function Interruptible(self)
 		Log(1, "[%s][Interruptible]", tostring(self:GetClass()))
 	end
 
-	doc [======[
-		@name UnInterruptible
-		@type method
-		@desc Be called when the unit's spell casting become uninterruptible
-		@return nil
-	]======]
+	__Doc__[[Be called when the unit's spell casting become uninterruptible]]
 	function UnInterruptible(self)
 		Log(1, "[%s][UnInterruptible]", tostring(self:GetClass()))
 	end
 
-	doc [======[
-		@name Delay
-		@type method
-		@desc Be called when the unit's spell casting is delayed
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit's spell casting is delayed</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function Delay(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Delay][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name ChannelStart
-		@type method
-		@desc Be called when the unit start channeling a spell
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit start channeling a spell</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function ChannelStart(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelStart][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name ChannelUpdate
-		@type method
-		@desc Be called when the unit's channeling spell is interrupted or delayed
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit's channeling spell is interrupted or delayed</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function ChannelUpdate(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelUpdate][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
-	doc [======[
-		@name ChannelStop
-		@type method
-		@desc Be called when the unit stop or cancel the channeling spell
-		@param spell string, the name of the spell that's being casted
-		@param rank string, the rank of the spell that's being casted
-		@param lineID number, spell lineID counter
-		@param spellID number, the id of the spell that's being casted
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Be called when the unit stop or cancel the channeling spell</desc>
+		<param name="spell">string, the name of the spell that's being casted</param>
+		<param name="rank">string, the rank of the spell that's being casted</param>
+		<param name="lineID">number, spell lineID counter</param>
+		<param name="spellID">number, the id of the spell that's being casted</param>
+		]]
 	function ChannelStop(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelStop][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end

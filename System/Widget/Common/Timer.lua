@@ -11,14 +11,9 @@ if not IGAS:NewAddon("IGAS.Widget.Timer", version) then
 	return
 end
 
+__Doc__[[Timer is used to fire an event on a specified interval]]
 class "Timer"
 	inherit "VirtualUIObject"
-
-	doc [======[
-		@name Timer
-		@type class
-		@desc Timer is used to fire an event on a specified interval
-	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -79,21 +74,13 @@ class "Timer"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnTimer
-		@type event
-		@desc Run when the timer is at the right time
-	]======]
+	__Doc__[[Run when the timer is at the right time]]
 	event "OnTimer"
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Interval
-		@type property
-		@desc Gets or sets the interval at which to fire the Elapsed event
-	]======]
+	__Doc__[[Gets or sets the interval at which to fire the Elapsed event]]
 	property "Interval" {
 		Field = "__Interval",
 		Set = function(self, int)
@@ -132,11 +119,7 @@ class "Timer"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Enabled
-		@type property
-		@desc Whether the timer is enabled or disabled, default true
-	]======]
+	__Doc__[[Whether the timer is enabled or disabled, default true]]
 	property "Enabled" {
 		Field = "__Enabled",
 		Set = function(self, flag)

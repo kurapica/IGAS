@@ -9,134 +9,91 @@ if not IGAS:NewAddon("IGAS.Widget.Slider", version) then
 	return
 end
 
+__Doc__[[Sliders are elements intended to display or allow the user to choose a value in a range.]]
 class "Slider"
 	inherit "Frame"
-
-	doc [======[
-		@name Slider
-		@type class
-		@desc Sliders are elements intended to display or allow the user to choose a value in a range.
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	-----------------------------------------------------
-	doc [======[
-		@name OnMinMaxChanged
-		@type event
-		@desc Fired when the slider's minimum and maximum values change
-		@param min new minimun value of the slider bar
-		@param max new maximum value of the slider bar
-	]======]
+	__Doc__[[
+		<desc>Fired when the slider's minimum and maximum values change</desc>
+		<param name="min">new minimun value of the slider bar</param>
+		<param name="max">new maximum value of the slider bar</param>
+	]]
 	event "OnMinMaxChanged"
 
-	doc [======[
-		@name OnValueChanged
-		@type event
-		@desc Fired when the slider's value changes
-		@param value new value of the slider bar
-	]======]
+	__Doc__[[
+		<desc>Fired when the slider's value changes</desc>
+		<param name="value">new value of the slider bar</param>
+	]]
 	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Enable
-		@type method
-		@desc Allows user interaction with the slider
-		@return nil
-	]======]
+	__Doc__"Enable" [[Allows user interaction with the slider]]
 
-	doc [======[
-		@name GetOrientation
-		@type method
-		@desc Returns the orientation of the slider
-		@return System.Widget.Orientation
-	]======]
+	__Doc__"GetOrientation" [[
+		<desc>Returns the orientation of the slider</desc>
+		<return type="System.Widget.Orientation"></return>
+	]]
 
-	doc [======[
-		@name GetThumbTexture
-		@type method
-		@desc Returns the texture for the slider thumb
-		@return System.Widget.Texture the Texture object used for the slider thumb
-	]======]
+	__Doc__[[
+		<desc>Returns the texture for the slider thumb</desc>
+		<return type="System.Widget.Texture">the Texture object used for the slider thumb</return>
+	]]
 	function GetThumbTexture(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetThumbTexture(...))
 	end
 
-	doc [======[
-		@name GetValue
-		@type method
-		@desc Returns the value representing the current position of the slider thumb
-		@return number Value representing the current position of the slider thumb
-	]======]
+	__Doc__"GetValue" [[
+		<desc>Returns the value representing the current position of the slider thumb</desc>
+		<return type="number">Value representing the current position of the slider thumb</return>
+	]]
 
-	doc [======[
-		@name GetValueStep
-		@type method
-		@desc Returns the minimum increment between allowed slider values
-		@return number minimum increment between allowed slider values
-	]======]
+	__Doc__"GetValueStep" [[
+		<desc>Returns the minimum increment between allowed slider values</desc>
+		<return type="number">minimum increment between allowed slider values</return>
+	]]
 
-	doc [======[
-		@name IsEnabled
-		@type method
-		@desc Returns whether user interaction with the slider is allowed
-		@return boolean 1 if user interaction with the slider is allowed; otherwise nil
-	]======]
+	__Doc__"IsEnabled" [[
+		<desc>Returns whether user interaction with the slider is allowed</desc>
+		<return type="boolean">1 if user interaction with the slider is allowed; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetMinMaxValues
-		@type method
-		@desc Sets the minimum and maximum values of the slider
-		@param minValue number, Lower boundary for values represented on the slider
-		@param maxValue number, Upper boundary for values represented on the slider
-		@return nil
-	]======]
+	__Doc__"SetMinMaxValues" [[
+		<desc>Sets the minimum and maximum values of the slider</desc>
+		<param name="minValue">number, Lower boundary for values represented on the slider</param>
+		<param name="maxValue">number, Upper boundary for values represented on the slider</param>
+	]]
 
-	doc [======[
-		@name SetOrientation
-		@type method
-		@desc Sets the orientation of the slider
-		@param orientation System.Widget.Orientation, token describing the orientation and direction of the slider
-		@return nil
-	]======]
+	__Doc__"SetOrientation" [[
+		<desc>Sets the orientation of the slider</desc>
+		<param name="orientation">System.Widget.Orientation, token describing the orientation and direction of the slider</param>
+	]]
 
-	doc [======[
-		@name SetThumbTexture
-		@type method
-		@desc Sets the texture for the slider thumb
-		@format filename|texture[, layer]
-		@param texture System.Widget.Texture, Reference to an existing Texture object
-		@param filename string, Path to a texture image file
-		@param layer System.Widget.DrawLayer, Graphics layer in which the texture should be drawn; defaults to ARTWORK if not specified
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the texture for the slider thumb</desc>
+		<format>filename|texture[, layer]</format>
+		<param name="texture">System.Widget.Texture, Reference to an existing Texture object</param>
+		<param name="filename">string, Path to a texture image file</param>
+		<param name="layer">System.Widget.DrawLayer, Graphics layer in which the texture should be drawn; defaults to ARTWORK if not specified</param>
+	]]
 	function SetThumbTexture(self, texture, layer)
 		self.__Layer = layer
 		return self.__UI:SetThumbTexture(IGAS:GetUI(texture), layer)
 	end
 
-	doc [======[
-		@name SetValue
-		@type method
-		@desc Sets the value representing the position of the slider thumb
-		@param value number, representing the new position of the slider thumb
-		@return nil
-	]======]
+	__Doc__"SetValue" [[
+		<desc>Sets the value representing the position of the slider thumb</desc>
+		<param name="value">number, representing the new position of the slider thumb</param>
+	]]
 
-	doc [======[
-		@name SetValueStep
-		@type method
-		@desc Sets the minimum increment between allowed slider values. The portion of the slider frame's area in which the slider thumb moves is its width (or height, for vertical sliders) minus 16 pixels on either end. If the number of possible values determined by the slider's minimum, maximum, and step values is less than the width (or height) of this area, the step value also affects the movement of the slider thumb
-		@param step number, minimum increment between allowed slider values
-		@return nil
-	]======]
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"SetValueStep" [[
+		<desc>Sets the minimum increment between allowed slider values. The portion of the slider frame's area in which the slider thumb moves is its width (or height, for vertical sliders) minus 16 pixels on either end. If the number of possible values determined by the slider's minimum, maximum, and step values is less than the width (or height) of this area, the step value also affects the movement of the slider thumb</desc>
+		<param name="step">number, minimum increment between allowed slider values</param>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -155,18 +112,10 @@ class "Slider"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Orientation
-		@type property
-		@desc the orientation of the slider
-	]======]
+	__Doc__[[the orientation of the slider]]
 	property "Orientation" { Type = Orientation }
 
-	doc [======[
-		@name ThumbTexture
-		@type property
-		@desc the texture object for the slider thumb
-	]======]
+	__Doc__[[the texture object for the slider thumb]]
 	property "ThumbTexture" {
 		Set = function(self, texture)
 			self:SetThumbTexture(texture, self.Layer)
@@ -175,11 +124,7 @@ class "Slider"
 		Type = Texture + nil,
 	}
 
-	doc [======[
-		@name ThumbTexturePath
-		@type property
-		@desc the texture file path for the slider thumb
-	]======]
+	__Doc__[[the texture file path for the slider thumb]]
 	property "ThumbTexturePath" {
 		Get = function(self)
 			return self:GetThumbTexture() and self:GetThumbTexture().TexturePath
@@ -190,11 +135,7 @@ class "Slider"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name Layer
-		@type property
-		@desc the layer used for drawing the filled-in portion of the slider
-	]======]
+	__Doc__[[the layer used for drawing the filled-in portion of the slider]]
 	property "Layer" {
 		Field = "__Layer",
 		Set = function(self, layer)
@@ -204,25 +145,13 @@ class "Slider"
 		Type = DrawLayer,
 	}
 
-	doc [======[
-		@name Value
-		@type property
-		@desc the value representing the current position of the slider thumb
-	]======]
+	__Doc__[[the value representing the current position of the slider thumb]]
 	property "Value" { Type = Number }
 
-	doc [======[
-		@name ValueStep
-		@type property
-		@desc the minimum increment between allowed slider values
-	]======]
+	__Doc__[[the minimum increment between allowed slider values]]
 	property "ValueStep" { Type = Number }
 
-	doc [======[
-		@name Enabled
-		@type property
-		@desc whether user interaction with the slider is allowed
-	]======]
+	__Doc__[[whether user interaction with the slider is allowed]]
 	property "Enabled" {
 		Get = "IsEnabled",
 		Set = function(self, enabled)
@@ -235,11 +164,7 @@ class "Slider"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name MinMaxValue
-		@type property
-		@desc the minimum and maximum values of the slider bar
-	]======]
+	__Doc__[[the minimum and maximum values of the slider bar]]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())

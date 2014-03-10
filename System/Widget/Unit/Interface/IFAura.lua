@@ -16,14 +16,10 @@ function _IFAuraUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
+__Doc__[[IFAura is used to handle the unit's aura updating]]
 interface "IFAura"
 	extend "IFUnitElement"
 
-	doc [======[
-		@name IFAura
-		@type interface
-		@desc IFAura is used to handle the unit's aura updating
-	]======]
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------

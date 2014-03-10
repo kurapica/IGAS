@@ -6,13 +6,8 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.Unit3DPortrait", version) then
 	return
 end
 
+__Doc__[[The 3D unit portrait]]
 class "Unit3DPortrait"
 	inherit "PlayerModel"
 	extend "IFPortrait"
-
-	doc [======[
-		@name Unit3DPortrait
-		@type class
-		@desc The 3D unit portrait
-	]======]
 endclass "Unit3DPortrait"

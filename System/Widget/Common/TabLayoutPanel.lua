@@ -7,14 +7,9 @@ if not IGAS:NewAddon("IGAS.Widget.TabLayoutPanel", version) then
 	return
 end
 
+__Doc__[[TabLayoutPanel is used to contain tabpages]]
 class "TabLayoutPanel"
 	inherit "LayoutPanel"
-
-	doc [======[
-		@name TabLayoutPanel
-		@type class
-		@desc TabLayoutPanel is used to contain tabpages
-	]======]
 
 	_HeaderSize = 24
 	_Header_MinWidth = 100
@@ -270,34 +265,28 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnTabChange
-		@type event
-		@desc Run when the an Tab is selected
-		@param oldTab System.Widget.Region, the old tabpage
-		@param newTab System.Widget.Region, the new tabpage
-	]======]
+	__Doc__[[
+		<desc>Run when the an Tab is selected</desc>
+		<param name="oldTab">System.Widget.Region, the old tabpage</param>
+		<param name="newTab">System.Widget.Region, the new tabpage</param>
+	]]
 	event "OnTabChange"
 
-	doc [======[
-		@name OnTabClose
-		@type event
-		@desc Run when an tab is closed
-		@param closeTab System.Widget.Region, the closed tabpage
-	]======]
+	__Doc__[[
+		<desc>Run when an tab is closed</desc>
+		<param name="closeTab">System.Widget.Region, the closed tabpage</param>
+	]]
 	event "OnTabClose"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name AddWidget
-		@type method
-		@desc Add element to the panel
-		@param element System.Widget.Region, the ui element to be added
-		@param header string, the tabpage's header title
-		@return number the tabpage's index
-	]======]
+	__Doc__[[
+		<desc>Add element to the panel</desc>
+		<param name="element">System.Widget.Region, the ui element to be added</param>
+		<param name="header">string, the tabpage's header title</param>
+		<return type="number">the tabpage's index</return>
+	]]
 	function AddWidget(self, widget, header)
 		if not Reflector.ObjectIsClass(widget, Region) then
 			error("Usage: TabLayoutPanel:AddWidget(widget, header) : widget - must be an object of System.Widget.Region.", 2)
@@ -326,15 +315,13 @@ class "TabLayoutPanel"
 		return index
 	end
 
-	doc [======[
-		@name InsertWidget
-		@type method
-		@desc Insert element to the panel
-		@param before number, the index to be insert
-		@param element System.Widget.Region, the ui element to be added
-		@param header string, the tabpage's header title
-		@return number the tabpage's index
-	]======]
+	__Doc__[[
+		<desc>Insert element to the panel</desc>
+		<param name="before">number, the index to be insert</param>
+		<param name="element">System.Widget.Region, the ui element to be added</param>
+		<param name="header">string, the tabpage's header title</param>
+		<return type="number">the tabpage's index</return>
+	]]
 	function InsertWidget(self, before, widget, header)
 		before = Super.GetWidgetIndex(self, before)
 
@@ -369,16 +356,14 @@ class "TabLayoutPanel"
 		return index
 	end
 
-	doc [======[
-		@name RemoveWidget
-		@type method
-		@desc Remove element from the panel
-		@format index|name[, withoutDispose]
-		@param index number, index of the tabpage that need to be removed
-		@param name string, the name that need to be removed
-		@param withoutDispose boolean, true if no need dispose the removed widget
-		@return System.Widget.Region return the ui element if withoutDispose is set to true
-	]======]
+	__Doc__[[
+		<desc>Remove element from the panel</desc>
+		<format>index|name[, withoutDispose]</format>
+		<param name="index">number, index of the tabpage that need to be removed</param>
+		<param name="name">string, the name that need to be removed</param>
+		<param name="withoutDispose">boolean, true if no need dispose the removed widget</param>
+		<return type="System.Widget.Region">return the ui element if withoutDispose is set to true</return>
+	]]
 	function RemoveWidget(self, index, withoutDispose)
 		local obj = self:GetWidget(index)
 
@@ -399,13 +384,10 @@ class "TabLayoutPanel"
 		end
 	end
 
-	doc [======[
-		@name SelectWidget
-		@type method
-		@desc Select widget
-		@param element System.Widget.Region, the ui element need to be selected
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Select widget</desc>
+		<param name="element">System.Widget.Region, the ui element need to be selected</param>
+	]]
 	function SelectWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -416,13 +398,10 @@ class "TabLayoutPanel"
 		end
 	end
 
-	doc [======[
-		@name DisableWidget
-		@type method
-		@desc Disable widget
-		@param element System.Widget.Region, the ui element need to be disabled
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Disable widget</desc>
+		<param name="element">System.Widget.Region, the ui element need to be disabled</param>
+	]]
 	function DisableWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -436,13 +415,10 @@ class "TabLayoutPanel"
 		end
 	end
 
-	doc [======[
-		@name EnableWidget
-		@type method
-		@desc Enable widget
-		@param element System.Widget.Region, the ui element need to be enabled
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Enable widget</desc>
+		<param name="element">System.Widget.Region, the ui element need to be enabled</param>
+	]]
 	function EnableWidget(self, widget)
 		widget = self:GetWidget(widget)
 
@@ -456,11 +432,7 @@ class "TabLayoutPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name ShowCloseButton
-		@type property
-		@desc Whether the tabpages can be closed
-	]======]
+	__Doc__[[Whether the tabpages can be closed]]
 	property "ShowCloseButton" {
 		Get = function(self)
 			return self.TabLayoutPanel_Close._Visible
@@ -473,11 +445,7 @@ class "TabLayoutPanel"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name CloseMessage
-		@type property
-		@desc The confirm message if need to close the tabpage
-	]======]
+	__Doc__[[The confirm message if need to close the tabpage]]
 	property "CloseMessage" {
 		Get = function(self)
 			return self.TabLayoutPanel_Header.Container._Message
@@ -493,11 +461,7 @@ class "TabLayoutPanel"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name SelectedWidget
-		@type property
-		@desc The selected ui element
-	]======]
+	__Doc__[[The selected ui element]]
 	property "SelectedWidget" {
 		Get = function(self)
 			local widget
@@ -516,11 +480,7 @@ class "TabLayoutPanel"
 		Type = Region,
 	}
 
-	doc [======[
-		@name AutoDisposing
-		@type property
-		@desc Whether should auto disposing the object if closed
-	]======]
+	__Doc__[[Whether should auto disposing the object if closed]]
 	property "AutoDisposing" {
 		Get = function(self)
 			return not self.__NoAutoDisposing

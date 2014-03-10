@@ -246,42 +246,26 @@ do
 end
 
 interface "Threading"
-	doc [======[
-		@name Sleep
-		@type method
-		@method interface
-		@desc Make current thread sleep for a while
-		@param delay number, the sleep time for current thread
-		@return nil
-		@usage System.Threading.Sleep(10)
-	]======]
+	__Doc__[[
+		<desc>Make current thread sleep for a while</desc>
+		<param name="delay" type="number">the sleep time for current thread</param>
+		<usage>System.Threading.Sleep(10)</usage>
+	]]
 	Sleep = _M.Sleep
 
-	doc [======[
-		@name WaitEvent
-		@type method
-		@method interface
-		@desc Make current thread sleeping until event triggered
-		@format event[, ...]
-		@param event string, event to be waiting for
-		@param ... other events' list
-		@return nil
-		@usage System.Threading.WaitEvent(event1, event2, event3)
-	]======]
+	__Doc__[[
+		<desc>Make current thread sleeping until event triggered</desc>
+		<param name="...">the event list</param>
+		<usage>System.Threading.WaitEvent(event1, event2, event3)</usage>
+	]]
 	WaitEvent = _M.WaitEvent
 
-	doc [======[
-		@name Wait
-		@type method
-		@method interface
-		@desc Make current thread sleeping until event triggered or meet the timeline
-		@format delay|event[, ...]
-		@param delay number, the waiting time's deadline
-		@param event string, the waiting event
-		@param ... other events' list
-		@return nil
-		@usage System.Threading.Wait(10, event1, event2)
-	]======]
+	__Doc__[[
+		<desc>Make current thread sleeping until event triggered or meet the timeline</desc>
+		<param name="delay">number, the waiting time's deadline</param>
+		<param name="...">the event list</param>
+		<usage>System.Threading.Wait(10, event1, event2)</usage>
+	]]
 	Wait = _M.Wait
 
 	------------------------------------------------------
@@ -291,13 +275,11 @@ interface "Threading"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name Resume
-			@type method
-			@desc Resume the thread
-			@param ... resume arguments
-			@return ... return values from thread
-		]======]
+		__Doc__[[
+			<desc>Resume the thread</desc>
+			<param name="...">resume arguments</param>
+			<return type="...">return values from thread</return>
+		]]
 		function Resume(self, ...)
 			if self.Thread then
 				UnregisterAllEvent(self.Thread)
@@ -305,16 +287,11 @@ interface "Threading"
 			end
 		end
 
-		doc [======[
-			@name Wait
-			@type method
-			@desc Make current thread sleeping until event triggered or meet the timeline
-			@format delay|event[, ...]
-			@param delay the waiting time
-			@param event the waiting event
-			@param ... other events' list
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Make current thread sleeping until event triggered or meet the timeline</desc>
+			<param name="delay">the waiting time</param>
+			<param name="...">the event list</param>
+		]]
 		function Wait(self, ...)
 			local co = running()
 
@@ -325,15 +302,10 @@ interface "Threading"
 			return Threading.Wait(...)
 		end
 
-		doc [======[
-			@name WaitEvent
-			@type method
-			@desc Make current thread sleeping until event triggered
-			@format event[, ...]
-			@param event the waiting event
-			@param ... other events' list
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Make current thread sleeping until event triggered</desc>
+			<param name="...">the event list</param>
+		]]
 		function WaitEvent(self, ...)
 			local co = running()
 
@@ -344,14 +316,10 @@ interface "Threading"
 			return Threading.WaitEvent(...)
 		end
 
-		doc [======[
-			@name Sleep
-			@type method
-			@desc Make current thread sleeping
-			@format delay
-			@param delay the waiting time
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Make current thread sleeping</desc>
+			<param name="delay">the waiting time</param>
+		]]
 		function Sleep(self, delay)
 			local co = running()
 

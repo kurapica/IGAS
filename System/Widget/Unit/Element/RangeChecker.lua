@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.RangeChecker", version) then
 	return
 end
 
+__Doc__[[The in-range indicator]]
 class "RangeChecker"
 	inherit "Frame"
 	extend "IFRange"
-
-	doc [======[
-		@name RangeChecker
-		@type class
-		@desc The in-range indicator
-	]======]
 
 	pi = math.pi
 	atan = math.atan
@@ -51,11 +46,7 @@ class "RangeChecker"
 		end,
 	}
 
-	doc [======[
-		@name UseIndicator
-		@type property
-		@desc description
-	]======]
+	__Doc__[[description]]
 	property "UseIndicator" {
 		Get = function(self)
 			return self.__UseIndicator
@@ -66,11 +57,7 @@ class "RangeChecker"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name TexturePath
-		@type property
-		@desc The texture file path for the indicator
-	]======]
+	__Doc__[[The texture file path for the indicator]]
 	property "TexturePath" {
 		Get = function(self)
 			return self:GetChild("Indicator").TexturePath

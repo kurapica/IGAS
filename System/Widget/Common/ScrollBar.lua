@@ -10,14 +10,9 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
 	return
 end
 
+__Doc__[[ScrollBar is used as scroll controller for scrollForm and others]]
 class "ScrollBar"
 	inherit "Frame"
-
-	doc [======[
-		@name ScrollBar
-		@type class
-		@desc ScrollBar is used as scroll controller for scrollForm and others
-	]======]
 
     -- ScrollBar Template
     TEMPLATE_CLASSIC = "CLASSIC"
@@ -121,24 +116,19 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnValueChanged
-		@type event
-		@desc Run when the ScrollBar's or status bar's value changes
-		@param value number, new value of the ScrollBar
-	]======]
+	__Doc__[[
+		<desc>Run when the ScrollBar's or status bar's value changes</desc>
+		<param name="value">number, new value of the ScrollBar</param>
+	]]
 	event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the scrollbar's style
-		@param style System.Widget.ScrollBar.ScrollBarStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the scrollbar's style</desc>
+		<param name="style">System.Widget.ScrollBar.ScrollBarStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -191,113 +181,84 @@ class "ScrollBar"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the scrollbar's style
-		@return System.Widget.ScrollBar.ScrollBarStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the scrollbar's style</desc>
+		<return type="System.Widget.ScrollBar.ScrollBarStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	doc [======[
-		@name GetMinMaxValues
-		@type method
-		@desc Get the current bounds of the slider
-		@return min number, the lower boundary of the slider
-		@return max number, the upper boundary of the silder
-	]======]
+	__Doc__[[
+		<desc>Get the current bounds of the slider</desc>
+		<return type="min">number, the lower boundary of the slider</return>
+		<return type="max">number, the upper boundary of the silder</return>
+	]]
 	function GetMinMaxValues(self)
 		return self:GetChild("Slider"):GetMinMaxValues()
 	end
 
-	doc [======[
-		@name GetValue
-		@type method
-		@desc  Get the current value of the slider
-		@return number the value of the scrollbar
-	]======]
+	__Doc__[[
+		<desc> Get the current value of the slider</desc>
+		<return type="number">the value of the scrollbar</return>
+	]]
 	function GetValue(self)
 		return self:GetChild("Slider"):GetValue()
 	end
 
-	doc [======[
-		@name GetValueStep
-		@type method
-		@desc Get the current step size of the slider
-		@return number the current step size of the slider
-	]======]
+	__Doc__[[
+		<desc>Get the current step size of the slider</desc>
+		<return type="number">the current step size of the slider</return>
+	]]
 	function GetValueStep(self)
 		return self:GetChild("Slider"):GetValueStep()
 	end
 
-	doc [======[
-		@name SetMinMaxValues
-		@type method
-		@desc Sets the minimum and maximum values for the slider
-		@param minValue number, lower boundary for values represented by the slider position
-		@param maxValue number, upper boundary for values represented by the slider position
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the minimum and maximum values for the slider</desc>
+		<param name="minValue">number, lower boundary for values represented by the slider position</param>
+		<param name="maxValue">number, upper boundary for values represented by the slider position</param>
+	]]
 	function SetMinMaxValues(self, iMin, iMax)
 		self:GetChild("Slider"):SetMinMaxValues(iMin, iMax)
 		return UpdateButton(self)
 	end
 
-	doc [======[
-		@name SetValue
-		@type method
-		@desc Sets the value representing the position of the slider thumb
-		@param value number, the value representing the new position of the slider thumb
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the value representing the position of the slider thumb</desc>
+		<param name="value">number, the value representing the new position of the slider thumb</param>
+	]]
 	function SetValue(self, value)
 		self:GetChild("Slider"):SetValue(value)
 		return UpdateButton(self)
 	end
 
-	doc [======[
-		@name SetValueStep
-		@type method
-		@desc Sets the minimum increment between allowed slider values
-		@param value number, Minimum increment between allowed slider values
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the minimum increment between allowed slider values</desc>
+		<param name="value">number, Minimum increment between allowed slider values</param>
+	]]
 	function SetValueStep(self, value)
 		self:GetChild("Slider"):SetValueStep(value)
 	end
 
-	doc [======[
-		@name Disable
-		@type method
-		@desc Disable the scrollbar
-		@return nil
-	]======]
+	__Doc__[[Disable the scrollbar]]
 	function Disable(self)
 		self:GetChild("DownBtn"):Disable()
 		self:GetChild("UpBtn"):Disable()
 		self:GetChild("Slider"):GetThumbTexture():Hide()
 	end
 
-	doc [======[
-		@name Enable
-		@type method
-		@desc Enable the scrollbar
-		@return nil
-	]======]
+	__Doc__[[Enable the scrollbar]]
 	function Enable(self)
 		self:GetChild("Slider"):GetThumbTexture():Show()
 
 		return UpdateButton(self)
 	end
 
-	doc [======[
-		@name IsEnabled
-		@type method
-		@desc Whether if the scrollbar is enabled
-		@return boolean true if the scrollbar is enabled
-	]======]
+	__Doc__[[
+		<desc>Whether if the scrollbar is enabled</desc>
+		<return type="boolean">true if the scrollbar is enabled</return>
+	]]
 	function IsEnabled(self)
 		return self:GetChild("Slider"):GetThumbTexture():IsShown()
 	end
@@ -305,33 +266,21 @@ class "ScrollBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Value
-		@type property
-		@desc the value representing the current position of the slider thumb
-	]======]
+	__Doc__[[the value representing the current position of the slider thumb]]
 	property "Value" {
 		Set = "SetValue",
 		Get = "GetValue",
 		Type = Number,
 	}
 
-	doc [======[
-		@name ValueStep
-		@type property
-		@desc the minimum increment between allowed slider values
-	]======]
+	__Doc__[[the minimum increment between allowed slider values]]
 	property "ValueStep" {
 		Set = "SetValueStep",
 		Get = "GetValueStep",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Enabled
-		@type property
-		@desc whether user interaction with the slider is allowed
-	]======]
+	__Doc__[[whether user interaction with the slider is allowed]]
 	property "Enabled" {
 		Set = function(self, flag)
 			if flag then
@@ -344,22 +293,14 @@ class "ScrollBar"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the scrollbar's style
-	]======]
+	__Doc__[[the scrollbar's style]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = ScrollBarStyle,
 	}
 
-	doc [======[
-		@name MinMaxValue
-		@type property
-		@desc the min &amp; max boundary of the scrollbar's values
-	]======]
+	__Doc__[[the min &amp; max boundary of the scrollbar's values]]
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self:GetMinMaxValues())

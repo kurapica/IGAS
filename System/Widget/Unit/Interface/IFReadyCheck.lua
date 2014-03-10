@@ -46,19 +46,16 @@ function RefreshCheck(self, event)
 	end
 end
 
+__Doc__[[
+	<desc>IFReadyCheck is used to handle the unit ready check state's updating</desc>
+	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the ready check indicator should be shown</overridable>
+	<overridable name="Alpha" type="property" valuetype="number">used to receive the ready check indicator's opacity</overridable>
+	<overridable name="Start" type="method">be called when the unit's ready check is started</overridable>
+	<overridable name="Confirm" type="method">be called when the unit's ready check is confirmed</overridable>
+	<overridable name="Finish" type="method">be called when the unit's ready check is finished</overridable>
+]]
 interface "IFReadyCheck"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFReadyCheck
-		@type interface
-		@desc IFReadyCheck is used to handle the unit ready check state's updating
-		@overridable Visible property, boolean, used to receive the result that whether the ready check indicator should be shown
-		@overridable Alpha property, number, used to receive the ready check indicator's opacity
-		@overridable Start method, be called when the unit's ready check is started
-		@overridable Confirm method, be called when the unit's ready check is confirmed
-		@overridable Finish method, be called when the unit's ready check is finished
-	]======]
 
 	FINISH_TIME = 10
 	FADE_TIME = 1.5
@@ -75,12 +72,7 @@ interface "IFReadyCheck"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Start
-		@type method
-		@desc Start the ready check, overridable
-		@return nil
-	]======]
+	__Doc__[[Start the ready check, overridable]]
 	function Start(self)
 		if self:IsClass(Texture) then
 			self.TexturePath = READY_CHECK_WAITING_TEXTURE
@@ -90,13 +82,10 @@ interface "IFReadyCheck"
 		end
 	end
 
-	doc [======[
-		@name Confirm
-		@type method
-		@desc Confirm the ready check, overridable
-		@param ready boolean
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Confirm the ready check, overridable</desc>
+		<param name="ready">boolean</param>
+	]]
 	function Confirm(self, ready)
 		if self:IsClass(Texture) then
 			if ready then
@@ -111,12 +100,7 @@ interface "IFReadyCheck"
 		end
 	end
 
-	doc [======[
-		@name Finish
-		@type method
-		@desc Finish the ready check, overridable
-		@return nil
-	]======]
+	__Doc__[[Finish the ready check, overridable]]
 	function Finish(self)
 		if self:IsClass(Texture) then
 			if self.ReadyCheckStatus == "waiting" then

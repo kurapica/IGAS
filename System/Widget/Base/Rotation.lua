@@ -9,73 +9,46 @@ if not IGAS:NewAddon("IGAS.Widget.Rotation", version) then
 	return
 end
 
+__Doc__[[Rotation is an Animation that automatically applies an affine rotation to the region being animated. You can set the origin around which the rotation is being done, and the angle of rotation in either degrees or radians.]]
 class "Rotation"
 	inherit "Animation"
-
-	doc [======[
-		@name Rotation
-		@type class
-		@desc Rotation is an Animation that automatically applies an affine rotation to the region being animated. You can set the origin around which the rotation is being done, and the angle of rotation in either degrees or radians.
-	]======]
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetDegrees
-		@type method
-		@desc Returns the animation's rotation amount (in degrees)
-		@return number Amount by which the region rotates over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)
-	]======]
+	__Doc__"GetDegrees" [[
+		<desc>Returns the animation's rotation amount (in degrees)</desc>
+		<return type="number">Amount by which the region rotates over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)</return>
+	]]
 
-	doc [======[
-		@name GetOrigin
-		@type method
-		@desc Returns the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
-		@return point System.Widget.FramePoint, anchor point for the rotation origin
-		@return xOffset number, horizontal distance from the anchor point to the rotation origin (in pixels)
-		@return yOffset number, vertical distance from the anchor point to the rotation origin (in pixels)
-	]======]
+	__Doc__"GetOrigin" [[
+		<desc>Returns the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.</desc>
+		<return type="point">System.Widget.FramePoint, anchor point for the rotation origin</return>
+		<return type="xOffset">number, horizontal distance from the anchor point to the rotation origin (in pixels)</return>
+		<return type="yOffset">number, vertical distance from the anchor point to the rotation origin (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetRadians
-		@type method
-		@desc Returns the animation's rotation amount (in radians)
-		@return number Amount by which the region rotates over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)
-	]======]
+	__Doc__"GetRadians" [[
+		<desc>Returns the animation's rotation amount (in radians)</desc>
+		<return type="number">Amount by which the region rotates over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)</return>
+	]]
 
-	doc [======[
-		@name SetDegrees
-		@type method
-		@desc Sets the animation's rotation amount (in degrees)
-		@param degrees number, Amount by which the region should rotate over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)
-		@return nil
-	]======]
+	__Doc__"SetDegrees" [[
+		<desc>Sets the animation's rotation amount (in degrees)</desc>
+		<param name="degrees">number, Amount by which the region should rotate over the animation's duration (in degrees; positive values for counter-clockwise rotation, negative for clockwise)</param>
+	]]
 
-	doc [======[
-		@name SetOrigin
-		@type method
-		@desc Sets the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.
-		@param point System.Widget.FramePoint, anchor point for the rotation origin
-		@param xOffset number, horizontal distance from the anchor point to the rotation origin (in pixels)
-		@param yOffset number, vertical distance from the anchor point to the rotation origin (in pixels)
-	]======]
+	__Doc__"SetOrigin" [[
+		<desc>Sets the rotation animation's origin point. During a rotation animation, the origin point remains in place while the positions of all other points in the scaled region are moved according to the rotation amount.</desc>
+		<param name="point">System.Widget.FramePoint, anchor point for the rotation origin</param>
+		<param name="xOffset">number, horizontal distance from the anchor point to the rotation origin (in pixels)</param>
+		<param name="yOffset">number, vertical distance from the anchor point to the rotation origin (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetRadians
-		@type method
-		@desc Sets the animation's rotation amount (in radians)
-		@param radians number, amount by which the region should rotate over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)
-		@return nil
-	]======]
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"SetRadians" [[
+		<desc>Sets the animation's rotation amount (in radians)</desc>
+		<param name="radians">number, amount by which the region should rotate over the animation's duration (in radians; positive values for counter-clockwise rotation, negative for clockwise)</param>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -98,25 +71,13 @@ class "Rotation"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Degrees
-		@type property
-		@desc the animation's rotation amount (in degrees)
-	]======]
+	__Doc__[[the animation's rotation amount (in degrees)]]
 	property "Degrees" { Type = Number }
 
-	doc [======[
-		@name Radians
-		@type property
-		@desc the animation's rotation amount (in radians)
-	]======]
+	__Doc__[[the animation's rotation amount (in radians)]]
 	property "Radians" { Type = Number }
 
-	doc [======[
-		@name Origin
-		@type property
-		@desc the rotation animation's origin point
-	]======]
+	__Doc__[[the rotation animation's origin point]]
 	property "Origin" {
 		Get = function(self)
 			return AnimOriginType(self:GetOrigin())

@@ -8,36 +8,22 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.ComboBar", version) then
 	return
 end
 
+__Doc__[[The bar to show the combo points of the target]]
 class "ComboBar"
 	inherit "Frame"
 	extend "IFComboPoint"
 
-	doc [======[
-		@name ComboBar
-		@type class
-		@desc The bar to show the combo points of the target
-	]======]
-
 	GameTooltip = _G.GameTooltip
 	MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 
+	__Doc__[[The combo point element]]
 	class "ComboPoint"
 		inherit "Frame"
-
-		doc [======[
-			@name ComboPoint
-			@type class
-			@desc The combo point element
-		]======]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Activated
-			@type property
-			@desc Whether the combo point is activated
-		]======]
+		__Doc__[[Whether the combo point is activated]]
 		property "Activated" {
 			Get = function(self)
 				return self.__Activated or false

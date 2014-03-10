@@ -19,14 +19,9 @@ if not IGAS:NewAddon("IGAS.Widget.ComboBox", version) then
 	return
 end
 
+__Doc__[[ComboBox is using for choosing one item from a list]]
 class "ComboBox"
 	inherit "Frame"
-
-	doc [======[
-		@name ComboBox
-		@type class
-		@desc ComboBox is using for choosing one item from a list
-	]======]
 
 	WorldFrame = IGAS.WorldFrame
 
@@ -251,67 +246,40 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnValueChanged
-		@type event
-		@desc Run when the choosed item is changed
-		@param value any, the choosed item's value
-	]======]
+	__Doc__[[
+		<desc>Run when the choosed item is changed</desc>
+		<param name="value">any, the choosed item's value</param>
+	]]
 	event "OnValueChanged"
 
-	doc [======[
-		@name OnTextChanged
-		@type event
-		@desc Run when the comboBox's text is changed
-		@param text the text displayed on the combobox
-	]======]
+	__Doc__[[
+		<desc>Run when the comboBox's text is changed</desc>
+		<param name="text">the text displayed on the combobox</param>
+	]]
 	event "OnTextChanged"
 
-	doc [======[
-		@name OnEditFocusGained
-		@type event
-		@desc Run when the comboBox becomes focused for keyboard input
-	]======]
+	__Doc__[[Run when the comboBox becomes focused for keyboard input]]
 	event "OnEditFocusGained"
 
-	doc [======[
-		@name OnEditFocusLost
-		@type event
-		@desc Run when the comboBox loses keyboard input focus
-	]======]
+	__Doc__[[Run when the comboBox loses keyboard input focus]]
 	event "OnEditFocusLost"
 
-	doc [======[
-		@name OnEnterPressed
-		@type event
-		@desc Run when the Enter (or Return) key is pressed while the comboBox has keyboard focus
-	]======]
+	__Doc__[[Run when the Enter (or Return) key is pressed while the comboBox has keyboard focus]]
 	event "OnEnterPressed"
 
-	doc [======[
-		@name OnEscapePressed
-		@type event
-		@desc Run when the Escape key is pressed while the comboBox has keyboard focus
-	]======]
+	__Doc__[[Run when the Escape key is pressed while the comboBox has keyboard focus]]
 	event "OnEscapePressed"
 
-	doc [======[
-		@name OnTabPressed
-		@type event
-		@desc Run when the Tab key is pressed while the comboBox has keyboard focus
-	]======]
+	__Doc__[[Run when the Tab key is pressed while the comboBox has keyboard focus]]
 	event "OnTabPressed"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name SetStyle
-		@type method
-		@desc Sets the ComboBox's style
-		@param style System.Widget.ComboBoxStyle
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the ComboBox's style</desc>
+		<param name="style">System.Widget.ComboBoxStyle</param>
+	]]
 	function SetStyle(self, style)
 		local t
 
@@ -411,22 +379,15 @@ class "ComboBox"
 		self.__Style = style
 	end
 
-	doc [======[
-		@name GetStyle
-		@type method
-		@desc Gets the ComboBox's style
-		@return System.Widget.ComboBoxStyle
-	]======]
+	__Doc__[[
+		<desc>Gets the ComboBox's style</desc>
+		<return type="System.Widget.ComboBoxStyle"></return>
+	]]
 	function GetStyle(self)
 		return self.__Style or TEMPLATE_LIGHT
 	end
 
-	doc [======[
-		@name Clear
-		@type method
-		@desc Clear item list
-		@return nil
-	]======]
+	__Doc__[[Clear item list]]
 	function Clear(self)
 		for i = #self.Keys, 1, -1 do
 			self.Keys[i] = nil
@@ -444,16 +405,13 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name AddItem
-		@type method
-		@desc Add an item to the comboBox
-		@format key, text[, icon]
-		@param key any, the key of the item
-		@param text string, the text to be displayed for the item
-		@param icon string, the item icon's texture path
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Add an item to the comboBox</desc>
+		<format>key, text[, icon]</format>
+		<param name="key">any, the key of the item</param>
+		<param name="text">string, the text to be displayed for the item</param>
+		<param name="icon">string, the item icon's texture path</param>
+	]]
 	function AddItem(self, key, text, icon, frame)
 		if key ~= nil then
 			self.Keys[#self.Keys + 1] = key
@@ -471,16 +429,13 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name SetItem
-		@type method
-		@desc Modify or add an item in the item list
-		@format key, text[, icon]
-		@param key any, the key of the item
-		@param text string, the text to be displayed for the item
-		@param icon string, the item icon's texture path
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Modify or add an item in the item list</desc>
+		<format>key, text[, icon]</format>
+		<param name="key">any, the key of the item</param>
+		<param name="text">string, the text to be displayed for the item</param>
+		<param name="icon">string, the item icon's texture path</param>
+	]]
 	function SetItem(self, key, text, icon, frame)
 		local idx = 1
 		if key == nil then
@@ -503,15 +458,13 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetItem
-		@type method
-		@desc Get an item's info from the item list by key
-		@param key any, the key of the item
-		@return key any, the key of the item
-		@return text string, the text of the item, to be displayed for informations
-		@return icon string, the icon of the item, will be shown at the left of the text if setted
-	]======]
+	__Doc__[[
+		<desc>Get an item's info from the item list by key</desc>
+		<param name="key">any, the key of the item</param>
+		<return type="key">any, the key of the item</return>
+		<return type="text">string, the text of the item, to be displayed for informations</return>
+		<return type="icon">string, the icon of the item, will be shown at the left of the text if setted</return>
+	]]
 	function GetItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -525,28 +478,23 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetItemByIndex
-		@type method
-		@desc Get an item's info from the item list by index
-		@param index number, the index of the item
-		@return key any, the key of the item
-		@return text string, the text of the item, to be displayed for informations
-		@return icon string, the icon of the item, will be shown at the left of the text if setted
-	]======]
+	__Doc__[[
+		<desc>Get an item's info from the item list by index</desc>
+		<param name="index">number, the index of the item</param>
+		<return type="key">any, the key of the item</return>
+		<return type="text">string, the text of the item, to be displayed for informations</return>
+		<return type="icon">string, the icon of the item, will be shown at the left of the text if setted</return>
+	]]
 	function GetItemByIndex(self, idx)
 		if self.Keys[idx] then
 			return self.Keys[idx], self.Items[idx], self.Icons[idx], self.Frames[idx]
 		end
 	end
 
-	doc [======[
-		@name RemoveItem
-		@type method
-		@desc Remove an item from the item list by key
-		@param key any, the key of the item
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Remove an item from the item list by key</desc>
+		<param name="key">any, the key of the item</param>
+	]]
 	function RemoveItem(self, key)
 		local idx = 1
 		if key == nil then
@@ -572,14 +520,10 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name SetList
-		@type method
-		@desc Build item list from a table
-		@param list table, a table contains key-value pairs
-		@return nil
-		@usage object::SetList{[true] = "True", [false] = "False"}
-	]======]
+	__Doc__[[
+		<desc>Build item list from a table</desc>
+		<param name="list">table, a table contains key-value pairs</param>
+	]]
 	function SetList(self, list)
 		self:Clear()
 		if type(list) == "table" then
@@ -591,23 +535,18 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetDisplayItemCount
-		@type method
-		@desc Gets the display item count of the comboBox
-		@return number the displayed item count
-	]======]
+	__Doc__[[
+		<desc>Gets the display item count of the comboBox</desc>
+		<return type="number">the displayed item count</return>
+	]]
 	function GetDisplayItemCount(self)
 		return self.__DisplayItemCount
 	end
 
-	doc [======[
-		@name SetDisplayItemCount
-		@type method
-		@desc Sets the display item count of the comboBox
-		@param count number, the displayed item count
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the display item count of the comboBox</desc>
+		<param name="count">number, the displayed item count</param>
+	]]
 	function SetDisplayItemCount(self, cnt)
 		self.__DisplayItemCount = cnt
 		if _List.Visible and _List.__ComboBox == self then
@@ -615,23 +554,18 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetValue
-		@type method
-		@desc Gets the choosed item's value of the comboBox=
-		@return any the choosed item's key
-	]======]
+	__Doc__[[
+		<desc>Gets the choosed item's value of the comboBox=</desc>
+		<return type="any">the choosed item's key</return>
+	]]
 	function GetValue(self)
 		return self.__Value
 	end
 
-	doc [======[
-		@name SetValue
-		@type method
-		@desc Sets a value to the comboBox, make it select the match item
-		@param value the item's key that need to be choosed
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets a value to the comboBox, make it select the match item</desc>
+		<param name="value">the item's key that need to be choosed</param>
+	]]
 	function SetValue(self, value)
 		local text, icon
 		if self.__Value == value then
@@ -677,23 +611,18 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetText
-		@type method
-		@desc Gets the text of the comboBox
-		@return string the combobox's displayed text
-	]======]
+	__Doc__[[
+		<desc>Gets the text of the comboBox</desc>
+		<return type="string">the combobox's displayed text</return>
+	]]
 	function GetText(self)
 		return self:GetChild("Text"):GetText()
 	end
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc Sets the text of the comboBox, if a item is match for that text, would be selected
-		@param text string, the text to be displayed
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Sets the text of the comboBox, if a item is match for that text, would be selected</desc>
+		<param name="text">string, the text to be displayed</param>
+	]]
 	function SetText(self, text)
 		local value, icon
 		if text and type(text) == "string" and self:GetChild("Text").Text ~= text then
@@ -737,23 +666,18 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetEditable
-		@type method
-		@desc Whether the comboBox is editable
-		@return boolean true if the combobox is ediatable
-	]======]
+	__Doc__[[
+		<desc>Whether the comboBox is editable</desc>
+		<return type="boolean">true if the combobox is ediatable</return>
+	]]
 	function GetEditable(self)
 		return self:GetChild("Text").MouseEnabled
 	end
 
-	doc [======[
-		@name SetEditable
-		@type method
-		@desc Set the comboBox's editable
-		@param editable boolean, true if the combobox should be ediatable
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set the comboBox's editable</desc>
+		<param name="editable">boolean, true if the combobox should be ediatable</param>
+	]]
 	function SetEditable(self, flag)
 		self:GetChild("Text").MouseEnabled = flag
 		if not flag then
@@ -764,23 +688,18 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name GetTextObject
-		@type method
-		@desc Return the text object of the comboBox, using for special needs
-		@return System.Widget.EditBox
-	]======]
+	__Doc__[[
+		<desc>Return the text object of the comboBox, using for special needs</desc>
+		<return type="System.Widget.EditBox"></return>
+	]]
 	function GetTextObject(self)
 		return self:GetChild("Text")
 	end
 
-	doc [======[
-		@name SetAutoFocus
-		@type method
-		@desc Set whether or not the comboBox will attempt to get input focus when it gets shown
-		@param enable boolean, true to enable the comboBox to automatically acquire keyboard input focus; false to disable
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Set whether or not the comboBox will attempt to get input focus when it gets shown</desc>
+		<param name="enable">boolean, true to enable the comboBox to automatically acquire keyboard input focus; false to disable</param>
+	]]
 	function SetAutoFocus(self, flag)
 		if flag and self:GetChild("Text").MouseEnabled then
 			self:GetChild("Text").AutoFocus = true
@@ -789,42 +708,28 @@ class "ComboBox"
 		end
 	end
 
-	doc [======[
-		@name function_name
-		@type method
-		@desc Whether if the ComboBox has autofocus enabled
-		@return boolean true if the combobox is auto focus
-	]======]
+	__Doc__[[
+		<desc>Whether if the ComboBox has autofocus enabled</desc>
+		<return type="boolean">true if the combobox is auto focus</return>
+	]]
 	function IsAutoFocus(self)
 		return self:GetChild("Text").AutoFocus
 	end
 
-	doc [======[
-		@name ClearFocus
-		@type method
-		@desc Releases keyboard input focus from the ComboBox
-		@return nil
-	]======]
+	__Doc__[[Releases keyboard input focus from the ComboBox]]
 	function ClearFocus(self)
 		self:GetChild("Text"):ClearFocus()
 	end
 
-	doc [======[
-		@name function_name
-		@type method
-		@desc Returns whether the ComboBox is currently focused for keyboard input
-		@return boolean true if the combobox is focused
-	]======]
+	__Doc__[[
+		<desc>Returns whether the ComboBox is currently focused for keyboard input</desc>
+		<return type="boolean">true if the combobox is focused</return>
+	]]
 	function HasFocus(self)
 		return self:GetChild("Text"):HasFocus()
 	end
 
-	doc [======[
-		@name SetFocus
-		@type method
-		@desc Move input focus (the cursor) to this ComboBox
-		@return nil
-	]======]
+	__Doc__[[Move input focus (the cursor) to this ComboBox]]
 	function SetFocus(self)
 		if self:GetChild("Text").MouseEnabled then
 			self:GetChild("Text"):SetFocus()
@@ -834,22 +739,14 @@ class "ComboBox"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name AutoFocus
-		@type property
-		@desc whether the comboBox is auto focus
-	]======]
+	__Doc__[[whether the comboBox is auto focus]]
 	property "AutoFocus" {
 		Set = "SetAutoFocus",
 		Get = "IsAutoFocus",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Focused
-		@type property
-		@desc whether the comboBox is focused
-	]======]
+	__Doc__[[whether the comboBox is focused]]
 	property "Focused" {
 		Set = function(self, focus)
 			if focus then
@@ -862,55 +759,35 @@ class "ComboBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name DisplayItemCount
-		@type property
-		@desc the comboBox's displayed item count
-	]======]
+	__Doc__[[the comboBox's displayed item count]]
 	property "DisplayItemCount" {
 		Set = "SetDisplayItemCount",
 		Get = "GetDisplayItemCount",
 		Type = Number,
 	}
 
-	doc [======[
-		@name Value
-		@type property
-		@desc the choosed item's value
-	]======]
+	__Doc__[[the choosed item's value]]
 	property "Value" {
 		Set = "SetValue",
 		Get = "GetValue",
 		Type = Any,
 	}
 
-	doc [======[
-		@name Text
-		@type property
-		@desc the displayed text
-	]======]
+	__Doc__[[the displayed text]]
 	property "Text" {
 		Set = "SetText",
 		Get = "GetText",
 		Type = LocaleString,
 	}
 
-	doc [======[
-		@name Editable
-		@type property
-		@desc whether the comboBox is ediatable
-	]======]
+	__Doc__[[whether the comboBox is ediatable]]
 	property "Editable" {
 		Set = "SetEditable",
 		Get = "GetEditable",
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name HideDropDownButton
-		@type property
-		@desc whether DropdownBtn should be hidden
-	]======]
+	__Doc__[[whether DropdownBtn should be hidden]]
 	property "HideDropDownButton" {
 		Set = function(self, flag)
 			self:GetChild("DropdownBtn").Visible = not flag
@@ -924,11 +801,7 @@ class "ComboBox"
 		Type = Boolean,
 	}
 
-	doc [======[
-		@name Keys
-		@type property
-		@desc the comboBox item's key list
-	]======]
+	__Doc__[[the comboBox item's key list]]
 	property "Keys" {
 		Set = function(self, keys)
 			if keys then
@@ -944,11 +817,7 @@ class "ComboBox"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Items
-		@type property
-		@desc the comboBox item's text list
-	]======]
+	__Doc__[[the comboBox item's text list]]
 	property "Items" {
 		Set = function(self, items)
 			if items then
@@ -964,11 +833,7 @@ class "ComboBox"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Icons
-		@type property
-		@desc the comboBox item's icon list
-	]======]
+	__Doc__[[the comboBox item's icon list]]
 	property "Icons" {
 		Set = function(self, icons)
 			if icons then
@@ -984,11 +849,7 @@ class "ComboBox"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name Frames
-		@type property
-		@desc the comboBox item's frame list
-	]======]
+	__Doc__[[the comboBox item's frame list]]
 	property "Frames" {
 		Set = function(self, frames)
 			if frames then
@@ -1004,11 +865,7 @@ class "ComboBox"
 		Type = Table + Userdata + nil,
 	}
 
-	doc [======[
-		@name ItemCount
-		@type property
-		@desc the item's count
-	]======]
+	__Doc__[[the item's count]]
 	property "ItemCount" {
 		Get = function(self)
 			return #self.Keys
@@ -1017,22 +874,14 @@ class "ComboBox"
 		Type = Number,
 	}
 
-	doc [======[
-		@name Style
-		@type property
-		@desc the comboBox's style
-	]======]
+	__Doc__[[the comboBox's style]]
 	property "Style" {
 		Set = "SetStyle",
 		Get = "GetStyle",
 		Type = ComboBoxStyle,
 	}
 
-	doc [======[
-		@name JustifyH
-		@type property
-		@desc the comboBox's horizontal text alignment style
-	]======]
+	__Doc__[[the comboBox's horizontal text alignment style]]
 	property "JustifyH" {
 		Set = function(self, justifyH)
 			self:GetChild("Text").JustifyH = justifyH

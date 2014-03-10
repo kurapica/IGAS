@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.AuraPanel", version) then
 	return
 end
 
+__Doc__[[The aura panel to display buffs or debuffs]]
 class "AuraPanel"
 	inherit "Frame"
 	extend "IFElementPanel""IFAura"
-
-	doc [======[
-		@name AuraPanel
-		@type class
-		@desc The aura panel to display buffs or debuffs
-	]======]
 
 	_FILTER_LIST = {
 		CANCELABLE = true,
@@ -47,15 +42,11 @@ class "AuraPanel"
 		return ret
 	end
 
+	__Doc__[[The icon to display buff or debuff]]
 	class "AuraIcon"
 		inherit "Frame"
 		extend "IFCooldownIndicator"
 
-		doc [======[
-			@name AuraIcon
-			@type class
-			@desc The icon to display buff or debuff
-		]======]
 
 		_BorderColor = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
 		_BackDrop = {
@@ -70,16 +61,13 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		doc [======[
-			@name Refresh
-			@type method
-			@desc Refresh the icon
-			@format unit, index[, filter]
-			@param unit string, the unit
-			@param index number, the aura index
-			@param filter string, the filiter token
-			@return nil
-		]======]
+		__Doc__[[
+			<desc>Refresh the icon</desc>
+			<format>unit, index[, filter]</format>
+			<param name="unit">string, the unit</param>
+			<param name="index">number, the aura index</param>
+			<param name="filter">string, the filiter token</param>
+			]]
 		function Refresh(self, unit, index, filter)
 			local name, rank, texture, count, dtype, duration, expires, caster, isStealable, shouldConsolidate, spellID, canApplyAura, isBossDebuff = UnitAura(unit, index, filter)
 
@@ -150,18 +138,10 @@ class "AuraPanel"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Index
-			@type property
-			@desc The aura index
-		]======]
+		__Doc__[[The aura index]]
 		property "Index" { Type = Number }
 
-		doc [======[
-			@name ShowTooltip
-			@type property
-			@desc Whether show the tooltip of the aura
-		]======]
+		__Doc__[[Whether show the tooltip of the aura]]
 		property "ShowTooltip" {
 			Field = "__ShowTooltip",
 			Set = function(self, flag)
@@ -254,16 +234,14 @@ class "AuraPanel"
 		self:UpdatePanelSize()
 	end
 
-	doc [======[
-		@name CustomFilter
-		@type method
-		@desc The custom filter method, overridable
-		@format unit, index[, filter]
-		@param unit string, the unit
-		@param index number, the aura index
-		@param filter string, the filiter token
-		@return boolean true if the aura should be shown
-	]======]
+	__Doc__[[
+		<desc>The custom filter method, overridable</desc>
+		<format>unit, index[, filter]</format>
+		<param name="unit">string, the unit</param>
+		<param name="index">number, the aura index</param>
+		<param name="filter">string, the filiter token</param>
+		<return type="boolean">true if the aura should be shown</return>
+	]]
 	function CustomFilter(self, unit, index, filter)
 		return true
 	end
@@ -271,11 +249,7 @@ class "AuraPanel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Filter
-		@type property
-		@desc The filter token, CANCELABLE | HARMFUL | HELPFUL | NOT_CANCELABLE | PLAYER | RAID, can be combined with '|'
-	]======]
+	__Doc__[[The filter token, CANCELABLE | HARMFUL | HELPFUL | NOT_CANCELABLE | PLAYER | RAID, can be combined with '|']]
 	property "Filter" {
 		Get = function(self)
 			return self.__AuraPanelFilter
@@ -294,11 +268,7 @@ class "AuraPanel"
 		Type = String + nil,
 	}
 
-	doc [======[
-		@name HighLightPlayer
-		@type class
-		@desc Whether should highlight auras that casted by the player
-	]======]
+	__Doc__[[Whether should highlight auras that casted by the player]]
 	property "HighLightPlayer" {
 		Get = function(self)
 			return self.__HighLightPlayer or false

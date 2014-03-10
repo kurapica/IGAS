@@ -89,8 +89,8 @@ end
 --- Do task or save task to task list
 -- @name RegisterTask
 -- @type function
--- @param func function to call
--- @param ... args for the function
+-- <param name="func">function to call</param>
+-- <param name="...">args for the function</param>
 ------------------------------------
 function RegisterTask(func, ...)
 	if not InCombatLockdown() then
@@ -124,24 +124,17 @@ function RegisterTask(func, ...)
 	end
 end
 
+__Doc__[[IFNoCombatTaskHandler provide a class method to register no-combat task]]
 interface "IFNoCombatTaskHandler"
-	doc [======[
-		@name IFNoCombatTaskHandler
-		@type interface
-		@desc IFNoCombatTaskHandler provide a class method to register no-combat task
-	]======]
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name RegisterNoCombatTask
-		@type method
-		@desc Register task to do when no combat
-		@param func function, the task function
-		@param ... the function's parameters
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Register task to do when no combat</desc>
+		<param name="func">function, the task function</param>
+		<param name="...">the function's parameters</param>
+	]]
 	function RegisterNoCombatTask(self, func, ...)
 		if type(func) == "function" then
 			return RegisterTask(func, ...)
@@ -152,14 +145,11 @@ interface "IFNoCombatTaskHandler"
 		error("Usage: Object:RegisterNoCombatTask(func, ...) - 'func' must be function or method name.", 2)
 	end
 
-	doc [======[
-		@name _RegisterNoCombatTask
-		@type method
-		@desc Register task to do when no combat
-		@param func function, the task function
-		@param ... the function's parameters
-		@return nil
-	]======]
+	__Doc__[[
+		<desc>Register task to do when no combat</desc>
+		<param name="func">function, the task function</param>
+		<param name="...">the function's parameters</param>
+	]]
 	function _RegisterNoCombatTask(func, ...)
 		if type(func) == "function" then
 			return RegisterTask(func, ...)

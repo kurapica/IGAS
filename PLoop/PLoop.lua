@@ -603,23 +603,13 @@ do
 
 	-- SetNameSpace
 	function SetNameSpace4Env(env, name)
-		if type(env) ~= "table" then
-			return
-		end
+		if type(env) ~= "table" then return end
 
-		if type(name) == "string" then
-			local ns = BuildNameSpace(GetDefaultNameSpace(), name)
+		local ns = type(name) == "string" and BuildNameSpace(GetDefaultNameSpace(), name) or IsNameSpace(name) and name or nil
 
-			if ns then
-				rawset(env, NAMESPACE_FIELD, ns)
-			else
-				rawset(env, NAMESPACE_FIELD, nil)
-			end
-		elseif IsNameSpace(name) then
-			rawset(env, NAMESPACE_FIELD, name)
-		else
-			rawset(env, NAMESPACE_FIELD, nil)
-		end
+		rawset(env, NAMESPACE_FIELD, ns)
+
+		return ns
 	end
 
 	-- GetEnvNameSpace
@@ -660,7 +650,11 @@ do
 			error([[Usage: namespace "namespace"]], 2)
 		end
 
-		return SetNameSpace4Env(getfenv(2), name)
+		local ns = SetNameSpace4Env(getfenv(2), name)
+
+		if ns and __Attribute__ then
+			return __Attribute__._ConsumePreparedAttributes(ns, AttributeTargets.NameSpace)
+		end
 	end
 end
 
@@ -748,7 +742,7 @@ do
 		if targetType == nil then
 			-- Find the targetType based on the name
 			if name == info.Name then
-				targetType = AttributeTargets[info.Type]
+				targetType = AttributeTargets[info.Type or TYPE_NAMESPACE]
 			elseif info.Cache4Event[name] then
 				targetType = AttributeTargets.Event
 			elseif info.Cache4Property[name] then
@@ -3794,6 +3788,7 @@ do
 		Property = 64,
 		Struct = 128,
 		Field = 256,
+		NameSpace = 512,
 	}
 
 	------------------------------------------------------
@@ -3855,8 +3850,6 @@ do
 			<usage>System.Reflector.GetNameSpaceName(System.Object)</usage>
 		]]
 		function GetNameSpaceName(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			return ns and rawget(_NSInfo, ns) and _NSInfo[ns].Name
 		end
 
@@ -6793,6 +6786,7 @@ do
 		_Attribute4Property = setmetatable({}, WEAK_KEY)
 		_Attribute4Struct = setmetatable({}, WEAK_KEY)
 		_Attribute4Field = setmetatable({}, WEAK_KEY)
+		_Attribute4NameSpace = setmetatable({}, WEAK_KEY)
 
 		_AttributeCache = {
 			[AttributeTargets.Class] = _Attribute4Class,
@@ -6804,10 +6798,8 @@ do
 			[AttributeTargets.Property] = _Attribute4Property,
 			[AttributeTargets.Struct] = _Attribute4Struct,
 			[AttributeTargets.Field] = _Attribute4Field,
+			[AttributeTargets.NameSpace] = _Attribute4NameSpace,
 		}
-
-		TYPE_CLASS = TYPE_CLASS
-		TYPE_INTERFACE = TYPE_INTERFACE
 
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
@@ -6890,6 +6882,8 @@ do
 				return "[Struct]" .. tostring(target)
 			elseif targetType == AttributeTargets.Field then
 				return "[Struct]" .. tostring(owner) .. " [Field]" .. tostring(name)
+			elseif targetType == AttributeTargets.NameSpace then
+				return "[NameSpace]" .. tostring(target)
 			end
 		end
 
@@ -6913,6 +6907,8 @@ do
 				return Reflector.IsStruct(target)
 			elseif targetType == AttributeTargets.Field then
 				return Reflector.ObjectIsClass(target, Type)
+			elseif targetType == AttributeTargets.NameSpace then
+				return Reflector.GetNameSpaceName(target)
 			end
 		end
 
@@ -7509,6 +7505,18 @@ do
 			return false
 		end
 
+		doc "_IsNameSpaceAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="target">the name space</param>
+			<param name="type">the attribute class type</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function _IsNameSpaceAttributeDefined(target, type)
+			if Reflector.IsStruct(target) then
+				return _IsDefined(target, AttributeTargets.NameSpace, type)
+			end
+		end
+
 		doc "_GetCustomAttribute" [[
 			<desc>Return the attributes of the given type for the target</desc>
 			<param name="target">class | event | method | property | struct | interface | enum</param>
@@ -7689,6 +7697,18 @@ do
 				elseif info.SubType == _STRUCT_TYPE_CUSTOM then
 					return _GetCustomAttribute(info.StructEnv[field], AttributeTargets.Field, type)
 				end
+			end
+		end
+
+		doc "_GetNameSpaceAttribute" [[
+			<desc>Return the attributes of the given type for the NameSpace</desc>
+			<param name="target">NameSpace</param>
+			<param name="type">the attribute class type</param>
+			<return>the attribute objects</return>
+		]]
+		function _GetNameSpaceAttribute(target, type)
+			if Reflector.GetNameSpaceName(target) then
+				return _GetCustomAttribute(target, AttributeTargets.NameSpace, type)
 			end
 		end
 
@@ -8317,8 +8337,8 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			if type(self.Doc) == "string" and targetType and owner then
-				SaveDocument(self.Doc, name, targetType, owner)
+			if type(self.Doc) == "string" and targetType and (owner or target) then
+				SaveDocument(self.Doc, name, targetType, owner or target)
 			end
 
 			self.Doc = nil
@@ -8342,7 +8362,7 @@ do
 
 			local owner = getfenv(2)[OWNER_FIELD]
 
-			if type(self.Doc) == "string" and owner then
+			if type(self.Doc) == "string" and owner and IsNameSpace(owner) then
 				SaveDocument(data, self.Doc, nil, owner)
 			end
 
@@ -8986,39 +9006,9 @@ do
 end
 
 ------------------------------------------------------
--- System.XML Namespace
-------------------------------------------------------
-do
-	namespace "System.XML"
-
-	class "XmlNode"
-		------------------------------------------------------
-		-- Event
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-	    function XmlNode(self, ...)
-
-	    end
-	endclass "XmlNode"
-end
-
-------------------------------------------------------
 -- Global Settings
 ------------------------------------------------------
 do
-	namespace "System"
-
 	------------------------------------------------------
 	-- Clear useless keywords
 	------------------------------------------------------

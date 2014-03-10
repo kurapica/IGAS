@@ -9,249 +9,184 @@ if not IGAS:NewAddon("IGAS.Widget.SimpleHTML", version) then
 	return
 end
 
+__Doc__[[The most sophisticated control over text display is offered by SimpleHTML widgets. When its text is set to a string containing valid HTML markup, a SimpleHTML widget will parse the content into its various blocks and sections, and lay the text out. While it supports most common text commands, a SimpleHTML widget accepts an additional argument to most of these; if provided, the element argument will specify the HTML elements to which the new style information should apply, such as formattedText:SetTextColor("h2", 1, 0.3, 0.1) which will cause all level 2 headers to display in red. If no element name is specified, the settings apply to the SimpleHTML widget's default font.]]
 class "SimpleHTML"
 	inherit "Frame"
-
-	doc [======[
-		@name SimpleHTML
-		@type class
-		@desc The most sophisticated control over text display is offered by SimpleHTML widgets. When its text is set to a string containing valid HTML markup, a SimpleHTML widget will parse the content into its various blocks and sections, and lay the text out. While it supports most common text commands, a SimpleHTML widget accepts an additional argument to most of these; if provided, the element argument will specify the HTML elements to which the new style information should apply, such as formattedText:SetTextColor("h2", 1, 0.3, 0.1) which will cause all level 2 headers to display in red. If no element name is specified, the settings apply to the SimpleHTML widget's default font.
-	]======]
 
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
-	doc [======[
-		@name OnHyperlinkClick
-		@type event
-		@desc Run when the mouse clicks a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-		@param button string, name of the mouse button responsible for the click action
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse clicks a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+		<param name="button">string, name of the mouse button responsible for the click action</param>
+	]]
 	event "OnHyperlinkClick"
 
-	doc [======[
-		@name OnHyperlinkEnter
-		@type event
-		@desc Run when the mouse moves over a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse moves over a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+	]]
 	event "OnHyperlinkEnter"
 
-	doc [======[
-		@name OnHyperlinkLeave
-		@type event
-		@desc Run when the mouse moves away from a hyperlink in the SimpleHTML frame
-		@param linkData string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")
-		@param link string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")
-	]======]
+	__Doc__[[
+		<desc>Run when the mouse moves away from a hyperlink in the SimpleHTML frame</desc>
+		<param name="linkData">string, essential data (linktype:linkdata portion) of the hyperlink (e.g. "quest:982:17")</param>
+		<param name="link">string, complete hyperlink text (e.g. "|cffffff00|Hquest:982:17|h[Deep Ocean, Vast Sea]|h|r")</param>
+	]]
 	event "OnHyperlinkLeave"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name GetFont
-		@type method
-		@desc Returns basic properties of a font used in the frame
-		@param element Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-		@return filename string, Path to a font file (string)
-		@return fontHeight number, Height (point size) of the font to be displayed (in pixels) (number)
-		@return flags string, Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string)
-	]======]
+	__Doc__"GetFont" [[
+		<desc>Returns basic properties of a font used in the frame</desc>
+		<param name="element">Optional,Name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default</param>
+		<return type="filename">string, Path to a font file (string)</return>
+		<return type="fontHeight">number, Height (point size) of the font to be displayed (in pixels) (number)</return>
+		<return type="flags">string, Additional properties for the font specified by one or more (separated by commas) of the following tokens: (string)</return>
+	]]
 
-	doc [======[
-		@name GetFontObject
-		@type method
-		@desc Returns the Font object from which the properties of a font used in the frame are inherited
-		@param element string, name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default
-		@return System.Widget.Font the Font object from which font properties are inherited, or nil if no properties are inherited
-	]======]
+	__Doc__[[
+		<desc>Returns the Font object from which the properties of a font used in the frame are inherited</desc>
+		<param name="element">string, name of an HTML element (e.g. p, h1); if omitted, returns information about the frame's default</param>
+		<return type="System.Widget.Font">the Font object from which font properties are inherited, or nil if no properties are inherited</return>
+	]]
 	function GetFontObject(self, ...)
 		return IGAS:GetWrapper(self.__UI:GetFontObject(...))
 	end
 
-	doc [======[
-		@name GetHyperlinkFormat
-		@type method
-		@desc Returns the format string used for displaying hyperlinks in the frame
-		@param format string, Format string used for displaying hyperlinks in the frame
-		@return nil
-	]======]
+	__Doc__"GetHyperlinkFormat" [[
+		<desc>Returns the format string used for displaying hyperlinks in the frame</desc>
+		<param name="format">string, Format string used for displaying hyperlinks in the frame</param>
+	]]
 
-	doc [======[
-		@name GetHyperlinksEnabled
-		@type method
-		@desc Returns whether hyperlinks in the frame's text are interactive
-		@return boolean 1 if hyperlinks in the frame's text are interactive; otherwise nil
-	]======]
+	__Doc__"GetHyperlinksEnabled" [[
+		<desc>Returns whether hyperlinks in the frame's text are interactive</desc>
+		<return type="boolean">1 if hyperlinks in the frame's text are interactive; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name GetIndentedWordWrap
-		@type method
-		@desc Returns whether long lines of text are indented when wrapping
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return boolean 1 if long lines of text are indented when wrapping; otherwise nil
-	]======]
+	__Doc__"GetIndentedWordWrap" [[
+		<desc>Returns whether long lines of text are indented when wrapping</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="boolean">1 if long lines of text are indented when wrapping; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name GetJustifyH
-		@type method
-		@desc Returns the horizontal alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return System.Widget.JustifyHType horizontal text alignment style
-	]======]
+	__Doc__"GetJustifyH" [[
+		<desc>Returns the horizontal alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="System.Widget.JustifyHType">horizontal text alignment style</return>
+	]]
 
 
-	doc [======[
-		@name GetJustifyV
-		@type method
-		@desc Returns the vertical alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return System.Widget.JustifyVType vertical text alignment style
-	]======]
+	__Doc__"GetJustifyV" [[
+		<desc>Returns the vertical alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="System.Widget.JustifyVType">vertical text alignment style</return>
+	]]
 
-	doc [======[
-		@name GetShadowColor
-		@type method
-		@desc Returns the shadow color for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@return shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@return shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@return shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetShadowColor" [[
+		<desc>Returns the shadow color for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="shadowR">number, Red component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowG">number, Green component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</return>
+		<return type="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name GetShadowOffset
-		@type method
-		@desc Returns the offset of text shadow from text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@return yOffset number, Vertical distance between the text and its shadow (in pixels)
-	]======]
+	__Doc__"GetShadowOffset" [[
+		<desc>Returns the offset of text shadow from text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</return>
+		<return type="yOffset">number, Vertical distance between the text and its shadow (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetSpacing
-		@type method
-		@desc Returns the amount of spacing between lines of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return number amount of space between lines of text (in pixels)
-	]======]
+	__Doc__"GetSpacing" [[
+		<desc>Returns the amount of spacing between lines of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="number">amount of space between lines of text (in pixels)</return>
+	]]
 
-	doc [======[
-		@name GetTextColor
-		@type method
-		@desc Returns the color of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@return textR number, Red component of the text color (0.0 - 1.0)
-		@return textG number, Green component of the text color (0.0 - 1.0)
-		@return textB number, Blue component of the text color (0.0 - 1.0)
-		@return textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-	]======]
+	__Doc__"GetTextColor" [[
+		<desc>Returns the color of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<return type="textR">number, Red component of the text color (0.0 - 1.0)</return>
+		<return type="textG">number, Green component of the text color (0.0 - 1.0)</return>
+		<return type="textB">number, Blue component of the text color (0.0 - 1.0)</return>
+		<return type="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</return>
+	]]
 
-	doc [======[
-		@name SetFont
-		@type method
-		@desc Sets the font instance's basic font properties
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param filename string, path to a font file
-		@param fontHeight number, height (point size) of the font to be displayed (in pixels)
-		@param flags string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE
-		@return boolean 1 if filename refers to a valid font file; otherwise nil
-	]======]
+	__Doc__"SetFont" [[
+		<desc>Sets the font instance's basic font properties</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="filename">string, path to a font file</param>
+		<param name="fontHeight">number, height (point size) of the font to be displayed (in pixels)</param>
+		<param name="flags">string, additional properties for the font specified by one or more (separated by commas) of the following tokens: MONOCHROME, OUTLINE, THICKOUTLINE</param>
+		<return type="boolean">1 if filename refers to a valid font file; otherwise nil</return>
+	]]
 
-	doc [======[
-		@name SetFontObject
-		@type method
-		@desc Sets the Font object from which the font instance's properties are inherited
-		@format [element, ]fontObject|fontName
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param fontObject System.Widget.Font, a font object
-		@param fontName string, global font object's name
-		@return nil
-	]======]
+	__Doc__"SetFontObject" [[
+		<desc>Sets the Font object from which the font instance's properties are inherited</desc>
+		<format>[element, ]fontObject|fontName</format>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="fontObject">System.Widget.Font, a font object</param>
+		<param name="fontName">string, global font object's name</param>
+	]]
 
-	doc [======[
-		@name SetHyperlinkFormat
-		@type method
-		@desc Sets the format string used for displaying hyperlinks in the frame
-		@param format string, format string used for displaying hyperlinks in the frame
-		@return nil
-	]======]
+	__Doc__"SetHyperlinkFormat" [[
+		<desc>Sets the format string used for displaying hyperlinks in the frame</desc>
+		<param name="format">string, format string used for displaying hyperlinks in the frame</param>
+	]]
 
-	doc [======[
-		@name SetHyperlinksEnabled
-		@type method
-		@desc Enables or disables hyperlink interactivity in the frame
-		@param enable boolean, true to enable hyperlink interactivity in the frame; false to disable
-		@return nil
-	]======]
+	__Doc__"SetHyperlinksEnabled" [[
+		<desc>Enables or disables hyperlink interactivity in the frame</desc>
+		<param name="enable">boolean, true to enable hyperlink interactivity in the frame; false to disable</param>
+	]]
 
-	doc [======[
-		@name SetIndentedWordWrap
-		@type method
-		@desc Sets whether long lines of text are indented when wrapping
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param indent boolean, true to indent wrapped lines of text; false otherwise
-		@return nil
-	]======]
+	__Doc__"SetIndentedWordWrap" [[
+		<desc>Sets whether long lines of text are indented when wrapping</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="indent">boolean, true to indent wrapped lines of text; false otherwise</param>
+	]]
 
-	doc [======[
-		@name SetJustifyH
-		@type method
-		@desc Sets the horizontal alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param justifyH System.Widget.JustifyHType
-		@return nil
-	]======]
+	__Doc__"SetJustifyH" [[
+		<desc>Sets the horizontal alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="justifyH">System.Widget.JustifyHType</param>
+	]]
 
-	doc [======[
-		@name SetJustifyV
-		@type method
-		@desc Sets the vertical alignment style for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param justifyV System.Widget.JustifyVType
-		@return nil
-	]======]
+	__Doc__"SetJustifyV" [[
+		<desc>Sets the vertical alignment style for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="justifyV">System.Widget.JustifyVType</param>
+	]]
 
-	doc [======[
-		@name SetShadowColor
-		@type method
-		@desc Sets the shadow color for text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param shadowR number, Red component of the shadow color (0.0 - 1.0)
-		@param shadowG number, Green component of the shadow color (0.0 - 1.0)
-		@param shadowB number, Blue component of the shadow color (0.0 - 1.0)
-		@param shadowAlpha number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
+	__Doc__"SetShadowColor" [[
+		<desc>Sets the shadow color for text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="shadowR">number, Red component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowG">number, Green component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowB">number, Blue component of the shadow color (0.0 - 1.0)</param>
+		<param name="shadowAlpha">number, Alpha (opacity) of the text's shadow (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
-	doc [======[
-		@name SetShadowOffset
-		@type method
-		@desc Sets the offset of text shadow from text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param xOffset number, Horizontal distance between the text and its shadow (in pixels)
-		@param yOffset number, Vertical distance between the text and its shadow (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetShadowOffset" [[
+		<desc>Sets the offset of text shadow from text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="xOffset">number, Horizontal distance between the text and its shadow (in pixels)</param>
+		<param name="yOffset">number, Vertical distance between the text and its shadow (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetSpacing
-		@type method
-		@desc Sets the amount of spacing between lines of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param spacing number, amount of space between lines of text (in pixels)
-		@return nil
-	]======]
+	__Doc__"SetSpacing" [[
+		<desc>Sets the amount of spacing between lines of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="spacing">number, amount of space between lines of text (in pixels)</param>
+	]]
 
-	doc [======[
-		@name SetText
-		@type method
-		@desc For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.
+	__Doc__"SetText" [[
+		<desc>For HTML formatting, the entire text must be enclosed in &lt;html&gt;&lt;body&gt; and &lt;/body&gt;&lt;/html&gt; tags.</desc>
 		<br>All tags must be closed (img and br must use self-closing syntax; e.g. &lt;br/&gt;, not &lt;br &gt;).
 		<br>Tags are case insensitive, but closing tags must match the case of opening tags.
 		<br>Attribute values must be enclosed in single or double quotation marks (" or ').
@@ -275,25 +210,17 @@ class "SimpleHTML"
 		<br>br - Explicit line break in text; e.g. &lt;br /&gt;.
 		<br>
 		<br>
-		@param text string, text(with HTML markup) to be displayed
-		@return nil
-	]======]
+		<param name="text">string, text(with HTML markup) to be displayed</param>
+	]]
 
-	doc [======[
-		@name SetTextColor
-		@type method
-		@desc Sets the color of text in the frame
-		@param element string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style
-		@param textR number, Red component of the text color (0.0 - 1.0)
-		@param textG number, Green component of the text color (0.0 - 1.0)
-		@param textB number, Blue component of the text color (0.0 - 1.0)
-		@param textAlpha number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)
-		@return nil
-	]======]
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__"SetTextColor" [[
+		<desc>Sets the color of text in the frame</desc>
+		<param name="element">string, name of an HTML element for which to return text style information (e.g. p, h1); if omitted, returns information about the frame's default text style</param>
+		<param name="textR">number, Red component of the text color (0.0 - 1.0)</param>
+		<param name="textG">number, Green component of the text color (0.0 - 1.0)</param>
+		<param name="textB">number, Blue component of the text color (0.0 - 1.0)</param>
+		<param name="textAlpha">number, Alpha (opacity) of the text (0.0 = fully transparent, 1.0 = fully opaque)</param>
+	]]
 
 	------------------------------------------------------
 	-- Constructor
@@ -312,11 +239,7 @@ class "SimpleHTML"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HyperlinksEnabled
-		@type property
-		@desc Whether hyperlinks in the frame's text are interactive
-	]======]
+	__Doc__[[Whether hyperlinks in the frame's text are interactive]]
 	property "HyperlinksEnabled" { Type = Boolean }
 
 endclass "SimpleHTML"

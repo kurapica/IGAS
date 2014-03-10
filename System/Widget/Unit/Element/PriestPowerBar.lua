@@ -8,36 +8,22 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.PriestPowerBar", version) then
 	return
 end
 
+__Doc__[[The priest power bar for shadow orbs]]
 class "PriestPowerBar"
 	inherit "Frame"
 	extend "IFClassPower"
 
-	doc [======[
-		@name PriestPowerBar
-		@type class
-		@desc The priest power bar for shadow orbs
-	]======]
-
 	GameTooltip = _G.GameTooltip
 	PRIEST_BAR_NUM_ORBS = _G.PRIEST_BAR_NUM_ORBS
 
+	__Doc__[[The shadow orb element]]
 	class "ShadowOrb"
 		inherit "Frame"
-
-		doc [======[
-			@name ShadowOrb
-			@type class
-			@desc The shadow orb element
-		]======]
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		doc [======[
-			@name Activated
-			@type property
-			@desc Whether the element is activated
-		]======]
+		__Doc__[[Whether the element is activated]]
 		property "Activated" {
 			Get = function(self)
 				return self.__Activated or false

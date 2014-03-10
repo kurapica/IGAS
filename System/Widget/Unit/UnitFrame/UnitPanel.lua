@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.UnitPanel", version) then
 	return
 end
 
+__Doc__[[The unit panel for party or raid members]]
 class "UnitPanel"
 	inherit "SecureFrame"
 	extend "IFGroup"
-
-	doc [======[
-		@name UnitPanel
-		@type class
-		@desc The unit panel for party or raid members
-	]======]
 
 	MAX_RAID_MEMBERS = _G.MAX_RAID_MEMBERS
 	NUM_RAID_GROUPS = _G.NUM_RAID_GROUPS

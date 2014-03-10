@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.HealAbsorbBar", version) then
 	return
 end
 
+__Doc__[[The heal absorb of the unit]]
 class "HealAbsorbBar"
 	inherit "StatusBar"
 	extend "IFHealAbsorb"
-
-	doc [======[
-		@name HealAbsorbBar
-		@type class
-		@desc The heal absorb of the unit
-	]======]
 
 	_HealAbsorbBarMap = _HealAbsorbBarMap or setmetatable({}, {__mode = "kv"})
 
@@ -58,11 +53,7 @@ class "HealAbsorbBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name HealthBar
-		@type property
-		@desc The target health bar the prediction bar should attach to
-	]======]
+	__Doc__[[The target health bar the prediction bar should attach to]]
 	property "HealthBar" {
 		Field = "__HealthBar",
 		Set = function(self, value)

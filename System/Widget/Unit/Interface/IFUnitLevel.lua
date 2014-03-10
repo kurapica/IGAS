@@ -23,15 +23,12 @@ function _IFUnitLevelUnitList:ParseEvent(event, level)
 	self:EachK(_All, "Refresh", event == "PLAYER_LEVEL_UP" and level or nil)
 end
 
+__Doc__[[
+	<desc>IFUnitLevel is used to handle the unit level's update</desc>
+	<overridable name="Value" type="property" valuetype="number">which used to receive the unit's level</overridable>
+]]
 interface "IFUnitLevel"
 	extend "IFUnitElement"
-
-	doc [======[
-		@name IFUnitLevel
-		@type interface
-		@desc IFUnitLevel is used to handle the unit level's update
-		@overridable Value property, number, which used to receive the unit's level
-	]======]
 
 	------------------------------------------------------
 	-- Event
@@ -40,12 +37,6 @@ interface "IFUnitLevel"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	doc [======[
-		@name Refresh
-		@type method
-		@desc The default refresh method, overridable
-		@return nil
-	]======]
 	function Refresh(self, playerLevel)
 		if self.Unit then
 			local lvl = UnitLevel(self.Unit)

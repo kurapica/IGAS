@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.LeaderIcon", version) then
 	return
 end
 
+__Doc__[[The leader indicator]]
 class "LeaderIcon"
 	inherit "Texture"
 	extend "IFLeader"
-
-	doc [======[
-		@name LeaderIcon
-		@type class
-		@desc The leader indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

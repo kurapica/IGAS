@@ -8,15 +8,10 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.RaidTargetIcon", version) then
 	return
 end
 
+__Doc__[[The raid target indicator]]
 class "RaidTargetIcon"
 	inherit "Texture"
 	extend "IFRaidTarget"
-
-	doc [======[
-		@name RaidTargetIcon
-		@type class
-		@desc The raid target indicator
-	]======]
 
 	------------------------------------------------------
 	-- Constructor

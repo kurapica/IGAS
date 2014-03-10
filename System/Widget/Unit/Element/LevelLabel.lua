@@ -9,24 +9,15 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.LevelLabel", version) then
 	return
 end
 
+__Doc__[[The unit level indicator]]
 class "LevelLabel"
 	inherit "FontString"
 	extend "IFUnitLevel"
 
-	doc [======[
-		@name LevelLabel
-		@type class
-		@desc The unit level indicator
-	]======]
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name LevelFormat
-		@type property
-		@desc The level's format like 'Lvl %s', default '%s'
-	]======]
+	__Doc__[[The level's format like 'Lvl %s', default '%s']]
 	property "LevelFormat" {
 		Get = function(self)
 			return self.__LevelFormat or "%s"

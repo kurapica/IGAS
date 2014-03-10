@@ -263,11 +263,7 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	doc [======[
-		@name Spell
-		@type property
-		@desc The action button's content if its type is 'spell'
-	]======]
+	__Doc__[[The action button's content if its type is 'spell']]
 	property "Spell" {
 		Get = function(self)
 			return self:GetAttribute("actiontype") == "spell" and self:GetAttribute("spell") or nil
