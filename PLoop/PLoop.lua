@@ -4154,8 +4154,13 @@ do
 
 			local info = ns and _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
+			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE or info.Type == TYPE_STRUCT) then
 				local ret = {}
+
+				if info.Type == TYPE_STRUCT then
+					if not info.Method then return end
+					noSuper = true
+				end
 
 				for k, v in pairs(noSuper and info.Method or info.Cache4Method) do
 					tinsert(ret, k)
@@ -4851,9 +4856,7 @@ do
 		]]
 
 		-- The cache for constructor parameters
-		local function buildSubNamespace(ns)
-			local result = ""
-
+		local function buildSubNamespace(ns, rs)
 			local _Enums = CACHE_TABLE()
 			local _Structs = CACHE_TABLE()
 			local _Classes = CACHE_TABLE()
@@ -4880,42 +4883,42 @@ do
 				end
 
 				if next(_Enums) then
-					result = result .. "\n\n Sub Enum :"
+					tinsert(rs, "\n Sub Enum :")
 
 					for _, sns in ipairs(_Enums) do
-						result = result .. "\n    " .. GetNameSpaceName(sns)
+						tinsert(rs, "    " .. GetNameSpaceName(sns))
 					end
 				end
 
 				if next(_Structs) then
-					result = result .. "\n\n Sub Struct :"
+					tinsert(rs, "\n Sub Struct :")
 
 					for _, sns in ipairs(_Structs) do
-						result = result .. "\n    " .. GetNameSpaceName(sns)
+						tinsert(rs, "    " .. GetNameSpaceName(sns))
 					end
 				end
 
 				if next(_Interfaces) then
-					result = result .. "\n\n Sub Interface :"
+					tinsert(rs, "\n Sub Interface :")
 
 					for _, sns in ipairs(_Interfaces) do
-						result = result .. "\n    " .. GetNameSpaceName(sns)
+						tinsert(rs, "    " .. GetNameSpaceName(sns))
 					end
 				end
 
 				if next(_Classes) then
-					result = result .. "\n\n Sub Class :"
+					tinsert(rs, "\n Sub Class :")
 
 					for _, sns in ipairs(_Classes) do
-						result = result .. "\n    " .. GetNameSpaceName(sns)
+						tinsert(rs, "    " .. GetNameSpaceName(sns))
 					end
 				end
 
 				if next(_Namespaces) then
-					result = result .. "\n\n Sub NameSpace :"
+					tinsert(rs, "\n Sub NameSpace :")
 
 					for _, sns in ipairs(_Namespaces) do
-						result = result .. "\n    " .. GetNameSpaceName(sns)
+						tinsert(rs, "    " .. GetNameSpaceName(sns))
 					end
 				end
 			end
@@ -4925,12 +4928,113 @@ do
 			CACHE_TABLE(_Classes)
 			CACHE_TABLE(_Interfaces)
 			CACHE_TABLE(_Namespaces)
-
-			return result
 		end
 
-		function Help(ns, targetType, name)
+		local function getDocumentPart(doc, part)
+			if doc:match("^%s*<") then
+				-- parse as xml
+				return doc:gmatch("<" .. part .. ".->.-</" .. part .. ">")
+			else
+				-- only description
+				if part == "desc" or "description" then
+					return doc
+				end
+			end
+		end
+
+		local function getMethodDoc()
+		end
+
+		function Help(ns, name, targetType)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+
+			if not IsNameSpace(ns) then return "" end
+
+			local rs = CACHE_TABLE()
+
+			if IsEnum(ns) then
+				-- Scan attributes
+				if IsFinal(ns) then tinsert(rs, "[__Final__]") end
+				if IsFlagsEnum(ns) then tinsert(rs, "[__Flags__]") end
+
+				tinsert(rs, "[Enum]" .. GetNameSpaceFullName(ns) .. " :")
+
+				-- Scan document
+				local doc = GetDocument(ns)
+
+				if doc then
+					doc = getDocumentPart(doc, "desc") or getDocumentPart(doc, "description")
+
+					if type(doc) == "function" then doc = doc() end
+
+					if type(doc) == "string" then
+						tinsert(rs, "  Description :")
+						tinsert(rs, "    " .. doc:gsub("[\n\r]", "%1    "))
+					end
+				end
+
+				-- Scan enum values
+				tinsert("  Enumeration :")
+				for _, enums in ipairs(GetEnums(ns)) do
+					local value = ns[enums]
+
+					if type(value) == "string" then
+						value = ("%q"):format(value)
+					else
+						value = tostring(value)
+					end
+
+					tinsert(rs, "    " .. enums .. " = " .. value)
+				end
+			elseif IsStruct(ns) then
+				-- Scan attributes
+				if IsFinal(ns) then tinsert(rs, "[__Final__]") end
+
+				local stype = GetStructType(ns)
+
+				if stype == _STRUCT_TYPE_ARRAY then
+					tinsert(rs, "[__StructType__(StructType.Array)]")
+				elseif stype == _STRUCT_TYPE_CUSTOM then
+					tinsert(rs, "[__StructType__(StructType.Custom)]")
+				end
+
+				tinsert(rs, "[Struct] " .. GetNameSpaceFullName(ns) .. " :")
+
+				-- Scan SubNameSpace
+				buildSubNamespace(ns, rs)
+
+				-- Scan parts
+				if stype == _STRUCT_TYPE_MEMBER or stype == _STRUCT_TYPE_CUSTOM then
+					local parts = GetStructParts(ns)
+
+					if parts and next(parts) then
+						tinsert(rs, "\n  Field :")
+
+						for _, name in ipairs(parts) do
+							tinsert(rs, "    " .. name .. " = " .. tostring(info.StructEnv[name]))
+						end
+					end
+				elseif stype == _STRUCT_TYPE_ARRAY then
+					local ele = GetStructArrayElement(ns)
+
+					if ele then
+						tinsert(rs, "\n  Element :\n    " .. tostring(ele))
+					end
+				end
+
+				-- Scan methods
+				local methods = GetMethods(ns)
+
+				if methods and next(methods) then
+					for _, name in ipairs(methods) do
+						getMethodDoc(rs, name)
+					end
+				end
+			elseif IsClass(ns) or IsInterface(ns) then
+			else
+			end
+
+
 
 			if ns and rawget(_NSInfo, ns) then
 				local info = _NSInfo[ns]
