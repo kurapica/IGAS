@@ -4942,9 +4942,6 @@ do
 			end
 		end
 
-		local function getMethodDoc()
-		end
-
 		function Help(ns, name, targetType)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
@@ -4952,12 +4949,29 @@ do
 
 			local rs = CACHE_TABLE()
 
-			if IsEnum(ns) then
+			if not name or name == GetNameSpaceName(ns) then
 				-- Scan attributes
 				if IsFinal(ns) then tinsert(rs, "[__Final__]") end
 				if IsFlagsEnum(ns) then tinsert(rs, "[__Flags__]") end
+				if IsNonInheritable(ns) then tinsert(rs, "[__NonInheritable__]") end
+				if IsNonExpandable(ns) then tinsert(rs, "[__NonExpandable__]") end
+				if IsAutoCacheClass(ns) then tinsert(rs, "[__Cache__]") end
+				if IsUniqueClass(ns) then tinsert(rs, "[__Unique__]") end
+				if IsChildClass(__Attribute__, ns) then
+					local usage = __Attribute__._GetClassAttribute(ns, __AttributeUsage__)
 
-				tinsert(rs, "[Enum]" .. GetNameSpaceFullName(ns) .. " :")
+					if usage then
+						tinsert(rs,
+							"[__AttributeUsage__{ " ..
+							"AttributeTarget = " .. Serialize(usage.AttributeTarget, AttributeTargets) .. ", " ..
+							"Inherited = " .. tostring(usage.Inherited and true or false) .. ", " ..
+							"AllowMultiple = " .. tostring(usage.AllowMultiple and true or false) .. ", " ..
+							"RunOnce = " .. tostring(usage.RunOnce and true or false) ..
+							" }]")
+					end
+				end
+
+				tinsert(rs, "[" .. (GetNameSpaceType(ns) or TYPE_NAMESPACE) .. "] " .. GetNameSpaceFullName(ns) .. " :")
 
 				-- Scan document
 				local doc = GetDocument(ns)
@@ -4973,53 +4987,56 @@ do
 					end
 				end
 
-				-- Scan enum values
-				tinsert("  Enumeration :")
-				for _, enums in ipairs(GetEnums(ns)) do
-					local value = ns[enums]
+				if IsEnum(ns) then
+					-- Scan enum values
+					tinsert("  Enumeration :")
+					for _, enums in ipairs(GetEnums(ns)) do
+						local value = ns[enums]
 
-					if type(value) == "string" then
-						value = ("%q"):format(value)
-					else
-						value = tostring(value)
+						if type(value) == "string" then
+							value = ("%q"):format(value)
+						else
+							value = tostring(value)
+						end
+
+						tinsert(rs, "    " .. enums .. " = " .. value)
 					end
+				elseif IsStruct(ns) then
+					-- Scan parts
+					if stype == _STRUCT_TYPE_MEMBER or stype == _STRUCT_TYPE_CUSTOM then
+						local parts = GetStructParts(ns)
 
-					tinsert(rs, "    " .. enums .. " = " .. value)
-				end
-			elseif IsStruct(ns) then
-				-- Scan attributes
-				if IsFinal(ns) then tinsert(rs, "[__Final__]") end
+						if parts and next(parts) then
+							tinsert(rs, "\n  Field :")
 
-				local stype = GetStructType(ns)
+							for _, name in ipairs(parts) do
+								tinsert(rs, "    " .. name .. " = " .. tostring(info.StructEnv[name]))
+							end
+						end
+					elseif stype == _STRUCT_TYPE_ARRAY then
+						local ele = GetStructArrayElement(ns)
 
-				if stype == _STRUCT_TYPE_ARRAY then
-					tinsert(rs, "[__StructType__(StructType.Array)]")
-				elseif stype == _STRUCT_TYPE_CUSTOM then
-					tinsert(rs, "[__StructType__(StructType.Custom)]")
-				end
-
-				tinsert(rs, "[Struct] " .. GetNameSpaceFullName(ns) .. " :")
-
-				-- Scan SubNameSpace
-				buildSubNamespace(ns, rs)
-
-				-- Scan parts
-				if stype == _STRUCT_TYPE_MEMBER or stype == _STRUCT_TYPE_CUSTOM then
-					local parts = GetStructParts(ns)
-
-					if parts and next(parts) then
-						tinsert(rs, "\n  Field :")
-
-						for _, name in ipairs(parts) do
-							tinsert(rs, "    " .. name .. " = " .. tostring(info.StructEnv[name]))
+						if ele then
+							tinsert(rs, "\n  Element :\n    " .. tostring(ele))
 						end
 					end
-				elseif stype == _STRUCT_TYPE_ARRAY then
-					local ele = GetStructArrayElement(ns)
 
-					if ele then
-						tinsert(rs, "\n  Element :\n    " .. tostring(ele))
+				elseif IsClass(ns) or IsInterface(ns) then
+					-- Scan super class
+					local super = GetSuperClass(ns)
+					if super then
+						tinsert(rs, "\n  Super Class :\n    " .. GetNameSpaceFullName(super))
 					end
+
+					-- Scan extend interfaces
+					local extends = GetExtendInterfaces(ns)
+					if extends and next(extends) then
+						tinsert(rs, "\n  Extend Interface :")
+						for _, IF in ipairs(extends) do
+							tinsert(rs, "    " .. GetNameSpaceFullName(IF))
+						end
+					end
+				else
 				end
 
 				-- Scan methods
@@ -5027,10 +5044,12 @@ do
 
 				if methods and next(methods) then
 					for _, name in ipairs(methods) do
-						getMethodDoc(rs, name)
+
 					end
 				end
-			elseif IsClass(ns) or IsInterface(ns) then
+
+				-- Scan SubNameSpace
+				buildSubNamespace(ns, rs)
 			else
 			end
 
