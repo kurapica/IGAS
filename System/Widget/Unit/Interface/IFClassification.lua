@@ -18,7 +18,7 @@ end
 
 __Doc__[[
 	<desc>IFClassification is used to check whether the unit's classification, the default refresh method is used to check if the unit is a quest boss</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check result</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
 ]]
 interface "IFClassification"
 	extend "IFUnitElement"

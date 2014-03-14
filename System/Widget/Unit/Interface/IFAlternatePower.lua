@@ -48,10 +48,10 @@ end
 
 __Doc__[[
 	<desc>IFAlternatePower is used to handle the unit alternate power's update</desc>
-	<overridable name="BarType" type="property" valuetype="string">the alternate power bar's type</overridable>
-	<overridable name="MinMaxValue" type="property" valuetype="MinMax">the min and max power value</overridable>
-	<overridable name="Value" type="property" valuetype="number">the alternate power's value</overridable>
-	<overridable name="Visible" type="property" valuetype="boolean">the alternate power bar's visible</overridable>
+	<optional name="BarType" type="property" valuetype="string">the alternate power bar's type</optional>
+	<optional name="MinMaxValue" type="property" valuetype="MinMax">the min and max power value</optional>
+	<optional name="Value" type="property" valuetype="number">the alternate power's value</optional>
+	<optional name="Visible" type="property" valuetype="boolean">the alternate power bar's visible</optional>
 ]]
 interface "IFAlternatePower"
 	extend "IFUnitElement"

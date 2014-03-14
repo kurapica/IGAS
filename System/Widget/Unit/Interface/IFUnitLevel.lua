@@ -25,7 +25,7 @@ end
 
 __Doc__[[
 	<desc>IFUnitLevel is used to handle the unit level's update</desc>
-	<overridable name="Value" type="property" valuetype="number">which used to receive the unit's level</overridable>
+	<optional name="Value" type="property" valuetype="number">which used to receive the unit's level</optional>
 ]]
 interface "IFUnitLevel"
 	extend "IFUnitElement"

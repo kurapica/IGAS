@@ -24,7 +24,7 @@ end
 
 __Doc__[[
 	<desc>IFGroupLoot is used to handle the root master indicator's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the root master indicator should be shown</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the root master indicator should be shown</optional>
 ]]
 interface "IFGroupLoot"
 	extend "IFUnitElement"

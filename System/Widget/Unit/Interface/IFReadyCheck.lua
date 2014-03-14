@@ -48,11 +48,11 @@ end
 
 __Doc__[[
 	<desc>IFReadyCheck is used to handle the unit ready check state's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the ready check indicator should be shown</overridable>
-	<overridable name="Alpha" type="property" valuetype="number">used to receive the ready check indicator's opacity</overridable>
-	<overridable name="Start" type="method">be called when the unit's ready check is started</overridable>
-	<overridable name="Confirm" type="method">be called when the unit's ready check is confirmed</overridable>
-	<overridable name="Finish" type="method">be called when the unit's ready check is finished</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the ready check indicator should be shown</optional>
+	<optional name="Alpha" type="property" valuetype="number">used to receive the ready check indicator's opacity</optional>
+	<optional name="Start" type="method">be called when the unit's ready check is started</optional>
+	<optional name="Confirm" type="method">be called when the unit's ready check is confirmed</optional>
+	<optional name="Finish" type="method">be called when the unit's ready check is finished</optional>
 ]]
 interface "IFReadyCheck"
 	extend "IFUnitElement"

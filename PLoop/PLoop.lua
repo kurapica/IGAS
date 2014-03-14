@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2011-2013 WangXH <kurapica.igas@gmail.com>
+Copyright (c) 2011-2014 WangXH <kurapica.igas@gmail.com>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -4942,6 +4942,28 @@ do
 			end
 		end
 
+		local function getDescription(ns, name, targetType)
+			local doc = GetDocument(ns, name, targetType)
+
+			if doc then
+				doc = getDocumentPart(doc, "desc") or getDocumentPart(doc, "description")
+
+				if type(doc) == "function" then doc = doc() end
+
+				return doc
+			end
+		end
+
+		local function parseOptions(opt)
+			if type(opt) ~= "string" then return end
+
+			local ret = CACHE_TABLE()
+
+			pcall(setfenv(loadstring(opt:gsub("<%w+%s+(.-)>(.-)</%w+>", "%1 desc=[[%2]]")), ret))
+
+			return ret
+		end
+
 		function Help(ns, name, targetType)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
@@ -4974,19 +4996,14 @@ do
 				tinsert(rs, "[" .. (GetNameSpaceType(ns) or TYPE_NAMESPACE) .. "] " .. GetNameSpaceFullName(ns) .. " :")
 
 				-- Scan document
-				local doc = GetDocument(ns)
+				local doc = getDescription(ns)
 
-				if doc then
-					doc = getDocumentPart(doc, "desc") or getDocumentPart(doc, "description")
-
-					if type(doc) == "function" then doc = doc() end
-
-					if type(doc) == "string" then
-						tinsert(rs, "  Description :")
-						tinsert(rs, "    " .. doc:gsub("[\n\r]", "%1    "))
-					end
+				if type(doc) == "string" then
+					tinsert(rs, "  Description :")
+					tinsert(rs, "    " .. doc:gsub("[\n\r]", "%1    "))
 				end
 
+				-- Special settings
 				if IsEnum(ns) then
 					-- Scan enum values
 					tinsert("  Enumeration :")
@@ -5020,7 +5037,6 @@ do
 							tinsert(rs, "\n  Element :\n    " .. tostring(ele))
 						end
 					end
-
 				elseif IsClass(ns) or IsInterface(ns) then
 					-- Scan super class
 					local super = GetSuperClass(ns)
@@ -5036,20 +5052,158 @@ do
 							tinsert(rs, "    " .. GetNameSpaceFullName(IF))
 						end
 					end
-				else
-				end
-
-				-- Scan methods
-				local methods = GetMethods(ns)
-
-				if methods and next(methods) then
-					for _, name in ipairs(methods) do
-
-					end
 				end
 
 				-- Scan SubNameSpace
 				buildSubNamespace(ns, rs)
+
+				-- Scan events
+				local evts = GetEvents(ns)
+
+				if evts and next(evts) then
+					tinsert(rs, "  Event :")
+
+					for _, name in ipairs(evts) do
+						local desc = getDescription(ns, name, AttributeTargets.Event)
+
+						if desc then
+							tinsert(rs, "    " .. name .. " - " .. desc)
+						else
+							tinsert(rs, "    " .. name)
+						end
+					end
+				end
+
+				-- Scan require or optional features
+				local opt = getDocumentPart(GetDocument(ns), "optional")
+				local req = getDocumentPart(GetDocument(ns), "require")
+
+				local opts = CACHE_TABLE()
+				local reqs = CACHE_TABLE()
+
+				if opt then local v = parseOptions(opt()) while v do opts[v.name] = v; v = parseOptions(opt()) end end
+				if req then local v = parseOptions(req()) while v do reqs[v.name] = v; v = parseOptions(req()) end end
+
+				-- Scan methods
+				local methods = GetMethods(ns)
+				local hasMethodHeader = false
+
+				if methods and next(methods) then
+					tinsert(rs, "  Method :")
+					hasMethodHeader = true
+
+					for _, name in ipairs(methods) do
+						local desc = getDescription(ns, name, AttributeTargets.Method)
+						local isOptional = IsOptionalMethod(ns, name)
+						local isRequire = IsRequireMethod(ns, name)
+
+						if opts[name] then isOptional = true; desc = desc or opts[name].desc end
+						if reqs[name] then isRequire = true; desc = desc or reqs[name].desc end
+
+						tinsert(rs, "    " .. (isOptional and "[__Optional__]" or "") ..
+												(isRequire and "[__Require__]" or "") ..
+												name ..
+												(desc and (" - " .. desc) or ""))
+
+						if opts[name] then CACHE_TABLE(opts[name]); opts[name] = nil end
+						if reqs[name] then CACHE_TABLE(reqs[name]); reqs[name] = nil end
+					end
+				end
+
+				for name, req in pairs(reqs) do
+					if req.type == "method" then
+						if not hasMethodHeader then
+							tinsert(rs, "  Method :")
+							hasMethodHeader = true
+						end
+
+						tinsert(rs, "    [__Require__]" .. name .. (req.desc and (" - " .. req.desc) or ""))
+
+						reqs[name] = nil
+
+						CACHE_TABLE(req)
+					end
+				end
+
+				for name, opt in pairs(opts) do
+					if opt.type == "method" then
+						if not hasMethodHeader then
+							tinsert(rs, "  Method :")
+							hasMethodHeader = true
+						end
+
+						tinsert(rs, "    [__Optional__]" .. name .. (opt.desc and (" - " .. opt.desc) or ""))
+
+						opts[name] = nil
+
+						CACHE_TABLE(opt)
+					end
+				end
+
+				-- Scan properties
+				local props = GetProperties(ns)
+				local hasPropertyHeader = false
+
+				if props and next(props) then
+					tinsert(rs, "  Property :")
+					hasPropertyHeader = true
+
+					for _, name in ipairs(props) do
+						local desc = getDescription(ns, name, AttributeTargets.Property)
+						local isOptional = IsOptionalMethod(ns, name)
+						local isRequire = IsRequireMethod(ns, name)
+
+						if opts[name] then isOptional = true; desc = desc or opts[name].desc end
+						if reqs[name] then isRequire = true; desc = desc or reqs[name].desc end
+
+						tinsert(rs, "    " .. (isOptional and "[__Optional__]" or "") ..
+												(isRequire and "[__Require__]" or "") ..
+												name ..
+												(desc and (" - " .. desc) or ""))
+
+						if opts[name] then CACHE_TABLE(opts[name]); opts[name] = nil end
+						if reqs[name] then CACHE_TABLE(reqs[name]); reqs[name] = nil end
+					end
+				end
+
+				for name, req in pairs(reqs) do
+					if req.type == "property" then
+						if not hasPropertyHeader then
+							tinsert(rs, "  Property :")
+							hasPropertyHeader = true
+						end
+
+						tinsert(rs, "    [__Require__]" .. name .. (req.desc and (" - " .. req.desc) or ""))
+
+						reqs[name] = nil
+
+						CACHE_TABLE(req)
+					end
+				end
+
+				for name, opt in pairs(opts) do
+					if opt.type == "method" then
+						if not hasPropertyHeader then
+							tinsert(rs, "  Property :")
+							hasPropertyHeader = true
+						end
+
+						tinsert(rs, "    [__Optional__]" .. name .. (opt.desc and (" - " .. opt.desc) or ""))
+
+						opts[name] = nil
+
+						CACHE_TABLE(opt)
+					end
+				end
+
+				-- Recycle
+				for name, req in pairs(reqs) do reqs[name] = nil; CACHE_TABLE(req) end CACHE_TABLE(reqs)
+				for name, opt in pairs(opts) do opts[name] = nil; CACHE_TABLE(opt) end CACHE_TABLE(opts)
+
+				-- Scan constructors
+				if IsClass(ns) then
+
+				end
 			else
 			end
 
@@ -5058,222 +5212,9 @@ do
 			if ns and rawget(_NSInfo, ns) then
 				local info = _NSInfo[ns]
 
-				if info.Type == TYPE_ENUM then
-					-- Enum
-					local result = ""
-					local value
-
-					if info.IsFinal then
-						result = result .. "[__Final__]\n"
-					end
-
-					if info.IsFlags then
-						result = result .. "[__Flags__]\n"
-					end
-
-					result = result .. "[Enum] " .. GetNameSpaceFullName(ns) .. " :"
-
-					for _, enums in ipairs(GetEnums(ns)) do
-						value = ns[enums]
-
-						if type(value) == "string" then
-							value = ("%q"):format(value)
-						else
-							value = tostring(value)
-						end
-
-						result = result .. "\n    " .. enums .. " = " .. value
-					end
-					return result
-				elseif info.Type == TYPE_STRUCT then
-					-- Struct
-					local result = ""
-
-					if info.IsFinal then
-						result = result .. "[__Final__]\n"
-					end
-
-					if info.SubType == _STRUCT_TYPE_ARRAY then
-						result = result .. "[__StructType__(StructType.Array)]\n"
-					elseif info.SubType == _STRUCT_TYPE_CUSTOM then
-						result = result .. "[__StructType__(StructType.Custom)]\n"
-					end
-
-					result = result .. "[Struct] " .. GetNameSpaceFullName(ns) .. " :"
-
-					-- SubNameSpace
-					result = result .. buildSubNamespace(ns)
-
-					if info.SubType == _STRUCT_TYPE_MEMBER or info.SubType == _STRUCT_TYPE_CUSTOM then
-						local parts = GetStructParts(ns)
-
-						if parts and next(parts) then
-							result = result .. "\n\n  Field:"
-
-							for _, name in ipairs(parts) do
-								result = result .. "\n    " .. name .. " = " .. tostring(info.StructEnv[name])
-							end
-						end
-					elseif info.SubType == _STRUCT_TYPE_ARRAY then
-						if info.ArrayElement then
-							result = result .. "\n\n  Element :\n    " .. tostring(info.ArrayElement)
-						end
-					end
-
-					return result
-				elseif info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS then
+				if info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS then
 					-- Interface & Class
 					if type(targetType) ~= "string" then
-						local result = ""
-						local desc
-
-						targetType = targetType and true or false
-
-						if info.IsFinal then
-							result = result .. "[__Final__]\n"
-						end
-
-						if info.NonInheritable then
-							result = result .. "[__NonInheritable__]\n"
-						end
-
-						if info.NonExpandable then
-							result = result .. "[__NonExpandable__]\n"
-						end
-
-						if info.Type == TYPE_INTERFACE then
-							result = result .. "[Interface] " .. GetNameSpaceFullName(ns) .. " :"
-
-							if HasPartDocument(ns, "interface", GetNameSpaceName(ns)) then
-								desc = GetPartDocument(ns, "interface", GetNameSpaceName(ns), "desc")
-							elseif HasPartDocument(ns, "default", GetNameSpaceName(ns)) then
-								desc = GetPartDocument(ns, "default", GetNameSpaceName(ns), "desc")
-							end
-						else
-							if info.AutoCache then
-								result = result .. "[__Cache__]\n"
-							end
-
-							if info.UniqueObject then
-								result = result .. "[__Unique__]\n"
-							end
-
-							if IsChildClass(__Attribute__, ns) then
-								local usage = __Attribute__._GetClassAttribute(ns, __AttributeUsage__)
-
-								if usage then
-									result = result .. "[__AttributeUsage__{ "
-
-									result = result .. "AttributeTarget = " .. Serialize(usage.AttributeTarget, AttributeTargets) .. ", "
-
-									result = result .. "Inherited = " .. tostring(usage.Inherited and true or false) .. ", "
-
-									result = result .. "AllowMultiple = " .. tostring(usage.AllowMultiple and true or false) .. ", "
-
-									result = result .. "RunOnce = " .. tostring(usage.RunOnce and true or false)
-
-									result = result .. " }]\n"
-								end
-							end
-
-							result = result .. "[Class] " .. GetNameSpaceFullName(ns) .. " :"
-
-							if HasPartDocument(ns, "class", GetNameSpaceName(ns)) then
-								desc = GetPartDocument(ns, "class", GetNameSpaceName(ns), "desc")
-							elseif HasPartDocument(ns, "default", GetNameSpaceName(ns)) then
-								desc = GetPartDocument(ns, "default", GetNameSpaceName(ns), "desc")
-							end
-						end
-
-						-- Desc
-						desc = desc and desc()
-						if desc then
-							result = result .. "\n\n  Description :\n    " .. desc:gsub("<br>", "\n        "):gsub("  %s+", "\n        "):gsub("\t+", "\n        ")
-						end
-
-						-- Inherit
-						if info.SuperClass then
-							result = result .. "\n\n  Super Class :\n    " .. GetNameSpaceFullName(info.SuperClass)
-						end
-
-						-- Extend
-						if info.ExtendInterface and next(info.ExtendInterface) then
-							result = result .. "\n\n  Extend Interface :"
-							for _, IF in ipairs(info.ExtendInterface) do
-								result = result .. "\n    " .. GetNameSpaceFullName(IF)
-							end
-						end
-
-						-- SubNameSpace
-						result = result .. buildSubNamespace(ns)
-
-						-- Event
-						if next(info.Event) then
-							result = result .. "\n\n  Event :"
-							for _, evt in ipairs(GetEvents(ns, not targetType)) do
-								-- Desc
-								desc = HasDocument(ns, "event", evt) and GetDocument(ns, "event", evt, "desc")
-								desc = desc and desc()
-								if desc then
-									desc = " - " .. desc
-								else
-									desc = ""
-								end
-
-								result = result .. "\n    " .. evt .. desc
-							end
-						end
-
-						-- Property
-						if next(info.Property) then
-							result = result .. "\n\n  Property :"
-							for _, prop in ipairs(GetProperties(ns, not targetType)) do
-								-- Desc
-								desc = HasDocument(ns, "property", prop) and GetDocument(ns, "property", prop, "desc")
-								desc = desc and desc()
-								if desc then
-									desc = " - " .. desc
-								else
-									desc = ""
-								end
-
-								result = result .. "\n    " .. prop .. desc
-							end
-						end
-
-						-- Method
-						if next(info.Method) then
-							result = result .. "\n\n  Method :"
-							for _, method in ipairs(GetMethods(ns, not targetType)) do
-								-- Desc
-								desc = HasDocument(ns, "method", method) and GetDocument(ns, "method", method, "desc")
-								desc = desc and desc()
-								if desc then
-									desc = " - " .. desc
-								else
-									desc = ""
-								end
-								result = result .. "\n    " .. method .. desc
-							end
-						end
-
-						-- Need
-						if info.Type == TYPE_INTERFACE then
-							desc = GetPartDocument(ns, "interface", GetNameSpaceName(ns), "overridable")
-
-							if desc then
-								result = result .. "\n\n  Overridable :"
-
-								for need, info in desc do
-									if info and info:len() > 0 then
-										result = result .. "\n    " .. need .. " - " .. info
-									else
-										result = result .. "\n    " .. need
-									end
-								end
-							end
-						end
-
 						-- Constructor
 						local isFormat = false
 

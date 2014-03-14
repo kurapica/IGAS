@@ -23,7 +23,7 @@ end
 
 __Doc__[[
 	<desc>IFPhase is used to check whether the unit is in the same phase with the player</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the unit is in the same phase with the player</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the unit is in the same phase with the player</optional>
 ]]
 interface "IFPhase"
 	extend "IFUnitElement"

@@ -92,10 +92,10 @@ end
 
 __Doc__[[
 	<desc>IFDebuffState is used to handle the unit debuff's update</desc>
-	<overridable name="HasMagic" type="property" valuetype="boolean">used to receive the result for whether the unit has a magic debuff</overridable>
-	<overridable name="HasCurse" type="property" valuetype="boolean">used to receive the result for whether the unit has a curse debuff</overridable>
-	<overridable name="HasDisease" type="property" valuetype="boolean">used to receive the result for whether the unit has a disease debuff</overridable>
-	<overridable name="HasPoison" type="property" valuetype="boolean">used to receive the result for whether the unit has a poison debuff</overridable>
+	<optional name="HasMagic" type="property" valuetype="boolean">used to receive the result for whether the unit has a magic debuff</optional>
+	<optional name="HasCurse" type="property" valuetype="boolean">used to receive the result for whether the unit has a curse debuff</optional>
+	<optional name="HasDisease" type="property" valuetype="boolean">used to receive the result for whether the unit has a disease debuff</optional>
+	<optional name="HasPoison" type="property" valuetype="boolean">used to receive the result for whether the unit has a poison debuff</optional>
 ]]
 interface "IFDebuffState"
 	extend "IFUnitElement"

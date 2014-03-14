@@ -24,7 +24,7 @@ end
 
 __Doc__[[
 	<desc>IFLeader is used to handle the unit leader state's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the leader indicator should be shown</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the leader indicator should be shown</optional>
 ]]
 interface "IFLeader"
 	extend "IFUnitElement"

@@ -56,7 +56,7 @@ end
 
 __Doc__[[
 	<desc>IFResurrect is used to handle the unit resurrection state's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resurrection indicator should be shown</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resurrection indicator should be shown</optional>
 ]]
 interface "IFResurrect"
 	extend "IFUnitElement"

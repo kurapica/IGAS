@@ -49,8 +49,8 @@ end
 
 __Doc__[[
 	<desc>IFPower is used to handle the unit power updating</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the power</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the power's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the power</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the power's value</optional>
 ]]
 interface "IFPower"
 	extend "IFUnitElement"

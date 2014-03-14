@@ -142,8 +142,8 @@ end
 
 __Doc__[[
 	<desc>IFMyHealPrediction is used to handle the unit's prediction health by the player</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
 ]]
 interface "IFMyHealPrediction"
 	extend "IFUnitElement"
@@ -207,8 +207,8 @@ endinterface "IFMyHealPrediction"
 
 __Doc__[[
 	<desc>IFOtherHealPrediction is used to handle the unit's prediction health by other players</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
 ]]
 interface "IFOtherHealPrediction"
 	extend "IFUnitElement"
@@ -272,8 +272,8 @@ endinterface "IFOtherHealPrediction"
 
 __Doc__[[
 	<desc>IFAllHealPrediction is used to handle the unit's prediction health by all player</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the prediction health's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
 ]]
 interface "IFAllHealPrediction"
 	extend "IFUnitElement"
@@ -337,9 +337,9 @@ endinterface "IFAllHealPrediction"
 
 __Doc__[[
 	<desc>IFAbsorb is used to handle the unit's total absorb value</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the total absorb value</overridable>
-	<overridable name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the total absorb value</optional>
+	<optional name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</optional>
 ]]
 interface "IFAbsorb"
 	extend "IFUnitElement"
@@ -404,9 +404,9 @@ endinterface "IFAbsorb"
 
 __Doc__[[
 	<desc>IFHealAbsorb is used to handle the unit's total absorb value</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the total absorb value</overridable>
-	<overridable name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the total absorb value</optional>
+	<optional name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</optional>
 ]]
 interface "IFHealAbsorb"
 	extend "IFUnitElement"

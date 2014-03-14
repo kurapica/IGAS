@@ -22,7 +22,7 @@ end
 
 __Doc__[[
 	<desc>IFResting is used to handle the unit resting state's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resting indicator should be shown</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resting indicator should be shown</optional>
 ]]
 interface "IFResting"
 	extend "IFUnitElement"

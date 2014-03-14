@@ -70,7 +70,7 @@ end
 
 __Doc__[[
 	<desc>IFRune is used to handle the unit's rune power's updating</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the check result that whether the rune power should be shown</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the check result that whether the rune power should be shown</optional>
 	<usage>
 		For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
 			RuneType property, number, the rune's type

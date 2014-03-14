@@ -42,7 +42,7 @@ end
 
 __Doc__[[
 	<desc>IFRange is used to check whether the unit is in the spell range of the player</desc>
-	<overridable name="InRange" type="property" valuetype="boolean">used to receive the result, whether the unit is in the spell range of the player</overridable>
+	<optional name="InRange" type="property" valuetype="boolean">used to receive the result, whether the unit is in the spell range of the player</optional>
 ]]
 interface "IFRange"
 	extend "IFUnitElement"

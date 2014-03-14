@@ -161,10 +161,10 @@ end
 
 __Doc__[[
 	<desc>IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check value for whether the class power need to be shown</overridable>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">which used to receive the unit's class power's min and max value</overridable>
-	<overridable name="Value" type="property" valuetype="number">which is used to receive the unit's class power's value</overridable>
-	<overridable name="ClassPowerType" type="property" valuetype="number | nil">which is used to receive the unit's class power's type</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">which used to receive the check value for whether the class power need to be shown</optional>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">which used to receive the unit's class power's min and max value</optional>
+	<optional name="Value" type="property" valuetype="number">which is used to receive the unit's class power's value</optional>
+	<optional name="ClassPowerType" type="property" valuetype="number | nil">which is used to receive the unit's class power's type</optional>
 ]]
 interface "IFClassPower"
 	extend "IFUnitElement"

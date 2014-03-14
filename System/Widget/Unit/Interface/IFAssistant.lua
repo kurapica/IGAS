@@ -23,7 +23,7 @@ end
 
 __Doc__[[
 	<desc>IFAssistant is used to check whether the unit is the assistant in the group</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check result</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
 ]]
 interface "IFAssistant"
 	extend "IFUnitElement"

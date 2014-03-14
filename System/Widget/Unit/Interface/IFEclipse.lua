@@ -123,11 +123,11 @@ end
 
 __Doc__[[
 	<desc>IFEclipse is used to handle the updating for the player's eclipse power</desc>
-	<overridable name="EclipseDirection" type="property" valuetype="System.Widget.Unit.EclipseDirection">used to receive the eclipse's Direction</overridable>
-	<overridable name="SunActivated" type="property" valuetype="boolean">used to receive whether the sun is activated</overridable>
-	<overridable name="MoonActivated" type="property" valuetype="boolean">used to receive whether the moon is activated</overridable>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the eclipse power's value</overridable>
+	<optional name="EclipseDirection" type="property" valuetype="System.Widget.Unit.EclipseDirection">used to receive the eclipse's Direction</optional>
+	<optional name="SunActivated" type="property" valuetype="boolean">used to receive whether the sun is activated</optional>
+	<optional name="MoonActivated" type="property" valuetype="boolean">used to receive whether the moon is activated</optional>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the eclipse power's value</optional>
 ]]
 interface "IFEclipse"
 	extend "IFUnitElement"

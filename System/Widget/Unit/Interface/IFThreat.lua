@@ -24,7 +24,7 @@ end
 
 __Doc__[[
 	<desc>IFThreat is used to handle the unit threat level's update</desc>
-	<overridable name="ThreatLevel" type="property" type="number">which used to receive the unit's threat level</overridable>
+	<optional name="ThreatLevel" type="property" type="number">which used to receive the unit's threat level</optional>
 ]]
 interface "IFThreat"
 	extend "IFUnitElement"

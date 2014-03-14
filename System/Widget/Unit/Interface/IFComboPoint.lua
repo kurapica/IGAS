@@ -53,8 +53,8 @@ end
 
 __Doc__[[
 	<desc>IFComboPoint is used to handle the unit's combo points</desc>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the check result for whether the combo points should be shown(only for rogue and cat)</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the unit's combo points's count</overridable>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the check result for whether the combo points should be shown(only for rogue and cat)</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the unit's combo points's count</optional>
 ]]
 interface "IFComboPoint"
 	extend "IFUnitElement"

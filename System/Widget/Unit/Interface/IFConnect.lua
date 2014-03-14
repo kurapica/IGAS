@@ -45,7 +45,7 @@ end
 
 __Doc__[[
 	<desc>IFConnect is used to check whether the unit is connected</desc>
-	<overridable name="Connected" type="property" valuetype="boolean">which used to receive the check result for whether the unit is connected</overridable>
+	<optional name="Connected" type="property" valuetype="boolean">which used to receive the check result for whether the unit is connected</optional>
 ]]
 interface "IFConnect"
 	extend "IFUnitElement"

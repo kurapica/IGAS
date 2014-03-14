@@ -31,7 +31,7 @@ end
 
 __Doc__[[
 	<desc>IFUnitName is used to handle the unit name's update</desc>
-	<overridable name="Text" type="property" valuetype="string">which used to receive the unit's name</overridable>
+	<optional name="Text" type="property" valuetype="string">which used to receive the unit's name</optional>
 ]]
 interface "IFUnitName"
 	extend "IFUnitElement"

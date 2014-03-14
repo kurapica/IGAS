@@ -48,8 +48,8 @@ end
 
 __Doc__[[
 	<desc>IFMana is used to handle the unit mana updating</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the mana</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the mana's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the mana</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the mana's value</optional>
 ]]
 interface "IFMana"
 	extend "IFUnitElement"

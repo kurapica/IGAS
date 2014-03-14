@@ -23,7 +23,7 @@ end
 
 	__Doc__[[
 		<desc>IFCombat is used to check whether the player is in the combat</desc>
-		<overridable name="Visible" type="property" valuetype="boolean">which used to receive the check result</overridable>
+		<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
 	]]
 interface "IFCombat"
 	extend "IFUnitElement"

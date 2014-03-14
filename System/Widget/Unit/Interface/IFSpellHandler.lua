@@ -615,7 +615,7 @@ end
 
 __Doc__[[
 	<desc>IFSpellHandler provides hover and click spell casting for secure unit frames</desc>
-	<overridable name="IFSpellHandlerGroup" type="property" valuetype="string">used to mark the unit frame object into a group with the same behavior</overridable>
+	<optional name="IFSpellHandlerGroup" type="property" valuetype="string">used to mark the unit frame object into a group with the same behavior</optional>
 	<usage>
 		For a group named 'GroupA', it's easy to set or clear binding keys like :
 

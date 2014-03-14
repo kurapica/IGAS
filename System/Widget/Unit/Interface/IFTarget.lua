@@ -23,7 +23,7 @@ end
 
 __Doc__[[
 	<desc>IFTarget is used to check whether the unit is the target</desc>
-	<overridable name="IsTarget" type="property" valuetype="boolean">which used to receive the check result</overridable>
+	<optional name="IsTarget" type="property" valuetype="boolean">which used to receive the check result</optional>
 ]]
 interface "IFTarget"
 	extend "IFUnitElement"

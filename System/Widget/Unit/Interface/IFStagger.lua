@@ -61,9 +61,9 @@ end
 
 __Doc__[[
 	<desc>IFStagger is used to handle the unit's stagger</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the stagger's value</overridable>
-	<overridable name="Visible" type="property" valuetype="boolean">used to receive the result whether should show the stagger value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the stagger's value</optional>
+	<optional name="Visible" type="property" valuetype="boolean">used to receive the result whether should show the stagger value</optional>
 ]]
 interface "IFStagger"
 	extend "IFUnitElement"

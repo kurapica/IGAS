@@ -50,8 +50,8 @@ end
 
 __Doc__[[
 	<desc>IFHealth is used to handle the unit health updating</desc>
-	<overridable name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</overridable>
-	<overridable name="Value" type="property" valuetype="number">used to receive the health's value</overridable>
+	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</optional>
+	<optional name="Value" type="property" valuetype="number">used to receive the health's value</optional>
 ]]
 interface "IFHealth"
 	extend "IFUnitElement"

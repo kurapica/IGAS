@@ -44,16 +44,16 @@ end
 
 __Doc__[[
 	<desc>IFCast is used to handle the unit's spell casting</desc>
-	<overridable name="Start" type="method">be called when unit begins casting a spell</overridable>
-	<overridable name="Fail" type="method">be called when unit's spell casting failed</overridable>
-	<overridable name="Stop" type="method">be called when the unit stop or cancel the spell casting</overridable>
-	<overridable name="Interrupt" type="method">be called when the unit's spell casting is interrupted</overridable>
-	<overridable name="Interruptible" type="method">be called when the unit's spell casting becomes interruptible</overridable>
-	<overridable name="UnInterruptible" type="method">be called when the unit's spell casting become uninterruptible</overridable>
-	<overridable name="Delay" type="method">be called when the unit's spell casting is delayed</overridable>
-	<overridable name="ChannelStart" type="method">be called when the unit start channeling a spell</overridable>
-	<overridable name="ChannelUpdate" type="method">be called when the unit's channeling spell is interrupted or delayed</overridable>
-	<overridable name="ChannelStop" type="method">be called when the unit stop or cancel the channeling spell</overridable>
+	<optional name="Start" type="method">be called when unit begins casting a spell</optional>
+	<optional name="Fail" type="method">be called when unit's spell casting failed</optional>
+	<optional name="Stop" type="method">be called when the unit stop or cancel the spell casting</optional>
+	<optional name="Interrupt" type="method">be called when the unit's spell casting is interrupted</optional>
+	<optional name="Interruptible" type="method">be called when the unit's spell casting becomes interruptible</optional>
+	<optional name="UnInterruptible" type="method">be called when the unit's spell casting become uninterruptible</optional>
+	<optional name="Delay" type="method">be called when the unit's spell casting is delayed</optional>
+	<optional name="ChannelStart" type="method">be called when the unit start channeling a spell</optional>
+	<optional name="ChannelUpdate" type="method">be called when the unit's channeling spell is interrupted or delayed</optional>
+	<optional name="ChannelStop" type="method">be called when the unit stop or cancel the channeling spell</optional>
 ]]
 interface "IFCast"
 	extend "IFUnitElement"
