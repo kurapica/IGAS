@@ -1391,7 +1391,7 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:START_AUTOREPEAT_SPELL()
-		for button in paris(_AutoRepeatButtons) do
+		for button in pairs(_AutoRepeatButtons) do
 			if not _AutoAttackButtons[button] then
 				StartFlash(button)
 			end
@@ -1399,7 +1399,7 @@ do
 	end
 
 	function _IFActionHandler_ManagerFrame:STOP_AUTOREPEAT_SPELL()
-		for button in paris(_AutoRepeatButtons) do
+		for button in pairs(_AutoRepeatButtons) do
 			if button.Flashing and not _AutoAttackButtons[button] then
 				StopFlash(button)
 			end
