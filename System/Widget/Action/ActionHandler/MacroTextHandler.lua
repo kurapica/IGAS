@@ -4,7 +4,7 @@
 
 -- Check Version
 local version = 1
-if not IGAS:NewAddon("IGAS.Widget.Action.MacroHandler", version) then
+if not IGAS:NewAddon("IGAS.Widget.Action.MacroTextHandler", version) then
 	return
 end
 
