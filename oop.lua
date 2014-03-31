@@ -15,10 +15,10 @@ end
 
 Load("PLoop", "PLoop.lua")
 Load("PLoop", "System.lua")
-Load("PLoop", "Xml.lua")
 Load("PLoop", "Error.lua")
 Load("PLoop", "IFIterator.lua")
 Load("PLoop", "Array.lua")
 Load("PLoop", "Threading.lua")
 Load("PLoop", "Logger.lua")
 Load("PLoop", "Recycle.lua")
+Load("PLoop", "Xml.lua")
