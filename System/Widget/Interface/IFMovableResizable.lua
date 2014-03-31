@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 4
+local version = 5
 if not IGAS:NewAddon("IGAS.Widget.IFMovableResizable", version) then
 	return
 end
@@ -34,9 +34,11 @@ do
 	)
 
 	_GroupListResizable = _GroupListResizable or setmetatable({}, getmetatable(_GroupListMovable))
+	_GroupListToggleable = _GroupListToggleable or setmetatable({}, getmetatable(_GroupListMovable))
 
 	_IFMovable_ModeOn = _IFMovable_ModeOn or {}
 	_IFResizable_ModeOn = _IFResizable_ModeOn or {}
+	_IFToggleable_ModeOn = _IFToggleable_ModeOn or {}
 
 	_IFMaskParent = Frame("IGAS_IFMovableResizable_Mask")
 	_IFMaskParent.Visible = false
@@ -53,6 +55,7 @@ do
 		mask.OnResizeStarted = Mask_OnResizeStarted
 		mask.OnMoveFinished = Mask_OnMoveFinished
 		mask.OnResizeFinished = Mask_OnResizeFinished
+		mask.OnToggle = Mask_OnToggle
 	end
 
 	function Mask_OnMoveStarted(self)
@@ -73,6 +76,11 @@ do
 		self.Parent:Fire("OnSizeChanged")
 	end
 
+	function Mask_OnToggle(self)
+		self.Parent.ToggleState = self.ToggleState
+		return self.Parent:Fire("OnToggle")
+	end
+
 	function _MaskOn(IF, group)
 		group = tostring(group or _Global):upper()
 
@@ -84,11 +92,12 @@ do
 		elseif IF == IFResizable then
 			lst = _GroupListResizable(group)
 			_IFResizable_ModeOn[group] = true
+		elseif IF == IFToggleable then
+			lst = _GroupListToggleable(group)
+			_IFToggleable_ModeOn[group] = true
 		end
 
-		if not lst or not next(lst) then
-			return
-		end
+		if not lst or not next(lst) then return end
 
 		local cnt = 1
 		local needMask
@@ -99,6 +108,8 @@ do
 				needMask = frm.IFMovable
 			elseif IF == IFResizable then
 				needMask = frm.IFResizable
+			elseif IF == IFToggleable then
+				needMask = frm.IFToggleable
 			end
 
 			if needMask then
@@ -113,6 +124,9 @@ do
 					frm.__IFMovableResizable_Mask.AsMove = true
 				elseif IF == IFResizable then
 					frm.__IFMovableResizable_Mask.AsResize = true
+				elseif IF == IFToggleable then
+					frm.__IFMovableResizable_Mask.AsToggle = true
+					frm.__IFMovableResizable_Mask.ToggleState = frm.ToggleState
 				end
 
 				frm.Visible = true
@@ -124,9 +138,7 @@ do
 	function _MaskOff(IF, group)
 		group = tostring(group or _Global):upper()
 
-		if _UsingMask then
-			error("Can't turn off mode when mouse is down", 3)
-		end
+		if _UsingMask then error("Can't turn off mode when mouse is down", 3) end
 
 		local lst
 
@@ -136,11 +148,12 @@ do
 		elseif IF == IFResizable then
 			lst = _GroupListResizable(group)
 			_IFResizable_ModeOn[group] = nil
+		elseif IF == IFToggleable then
+			lst = _GroupListToggleable(group)
+			_IFToggleable_ModeOn[group] = nil
 		end
 
-		if not lst or not next(lst) then
-			return
-		end
+		if not lst or not next(lst) then return end
 
 		local mask
 
@@ -151,9 +164,11 @@ do
 					mask.AsMove = false
 				elseif IF == IFResizable then
 					mask.AsResize = false
+				elseif IF == IFToggleable then
+					mask.AsToggle = false
 				end
 
-				if not mask.AsMove and not mask.AsResize then
+				if not mask.AsMove and not mask.AsResize and not mask.AsToggle then
 					frm.Visible = mask.ParentVisible
 					frm.__IFMovableResizable_Mask = nil
 					_IFMask_Recycle(mask)
@@ -170,6 +185,8 @@ do
 			on = _IFMovable_ModeOn[group]
 		elseif IF == IFResizable then
 			on = _IFResizable_ModeOn[group]
+		elseif IF == IFToggleable then
+			on = _IFToggleable_ModeOn[group]
 		end
 		if on then
 			_MaskOff(IF, group)
@@ -181,6 +198,7 @@ end
 
 __Doc__[[IFMovable provide a frame moving system]]
 interface "IFMovable"
+	require "Region"
 
 	------------------------------------------------------
 	-- Event
@@ -253,13 +271,8 @@ interface "IFMovable"
 
 	__Doc__[[Whether the object should be turn into the moving mode]]
 	property "IFMovable" {
-		Get = function(self)
-			return not self.__IFMovable_Block
-		end,
-		Set = function(self, value)
-			self.__IFMovable_Block = not value or nil
-		end,
 		Type = System.Boolean,
+		Default = true,
 	}
 
 	------------------------------------------------------
@@ -273,14 +286,13 @@ interface "IFMovable"
 	-- Constructor
 	------------------------------------------------------
 	function IFMovable(self)
-		if Reflector.ObjectIsClass(self, Region) then
-			_GroupListMovable[self.IFMovingGroup][self] = true
-		end
+		_GroupListMovable[self.IFMovingGroup][self] = true
 	end
 endinterface "IFMovable"
 
 __Doc__[[IFResizable provide a frame resize system]]
 interface "IFResizable"
+	require "Region"
 
 	------------------------------------------------------
 	-- Event
@@ -353,13 +365,8 @@ interface "IFResizable"
 
 	__Doc__[[Whether the object should be turn into the resizing mode]]
 	property "IFResizable" {
-		Get = function(self)
-			return not self.__IFResizable_Block
-		end,
-		Set = function(self, value)
-			self.__IFResizable_Block = not value or nil
-		end,
 		Type = System.Boolean,
+		Default = true,
 	}
 
 	------------------------------------------------------
@@ -373,8 +380,104 @@ interface "IFResizable"
 	-- Constructor
 	------------------------------------------------------
 	function IFResizable(self)
-		if Reflector.ObjectIsClass(self, Region) then
-			_GroupListResizable[self.IFResizingGroup][self] = true
-		end
+		_GroupListResizable[self.IFResizingGroup][self] = true
 	end
 endinterface "IFResizable"
+
+__Doc__[[IFToggleable provide a frame toggle system]]
+interface "IFToggleable"
+	require "Region"
+
+	------------------------------------------------------
+	-- Event
+	------------------------------------------------------
+	__Doc__[[Fired when a frame's toggle state changes]]
+	event "OnToggle"
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[
+		<desc>Start toggling registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
+	function _ModeOn(group)
+		return _MaskOn(IFToggleable, group)
+	end
+
+	__Doc__[[
+		<desc>Stop toggling registered Object</desc>
+		<param name="group">string, group name</param>
+	]]
+	function _ModeOff(group)
+		return _MaskOff(IFToggleable, group)
+	end
+
+	__Doc__[[
+		<desc>Whether the group is mode on</desc>
+		<param name="group">string, group name</param>
+		<return type="boolean">true if the mode is turn on for the group</return>
+	]]
+	function _IsModeOn(group)
+		group = tostring(group or _Global):upper()
+		return _IFToggleable_ModeOn[group]
+	end
+
+	__Doc__[[
+		<desc>Toggle the mode</desc>
+		<param name="group">string, group name</param>
+	]]
+	function _Toggle(group)
+		_MaskToggle(IFToggleable, group)
+	end
+
+	__Doc__[[
+		<desc>Get all group name</desc>
+		<return type="table">a list contains all groups</return>
+	]]
+	function _GetGroupList()
+		local ret = {}
+
+		for grp in pairs(_GroupListToggleable) do
+			tinsert(ret, grp)
+		end
+
+		sort(ret)
+
+		return ret
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	__Doc__[[The object's toggling group name, default "Global"]]
+	property "IFTogglingGroup" {
+		Get = function(self)
+			return _Global
+		end,
+	}
+
+	__Doc__[[Whether the object should be turn into the toggling mode]]
+	property "IFToggleable" {
+		Type = System.Boolean,
+		Default = true,
+	}
+
+	__Doc__[[The toggle state of the frame]]
+	__Require__()
+	property "ToggleState" { Type = Boolean }
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_GroupListToggleable[self.IFTogglingGroup][self] = nil
+	end
+
+	------------------------------------------------------
+	-- Constructor
+	------------------------------------------------------
+	function IFToggleable(self)
+		_GroupListToggleable[self.IFTogglingGroup][self] = true
+	end
+endinterface "IFToggleable"

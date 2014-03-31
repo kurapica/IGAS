@@ -278,7 +278,9 @@ do
 		end
 	end
 
-	function Mask_OnMouseDown(self)
+	function Mask_OnMouseDown(self, button)
+		if button ~= "LeftButton" then return end
+
 		local ret = ""
 
 		local frm = self.Owner or self.Parent
@@ -480,6 +482,9 @@ class "Mask"
 	]]
 	event "OnKeyClear"
 
+	__Doc__[[Fired when toggled]]
+	event "OnToggle"
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -499,10 +504,7 @@ class "Mask"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The mask is used to move parent]]
-	property "AsMove" {
-		Field = "__AsMove",
-		Type = System.Boolean,
-	}
+	property "AsMove" { Type = System.Boolean }
 
 	__Doc__[[The mask is used to resize parent]]
 	property "AsResize" {
@@ -516,10 +518,7 @@ class "Mask"
 	}
 
 	__Doc__[[The mask is used to bind key]]
-	property "AsKeyBind" {
-		Field = "__AsKeyBind",
-		Type = System.Boolean,
-	}
+	property "AsKeyBind" { Type = System.Boolean }
 
 	__Doc__[[The binding key]]
 	property "BindKey" {
@@ -529,6 +528,20 @@ class "Mask"
 			self.Text = ToShortKey(value) or " "
 		end,
 		Type = System.String + nil,
+	}
+
+	__Doc__[[The mask is used as toggle button]]
+	property "AsToggle" { Type = Boolean }
+
+	__Doc__[[Whether the mask is toggled on]]
+	property "ToggleState" {
+		Set = function(self, value)
+			self.Alpha = value and 1 or 0.5
+		end,
+		Get = function(self)
+			return self.Alpha > 0.6
+		end
+		Type = Boolean,
 	}
 
 	------------------------------------------------------
@@ -552,7 +565,11 @@ class "Mask"
 	end
 
 	local function OnClick(self, button)
-		if self.AsKeyBind then
+		if button == "RightButton" and self.AsToggle then
+			self.ToggleState = not self.ToggleState
+
+			return self:Fire("OnToggle")
+		elseif self.AsKeyBind then
 			return UpdateBindKey(self, button)
 		end
 	end
