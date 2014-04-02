@@ -82,7 +82,7 @@ function HealthBar_OnStateChanged(self)
 		end
 	end
 
-	if not color and not self.Smooth then
+	if not color and not self.UseSmoothColor then
 		if value < 0.6 and value >= 0.3 then
 			color = _LowHPColor
 		elseif value < 0.3 then
@@ -96,7 +96,7 @@ function HealthBar_OnStateChanged(self)
 
 	color = color or _DefaultColor
 
-	if(self.Smooth) then
+	if(self.UseSmoothColor) then
 		r = _FinalColor.r + (color.r - _FinalColor.r) * value
 		g = _FinalColor.g + (color.g - _FinalColor.g) * value
 		b = _FinalColor.b + (color.b - _FinalColor.b) * value
@@ -160,12 +160,12 @@ class "HealthBar"
 	}
 
 	__Doc__[[Whether smoothing the color changing]]
-	property "Smooth" {
+	property "UseSmoothColor" {
 		Get = function(self)
-			return self.__Smooth or false
+			return self.__UseSmoothColor or false
 		end,
 		Set = function(self, value)
-			self.__Smooth = value
+			self.__UseSmoothColor = value
 			HealthBar_OnStateChanged(self)
 		end,
 		Type = System.Boolean,
@@ -230,12 +230,12 @@ class "HealthBarFrequent"
 	}
 
 	__Doc__[[Whether smoothing the color changing]]
-	property "Smooth" {
+	property "UseSmoothColor" {
 		Get = function(self)
-			return self.__Smooth or false
+			return self.__UseSmoothColor or false
 		end,
 		Set = function(self, value)
-			self.__Smooth = value
+			self.__UseSmoothColor = value
 			HealthBar_OnStateChanged(self)
 		end,
 		Type = System.Boolean,

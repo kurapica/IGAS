@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2014/03/05
--- Version          r92
+-- Last Update Date 2014/04/03
+-- Version          r93
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1018,6 +1018,12 @@ do
 								prop.Default = v
 							elseif k == "event" and type(v) == "string" then
 								prop.Event = v
+							elseif k == "handler" then
+								if type(v) == "string" then
+									prop.HandlerName = v
+								elseif type(v) == "function" then
+									prop.Handler = v
+								end
 							end
 						end
 					end
@@ -1112,6 +1118,11 @@ do
 						prop.Event = nil
 					end
 
+					-- Validate the Handler
+					if prop.HandlerName then
+						prop.Handler = info.Cache4Method[prop.HandlerName]
+					end
+
 					-- Auto generate Field or methods
 					if not useMethod and not prop.Field then
 						local name = prop.Name
@@ -1120,6 +1131,7 @@ do
 
 						if set.Synthesize and env then
 							local evt = prop.Event
+							local handler = prop.Handler
 							local fire = Reflector.FireObjectEvent
 							local getName, setName
 
@@ -1129,24 +1141,44 @@ do
 								getName, setName = "get" .. uname, "set" .. uname
 							end
 
-							if getName and setName then
+							if getName then
 								info.Method[getName] = function (self)
 									return self[field]
 								end
 
 								if evt then
-									info.Method[setName] = function (self, value)
-										local old =  self[name]
-										if old ~= value then
-											self[field] = value
+									info.Method[setName] = handler and
+										function (self, value)
+											local old =  self[name]
+											if old ~= value then
+												self[field] = value
 
-											return fire(self, evt, old, value, name)
+												fire(self, evt, old, value, name)
+
+												return handler(self, old, value, name)
+											end
 										end
-									end
+									 or function (self, value)
+											local old =  self[name]
+											if old ~= value then
+												self[field] = value
+
+												return fire(self, evt, old, value, name)
+											end
+										end
 								else
-									info.Method[setName] = function (self, value)
-										self[field] = value
-									end
+									info.Method[setName] = handler and
+										function (self, value)
+											local old =  self[name]
+											if old ~= value then
+												self[field] = value
+
+												return handler(self, old, value, name)
+											end
+										end
+									or function (self, value)
+											self[field] = value
+										end
 								end
 
 								-- Keep in the definition environment
@@ -2296,7 +2328,7 @@ do
 						return Cache4Method[oper](self, value)
 					end
 				elseif oper.Field then
-					if oper.Event then
+					if oper.Event or oper.Handler then
 						local old = rawget(self, oper.Field)
 
 						if old == nil then old = oper.Default end
@@ -2305,10 +2337,14 @@ do
 
 						rawset(self, oper.Field, value)
 
-						-- Fire the event
-						local handler = rawget(self, "__Events")
-						handler = handler and handler[oper.Event]
-						return handler and handler(self, old, value, key)
+						if oper.Event then
+							-- Fire the event
+							local handler = rawget(self, "__Events")
+							handler = handler and handler[oper.Event]
+							if handler then handler(self, old, value, key) end
+						end
+
+						return oper.Handler and oper.Handler(self, old, value, key)
 					else
 						return rawset(self, oper.Field, value)
 					end
@@ -8389,6 +8425,74 @@ do
 			target.Synthesize = self.NameCase
 		end
 	endclass "__Synthesize__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
+	class "__Event__"
+		inherit "__Attribute__"
+
+		doc "__Event__" [[Used to bind an event to the property]]
+
+		doc "Event" [[The event that bind to the property]]
+		property "Event" { Type = String + nil }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			target.Event = self.Event
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Event__(self)
+			self.Event = nil
+
+			return Super(self)
+		end
+
+		__Arguments__{ String }
+		function __Event__(self, value)
+			self.Event = value
+
+			return Super(self)
+		end
+	endclass "__Event__"
+
+	class "__Handler__"
+		inherit "__Attribute__"
+
+		doc "__Handler__" [[Used to bind an handler(method name or function) to the property]]
+
+		doc "Handler" [[The handler that bind to the property]]
+		property "Handler" { Type = String + Function + nil }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			target.Handler = self.Handler
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Handler__(self)
+			self.Handler = nil
+
+			return Super(self)
+		end
+
+		__Arguments__{ String + Function }
+		function __Handler__(self, value)
+			self.Handler = value
+
+			return Super(self)
+		end
+	endclass "__Handler__"
 
 	__AttributeUsage__{Inherited = false, RunOnce = true}
 	__Final__() __Unique__()

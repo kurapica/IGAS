@@ -1,3 +1,9 @@
+2014/04/03
+    __Event__ and __Handler__ attributes added to provide handlers for property value's changing.
+
+2013/03/20
+    __Doc__ attribute added to support new document system.
+
 2013/12/31
     'This' is added for class definition, used in the class's constructor to call other constructors.
 
