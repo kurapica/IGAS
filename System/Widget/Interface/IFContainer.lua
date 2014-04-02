@@ -64,7 +64,7 @@ interface "IFContainer"
 
 				return self.Panel:AddWidget(widget, ...)
 			else
-				error("Usage : IFContainer:AddWidget(name, element, ...) : element - must be a Region class.", 2)
+				error("Usage : IFContainer:AddWidget(name, element, ...) : element - must be a widget or class of [System.Widget.Region] or [System.Widget.VirtualUIObject].", 2)
 			end
 		elseif Reflector.ObjectIsClass(name, Region) or Reflector.ObjectIsClass(name, VirtualUIObject) then
 			widget = name

@@ -540,7 +540,7 @@ class "Mask"
 		end,
 		Get = function(self)
 			return self.Alpha > 0.6
-		end
+		end,
 		Type = Boolean,
 	}
 
