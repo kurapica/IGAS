@@ -8461,6 +8461,8 @@ do
 		end
 	endclass "__Event__"
 
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
 	class "__Handler__"
 		inherit "__Attribute__"
 
