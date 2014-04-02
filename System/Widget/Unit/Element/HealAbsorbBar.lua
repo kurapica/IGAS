@@ -57,6 +57,12 @@ class "HealAbsorbBar"
 	property "HealthBar" {
 		Field = "__HealthBar",
 		Set = function(self, value)
+			if type(value) == "string" then
+				value = self.Parent:GetChild(value)
+
+				if not value then return end
+			end
+
 			if self.__HealthBar ~= value then
 				if self.__HealthBar then
 					self.__HealthBar.OnSizeChanged = self.__HealthBar.OnSizeChanged - OnSizeChanged
@@ -78,7 +84,7 @@ class "HealAbsorbBar"
 				value.OnSizeChanged = value.OnSizeChanged + OnSizeChanged
 			end
 		end,
-		Type = StatusBar,
+		Type = StatusBar + String,
 	}
 
 	property "OverAbsorb" {
