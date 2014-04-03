@@ -353,3 +353,78 @@ class "UnitList"
 		return Next(self, unit)
 	end
 endclass "UnitList"
+
+__Doc__[[SmoothValue is used to smooth the value changes]]
+class "SmoothValue"
+	import "System.Threading"
+
+	_Smoothing = {}
+	_Running = false
+
+	_Thread = Thread( function
+		while true do
+			Sleep(0.1)
+
+			if not next(_Smoothing) then
+				_Running = false
+				_Thread:Yield()
+			end
+
+			for obj in pairs(_Smoothing) do
+				local now = obj.NowDelay
+
+				now = now - 0.1
+
+				if now <= 0 then
+					_Smoothing[self] = nil
+					obj.NowDelay = 0
+					obj.Value = obj.RealValue
+				else
+					obj.NowDelay = now
+					obj.Value = (obj.RealValue - obj.OldValue) * (1 - now / obj.SmoothDelay) + obj.OldValue
+				end
+			end
+		end
+	end)
+
+	local function SetRealValue(self, new, old)
+		if not old then self.Value = new return end
+
+		self.NowDelay = self.SmoothDelay
+		self.OldValue = self.Value
+
+		_Smoothing[self] = true
+
+		if not _Running then
+			_Running = true
+			return _Thread()
+		end
+	end
+
+	------------------------------------------------------
+	-- Event
+	------------------------------------------------------
+	__Doc__[[Fired when the smoothed value is changed]]
+	event "OnValueChanged"
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	__Doc__[[The real value of object]]
+	__Handler__( SetRealValue )
+	property "RealValue" { Type = Number + nil }
+
+	__Doc__[[The smoothed value]]
+	__Event__ "OnValueChanged"
+	property "Value" { Type = Number }
+
+	__Doc__[[The delay time for smoothing value changes]]
+	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
+
+	------------------------------------------------------
+	-- Dispose
+	------------------------------------------------------
+	function Dispose(self)
+		_Smoothing[self] = nil
+	end
+endclass "SmoothValue"

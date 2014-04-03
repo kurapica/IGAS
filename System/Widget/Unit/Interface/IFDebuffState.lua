@@ -3,19 +3,17 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFDebuffState", version) then
 	return
 end
 
 _IFDebuffStateUnitList = _IFDebuffStateUnitList or UnitList(_Name)
 
-_IFDebuffStateCache = _IFDebuffStateCache or {
-	Magic = {},
-	Curse = {},
-	Disease = {},
-	Poison = {},
-}
+_IFDebuffStateCache_Magic = {}
+_IFDebuffStateCache_Curse = {}
+_IFDebuffStateCache_Disease = {}
+_IFDebuffStateCache_Poison = {}
 
 function _IFDebuffStateUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_AURA")
@@ -24,13 +22,9 @@ function _IFDebuffStateUnitList:OnUnitListChanged()
 end
 
 function _IFDebuffStateUnitList:ParseEvent(event, unit)
-	if not _IFDebuffStateUnitList:HasUnit(unit) then
-		return
-	end
+	if not _IFDebuffStateUnitList:HasUnit(unit) then return end
 
-	if event == "UNIT_AURA" then
-		return UpdateAuraState(unit)
-	end
+	return UpdateAuraState(unit)
 end
 
 function UpdateAuraState(unit)
@@ -59,27 +53,27 @@ function UpdateAuraState(unit)
 		index = index + 1
 	end
 
-	if _IFDebuffStateCache.Magic[unit] ~= hasMagic then
+	if _IFDebuffStateCache_Magic[unit] ~= hasMagic then
 		changed = true
-		_IFDebuffStateCache.Magic[unit] = hasMagic
+		_IFDebuffStateCache_Magic[unit] = hasMagic
 		_IFDebuffStateUnitList:EachK(unit, "HasMagic", hasMagic)
 	end
 
-	if _IFDebuffStateCache.Curse[unit] ~= hasCurse then
+	if _IFDebuffStateCache_Curse[unit] ~= hasCurse then
 		changed = true
-		_IFDebuffStateCache.Curse[unit] = hasCurse
+		_IFDebuffStateCache_Curse[unit] = hasCurse
 		_IFDebuffStateUnitList:EachK(unit, "HasCurse", hasCurse)
 	end
 
-	if _IFDebuffStateCache.Disease[unit] ~= hasDisease then
+	if _IFDebuffStateCache_Disease[unit] ~= hasDisease then
 		changed = true
-		_IFDebuffStateCache.Disease[unit] = hasDisease
+		_IFDebuffStateCache_Disease[unit] = hasDisease
 		_IFDebuffStateUnitList:EachK(unit, "HasDisease", hasDisease)
 	end
 
-	if _IFDebuffStateCache.Poison[unit] ~= hasPoison then
+	if _IFDebuffStateCache_Poison[unit] ~= hasPoison then
 		changed = true
-		_IFDebuffStateCache.Poison[unit] = hasPoison
+		_IFDebuffStateCache_Poison[unit] = hasPoison
 		_IFDebuffStateUnitList:EachK(unit, "HasPoison", hasPoison)
 	end
 
@@ -111,9 +105,7 @@ interface "IFDebuffState"
 	------------------------------------------------------
 	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
-		if self.Unit then
-			UpdateAuraState(self.Unit)
-		end
+		return self.Unit and UpdateAuraState(self.Unit) end
 	end
 
 	------------------------------------------------------

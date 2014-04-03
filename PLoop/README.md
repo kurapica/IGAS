@@ -1307,14 +1307,14 @@ It's very simple, just using **Event** field point to the event's name. So, let'
 
 	o = Person()
 
-	o.OnNameChanged = function (self, old, new, prop)
+	o.OnNameChanged = function (self, new, old, prop)
 		print(("[%s] %s -> %s "):format(prop, old, new))
 	end
 
 	-- Ouput : [Name] Anonymous -> Ann
 	o.Name = "Ann"
 
-From the result, you can see the parameters of the event, 1st is **old** value, 2nd is **new** value, 3rd is the property's name, so, in some case we can handle all property changes in one event :
+From the result, you can see the parameters of the event, 1st is **new** value, 2nd is **old** value, 3rd is the property's name, so, in some case we can handle all property changes in one event :
 
 	class "Person"
 		-- Declare the event
@@ -1328,7 +1328,7 @@ From the result, you can see the parameters of the event, 1st is **old** value, 
 
 	o = Person()
 
-	o.OnPropertyChanged = function (self, old, new, prop)
+	o.OnPropertyChanged = function (self, new, old, prop)
 		print(("[%s] %s -> %s "):format(prop, old, new))
 	end
 

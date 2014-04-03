@@ -3,62 +3,53 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.HealthBar", version) then
 	return
 end
 
 _DEBUFF_ABILITIES = {
-	["WARRIOR"] = {
-	},
-	["ROGUE"] = {
-	},
-	["HUNTER"] = {
-	},
-	["MAGE"] = {
-		Curse = true,
-	},
-	["DRUID"] = {
-		Poison = true,
-		Curse = true,
-		Magic = true,
-	},
-	["PALADIN"] = {
-		Poison = true,
-		Disease = true,
-		Magic = true,
-	},
-	["PRIEST"] = {
-		Disease = true,
-		Magic = true,
-	},
-	["SHAMAN"] = {
-		Curse = true,
-		Magic = true,
-	},
-	["WARLOCK"] = {
-		Magic = true,
-	},
-	["DEATHKNIGHT"] = {
-	},
-	["MONK"] = {
-		Poison = true,
-		Disease = true,
-		Magic = true,
-	},
+	["WARRIOR"] = { },
+	["ROGUE"] = { },
+	["HUNTER"] = { },
+	["MAGE"] = { Curse = true, },
+	["DRUID"] = { Poison = true, Curse = true, Magic = true, },
+	["PALADIN"] = { Poison = true, Disease = true, Magic = true, },
+	["PRIEST"] = { Disease = true, Magic = true, },
+	["SHAMAN"] = { Curse = true, Magic = true, },
+	["WARLOCK"] = { Magic = true, },
+	["DEATHKNIGHT"] = { },
+	["MONK"] = { Poison = true, Disease = true, Magic = true, },
 }
 
 _DEBUFF_ABLE = _DEBUFF_ABILITIES[select(2, UnitClass('player'))] or {}
+_DEBUFF_ABILITIES = nil
 
-_DefaultColor = ColorType(0, 1, 0)
-_LowHPColor = ColorType(1, 1, 0)
-_FinalColor = ColorType(1, 0, 0)
+_ColorMap = {
+	Magic = DebuffTypeColor.Magic,
+	Curse = DebuffTypeColor.Curse,
+	Disease = DebuffTypeColor.Disease,
+	Poison = DebuffTypeColor.Poison,
 
-function HealthBar_OnStateChanged(self)
-	local unit = self.Unit
-	if not unit or not UnitExists(unit) then return end
+	Default = ColorType(0, 1, 0),
 
-	local value = self.Value
+    HUNTER = RAID_CLASS_COLORS.HUNTER,
+    WARLOCK = RAID_CLASS_COLORS.WARLOCK,
+    PRIEST = RAID_CLASS_COLORS.PRIEST,
+    PALADIN = RAID_CLASS_COLORS.PALADIN,
+    MAGE = RAID_CLASS_COLORS.MAGE,
+    ROGUE = RAID_CLASS_COLORS.ROGUE,
+    DRUID = RAID_CLASS_COLORS.DRUID,
+    SHAMAN = RAID_CLASS_COLORS.SHAMAN,
+    WARRIOR = RAID_CLASS_COLORS.WARRIOR,
+    DEATHKNIGHT = RAID_CLASS_COLORS.DEATHKNIGHT,
+    MONK = RAID_CLASS_COLORS.MONK,
+}
+
+function HealthBar_OnStateChanged(self, value)
+	value = value or self.Value
+	if not value then return end
+
 	local color
 	local r, g, b
 	local min, max = self:GetMinMaxValues()
@@ -71,54 +62,56 @@ function HealthBar_OnStateChanged(self)
 
 	-- Choose color
 	if self.UseDebuffColor then
-		if self.HasMagic and _DEBUFF_ABLE['Magic'] then
-			color = DebuffTypeColor.Magic
-		elseif self.HasCurse and _DEBUFF_ABLE['Curse'] then
-			color = DebuffTypeColor.Curse
-		elseif self.HasDisease and _DEBUFF_ABLE['Disease'] then
-			color = DebuffTypeColor.Disease
-		elseif self.HasPoison and _DEBUFF_ABLE['Poison'] then
-			color = DebuffTypeColor.Poison
+		if _DEBUFF_ABLE['Magic'] and self.HasMagic then
+			color = "Magic"
+		elseif _DEBUFF_ABLE['Curse'] and self.HasCurse then
+			color = "Curse"
+		elseif _DEBUFF_ABLE['Disease'] and self.HasDisease then
+			color = "Disease"
+		elseif _DEBUFF_ABLE['Poison'] and self.HasPoison then
+			color = "Poison"
 		end
 	end
 
-	if not color and not self.UseSmoothColor then
-		if value < 0.6 and value >= 0.3 then
-			color = _LowHPColor
-		elseif value < 0.3 then
-			color = _FinalColor
+	if not color then
+		color = self.UseClassColor and select(2, UnitClass(self.Unit)) or "Default"
+
+		if self.UseSmoothColor then
+			value = floor(value * 10) / 10
+
+			if self.__HealthBar_Previous == value then return end
+
+			r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
+			color = value
+
+			-- Smooth the color
+			if value > 0.5 then
+				r = (1 - value) * 2 * (1 - r) + r
+			else
+				r = 1
+				g = g * value * 2
+			end
+			b = b * value
+		else
+			if self.__HealthBar_Previous == color then return end
+
+			r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
 		end
-	end
-
-	if not color and self.UseClassColor then
-		color = RAID_CLASS_COLORS[select(2, UnitClass(self.Unit))]
-	end
-
-	color = color or _DefaultColor
-
-	if(self.UseSmoothColor) then
-		r = _FinalColor.r + (color.r - _FinalColor.r) * value
-		g = _FinalColor.g + (color.g - _FinalColor.g) * value
-		b = _FinalColor.b + (color.b - _FinalColor.b) * value
 	else
-		r, g, b = color.r, color.g, color.b
+		if self.__HealthBar_Previous == color then return end
+
+		r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
 	end
 
-	self:SetStatusBarColor(r, g, b)
+	self.__HealthBar_Previous = color
+
+	return self:SetStatusBarColor(r, g, b)
 end
 
 __Doc__[[The health bar with debuff state]]
 class "HealthBar"
 	inherit "StatusBar"
 	extend "IFHealth" "IFDebuffState"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -129,47 +122,23 @@ class "HealthBar"
 	function Refresh(self)
 		IFHealth.Refresh(self)
 		IFDebuffState.Refresh(self)
-		HealthBar_OnStateChanged(self)
+		return HealthBar_OnStateChanged(self)
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether use the debuff color]]
-	property "UseDebuffColor" {
-		Get = function(self)
-			return self.__UseDebuffColor or false
-		end,
-		Set = function(self, value)
-			self.__UseDebuffColor = Boolean
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseDebuffColor" { Type = System.Boolean, }
 
 	__Doc__[[Whether use the unit's class color]]
-	property "UseClassColor" {
-		Get = function(self)
-			return self.__UseClassColor or false
-		end,
-		Set = function(self, value)
-			self.__UseClassColor = value
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseClassColor" { Type = System.Boolean, }
 
 	__Doc__[[Whether smoothing the color changing]]
-	property "UseSmoothColor" {
-		Get = function(self)
-			return self.__UseSmoothColor or false
-		end,
-		Set = function(self, value)
-			self.__UseSmoothColor = value
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseSmoothColor" { Type = System.Boolean, }
 
 	------------------------------------------------------
 	-- Constructor
@@ -180,7 +149,6 @@ class "HealthBar"
 		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
 		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 
-		HealthBar_OnStateChanged(self)
 		self.FrameStrata = "LOW"
 	end
 endclass "HealthBar"
@@ -206,40 +174,16 @@ class "HealthBarFrequent"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether use the debuff color]]
-	property "UseDebuffColor" {
-		Get = function(self)
-			return self.__UseDebuffColor or false
-		end,
-		Set = function(self, value)
-			self.__UseDebuffColor = Boolean
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Any,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseDebuffColor" { Type = System.Boolean, }
 
 	__Doc__[[Whether use the unit's class color]]
-	property "UseClassColor" {
-		Get = function(self)
-			return self.__UseClassColor or false
-		end,
-		Set = function(self, value)
-			self.__UseClassColor = value
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseClassColor" { Type = System.Boolean, }
 
 	__Doc__[[Whether smoothing the color changing]]
-	property "UseSmoothColor" {
-		Get = function(self)
-			return self.__UseSmoothColor or false
-		end,
-		Set = function(self, value)
-			self.__UseSmoothColor = value
-			HealthBar_OnStateChanged(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(HealthBar_OnStateChanged)
+	property "UseSmoothColor" { Type = System.Boolean, }
 
 	------------------------------------------------------
 	-- Constructor
@@ -250,7 +194,6 @@ class "HealthBarFrequent"
 		self.OnStateChanged = self.OnStateChanged + HealthBar_OnStateChanged
 		self.OnValueChanged = self.OnValueChanged + HealthBar_OnStateChanged
 
-		HealthBar_OnStateChanged(self)
 		self.FrameStrata = "LOW"
 	end
 endclass "HealthBarFrequent"

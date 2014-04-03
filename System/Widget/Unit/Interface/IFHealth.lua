@@ -3,12 +3,15 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFHealth", version) then
 	return
 end
 
 _IFHealthUnitList = _IFHealthUnitList or UnitList(_Name)
+_IFHealthSmoothUnitList = _IFHealthSmoothUnitList or UnitList(_Name.."Smooth")
+_IFHealthSmoothObjUnitList = _IFHealthSmoothObjUnitList or UnitList(_Name.."Smooth")
+
 _IFHealthUnitMaxHealthCache = _IFHealthUnitMaxHealthCache or {}
 _MinMax = MinMax(0, 1)
 
@@ -27,20 +30,26 @@ function _IFHealthUnitList:ParseEvent(event, unit)
 		_MinMax.max = UnitHealthMax(unit)
 		if _IFHealthUnitMaxHealthCache[unit] ~= _MinMax.max then
 			_IFHealthUnitMaxHealthCache[unit] = _MinMax.max
+
 			self:EachK(unit, "MinMaxValue", _MinMax)
+			_IFHealthSmoothUnitList:EachK(unit, "MinMaxValue", _MinMax)
 		end
 
-		if UnitIsConnected(unit) then
-			self:EachK(unit, "Value", UnitHealth(unit))
-		else
-			self:EachK(unit, "Value", UnitHealthMax(unit))
-		end
+		local value = UnitIsConnected(unit) and UnitHealth(unit) or UnitHealthMax(unit)
+
+		self:EachK(unit, "Value", value)
+		_IFHealthSmoothObjUnitList:EachK(unit, "RealValue", value)
 	elseif event == "UNIT_MAXHEALTH" then
 		_MinMax.max = UnitHealthMax(unit)
 		_IFHealthUnitMaxHealthCache[unit] = _MinMax.max
 
 		self:EachK(unit, "MinMaxValue", _MinMax)
-		self:EachK(unit, "Value", UnitHealth(unit))
+		_IFHealthSmoothUnitList:EachK(unit, "MinMaxValue", _MinMax)
+
+		local value = UnitHealth(unit)
+
+		self:EachK(unit, "Value", value)
+		_IFHealthSmoothObjUnitList:EachK(unit, "RealValue", value)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		for unit in pairs(self) do
 			self:EachK(unit, "Refresh")
@@ -56,9 +65,28 @@ __Doc__[[
 interface "IFHealth"
 	extend "IFUnitElement"
 
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
+	local function SwapUnitList(self, value)
+		if value then
+			_IFHealthUnitList[self] = nil
+
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFHealthSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFHealthSmoothUnitList[self] = self.Unit
+		else
+			if self._SmoothValueObj then
+				_IFHealthSmoothObjUnitList[self._SmoothValueObj] = nil
+			end
+			_IFHealthSmoothUnitList[self] = nil
+
+			_IFHealthUnitList[self] = self.Unit
+		end
+	end
 
 	------------------------------------------------------
 	-- Method
@@ -76,12 +104,34 @@ interface "IFHealth"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[Whether smoothing the value changes]]
+	__Handler__(SwapUnitList)
+	property "Smoothing" { Type = System.Boolean }
+
+	__Doc__[[The delay time for smoothing value changes]]
+	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
+	local function OnValueChanged(self, value)
+		self.Owner.Value = value
+	end
+
 	local function OnUnitChanged(self)
-		_IFHealthUnitList[self] = self.Unit
+		if self.Smoothing then
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFHealthSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFHealthSmoothUnitList[self] = self.Unit
+		else
+			_IFHealthUnitList[self] = self.Unit
+		end
 	end
 
 	------------------------------------------------------
@@ -89,6 +139,13 @@ interface "IFHealth"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFHealthUnitList[self] = nil
+		_IFHealthSmoothUnitList[self] = nil
+
+		if self._SmoothValueObj then
+			_IFHealthSmoothObjUnitList[self._SmoothValueObj] = nil
+			self._SmoothValueObj:Dispose()
+			self._SmoothValueObj = nil
+		end
 	end
 
 	------------------------------------------------------

@@ -1153,9 +1153,9 @@ do
 											if old ~= value then
 												self[field] = value
 
-												fire(self, evt, old, value, name)
+												fire(self, evt, value, old, name)
 
-												return handler(self, old, value, name)
+												return handler(self, value, old, name)
 											end
 										end
 									 or function (self, value)
@@ -1163,7 +1163,7 @@ do
 											if old ~= value then
 												self[field] = value
 
-												return fire(self, evt, old, value, name)
+												return fire(self, evt, value, old, name)
 											end
 										end
 								else
@@ -1173,7 +1173,7 @@ do
 											if old ~= value then
 												self[field] = value
 
-												return handler(self, old, value, name)
+												return handler(self, value, old, name)
 											end
 										end
 									or function (self, value)
@@ -2341,10 +2341,10 @@ do
 							-- Fire the event
 							local handler = rawget(self, "__Events")
 							handler = handler and handler[oper.Event]
-							if handler then handler(self, old, value, key) end
+							if handler then handler(self, value, old, key) end
 						end
 
-						return oper.Handler and oper.Handler(self, old, value, key)
+						return oper.Handler and oper.Handler(self, value, old, key)
 					else
 						return rawset(self, oper.Field, value)
 					end
