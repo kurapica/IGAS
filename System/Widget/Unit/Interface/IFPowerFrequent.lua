@@ -3,12 +3,15 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPowerFrequent", version) then
 	return
 end
 
 _IFPowerFrequentUnitList = _IFPowerFrequentUnitList or UnitList(_Name)
+_IFPowerFrequentSmoothUnitList = _IFPowerFrequentSmoothUnitList or UnitList(_Name.."Smooth")
+_IFPowerFrequentSmoothObjUnitList = _IFPowerFrequentSmoothObjUnitList or UnitList(_Name.."SmoothObj")
+
 _IFPowerFrequentUnitPowerType = _IFPowerFrequentUnitPowerType or {}
 
 _MinMax = MinMax(0, 1)
@@ -25,24 +28,36 @@ function _IFPowerFrequentUnitList:OnUnitListChanged()
 end
 
 function _IFPowerFrequentUnitList:ParseEvent(event, unit, type)
-	if not self:HasUnit(unit) and event ~= "PLAYER_ENTERING_WORLD" then return end
+	if not self:HasUnit(unit) and not _IFPowerFrequentSmoothUnitList:HasUnit(unit) and event ~= "PLAYER_ENTERING_WORLD" then return end
 
 	local powerType = unit and UnitPowerType(unit)
 
 	if unit and powerType ~= _IFPowerFrequentUnitPowerType[unit] then
 		_IFPowerFrequentUnitPowerType[unit] = powerType
+
 		self:EachK(unit, "Refresh")
+		_IFPowerFrequentSmoothUnitList:EachK(unit, "Refresh")
 	elseif event == "UNIT_POWER_FREQUENT" then
 		if powerType and ClassPowerMap[powerType] ~= type then return end
 
-		self:EachK(unit, "Value", UnitPower(unit, powerType))
+		local value = UnitPower(unit, powerType)
+
+		self:EachK(unit, "Value", value)
+		_IFPowerFrequentSmoothObjUnitList:EachK(unit, "RealValue", value)
 	elseif event == "UNIT_MAXPOWER" then
 		_MinMax.max = UnitPowerMax(unit, powerType)
+
 		self:EachK(unit, "MinMaxValue", _MinMax)
-		self:EachK(unit, "Value", UnitPower(unit, powerType))
+		_IFPowerFrequentSmoothUnitList:EachK(unit, "MinMaxValue", _MinMax)
+
+		local value = UnitPower(unit, powerType)
+
+		self:EachK(unit, "Value", value)
+		_IFPowerFrequentSmoothObjUnitList:EachK(unit, "RealValue", value)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		for unit in pairs(self) do
 			self:EachK(unit, "Refresh")
+			_IFPowerFrequentSmoothUnitList:EachK(unit, "Refresh")
 		end
 	end
 end
@@ -55,9 +70,32 @@ __Doc__[[
 interface "IFPowerFrequent"
 	extend "IFUnitElement"
 
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
+	local function OnValueChanged(self, value)
+		self.Owner.Value = value
+	end
+
+	local function SwapUnitList(self, value)
+		if value then
+			_IFPowerFrequentUnitList[self] = nil
+
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFPowerFrequentSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFPowerFrequentSmoothUnitList[self] = self.Unit
+		else
+			if self._SmoothValueObj then
+				_IFPowerFrequentSmoothObjUnitList[self._SmoothValueObj] = nil
+			end
+			_IFPowerFrequentSmoothUnitList[self] = nil
+
+			_IFPowerFrequentUnitList[self] = self.Unit
+		end
+	end
 
 	------------------------------------------------------
 	-- Method
@@ -98,6 +136,10 @@ interface "IFPowerFrequent"
 		else
 			self.Value = max
 		end
+
+		if self.Smoothing and self._SmoothValueObj then
+			self._SmoothValueObj.Value = self.Value
+		end
 	end
 
 	------------------------------------------------------
@@ -114,11 +156,30 @@ interface "IFPowerFrequent"
 		Type = Boolean,
 	}
 
+	__Doc__[[Whether smoothing the value changes]]
+	__Handler__(SwapUnitList)
+	property "Smoothing" { Type = System.Boolean }
+
+	__Doc__[[The delay time for smoothing value changes]]
+	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		_IFPowerFrequentUnitList[self] = self.Unit
+		if self.Smoothing then
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFPowerFrequentSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFPowerFrequentSmoothUnitList[self] = self.Unit
+		else
+			_IFPowerFrequentUnitList[self] = self.Unit
+		end
 	end
 
 	------------------------------------------------------
@@ -126,6 +187,13 @@ interface "IFPowerFrequent"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFPowerFrequentUnitList[self] = nil
+		_IFPowerFrequentSmoothUnitList[self] = nil
+
+		if self._SmoothValueObj then
+			_IFPowerFrequentSmoothObjUnitList[self._SmoothValueObj] = nil
+			self._SmoothValueObj:Dispose()
+			self._SmoothValueObj = nil
+		end
 	end
 
 	------------------------------------------------------

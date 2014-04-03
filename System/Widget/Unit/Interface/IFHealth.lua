@@ -10,7 +10,7 @@ end
 
 _IFHealthUnitList = _IFHealthUnitList or UnitList(_Name)
 _IFHealthSmoothUnitList = _IFHealthSmoothUnitList or UnitList(_Name.."Smooth")
-_IFHealthSmoothObjUnitList = _IFHealthSmoothObjUnitList or UnitList(_Name.."Smooth")
+_IFHealthSmoothObjUnitList = _IFHealthSmoothObjUnitList or UnitList(_Name.."SmoothObj")
 
 _IFHealthUnitMaxHealthCache = _IFHealthUnitMaxHealthCache or {}
 _MinMax = MinMax(0, 1)
@@ -24,7 +24,7 @@ function _IFHealthUnitList:OnUnitListChanged()
 end
 
 function _IFHealthUnitList:ParseEvent(event, unit)
-	if not self:HasUnit(unit) and event ~= "PLAYER_ENTERING_WORLD" then return end
+	if not self:HasUnit(unit) and not _IFHealthSmoothUnitList:HasUnit(unit) and event ~= "PLAYER_ENTERING_WORLD" then return end
 
 	if event == "UNIT_HEALTH" then
 		_MinMax.max = UnitHealthMax(unit)
@@ -46,13 +46,14 @@ function _IFHealthUnitList:ParseEvent(event, unit)
 		self:EachK(unit, "MinMaxValue", _MinMax)
 		_IFHealthSmoothUnitList:EachK(unit, "MinMaxValue", _MinMax)
 
-		local value = UnitHealth(unit)
+		local value = UnitIsConnected(unit) and UnitHealth(unit) or UnitHealthMax(unit)
 
 		self:EachK(unit, "Value", value)
 		_IFHealthSmoothObjUnitList:EachK(unit, "RealValue", value)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		for unit in pairs(self) do
 			self:EachK(unit, "Refresh")
+			_IFHealthSmoothUnitList:EachK(unit, "Refresh")
 		end
 	end
 end
@@ -65,13 +66,17 @@ __Doc__[[
 interface "IFHealth"
 	extend "IFUnitElement"
 
+	local function OnValueChanged(self, value)
+		self.Owner.Value = value
+	end
+
 	local function SwapUnitList(self, value)
 		if value then
 			_IFHealthUnitList[self] = nil
 
 			if not self._SmoothValueObj then
 				self._SmoothValueObj = SmoothValue()
-				self._SmoothValueObj.SmoothDelay = SmoothDelay
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				self._SmoothValueObj.Owner = self
 				self._SmoothValueObj.OnValueChanged = OnValueChanged
 			end
@@ -99,6 +104,10 @@ interface "IFHealth"
 		else
 			self.Value = 0
 		end
+
+		if self.Smoothing and self._SmoothValueObj then
+			self._SmoothValueObj.Value = self.Value
+		end
 	end
 
 	------------------------------------------------------
@@ -114,15 +123,11 @@ interface "IFHealth"
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
-	local function OnValueChanged(self, value)
-		self.Owner.Value = value
-	end
-
 	local function OnUnitChanged(self)
 		if self.Smoothing then
 			if not self._SmoothValueObj then
 				self._SmoothValueObj = SmoothValue()
-				self._SmoothValueObj.SmoothDelay = SmoothDelay
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				self._SmoothValueObj.Owner = self
 				self._SmoothValueObj.OnValueChanged = OnValueChanged
 			end

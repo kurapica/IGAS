@@ -356,48 +356,44 @@ endclass "UnitList"
 
 __Doc__[[SmoothValue is used to smooth the value changes]]
 class "SmoothValue"
-	import "System.Threading"
 
 	_Smoothing = {}
 	_Running = false
 
-	_Thread = Thread( function
-		while true do
-			Sleep(0.1)
+	_SmoothFrame = CreateFrame("Frame")
+	_SmoothFrame:Hide()
 
-			if not next(_Smoothing) then
-				_Running = false
-				_Thread:Yield()
-			end
+	_SmoothFrame:SetScript("OnUpdate", function(self, elpased)
+		if not next(_Smoothing) then
+			_Running = false
+			return self:Hide()
+		end
 
-			for obj in pairs(_Smoothing) do
-				local now = obj.NowDelay
+		for obj in pairs(_Smoothing) do
+			local now = obj.NowDelay
 
-				now = now - 0.1
+			now = now - elpased
 
-				if now <= 0 then
-					_Smoothing[self] = nil
-					obj.NowDelay = 0
-					obj.Value = obj.RealValue
-				else
-					obj.NowDelay = now
-					obj.Value = (obj.RealValue - obj.OldValue) * (1 - now / obj.SmoothDelay) + obj.OldValue
-				end
+			if now <= 0 then
+				_Smoothing[obj] = nil
+				obj.NowDelay = 0
+				obj.Value = obj.RealValue
+			else
+				obj.NowDelay = now
+				obj.Value = (obj.RealValue - obj.OldValue) * (1 - now / obj.SmoothDelay) + obj.OldValue
 			end
 		end
 	end)
 
 	local function SetRealValue(self, new, old)
-		if not old then self.Value = new return end
-
 		self.NowDelay = self.SmoothDelay
-		self.OldValue = self.Value
+		self.OldValue = self.Value or new
 
 		_Smoothing[self] = true
 
 		if not _Running then
 			_Running = true
-			return _Thread()
+			_SmoothFrame:Show()
 		end
 	end
 

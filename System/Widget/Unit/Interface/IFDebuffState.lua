@@ -105,7 +105,7 @@ interface "IFDebuffState"
 	------------------------------------------------------
 	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
-		return self.Unit and UpdateAuraState(self.Unit) end
+		return self.Unit and UpdateAuraState(self.Unit)
 	end
 
 	------------------------------------------------------

@@ -47,6 +47,7 @@ _ColorMap = {
 }
 
 function HealthBar_OnStateChanged(self, value)
+	if not self.Unit then return end
 	value = value or self.Value
 	if not value then return end
 
