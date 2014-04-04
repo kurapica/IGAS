@@ -740,11 +740,7 @@ class "ComboBox"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[whether the comboBox is auto focus]]
-	property "AutoFocus" {
-		Set = "SetAutoFocus",
-		Get = "IsAutoFocus",
-		Type = Boolean,
-	}
+	property "AutoFocus" { Type = Boolean }
 
 	__Doc__[[whether the comboBox is focused]]
 	property "Focused" {
@@ -760,32 +756,16 @@ class "ComboBox"
 	}
 
 	__Doc__[[the comboBox's displayed item count]]
-	property "DisplayItemCount" {
-		Set = "SetDisplayItemCount",
-		Get = "GetDisplayItemCount",
-		Type = Number,
-	}
+	property "DisplayItemCount" { Type = Number }
 
 	__Doc__[[the choosed item's value]]
-	property "Value" {
-		Set = "SetValue",
-		Get = "GetValue",
-		Type = Any,
-	}
+	property "Value" { Type = Any + nil }
 
 	__Doc__[[the displayed text]]
-	property "Text" {
-		Set = "SetText",
-		Get = "GetText",
-		Type = LocaleString,
-	}
+	property "Text" { Type = LocaleString }
 
 	__Doc__[[whether the comboBox is ediatable]]
-	property "Editable" {
-		Set = "SetEditable",
-		Get = "GetEditable",
-		Type = Boolean,
-	}
+	property "Editable" { Type = Boolean }
 
 	__Doc__[[whether DropdownBtn should be hidden]]
 	property "HideDropDownButton" {
@@ -875,11 +855,7 @@ class "ComboBox"
 	}
 
 	__Doc__[[the comboBox's style]]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = ComboBoxStyle,
-	}
+	property "Style" { Type = ComboBoxStyle }
 
 	__Doc__[[the comboBox's horizontal text alignment style]]
 	property "JustifyH" {

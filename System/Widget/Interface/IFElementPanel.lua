@@ -110,6 +110,15 @@ interface "IFElementPanel"
 		end
 	end
 
+	local function RefreshAll(self)
+		Reduce(self)
+		self:Each(AdjustElement, self)
+	end
+
+	local function RefreshElement(self)
+		self:Each(AdjustElement, self)
+	end
+
 	__Doc__[[Element is an accessor to the IFElementPanel's elements, used like object.Element[i].Prop = value]]
 	class "Element"
 
@@ -188,103 +197,29 @@ interface "IFElementPanel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The columns's count]]
-	property "ColumnCount" {
-		Field = "__ElementPanel_ColumnCount",
-		Default = 99,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("ElementPanel.ColumnCount must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ColumnCount then
-				self.__ElementPanel_ColumnCount = cnt
-
-				Reduce(self)
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshAll )
+	property "ColumnCount" { Type = PositiveNumber, Default = 99 }
 
 	__Doc__[[The row's count]]
-	property "RowCount" {
-		Field = "__ElementPanel_RowCount",
-		Default = 99,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("ElementPanel.RowCount must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.RowCount then
-				self.__ElementPanel_RowCount = cnt
-
-				Reduce(self)
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshAll )
+	property "RowCount" { Type = PositiveNumber, Default = 99 }
 
 	__Doc__[[The elements's max count]]
-	property "MaxCount" {
-		Get = function(self)
-			return self.ColumnCount * self.RowCount
-		end,
-	}
+	property "MaxCount" { Get = function(self) return self.ColumnCount * self.RowCount end }
 
 	__Doc__[[The element's width]]
-	property "ElementWidth" {
-		Field = "__ElementPanel_Width",
-		Default = 16,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("ElementPanel.ElementWidth must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ElementWidth then
-				self.__ElementPanel_Width = cnt
-
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshElement )
+	property "ElementWidth" { Type = PositiveNumber, Default = 16 }
 
 	__Doc__[[The element's height]]
-	property "ElementHeight" {
-		Field = "__ElementPanel_Height",
-		Default = 16,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("ElementPanel.ElementHeight must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ElementHeight then
-				self.__ElementPanel_Height = cnt
-
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshElement )
+	property "ElementHeight" { Type = PositiveNumber, Default = 16 }
 
 	__Doc__[[The element's count]]
 	property "Count" {
 		Field = "__ElementPanel_Count",
 		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 0 then
-				error("Count can't be negative.", 2)
-			elseif cnt > self.RowCount * self.ColumnCount then
+			if cnt > self.RowCount * self.ColumnCount then
 				error("Count can't be more than "..self.RowCount * self.ColumnCount, 2)
 			end
 
@@ -298,144 +233,50 @@ interface "IFElementPanel"
 				Reduce(self, cnt)
 			end
 		end,
-		Type = Number,
+		Type = NaturalNumber,
 	}
 
 	__Doc__[[The orientation for elements]]
-	property "Orientation" {
-		Field = "__ElementPanel_Orientation",
-		Default = Orientation.HORIZONTAL,
-		Set = function(self, orientation)
-			if orientation ~= self.Orientation then
-				self.__ElementPanel_Orientation = orientation
-
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Orientation,
-	}
+	__Handler__( RefreshElement )
+	property "Orientation" { Type = Orientation, Default = Orientation.HORIZONTAL }
 
 	__Doc__[[Whether the elements start from left to right]]
-	property "LeftToRight" {
-		Field = "__ElementPanel_LeftToRight",
-		Default = true,
-		Set = function(self, flag)
-			if flag ~= self.LeftToRight then
-				self.__ElementPanel_LeftToRight = flag
-
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( RefreshElement )
+	property "LeftToRight" { Type = Boolean, Default = true }
 
 	__Doc__[[Whether the elements start from top to bottom]]
-	property "TopToBottom" {
-		Field = "__ElementPanel_TopToBottom",
-		Default = true,
-		Set = function(self, flag)
-			if flag ~= self.TopToBottom then
-				self.__ElementPanel_TopToBottom = flag
-
-				self:Each(AdjustElement, self)
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( RefreshElement )
+	property "TopToBottom" { Type = Boolean, Default = true }
 
 	__Doc__[[The element's type]]
-	property "ElementType" {
-		Get = function(self)
-			return self.__ElementPanel_Type
-		end,
-		Set = function(self, elementType)
-			if elementType ~= self.__ElementPanel_Type then
-				self.__ElementPanel_Type = elementType
-			end
-		end,
-		Type = -Region,
-	}
+	property "ElementType" { Type = - Region }
 
 	__Doc__[[The horizontal spacing]]
-	property "HSpacing" {
-		Field = "__ElementPanel_HSpacing",
-		Set = function(self, spacing)
-			if self.__ElementPanel_HSpacing == spacing then return end
-
-			self.__ElementPanel_HSpacing = spacing > 0 and floor(spacing) or 0
-
-			self:Each(AdjustElement, self)
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshElement )
+	property "HSpacing" { Type = NaturalNumber }
 
 	__Doc__[[The vertical spacing]]
-	property "VSpacing" {
-		Field = "__ElementPanel_VSpacing",
-		Set = function(self, spacing)
-			if self.__ElementPanel_VSpacing == spacing then return end
-
-			self.__ElementPanel_VSpacing = spacing > 0 and floor(spacing) or 0
-
-			self:Each(AdjustElement, self)
-		end,
-		Type = Number,
-	}
+	__Handler__( RefreshElement )
+	property "VSpacing" { Type = NaturalNumber }
 
 	__Doc__[[Whether the elementPanel is autosize]]
 	property "AutoSize" { Type = Boolean }
 
 	__Doc__[[The top margin]]
-	property "MarginTop" {
-		Field = "__ElementPanel_MarginTop",
-		Set = function(self, spacing)
-			if self.__ElementPanel_MarginTop == spacing then return end
-
-			self.__ElementPanel_MarginTop = spacing > 0 and floor(spacing) or 0
-
-			self:Each(AdjustElement, self)
-		end,
-		Type = Number,
-	}
+	__Handler__( AdjustPanel )
+	property "MarginTop" { Type = NaturalNumber }
 
 	__Doc__[[The bottom margin]]
-	property "MarginBottom" {
-		Field = "__ElementPanel_MarginBottom",
-		Set = function(self, spacing)
-			if self.__ElementPanel_MarginBottom == spacing then return end
-
-			self.__ElementPanel_MarginBottom = spacing > 0 and floor(spacing) or 0
-
-			AdjustPanel(self)
-		end,
-		Type = Number,
-	}
+	__Handler__( AdjustPanel )
+	property "MarginBottom" { Type = NaturalNumber }
 
 	__Doc__[[The left margin]]
-	property "MarginLeft" {
-		Field = "__ElementPanel_MarginLeft",
-		Set = function(self, spacing)
-			if self.__ElementPanel_MarginLeft == spacing then return end
-
-			self.__ElementPanel_MarginLeft = spacing > 0 and floor(spacing) or 0
-
-			self:Each(AdjustElement, self)
-		end,
-		Type = Number,
-	}
+	__Handler__( AdjustPanel )
+	property "MarginLeft" { Type = NaturalNumber }
 
 	__Doc__[[The right margin]]
-	property "MarginRight" {
-		Field = "__ElementPanel_MarginRight",
-		Set = function(self, spacing)
-			if self.__ElementPanel_MarginRight == spacing then return end
-
-			self.__ElementPanel_MarginRight = spacing > 0 and floor(spacing) or 0
-
-			AdjustPanel(self)
-		end,
-		Type = Number,
-	}
+	__Handler__( AdjustPanel )
+	property "MarginRight" { Type = NaturalNumber }
 
 	__Doc__[[The Element accessor, used like obj.Element[i].]]
 	property "Element" {
@@ -443,24 +284,14 @@ interface "IFElementPanel"
 			self.__ElementPanel_Element = self.__ElementPanel_Element or Element(self)
 			return self.__ElementPanel_Element
 		end,
-		Type = Element,
 	}
 
 	__Doc__[[The prefix for the element's name]]
-	property "ElementPrefix" {
-		Default = "Element",
-		Type = System.String + nil,
-	}
+	property "ElementPrefix" { Type = String, Default = "Element" }
 
 	__Doc__[[Whether the elementPanel should keep it's max size]]
-	property "KeepMaxSize" {
-		Field = "__KeepMaxSize",
-		Set = function(self, value)
-			self.__KeepMaxSize = value
-			return AdjustPanel(self)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( AdjustPanel )
+	property "KeepMaxSize" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Initialize

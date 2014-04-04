@@ -37,10 +37,10 @@ class "CheckBox"
     end
 
 	local function UpdateText(self)
-		if self:GetChild("ChkBtn").Checked and type(self.__TrueText) == "string" then
-			self.Text = self.__TrueText
-		elseif (not self:GetChild("ChkBtn").Checked) and type(self.__FalseText) == "string" then
-			self.Text = self.__FalseText
+		if self:GetChild("ChkBtn").Checked and type(self.TrueText) == "string" then
+			self.Text = self.TrueText
+		elseif (not self:GetChild("ChkBtn").Checked) and type(self.FalseText) == "string" then
+			self.Text = self.FalseText
 		end
 	end
 
@@ -56,14 +56,14 @@ class "CheckBox"
 		GameTooltip:Hide()
 		_OnGameTooltip = nil
 
-		if self.__Tooltip then
+		if self.Tooltip then
 			_OnGameTooltip = self
 			local from, to = getAnchors(self)
 
 			GameTooltip:SetOwner(self, "ANCHOR_NONE")
 			GameTooltip:ClearAllPoints()
 			GameTooltip:SetPoint(from, self, to, 0, 0)
-			GameTooltip:SetText(self.__Tooltip)
+			GameTooltip:SetText(self.Tooltip)
 			self:Fire("OnGameTooltipShow", GameTooltip)
 			GameTooltip:Show()
 		end
@@ -118,6 +118,7 @@ class "CheckBox"
 	]]
 	function SetText(self, text)
 		self:GetChild("Text").Text = text
+		self.Width = self:GetChild("Text"):GetStringWidth() + 32
 	end
 
 	__Doc__[[
@@ -144,79 +145,40 @@ class "CheckBox"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[whether the CheckBox is checked]]
-	property "Checked" {
-		Set = "SetChecked",
-		Get = "GetChecked",
-		Type = Boolean,
-	}
+	property "Checked" { Type = Boolean }
 
 	__Doc__[[the default text to be displyed]]
-	property "Text" {
-		Set = function(self, text)
-			self:SetText(text)
-			self.Width = self:GetChild("Text"):GetStringWidth() + 32
-		end,
-		Get = "GetText",
-		Type = LocaleString,
-	}
+	property "Text" { Type = LocaleString }
 
 	__Doc__[[the text to be displyed when checked if set]]
-	property "TrueText" {
-		Set = function(self, text)
-			self.__TrueText = text
-			UpdateText(self)
-		end,
-
-		Get = function(self)
-			return self.__TrueText
-		end,
-
-		Type = LocaleString + nil,
-	}
+	__Handler__( UpdateText )
+	property "TrueText" { Type = LocaleString + nil }
 
 	__Doc__[[the text to be displyed when un-checked if set]]
-	property "FalseText" {
-		Set = function(self, text)
-			self.__FalseText = text
-			UpdateText(self)
-		end,
-
-		Get = function(self)
-			return self.__FalseText
-		end,
-
-		Type = LocaleString + nil,
-	}
+	__Handler__( UpdateText )
+	property "FalseText" { Type = LocaleString + nil }
 
 	__Doc__[[the tooltip to be displyed when mouse over]]
-	property "Tooltip" {
-		Set = function(self, tip)
-			self.__Tooltip = tip
-			if _OnGameTooltip == self then
-				GameTooltip:ClearLines()
-				GameTooltip:Hide()
-				_OnGameTooltip = nil
+	__Handler__( function(self, tip)
+		if _OnGameTooltip == self then
+			GameTooltip:ClearLines()
+			GameTooltip:Hide()
+			_OnGameTooltip = nil
 
-				if self.__Tooltip then
-					_OnGameTooltip = self
-					local from, to = getAnchors(self)
+			if tip then
+				_OnGameTooltip = self
+				local from, to = getAnchors(self)
 
-					GameTooltip:SetOwner(self, "ANCHOR_NONE")
-					GameTooltip:ClearAllPoints()
-					GameTooltip:SetPoint(from, self, to, 0, 0)
-					GameTooltip:SetText(self.__Tooltip)
-					self:Fire("OnGameTooltipShow", GameTooltip)
-					GameTooltip:Show()
-				end
+				GameTooltip:SetOwner(self, "ANCHOR_NONE")
+				GameTooltip:ClearAllPoints()
+				GameTooltip:SetPoint(from, self, to, 0, 0)
+				GameTooltip:SetText(tip)
+				self:Fire("OnGameTooltipShow", GameTooltip)
+				GameTooltip:Show()
 			end
-		end,
-
-		Get = function(self)
-			return self.__Tooltip
-		end,
-
-		Type = LocaleString + nil,
-	}
+		end
+	end )
+	property "Tooltip" { Type = LocaleString + nil }
 
 	------------------------------------------------------
 	-- Constructor

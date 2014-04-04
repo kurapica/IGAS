@@ -228,33 +228,8 @@ class "CastBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	property "IFCooldownLabelUseDecimal" {
-		Get = function(self) return true end
-	}
-
-	property "IFCooldownLabelAutoColor" {
-		Get = function(self) return false end
-	}
-
 	__Doc__[[The delay time format string like "%.1f"]]
-	property "DelayFormatString" {
-		Get = function(self)
-			return self.__DelayFormatString or _DELAY_TEMPLATE
-		end,
-		Set = function(self, text)
-			if text then
-				-- Try format
-				local ok, ret = pcall(string.format, text, 123.123)
-
-				if not ok or ret == text then
-					error("CastBar.DelayFormatString muse be a template like (%.1f).", 2)
-				end
-			end
-
-			self.__DelayFormatString = text
-		end,
-		Type = String + nil,
-	}
+	property "DelayFormatString" { Type = String + nil, Default = _DELAY_TEMPLATE }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -279,6 +254,9 @@ class "CastBar"
 
 		self.Height = 16
 		self.Width = 200
+
+		self.IFCooldownLabelUseDecimal = true
+		self.IFCooldownLabelAutoColor = false
 
 		-- Icon
 		local icon = Texture("Icon", self, "ARTWORK")

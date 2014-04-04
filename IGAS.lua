@@ -135,17 +135,26 @@ endstruct "LocaleString"
 -- PositiveNumber
 ------------------------------------------------------
 __StructType__(StructType.Custom)
+__Default__( 1 )
 struct "PositiveNumber"
 	function Validate(value)
-		if type(value) ~= "number" then
-			error(format("%s must be a number, got %s.", "%s", type(value)))
-		end
-		if value <= 0 then
-			error("%s must be greater than zero.")
-		end
+		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
+		value = floor(value)
+		if value <= 0 then error("%s must be greater than zero.") end
 		return value
 	end
 endstruct "PositiveNumber"
+
+__StructType__(StructType.Custom)
+__Default__( 0 )
+struct "NaturalNumber"
+	function Validate(value)
+		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
+		value = floor(value)
+		if value < 0 then error("%s must be a natural number.") end
+		return value
+	end
+endstruct "NaturalNumber"
 
 ------------------------------------
 --- Create or get the logger for the given log name

@@ -99,29 +99,15 @@ interface "IFCooldownLabel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether the cooldown label using decimal format]]
-	property "IFCooldownLabelUseDecimal" {
-		Get = function(self)
-			return self.__IFCooldownLabelUseDecimal
-		end,
-		Set = function(self, flag)
-			self.__IFCooldownLabelUseDecimal = flag
-		end,
-		Type = Boolean,
-	}
+	property "IFCooldownLabelUseDecimal" { Type = Boolean }
 
 	__Doc__[[Whether the cooldown label using auto color]]
-	property "IFCooldownLabelAutoColor" {
-		Get = function(self)
-			return self.__IFCooldownLabelAutoColor
-		end,
-		Set = function(self, flag)
-			self.__IFCooldownLabelAutoColor = flag
-			if not flag then
-				self:GetChild("CooldownLabel").TextColor = _NORMAL_COLOR
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( function (self, value)
+		if not value then
+			self:GetChild("CooldownLabel").TextColor = _NORMAL_COLOR
+		end
+	end )
+	property "IFCooldownLabelAutoColor" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

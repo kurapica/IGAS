@@ -87,15 +87,8 @@ class "HealAbsorbBar"
 		Type = StatusBar + String,
 	}
 
-	property "OverAbsorb" {
-		Field = "__OverAbsorb",
-		Set = function(self, value)
-			if self.__OverAbsorb ~= value then
-				self.__OverAbsorb = value
-				self.OverGlow.Visible = value
-			end
-		end,
-	}
+	__Handler__( function (self, value) self.OverGlow.Visible = value end )
+	property "OverAbsorb" { }
 
 	property "HasIncomingHeal" {
 		Field = "__HasIncomingHeal",
@@ -111,15 +104,8 @@ class "HealAbsorbBar"
 		end,
 	}
 
-	property "HasAbsorb" {
-		Field = "__HasAbsorb",
-		Set = function(self, value)
-			if self.__HasAbsorb ~= value then
-				self.__HasAbsorb = value
-				self.RightShadow.Visible = value
-			end
-		end,
-	}
+	__Handler__( function (self, value) self.RightShadow.Visible = value end )
+	property "HasAbsorb" { }
 
 	------------------------------------------------------
 	-- Constructor

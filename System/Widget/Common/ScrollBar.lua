@@ -267,18 +267,10 @@ class "ScrollBar"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the value representing the current position of the slider thumb]]
-	property "Value" {
-		Set = "SetValue",
-		Get = "GetValue",
-		Type = Number,
-	}
+	property "Value" { Type = Number }
 
 	__Doc__[[the minimum increment between allowed slider values]]
-	property "ValueStep" {
-		Set = "SetValueStep",
-		Get = "GetValueStep",
-		Type = Number,
-	}
+	property "ValueStep" { Type = Number }
 
 	__Doc__[[whether user interaction with the slider is allowed]]
 	property "Enabled" {
@@ -294,11 +286,7 @@ class "ScrollBar"
 	}
 
 	__Doc__[[the scrollbar's style]]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = ScrollBarStyle,
-	}
+	property "Style" { Type = ScrollBarStyle }
 
 	__Doc__[[the min &amp; max boundary of the scrollbar's values]]
 	property "MinMaxValue" {

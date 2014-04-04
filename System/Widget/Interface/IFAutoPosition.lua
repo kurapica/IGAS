@@ -232,25 +232,13 @@ interface "IFAutoPosition"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether the data is stored for the character, default true]]
-	property "IFAutoPositionForCharacter" {
-		Get = function(self)
-			return true
-		end,
-	}
+	property "IFAutoPositionForCharacter" { Type = Boolean, Default = true }
 
 	__Doc__[[Whether should load and save the size data automatically, default true]]
-	property "IFAutoPositionAutoSize" {
-		Get = function(self)
-			return true
-		end,
-	}
+	property "IFAutoPositionAutoSize" { Type = Boolean, Default = true }
 
 	__Doc__[[Whether should load and save the position data automatically, default true]]
-	property "IFAutoPositionAutoPosition" {
-		Get = function(self)
-			return true
-		end,
-	}
+	property "IFAutoPositionAutoPosition" { Type = Boolean, Default = true }
 
 	------------------------------------------------------
 	-- Dispose

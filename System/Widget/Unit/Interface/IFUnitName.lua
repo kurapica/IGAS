@@ -55,14 +55,8 @@ interface "IFUnitName"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether show the server name]]
-	property "WithServerName" {
-		Field = "__WithServerName",
-		Set = function(self, value)
-			self.__WithServerName = value
-			self:Refresh()
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__(Refresh)
+	property "WithServerName" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

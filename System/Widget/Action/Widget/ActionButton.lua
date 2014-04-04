@@ -19,10 +19,10 @@ class "ActionButton"
 		local hotKey = self:GetChild("HotKey")
 
 		if hotKey.Text == RANGE_INDICATOR then
-			if self.__InRange == true then
+			if self.InRange == true then
 				hotKey:Show()
 				hotKey:SetVertexColor(1, 1, 1)
-			elseif self.__InRange == false then
+			elseif self.InRange == false then
 				hotKey:Show()
 				hotKey:SetVertexColor(1, 0, 0)
 			else
@@ -30,7 +30,7 @@ class "ActionButton"
 			end
 		else
 			hotKey:Show()
-			if self.__InRange == false then
+			if self.InRange == false then
 				hotKey:SetVertexColor(1, 0, 0)
 			else
 				hotKey:SetVertexColor(1, 1, 1)
@@ -162,96 +162,59 @@ class "ActionButton"
 	}
 
 	__Doc__[[whether the target is in range, accessed by IFActionHandler]]
-	property "InRange" {
-		Field = "__InRange",
-		Set = function(self, value)
-			if self.__InRange ~= value then
-				self.__InRange = value
-				UpdateHotKey(self)
-			end
-		end,
-		Type = System.Boolean+nil,
-	}
+	__Handler__( UpdateHotKey )
+	property "InRange" { Type = System.Boolean+nil }
 
 	__Doc__[[whether the action is usable, accessed by IFActionHandler]]
-	property "Usable" {
-		Field = "__Usable",
-		Set = function(self, value)
-			if self.__Usable ~= value then
-				self.__Usable = value
-				if value then
-					self:GetChild("Icon"):SetVertexColor(1.0, 1.0, 1.0)
-				else
-					self:GetChild("Icon"):SetVertexColor(0.4, 0.4, 0.4)
-				end
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( function (self, value)
+		if value then
+			self:GetChild("Icon"):SetVertexColor(1.0, 1.0, 1.0)
+		else
+			self:GetChild("Icon"):SetVertexColor(0.4, 0.4, 0.4)
+		end
+	end )
+	property "Usable" { Type = System.Boolean, Default = true }
 
 	__Doc__[[whether the action is auto castable, accessed by IFActionHandler]]
-	property "AutoCastable" {
-		Field = "__AutoCastable",
-		Set = function(self, value)
-			if self.AutoCastable ~= value then
-				self.__AutoCastable = value
-				if value then
-					if not self:GetChild("AutoCastable") then
-				    	local autoCast = Texture("AutoCastable", self, "OVERLAY")
-				    	autoCast.Visible = false
-				    	autoCast.TexturePath = [[Interface\Buttons\UI-AutoCastableOverlay]]
-				    	autoCast:SetPoint("TOPLEFT", -14, 14)
-				    	autoCast:SetPoint("BOTTOMRIGHT", 14, -14)
-					end
-					self:GetChild("AutoCastable").Visible = true
-				else
-					if self:GetChild("AutoCastable") then
-						self:GetChild("AutoCastable").Visible = false
-					end
-				end
+	__Handler__( function (self, value)
+		if value then
+			if not self:GetChild("AutoCastable") then
+		    	local autoCast = Texture("AutoCastable", self, "OVERLAY")
+		    	autoCast.Visible = false
+		    	autoCast.TexturePath = [[Interface\Buttons\UI-AutoCastableOverlay]]
+		    	autoCast:SetPoint("TOPLEFT", -14, 14)
+		    	autoCast:SetPoint("BOTTOMRIGHT", 14, -14)
 			end
-		end,
-		Type = System.Boolean,
-	}
+			self:GetChild("AutoCastable").Visible = true
+		else
+			if self:GetChild("AutoCastable") then
+				self:GetChild("AutoCastable").Visible = false
+			end
+		end
+	end )
+	property "AutoCastable" { Type = System.Boolean }
 
 	__Doc__[[whether the action is now auto-casting, accessed by IFActionHandler]]
-	property "AutoCasting" {
-		Field = "__AutoCasting",
-		Set = function(self, value)
-			if self.AutoCasting ~= value then
-				self.__AutoCasting = value
-				if value then
-					if not self:GetChild("AutoCastShine") then
-				    	local shine = AutoCastShine("AutoCastShine", self)
-					end
-					self:GetChild("AutoCastShine"):Start()
-				else
-					if self:GetChild("AutoCastShine") then
-						self:GetChild("AutoCastShine"):Stop()
-					end
-				end
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( function (self, value)
+		if value then
+			if not self:GetChild("AutoCastShine") then AutoCastShine("AutoCastShine", self) end
+			self:GetChild("AutoCastShine"):Start()
+		else
+			if self:GetChild("AutoCastShine") then self:GetChild("AutoCastShine"):Stop() end
+		end
+	end )
+	property "AutoCasting" { Type = System.Boolean }
 
 	__Doc__[[Whether an indicator should be shown for equipped item]]
-	property "EquippedItemIndicator" {
-		Field = "__EquippedItemIndicator",
-		Set = function(self, value)
-			if self.EquippedItemIndicator ~= value then
-				self.__EquippedItemIndicator = value
-
-				if value then
-					self.Border:SetVertexColor(0, 1.0, 0, 0.35)
-					self.Border.Visible = true
-				else
-					self.Border.Visible = false
-				end
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( function (self, value)
+		if value then
+			self.Border:SetVertexColor(0, 1.0, 0, 0.35)
+			self.Border.Visible = true
+		else
+			self.Border.Visible = false
+		end
+	end )
+	property "EquippedItemIndicator" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -351,7 +314,5 @@ class "ActionButton"
 		border.TexturePath = [[Interface\Buttons\UI-ActionButton-Border]]
 		border:SetPoint("TOPLEFT", -8, 8)
 		border:SetPoint("BOTTOMRIGHT", 8, -8)
-
-		self.__InRange = -1
     end
 endclass "ActionButton"

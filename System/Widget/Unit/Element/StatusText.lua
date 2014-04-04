@@ -32,7 +32,7 @@ class "StatusText"
 	__Doc__[[Refresh the status, overridable]]
 	function RefreshStatus(self)
 		if self.__Value then
-			if self.__ShowPercent and self.__Max then
+			if self.ShowPercent and self.__Max then
 				if self.__Max > 0 then
 					if self.__Value > self.__Max then
 						self.Text = self.PercentFormat:format(100)
@@ -100,15 +100,8 @@ class "StatusText"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The display value format, default "%.2f"]]
-	property "ValueFormat" {
-		Get = function(self)
-			return self.__ValueFormat or "%.2f"
-		end,
-		Set = function(self, value)
-			self.__ValueFormat = value
-		end,
-		Type = System.String + nil,
-	}
+	__Handler__ ( RefreshStatus )
+	property "ValueFormat" { Type = System.String + nil, Default = "%.2f" }
 
 	__Doc__[[The minimum and maximum values]]
 	property "MinMaxValue" {
@@ -122,79 +115,27 @@ class "StatusText"
 	}
 
 	__Doc__[[The fontstring's value]]
-	property "Value" {
-		Get = function(self)
-			return self:GetValue()
-		end,
-		Set = function(self, value)
-			self:SetValue(value)
-		end,
-		Type = System.Number,
-	}
+	property "Value" { Type = System.Number }
 
 	__Doc__[[Whether show lost value]]
-	property "ShowLost" {
-		Get = function(self)
-			return self.__ShowLost
-		end,
-		Set = function(self, value)
-			if self.__ShowLost ~= value then
-				self.__ShowLost = value
-				return self:RefreshStatus()
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__ ( RefreshStatus )
+	property "ShowLost" { Type = System.Boolean }
 
 	__Doc__[[Whether show the max value]]
-	property "ShowMax" {
-		Get = function(self)
-			return self.__ShowMax
-		end,
-		Set = function(self, value)
-			if self.__ShowMax ~= value then
-				self.__ShowMax = value
-				return self:RefreshStatus()
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__ ( RefreshStatus )
+	property "ShowMax" { Type = System.Boolean }
 
 	__Doc__[[The display format when ShowMax is true, default "%s / %s"]]
-	property "MaxFormat" {
-		Get = function(self)
-			return self.__MaxFormat or "%s / %s"
-		end,
-		Set = function(self, value)
-			self.__MaxFormat = value
-		end,
-		Type = System.String + nil,
-	}
+	__Handler__ ( RefreshStatus )
+	property "MaxFormat" { Type = System.String + nil, Default = "%s / %s" }
 
 	__Doc__[[Whether show percent format]]
-	property "ShowPercent" {
-		Get = function(self)
-			return self.__ShowPercent
-		end,
-		Set = function(self, value)
-			if self.__ShowPercent ~= value then
-				self.__ShowPercent = value
-				return self:RefreshStatus()
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__ ( RefreshStatus )
+	property "ShowPercent" { Type = System.Boolean }
 
 	__Doc__[[The display format when ShowPercent is true, default "%d%%"]]
-	property "PercentFormat" {
-		Get = function(self)
-			return self.__PercentFormat or "%d%%"
-		end,
-		Set = function(self, value)
-			self.__PercentFormat = value
-		end,
-		Type = System.String + nil,
-	}
+	__Handler__ ( RefreshStatus )
+	property "PercentFormat" { Type = System.String + nil, Default = "%d%%" }
 
 	function StatusText(self, name, parent, ...)
 		Super(self, name, parent, ...)

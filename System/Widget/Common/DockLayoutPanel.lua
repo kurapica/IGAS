@@ -398,43 +398,15 @@ class "DockLayoutPanel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the horizontal spacing for each elements]]
-	property "HSpacing" {
-		Get = function(self)
-			return self.__DockLayoutPanel_HSpacing or 0
-		end,
-		Set = function(self, spacing)
-			if self.__DockLayoutPanel_HSpacing == spacing then return end
-
-			self.__DockLayoutPanel_HSpacing = spacing > 0 and floor(spacing) or 0
-			SecureUpdateLayout(self)
-		end,
-		Type = Number,
-	}
+	__Handler__( SecureUpdateLayout )
+	property "HSpacing" { Type = NaturalNumber }
 
 	__Doc__[[the vertical spacing for each elements]]
-	property "VSpacing" {
-		Get = function(self)
-			return self.__DockLayoutPanel_VSpacing or 0
-		end,
-		Set = function(self, spacing)
-			if self.__DockLayoutPanel_VSpacing == spacing then return end
-
-			self.__DockLayoutPanel_VSpacing = spacing > 0 and floor(spacing) or 0
-			SecureUpdateLayout(self)
-		end,
-		Type = Number,
-	}
+	__Handler__( SecureUpdateLayout )
+	property "VSpacing" { Type = NaturalNumber }
 
 	__Doc__[[whether update layout when some elements is shown or hidden]]
-	property "AutoLayout" {
-		Get = function(self)
-			return self.__DockLayoutPanel__AutoLayout and true or false
-		end,
-		Set = function(self, flag)
-			self.__DockLayoutPanel__AutoLayout = flag
-		end,
-		Type = Boolean,
-	}
+	property "AutoLayout" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

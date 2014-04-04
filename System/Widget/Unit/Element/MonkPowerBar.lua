@@ -26,25 +26,16 @@ class "MonkPowerBar"
 		-- Property
 		------------------------------------------------------
 		__Doc__[[Whether the element is activated]]
-		property "Activated" {
-			Get = function(self)
-				return self.__Activated or false
-			end,
-			Set = function(self, value)
-				if self.Activated ~= value then
-					self.__Activated = value
-
-					if value then
-						self.Glow.Deactivate.Playing = false
-						self.Glow.Active.Playing = true
-					else
-						self.Glow.Active.Playing = false
-						self.Glow.Deactivate.Playing = true
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+		__Handler__( function (self, value)
+			if value then
+				self.Glow.Deactivate.Playing = false
+				self.Glow.Active.Playing = true
+			else
+				self.Glow.Active.Playing = false
+				self.Glow.Deactivate.Playing = true
+			end
+		end )
+		property "Activated" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -135,22 +126,13 @@ class "MonkPowerBar"
 		end,
 		Type = System.MinMax,
 	}
-	-- Value
-	property "Value" {
-		Get = function(self)
-			return self.__Value
-		end,
-		Set = function(self, value)
-			if self.__Value ~= value then
-				for  i = 1, self.__Max do
-					self["LightEnergy"..i].Activated = i <= value
-				end
 
-				self.__Value = value
-			end
-		end,
-		Type = System.Number,
-	}
+	__Handler__( function (self, value)
+		for  i = 1, self.__Max do
+			self["LightEnergy"..i].Activated = i <= value
+		end
+	end )
+	property "Value" { Type = System.Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -162,7 +144,6 @@ class "MonkPowerBar"
 	function MonkPowerBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
-		self.__Value = 0
 		self.__Min, self.__Max = 0, 0
 
 		self.FrameStrata = "LOW"

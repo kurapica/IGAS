@@ -385,18 +385,10 @@ class "HTMLViewer"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether hyperlinks in the frame's text are interactive]]
-	property "HyperlinksEnabled" {
-		Get = "GetHyperlinksEnabled",
-		Set = "SetHyperlinksEnabled",
-		Type = Boolean,
-	}
+	property "HyperlinksEnabled" { Type = Boolean }
 
 	__Doc__[[The content of the html viewer]]
-	property "Text" {
-		Get = "GetText",
-		Set = "SetText",
-		Type = String + nil,
-	}
+	property "Text" { Type = String + nil }
 
 	------------------------------------------------------
 	-- Event Handler

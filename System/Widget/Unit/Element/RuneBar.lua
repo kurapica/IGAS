@@ -96,73 +96,46 @@ class "RuneBar"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- RuneType
-		property "RuneType" {
-			Get = function(self)
-				return self.__RuneType
-			end,
-			Set = function(self, value)
-				if self.RuneType ~= value then
-					self.__RuneType = value
-					self.Glow.RuneColorGlow.TexturePath = RuneEnergizeTextures[value]
+		__Handler__( function (self, value)
+			self.Glow.RuneColorGlow.TexturePath = RuneEnergizeTextures[value]
 
-					if value then
-						self.Rune.TexturePath = IconTextures[value]
+			if value then
+				self.Rune.TexturePath = IconTextures[value]
 
-						self.Rune.Visible = true
+				self.Rune.Visible = true
 
-						self.Tooltip = _G["COMBAT_TEXT_RUNE_"..RUNE_MAPPING[value]]
+				self.Tooltip = _G["COMBAT_TEXT_RUNE_"..RUNE_MAPPING[value]]
 
-						self.Shine.Texture.VertexColor = RuneColors[value]
-						self.Shine.Texture.Energize.Playing = true
-					else
-						self.Rune.Visible = false
-						self.Tooltip = nil
-					end
-				end
-			end,
-			Type = System.Number + nil,
-		}
-		-- Ready
-		property "Ready" {
-			Get = function(self)
-				return self.__Ready
-			end,
-			Set = function(self, value)
-				if self.Ready ~= value then
-					self.__Ready = value
+				self.Shine.Texture.VertexColor = RuneColors[value]
+				self.Shine.Texture.Energize.Playing = true
+			else
+				self.Rune.Visible = false
+				self.Tooltip = nil
+			end
+		end )
+		property "RuneType" { Type = System.Number + nil }
 
-					if value then
-						self.Shine.Texture.VertexColor = RuneColors[0]
-						self.Shine.Texture.Energize.Playing = true
-					else
-						self.Glow.RuneWhiteGlow.Energize:Stop()
-						self.Glow.RuneColorGlow.Energize:Stop()
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
-		-- Energize
-		property "Energize" {
-			Get = function(self)
-				return self.__Energize
-			end,
-			Set = function(self, value)
-				if self.Energize ~= value then
-					self.__Energize = value
+		__Handler__( function (self, value)
+			if value then
+				self.Shine.Texture.VertexColor = RuneColors[0]
+				self.Shine.Texture.Energize.Playing = true
+			else
+				self.Glow.RuneWhiteGlow.Energize:Stop()
+				self.Glow.RuneColorGlow.Energize:Stop()
+			end
+		end )
+		property "Ready" { Type = System.Boolean }
 
-					if value then
-						self.Glow.RuneWhiteGlow.Energize:Play()
-						self.Glow.RuneColorGlow.Energize:Play()
-					else
-						self.Glow.RuneWhiteGlow.Energize:Stop()
-						self.Glow.RuneColorGlow.Energize:Stop()
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+		__Handler__( function (self, value)
+			if value then
+				self.Glow.RuneWhiteGlow.Energize:Play()
+				self.Glow.RuneColorGlow.Energize:Play()
+			else
+				self.Glow.RuneWhiteGlow.Energize:Stop()
+				self.Glow.RuneColorGlow.Energize:Stop()
+			end
+		end )
+		property "Energize" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Handler

@@ -24,7 +24,7 @@ class "UnitFrame"
 	local function OnUpdate(self, elapsed)
 		self.__OnUpdateTimer = (self.__OnUpdateTimer or 0) + elapsed
 
-		if self.__OnUpdateTimer > self.__Interval then
+		if self.__OnUpdateTimer > self.Interval then
 			self.__OnUpdateTimer = 0
 			return self:UpdateElements()
 		end
@@ -156,26 +156,10 @@ class "UnitFrame"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The unit's ID]]
-	property "Unit" {
-		Get = "GetUnit",
-		Set = "SetUnit",
-		Type = String + nil,
-	}
+	property "Unit" { Type = String + nil }
 
 	__Doc__[[The refresh interval for special unit like 'targettarget']]
-	property "Interval" {
-		Get = function(self)
-			return self.__Interval or 0.5
-		end,
-		Set = function(self, int)
-			if int > 0.1 then
-				self.__Interval = int
-			else
-				self.__Interval = 0.5
-			end
-		end,
-		Type = Number,
-	}
+	property "Interval" { Type = PositiveNumber, Default = 0.5 }
 
 	__Doc__[[Whether the unit frame is activated]]
 	property "Activated" {
@@ -361,8 +345,6 @@ class "UnitFrame"
 		-- Prepare for secure handler
 		self:SetAttribute("_onattributechanged", _onattributechanged)
 		IGAS:GetUI(self).UnitFrame_UpdateUnitFrame = UpdateUnitFrame
-
-		self.__Interval = 0.5
     end
 
 	------------------------------------------------------

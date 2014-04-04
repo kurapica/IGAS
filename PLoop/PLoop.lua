@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica.igas@gmail.com
 -- Create Date      2011/02/01
--- Last Update Date 2014/04/03
--- Version          r93
+-- Last Update Date 2014/04/04
+-- Version          r94
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1200,12 +1200,10 @@ do
 
 					-- Auto generate Default
 					if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
-						if prop.Type:Is(Boolean) then
-							prop.Default = false
-						elseif prop.Type:Is(Number) then
-							prop.Default = 0
-						elseif prop.Type:Is(String) then
-							prop.Default = ""
+						local info = rawget(_NSInfo, prop.Type[1])
+
+						if info and (info.Type == TYPE_STRUCT or info.Type == TYPE_ENUM) then
+							prop.Default = info.Default
 						end
 					end
 				end
@@ -2989,6 +2987,21 @@ do
 		if __Attribute__ then
 			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Enum)
 		end
+
+		if info.Default ~= nil then
+			local default = info.Default
+
+			if type(default) == "string" and info.Enum[default:upper()] then
+				info.Default = info.Enum[default:upper()]
+			else
+				for _, v in pairs(info.Enum) do
+					-- keep if existed
+					if default == v then return end
+				end
+
+				info.Default = nil
+			end
+		end
 	end
 
 	function GetShortEnumInfo(cls)
@@ -3659,6 +3672,15 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaStrtEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
+
+			-- validate default value if existed
+			if info.Default ~= nil then
+				if info.SubType ~= _STRUCT_TYPE_CUSTOM then
+					info.Default = nil
+				elseif not pcall(ValidateStruct, info.Owner, info.Default) then
+					info.Default = nil
+				end
+			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -3686,8 +3708,16 @@ do
 		end
 	end
 
+	function default(value)
+		local env = getfenv(2)
+		local info = _NSInfo[env[OWNER_FIELD]]
+
+		info.Default = value
+	end
+
 	_KeyWord4StrtEnv.struct = struct
 	_KeyWord4StrtEnv.structtype = structtype
+	_KeyWord4StrtEnv.default = default
 	_KeyWord4StrtEnv.import = import_STRT
 	_KeyWord4StrtEnv.endstruct = endstruct
 end
@@ -3717,6 +3747,7 @@ do
 
 	struct "Boolean"
 		structtype "CUSTOM"
+		default( false )
 
 		function Validate(value)
 			return value and true or false
@@ -3725,6 +3756,7 @@ do
 
 	struct "String"
 		structtype "CUSTOM"
+		default( "" )
 
 		function Validate(value)
 			if type(value) ~= "string" then
@@ -3736,6 +3768,7 @@ do
 
 	struct "Number"
 		structtype "CUSTOM"
+		default( 0 )
 
 		function Validate(value)
 			if type(value) ~= "number" then
@@ -3806,6 +3839,8 @@ do
 		structtype "CUSTOM"
 
 		function Validate(value)
+			assert(value ~= nil, "%s can't be nil.")
+
 			return value
 		end
 	endstruct "Any"
@@ -8496,6 +8531,41 @@ do
 		end
 	endclass "__Handler__"
 
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
+	class "__Default__"
+		inherit "__Attribute__"
+
+		doc "__Default__" [[Used to set a default value for custom struct or enum]]
+
+		doc "Default" [[The default value]]
+		property "Default" { Type = Any + nil }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			_NSInfo[target].Default = self.Default
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Default__(self)
+			self.Default = nil
+
+			return Super(self)
+		end
+
+		__Arguments__{ Any }
+		function __Default__(self, value)
+			self.Default = value
+
+			return Super(self)
+		end
+	endclass "__Default__"
+
 	__AttributeUsage__{Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
 	class "__Doc__"
@@ -9185,7 +9255,7 @@ do
 	_KeyWord4IFEnv.doc = nil
 	_KeyWord4ClsEnv.doc = nil
 	_KeyWord4StrtEnv.structtype = nil
-
+	_KeyWord4StrtEnv.default = nil
 
 	-- Keep the root so can't be disposed
 	System = Reflector.GetNameSpaceForName("System")

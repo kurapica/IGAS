@@ -24,39 +24,30 @@ class "PriestPowerBar"
 		-- Property
 		------------------------------------------------------
 		__Doc__[[Whether the element is activated]]
-		property "Activated" {
-			Get = function(self)
-				return self.__Activated or false
-			end,
-			Set = function(self, value)
-				if self.Activated ~= value then
-					self.__Activated = value
+		__Handler__( function (self, value)
+			if value then
+				self.Bg.AnimOut.Playing = false
+				self.Highlight.AnimOut.Playing = false
+				self.Orb.AnimOut.Playing = false
+				self.Glow.AnimOut.Playing = false
 
-					if value then
-						self.Bg.AnimOut.Playing = false
-						self.Highlight.AnimOut.Playing = false
-						self.Orb.AnimOut.Playing = false
-						self.Glow.AnimOut.Playing = false
+				self.Bg.AnimIn.Playing = true
+				self.Highlight.AnimIn.Playing = true
+				self.Orb.AnimIn.Playing = true
+				self.Glow.AnimIn.Playing = true
+			else
+				self.Bg.AnimIn.Playing = false
+				self.Highlight.AnimIn.Playing = false
+				self.Orb.AnimIn.Playing = false
+				self.Glow.AnimIn.Playing = false
 
-						self.Bg.AnimIn.Playing = true
-						self.Highlight.AnimIn.Playing = true
-						self.Orb.AnimIn.Playing = true
-						self.Glow.AnimIn.Playing = true
-					else
-						self.Bg.AnimIn.Playing = false
-						self.Highlight.AnimIn.Playing = false
-						self.Orb.AnimIn.Playing = false
-						self.Glow.AnimIn.Playing = false
-
-						self.Bg.AnimOut.Playing = true
-						self.Highlight.AnimOut.Playing = true
-						self.Orb.AnimOut.Playing = true
-						self.Glow.AnimOut.Playing = true
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+				self.Bg.AnimOut.Playing = true
+				self.Highlight.AnimOut.Playing = true
+				self.Orb.AnimOut.Playing = true
+				self.Glow.AnimOut.Playing = true
+			end
+		end )
+		property "Activated" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -198,22 +189,12 @@ class "PriestPowerBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- Value
-	property "Value" {
-		Get = function(self)
-			return self.__Value
-		end,
-		Set = function(self, value)
-			if self.__Value ~= value then
-				for i = 1, PRIEST_BAR_NUM_ORBS do
-					self["Orb"..i].Activated = i <= value
-				end
-
-				self.__Value = value
-			end
-		end,
-		Type = System.Number,
-	}
+	__Handler__( function (self, value)
+		for i = 1, PRIEST_BAR_NUM_ORBS do
+			self["Orb"..i].Activated = i <= value
+		end
+	end )
+	property "Value" { Type = System.Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -231,8 +212,6 @@ class "PriestPowerBar"
 	------------------------------------------------------
 	function PriestPowerBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
-
-		self.__Value = 0
 
 		self.FrameStrata = "LOW"
 		self.Toplevel = true

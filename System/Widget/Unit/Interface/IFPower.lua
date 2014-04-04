@@ -146,15 +146,8 @@ interface "IFPower"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether the object use auto power color, the object should be a fontstring or texture]]
-	property "UsePowerColor" {
-		Get = function(self)
-			return self.__UsePowerColor
-		end,
-		Set = function(self, value)
-			self.__UsePowerColor = value
-		end,
-		Type = Boolean,
-	}
+	__Handler__(Refresh)
+	property "UsePowerColor" { Type = Boolean }
 
 	__Doc__[[Whether smoothing the value changes]]
 	__Handler__(SwapUnitList)

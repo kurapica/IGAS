@@ -134,6 +134,24 @@ class "NormalButton"
 		end
 	end
 
+	local function AdjustSize(self)
+		if self.AutoSize then
+			-- adjust width
+			local width = self:GetTextWidth()
+			if ( width > 30 ) then
+				self:SetWidth(width + 10)
+			else
+				self:SetWidth(40)
+			end
+
+			-- adjust height
+			local height = self:GetNormalFontObject() and self:GetNormalFontObject().Font.height
+			if self.Height <= height + 4 then
+				self.Height = height + 4
+			end
+		end
+	end
+
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
@@ -154,7 +172,7 @@ class "NormalButton"
 		<return type="System.Widget.NormalButton.NormalButtonStyle"></return>
 	]]
 	function GetStyle(self)
-		return self.__Style or TEMPLATE_NONE
+		return self.__Style
 	end
 
 	__Doc__[[
@@ -166,64 +184,20 @@ class "NormalButton"
 
 		Super.SetText(self, text)
 
-		if self.AutoSize then
-			-- adjust width
-			local width = self:GetTextWidth()
-			if ( width > 30 ) then
-				self:SetWidth(width + 10)
-			else
-				self:SetWidth(40)
-			end
-
-			-- adjust height
-			local height = self:GetNormalFontObject() and self:GetNormalFontObject().Font.height
-			if self.Height <= height + 4 then
-				self.Height = height + 4
-			end
-		end
+		return AdjustSize(self)
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The button's style]]
-	property "Style" {
-		Get = "GetStyle",
-		Set = "SetStyle",
-		Type = NormalButtonStyle,
-	}
+	property "Style" { Type = NormalButtonStyle, Default = TEMPLATE_NONE }
 
 	__Doc__[[Whether should auto change the button's size when text is changed]]
-	property "AutoSize" {
-		Field = "__AutoSize",
-		Set = function(self, value)
-			self.__AutoSize = value
-
-			if value then
-				-- adjust width
-				local width = self:GetTextWidth()
-				if ( width > 30 ) then
-					self:SetWidth(width + 10)
-				else
-					self:SetWidth(40)
-				end
-
-				-- adjust height
-				local height = self:GetNormalFontObject() and self:GetNormalFontObject().Font.height
-				if self.Height <= height + 4 then
-					self.Height = height + 4
-				end
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( AdjustSize )
+	property "AutoSize" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function NormalButton(self, ...)
-		Super(self, ...)
-
-		self.__Style = TEMPLATE_NONE
-	end
 endclass "NormalButton"

@@ -61,15 +61,8 @@ class "TotalAbsorbBar"
 		Type = StatusBar + String,
 	}
 
-	property "OverAbsorb" {
-		Field = "__OverAbsorb",
-		Set = function(self, value)
-			if self.__OverAbsorb ~= value then
-				self.__OverAbsorb = value
-				self.OverGlow.Visible = value
-			end
-		end,
-	}
+	__Handler__( function (self, value) self.OverGlow.Visible = value end )
+	property "OverAbsorb" { }
 
 	------------------------------------------------------
 	-- Constructor

@@ -478,15 +478,7 @@ interface "IFKeyBinding"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the hotkey property, need override]]
-	property "HotKey" {
-		Get = function(self)
-			return self.__HotKey
-		end,
-		Set = function(self, value)
-			self.__HotKey = value
-		end,
-		Type = System.String + nil,
-	}
+	property "HotKey" { Type = System.String + nil }
 
 	------------------------------------------------------
 	-- Event Handler

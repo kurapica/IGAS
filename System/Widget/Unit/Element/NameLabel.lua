@@ -41,40 +41,16 @@ class "NameLabel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether using the tap color, default false]]
-	property "UseTapColor" {
-		Get = function(self)
-			return self.__UseTapColor
-		end,
-		Set = function(self, value)
-			self.__UseTapColor = value
-			self:Refresh()
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( Refresh )
+	property "UseTapColor" { Type = System.Boolean }
 
 	__Doc__[[Whether using the selection color, default false]]
-	property "UseSelectionColor" {
-		Get = function(self)
-			return self.__UseSelectionColor
-		end,
-		Set = function(self, value)
-			self.__UseSelectionColor = value
-			self:Refresh()
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( Refresh )
+	property "UseSelectionColor" { Type = System.Boolean }
 
 	__Doc__[[Whether using the class color, default false]]
-	property "UseClassColor" {
-		Get = function(self)
-			return self.__UseClassColor
-		end,
-		Set = function(self, value)
-			self.__UseClassColor = value
-			self:Refresh()
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( Refresh )
+	property "UseClassColor" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Constructor

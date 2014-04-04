@@ -60,24 +60,15 @@ class "RoleIcon"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ShowInCombat
-	property "ShowInCombat" {
-		Get = function(self)
-			return self.__ShowInCombat or false
-		end,
-		Set = function(self, value)
-			if self.__ShowInCombat ~= value then
-				self.__ShowInCombat = value
-				if value then
-					_RoleIcon_HideInCombat[self] = nil
-				else
-					_RoleIcon_HideInCombat[self] = true
-				end
-				self:Refresh()
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( function (self, value)
+		if value then
+			_RoleIcon_HideInCombat[self] = nil
+		else
+			_RoleIcon_HideInCombat[self] = true
+		end
+		self:Refresh()
+	end )
+	property "ShowInCombat" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Constructor

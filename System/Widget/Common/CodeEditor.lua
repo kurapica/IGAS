@@ -1792,6 +1792,10 @@ class "CodeEditor"
 		return obj
 	end
 
+	local function RefreshText(self)
+		self:SetText(self.FullText)
+	end
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -1823,85 +1827,29 @@ class "CodeEditor"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[color for normal code]]
-	property "DefaultColor" {
-		Get = function(self)
-			return self.__DefaultColor or _DefaultColor
-		end,
-		Set = function(self, color)
-			self.__DefaultColor = color
-
-			-- UpdateText
-			self:SetText(self.FullText)
-		end,
-		Type = System.Widget.ColorType + nil,
-	}
+	__Handler__( RefreshText )
+	property "DefaultColor" { Type = System.Widget.ColorType + nil, Default = _DefaultColor }
 
 	__Doc__[[color for comment]]
-	property "CommentColor" {
-		Get = function(self)
-			return self.__CommentColor or _CommentColor
-		end,
-		Set = function(self, color)
-			self.__CommentColor = color
-
-			-- UpdateText
-			self:SetText(self.FullText)
-		end,
-		Type = System.Widget.ColorType + nil,
-	}
+	__Handler__( RefreshText )
+	property "CommentColor" { Type = System.Widget.ColorType + nil, Default = _CommentColor }
 
 	__Doc__[[color for string]]
-	property "StringColor" {
-		Get = function(self)
-			return self.__StringColor or _StringColor
-		end,
-		Set = function(self, color)
-			self.__StringColor = color
-
-			-- UpdateText
-			self:SetText(self.FullText)
-		end,
-		Type = System.Widget.ColorType + nil,
-	}
+	__Handler__( RefreshText )
+	property "StringColor" { Type = System.Widget.ColorType + nil, Default = _StringColor }
 
 	__Doc__[[color for number]]
-	property "NumberColor" {
-		Get = function(self)
-			return self.__NumberColor or _NumberColor
-		end,
-		Set = function(self, color)
-			self.__NumberColor = color
-
-			-- UpdateText
-			self:SetText(self.FullText)
-		end,
-		Type = System.Widget.ColorType + nil,
-	}
+	__Handler__( RefreshText )
+	property "NumberColor" { Type = System.Widget.ColorType + nil, Default = _NumberColor }
 
 	__Doc__[[color for instruction]]
-	property "InstructionColor" {
-		Get = function(self)
-			return self.__InstructionColor or _InstructionColor
-		end,
-		Set = function(self, color)
-			self.__InstructionColor = color
-
-			-- UpdateText
-			self:SetText(self.FullText)
-		end,
-		Type = System.Widget.ColorType + nil,
-	}
+	__Handler__( RefreshText )
+	property "InstructionColor" { Type = System.Widget.ColorType + nil, Default = _InstructionColor }
 
 	__Doc__[[the full text contains color token]]
 	property "FullText" {
-		Set = function(self, text)
-			MultiLineTextBox.AdjustText(self, text)
-		end,
-
-		Get = function(self)
-			return MultiLineTextBox.GetText(self)
-		end,
-
+		Set = MultiLineTextBox.AdjustText,
+		Get = MultiLineTextBox.GetText,
 		Type = String,
 	}
 

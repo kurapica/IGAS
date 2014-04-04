@@ -45,34 +45,24 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Activated
-		property "Activated" {
-			Get = function(self)
-				return self.__Activated or false
-			end,
-			Set = function(self, value)
-				if self.Activated ~= value then
-					self.__Activated = value
+		__Handler__( function (self, value)
+			if value then
+				self.Fill.AnimOut.Playing = false
+				self.SmokeA.AnimOut.Playing = false
+				self.SmokeB.AnimOut.Playing = false
 
-					if value then
-						self.Fill.AnimOut.Playing = false
-						self.SmokeA.AnimOut.Playing = false
-						self.SmokeB.AnimOut.Playing = false
+				self.Fill.AnimIn.Playing = true
+				self.Glow.AnimIn.Playing = true
+			else
+				self.Fill.AnimIn.Playing = false
+				self.Glow.AnimIn.Playing = false
 
-						self.Fill.AnimIn.Playing = true
-						self.Glow.AnimIn.Playing = true
-					else
-						self.Fill.AnimIn.Playing = false
-						self.Glow.AnimIn.Playing = false
-
-						self.Fill.AnimOut.Playing = true
-						self.SmokeA.AnimOut.Playing = true
-						self.SmokeB.AnimOut.Playing = true
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+				self.Fill.AnimOut.Playing = true
+				self.SmokeA.AnimOut.Playing = true
+				self.SmokeB.AnimOut.Playing = true
+			end
+		end )
+		property "Activated" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -235,36 +225,26 @@ class "WarlockPowerBar"
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		-- Activated
-		property "Activated" {
-			Get = function(self)
-				return self.__Activated or false
-			end,
-			Set = function(self, value)
-				if self.Activated ~= value then
-					self.__Activated = value
+		__Handler__( function (self, value)
+			if value then
+				self.FireIcon.Visible = true
 
-					if value then
-						self.FireIcon.Visible = true
+				self.Glow.AnimOut.Playing = false
+				self.Glow2.AnimOut.Playing = false
 
-						self.Glow.AnimOut.Playing = false
-						self.Glow2.AnimOut.Playing = false
+				self.Glow.AnimIn.Playing = true
+				self.Glow2.AnimIn.Playing = true
+			else
+				self.FireIcon.Visible = false
 
-						self.Glow.AnimIn.Playing = true
-						self.Glow2.AnimIn.Playing = true
-					else
-						self.FireIcon.Visible = false
+				self.Glow.AnimIn.Playing = false
+				self.Glow2.AnimIn.Playing = false
 
-						self.Glow.AnimIn.Playing = false
-						self.Glow2.AnimIn.Playing = false
-
-						self.Glow.AnimOut.Playing = true
-						self.Glow2.AnimOut.Playing = true
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+				self.Glow.AnimOut.Playing = true
+				self.Glow2.AnimOut.Playing = true
+			end
+		end )
+		property "Activated" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Hanlder
@@ -441,39 +421,30 @@ class "WarlockPowerBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- ClassPowerType
-	property "ClassPowerType" {
-		Get = function(self)
-			return self.__ClassPowerType
-		end,
-		Set = function(self, value)
-			if value ~= self.ClassPowerType then
-				self.__ClassPowerType = value
+	__Handler__( function (self, value)
+		if self.ActiveFrame then
+			self.ActiveFrame.Visible = false
+			self.ActiveFrame = nil
+		end
 
-				if self.ActiveFrame then
-					self.ActiveFrame.Visible = false
-					self.ActiveFrame = nil
-				end
+		self:UnregisterEvent("UNIT_AURA")
 
-				self:UnregisterEvent("UNIT_AURA")
+		if value == SPELL_POWER_SOUL_SHARDS then
+			self.ActiveFrame = self.ShardBarFrame
+		elseif value == SPELL_POWER_DEMONIC_FURY then
+			self.ActiveFrame = self.DemonicFuryBarFrame
+			self:RegisterUnitEvent("UNIT_AURA", "player", "vehicle")
+		elseif value == SPELL_POWER_BURNING_EMBERS then
+			self.ActiveFrame = self.BurningEmbersBarFrame
+		end
 
-				if value == SPELL_POWER_SOUL_SHARDS then
-					self.ActiveFrame = self.ShardBarFrame
-				elseif value == SPELL_POWER_DEMONIC_FURY then
-					self.ActiveFrame = self.DemonicFuryBarFrame
-					self:RegisterUnitEvent("UNIT_AURA", "player", "vehicle")
-				elseif value == SPELL_POWER_BURNING_EMBERS then
-					self.ActiveFrame = self.BurningEmbersBarFrame
-				end
+		if self.ActiveFrame then
+			self.ActiveFrame.Visible = true
+			self.ShowAnim.Playing = true
+		end
+	end )
+	property "ClassPowerType" { Type = System.Number + nil }
 
-				if self.ActiveFrame then
-					self.ActiveFrame.Visible = true
-					self.ShowAnim.Playing = true
-				end
-			end
-		end,
-		Type = System.Number + nil,
-	}
 	-- MinMaxValue
 	property "MinMaxValue" {
 		Get = function(self)
@@ -523,9 +494,7 @@ class "WarlockPowerBar"
 	}
 	-- Value
 	property "Value" {
-		Get = function(self)
-			return self.__Value
-		end,
+		Field = "__Value",
 		Set = function(self, value)
 			local frame = self.ActiveFrame
 

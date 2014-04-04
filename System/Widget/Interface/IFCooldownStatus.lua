@@ -42,26 +42,10 @@ interface "IFCooldownStatus"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether the status bar is reversed]]
-	property "IFCooldownStatusReverse" {
-		Get = function(self)
-			return self.__IFCooldownStatusReverse
-		end,
-		Set = function(self, flag)
-			self.__IFCooldownStatusReverse = flag
-		end,
-		Type = Boolean,
-	}
+	property "IFCooldownStatusReverse" { Type = Boolean }
 
 	__Doc__[[Whether always show the status bar]]
-	property "IFCooldownStatusAlwaysShow" {
-		Get = function(self)
-			return self.__IFCooldownStatusAlwaysShow
-		end,
-		Set = function(self, value)
-			self.__IFCooldownStatusAlwaysShow = value
-		end,
-		Type = System.Boolean,
-	}
+	property "IFCooldownStatusAlwaysShow" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

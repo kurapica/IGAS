@@ -35,80 +35,51 @@ class "EclipseBar"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	-- SunActivated
-	property "SunActivated" {
-		Get = function(self)
-			return self.__SunActivated or false
-		end,
-		Set = function(self, flag)
-			if flag ~= self.SunActivated then
-				self.__SunActivated = flag
+	__Handler__( function(self, flag)
+		if flag then
+			self.Glow:ClearAllPoints()
 
-				if flag then
-					self.Glow:ClearAllPoints()
+			local glowInfo = ECLIPSE_ICONS["sun"].big
+			self.Glow:SetPoint("CENTER", self.Sun, "CENTER", 0, 0)
+			self.Glow:SetWidth(glowInfo.x)
+			self.Glow:SetHeight(glowInfo.y)
+			self.Glow:SetTexCoord(glowInfo.left, glowInfo.right, glowInfo.top, glowInfo.bottom)
+		end
 
-					local glowInfo = ECLIPSE_ICONS["sun"].big
-					self.Glow:SetPoint("CENTER", self.Sun, "CENTER", 0, 0)
-					self.Glow:SetWidth(glowInfo.x)
-					self.Glow:SetHeight(glowInfo.y)
-					self.Glow:SetTexCoord(glowInfo.left, glowInfo.right, glowInfo.top, glowInfo.bottom)
-				end
+		self.SunBar.SunActivate.Playing = flag
+		self.Glow.SunActivate.Playing = flag
+		self.DarkMoon.SunActivate.Playing = flag
 
-				self.SunBar.SunActivate.Playing = flag
-				self.Glow.SunActivate.Playing = flag
-				self.DarkMoon.SunActivate.Playing = flag
+		self.SunBar.SunDeactivate.Playing = not flag
+		self.Glow.SunDeactivate.Playing = not flag
+		self.DarkMoon.SunDeactivate.Playing = not flag
+	end )
+	property "SunActivated" { Type = Boolean }
 
-				self.SunBar.SunDeactivate.Playing = not flag
-				self.Glow.SunDeactivate.Playing = not flag
-				self.DarkMoon.SunDeactivate.Playing = not flag
-			end
-		end,
-		Type = Boolean,
-	}
-	-- MoonActivated
-	property "MoonActivated" {
-		Get = function(self)
-			return self.__MoonActivated or false
-		end,
-		Set = function(self, flag)
-			if flag ~= self.MoonActivated then
-				self.__MoonActivated = flag
+	__Handler__( function (self, flag)
+		if flag then
+			self.Glow:ClearAllPoints()
 
-				if flag then
-					self.Glow:ClearAllPoints()
+			local glowInfo = ECLIPSE_ICONS["moon"].big
+			self.Glow:SetPoint("CENTER", self.Moon, "CENTER", 0, 0)
+			self.Glow:SetWidth(glowInfo.x)
+			self.Glow:SetHeight(glowInfo.y)
+			self.Glow:SetTexCoord(glowInfo.left, glowInfo.right, glowInfo.top, glowInfo.bottom)
+		end
 
-					local glowInfo = ECLIPSE_ICONS["moon"].big
-					self.Glow:SetPoint("CENTER", self.Moon, "CENTER", 0, 0)
-					self.Glow:SetWidth(glowInfo.x)
-					self.Glow:SetHeight(glowInfo.y)
-					self.Glow:SetTexCoord(glowInfo.left, glowInfo.right, glowInfo.top, glowInfo.bottom)
-				end
+		self.MoonBar.MoonActivate.Playing = flag
+		self.Glow.MoonActivate.Playing = flag
+		self.DarkSun.MoonActivate.Playing = flag
 
-				self.MoonBar.MoonActivate.Playing = flag
-				self.Glow.MoonActivate.Playing = flag
-				self.DarkSun.MoonActivate.Playing = flag
+		self.MoonBar.MoonDeactivate.Playing = not flag
+		self.Glow.MoonDeactivate.Playing = not flag
+		self.DarkSun.MoonDeactivate.Playing = not flag
+	end)
+	property "MoonActivated" { Type = Boolean }
 
-				self.MoonBar.MoonDeactivate.Playing = not flag
-				self.Glow.MoonDeactivate.Playing = not flag
-				self.DarkSun.MoonDeactivate.Playing = not flag
-			end
-		end,
-		Type = Boolean,
-	}
-	-- EclipseDirection
-	property "Direction" {
-		Get = function(self)
-			return self.__EclipseBar_Direction or IFEclipse.EclipseDirection.None
-		end,
-		Set = function(self, dir)
-			if dir and self.__EclipseBar_Direction ~= dir then
-				self.__EclipseBar_Direction = dir
-				self.Marker:SetTexCoord(unpack(ECLIPSE_MARKER_COORDS[dir]))
-			end
-		end,
-		Type = IFEclipse.EclipseDirection,
-	}
-	-- MinMaxValue
+	__Handler__( function (self, dir) self.Marker:SetTexCoord(unpack(ECLIPSE_MARKER_COORDS[dir])) end )
+	property "Direction" { Type = IFEclipse.EclipseDirection, Default = IFEclipse.EclipseDirection.None }
+
 	property "MinMaxValue" {
 		Get = function(self)
 			return MinMax(self.__Min, self.__Max)
@@ -118,22 +89,16 @@ class "EclipseBar"
 		end,
 		Type = System.MinMax,
 	}
-	-- Value
-	property "Value" {
-		Get = function(self)
-			return self.__Value
-		end,
-		Set = function(self, value)
-			self.__Value = value
 
-			self.PowerText.Text = tostring(abs(value))
+	__Handler__( function (self, value)
+		self.PowerText.Text = tostring(abs(value))
 
-			if self.__Max and self.__Max > 0 and value then
-				self.Marker:SetPoint("CENTER", (value/self.__Max) *  ECLIPSE_BAR_TRAVEL, 0)
-			end
-		end,
-		Type = System.Number,
-	}
+		if self.__Max and self.__Max > 0 and value then
+			self.Marker:SetPoint("CENTER", (value/self.__Max) *  ECLIPSE_BAR_TRAVEL, 0)
+		end
+	end )
+	property "Value" { Type = System.Number + nil }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------

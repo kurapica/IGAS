@@ -383,15 +383,7 @@ class "TreeView"
 		}
 
 		__Doc__[[the treeNode's toggle state]]
-		property "ToggleState" {
-			Set = function(self, flag)
-				return SetToggleState(self, flag)
-			end,
-			Get = function(self)
-				return GetToggleState(self)
-			end,
-			Type = Boolean,
-		}
+		property "ToggleState" { Type = Boolean }
 
 		__Doc__[[the treeNode's menu]]
 		property "Menu" {
@@ -423,9 +415,7 @@ class "TreeView"
 
 		__Doc__[[the treeNode's index]]
 		property "Index" {
-			Get = function(self)
-				return self.__NodeIndex
-			end,
+			Field = "__NodeIndex",
 			Set = function(self, index)
 				local parent = self.Parent
 				local isNode = Object.IsClass(parent, TreeNode)
@@ -1510,9 +1500,7 @@ class "TreeView"
 	------------------------------------------------------
 	__Doc__[[the selected treeNode]]
 	property "SelectedNode" {
-		Get = function(self)
-			return self.__SelectedItem
-		end,
+		Field = "__SelectedItem",
 		Set = function(self, value)
 			if value and value.__Root ~= self then
 				error("SelectedNode must be a childnode of this tree.", 2)
@@ -1536,13 +1524,9 @@ class "TreeView"
 
 	__Doc__[[the treeView's style]]
 	property "Style" {
-		Get = function(self)
-			return self.__Style or TEMPLATE_LEFT
-		end,
+		Field = "__Style",
 		Set = function(self, value)
-			if self.__Style == value then
-				return
-			end
+			if self.__Style == value then return end
 
 			if value == TEMPLATE_CLASSIC then
 				self:GetChild("ScrollBar").Style = TEMPLATE_CLASSIC
@@ -1554,19 +1538,11 @@ class "TreeView"
 
 			return _RefreshTree(self, false, true)
 		end,
-		Type = TreeViewStyle,
+		Type = TreeViewStyle, Default = TEMPLATE_LEFT
 	}
 
 	__Doc__[[whether show the tooltip or not]]
-	property "ShowTootip" {
-		Get = function(self)
-			return self.__ShowTootip and true or false
-		end,
-		Set = function(self, value)
-			self.__ShowTootip = value
-		end,
-		Type = Boolean,
-	}
+	property "ShowTootip" { Type = Boolean }
 
 	__Doc__[[whether the child-node's order can be changed]]
 	property "ChildOrderChangable" {

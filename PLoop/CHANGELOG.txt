@@ -1,3 +1,6 @@
+2014/04/04
+    __Default__ attribute added to provide default value for custom struct and enum, when used as property type, the default value would be used for the property.
+
 2014/04/03
     __Event__ and __Handler__ attributes added to provide handlers for property value's changing.
 

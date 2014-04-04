@@ -220,11 +220,7 @@ class "ColorPicker"
 	}
 
 	__Doc__[[the style of the ColorPicker]]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = ColorPickerStyle,
-	}
+	property "Style" { Type = ColorPickerStyle }
 
 	__Doc__[[the caption alignment of the ColorPicker]]
 	property "CaptionAlign" {

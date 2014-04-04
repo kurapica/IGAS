@@ -112,7 +112,7 @@ interface "IFActionTypeHandler"
 	-- Overridable Method
 	------------------------------------------------------
 	__Doc__[[
-		<desc>Get the actions's kind, target & detail</desc>
+		<desc>Get the actions's kind, target &nbsp; detail</desc>
 		<return type="kind"></return>
 		<return type="target"></return>
 		<return type="detail"></return>
@@ -1636,35 +1636,18 @@ interface "IFActionHandler"
 	-- Display Property
 	------------------------------------------------------
 	__Doc__[[Whether show the action button with no content, controlled by IFActionHandler]]
-	property "ShowGrid" {
-		Get = function(self)
-			return self.__ShowGrid
-		end,
-		Set = function(self, value)
-			if self.ShowGrid ~= value then
-				self.__ShowGrid = value
-
-				if _IFActionTypeHandler[self.ActionType].IsPlayerAction then
-					UpdateGrid(self)
-				else
-					UpdatePetGrid(self)
-				end
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( function (self, value)
+		if _IFActionTypeHandler[self.ActionType].IsPlayerAction then
+			UpdateGrid(self)
+		else
+			UpdatePetGrid(self)
+		end
+	end )
+	property "ShowGrid" { Type = Boolean }
 
 	__Doc__[[Whether show the action button's flyout icon, controlled by IFActionHandler]]
-	property "ShowFlyOut" {
-		Get = function(self)
-			return self.__ShowFlyOut
-		end,
-		Set = function(self, value)
-			self.__ShowFlyOut = value
-			UpdateFlyout(self)
-		end,
-		Type = Boolean,
-	}
+	__Handler__( UpdateFlyout )
+	property "ShowFlyOut" { Type = Boolean }
 
 	__Doc__[[Whether the action is usable, used to refresh the action button as a trigger]]
 	__Optional__() property "Usable" { Type = Boolean }

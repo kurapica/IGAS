@@ -361,11 +361,7 @@ class "Form"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the style of the form]]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = FormStyle,
-	}
+	property "Style" { Type = FormStyle }
 
 	__Doc__[[the caption's align:LEFT, RIGHT, CENTER]]
 	property "CaptionAlign" {
@@ -463,10 +459,7 @@ class "Form"
 	}
 
 	__Doc__[[true if the form should not be shown in combat with DockMode on]]
-	property "HideForCombat" {
-		Field = "__HideForCombat",
-		Type = System.Boolean,
-	}
+	property "HideForCombat" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Dispose

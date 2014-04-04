@@ -72,32 +72,25 @@ class "GroupBox"
 	}
 
 	__Doc__[[the groupbox's style]]
-	property "Style" {
-		Field = "__Style",
-		Set = function(self, style)
-			if self.__Style ~= style then
-				self.__Style = style
+	__Handler__( function (self, style)
+		if style == TEMPLATE_CLASSIC then
+			self:GetChild("Text"):ClearAllPoints()
+			self:GetChild("Text"):SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
 
-				if style == TEMPLATE_CLASSIC then
-					self:GetChild("Text"):ClearAllPoints()
-					self:GetChild("Text"):SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 0)
+			return self:GetChild("Underline") and self:GetChild("Underline"):Hide()
+		elseif style == TEMPLATE_INLINE then
+			self:GetChild("Text"):ClearAllPoints()
+			self:GetChild("Text"):SetPoint("TOPLEFT", self, "TOPLEFT", 16, -16)
 
-					return self:GetChild("Underline") and self:GetChild("Underline"):Hide()
-				elseif style == TEMPLATE_INLINE then
-					self:GetChild("Text"):ClearAllPoints()
-					self:GetChild("Text"):SetPoint("TOPLEFT", self, "TOPLEFT", 16, -16)
-
-					local underLine = Texture("Underline", self)
-					underLine:SetPoint("TOPLEFT", self:GetChild("Text"), "BOTTOMLEFT", 0, -3)
-					underLine:SetPoint("RIGHT", self, "RIGHT", -16, 0)
-					underLine.Height = 1
-					underLine:SetTexture(1, 1, 1, 0.2)
-					underLine:Show()
-				end
-			end
-		end,
-		Type = GroupBoxStyle,
-	}
+			local underLine = Texture("Underline", self)
+			underLine:SetPoint("TOPLEFT", self:GetChild("Text"), "BOTTOMLEFT", 0, -3)
+			underLine:SetPoint("RIGHT", self, "RIGHT", -16, 0)
+			underLine.Height = 1
+			underLine:SetTexture(1, 1, 1, 0.2)
+			underLine:Show()
+		end
+	end )
+	property "Style" { Type = GroupBoxStyle, Default = TEMPLATE_CLASSIC }
 
 	__Doc__[[whether show the groupbox's border]]
 	property "ShowBorder" {
@@ -109,11 +102,9 @@ class "GroupBox"
 				self:SetBackdrop(nil)
 			end
 		end,
-
 		Get = function(self)
 			return self:GetBackdrop() and true or false
 		end,
-
 		Type = Boolean,
 	}
 
@@ -122,8 +113,6 @@ class "GroupBox"
 	------------------------------------------------------
     function GroupBox(self, name, parent, ...)
     	Super(self, name, parent, ...)
-
-		self.__Style = TEMPLATE_CLASSIC
 
         self:SetPoint("CENTER",parent,"CENTER",0,0)
         self:SetBackdrop(_FrameBackdrop)

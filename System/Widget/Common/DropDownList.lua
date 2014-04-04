@@ -536,11 +536,7 @@ class "DropDownList"
 		-- Property
 		------------------------------------------------------
 		__Doc__[[the index of the dropDownMenuButton]]
-		property "Index" {
-			Set = "SetIndex",
-			Get = "GetIndex",
-			Type = Number,
-		}
+		property "Index" { Type = Number }
 
 		__Doc__[[the text color of the dropDownMenuButton]]
 		property "TextColor" {
@@ -556,25 +552,13 @@ class "DropDownList"
 		}
 
 		__Doc__[[the icon to be displayed on the dropDownMenuButton]]
-		property "Icon" {
-			Set = "SetIcon",
-			Get = "GetIcon",
-			Type = String + nil,
-		}
+		property "Icon" { Type = String + nil }
 
 		__Doc__[[the sub pop-up menu for the dropDownMenuButton]]
-		property "DropDownList" {
-			Set = "SetDropDownList",
-			Get = "GetDropDownList",
-			Type = DropDownList + Region + nil,
-		}
+		property "DropDownList" { Type = DropDownList + Region + nil }
 
 		__Doc__[[the displayed text]]
-		property "Text" {
-			Set = "SetText",
-			Get = "GetText",
-			Type = LocaleString,
-		}
+		property "Text" { Type = LocaleString }
 
 		__Doc__[[whether the dropDownMenuButton is a checkButton]]
 		property "IsCheckButton" {
@@ -1394,11 +1378,7 @@ class "DropDownList"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the frame's transparency value(0-1)]]
-	property "Alpha" {
-		Set ="SetAlpha",
-		Get = "GetAlpha",
-		Type = ColorFloat,
-	}
+	property "Alpha" { Type = ColorFloat }
 
 	__Doc__[[whether show on the cursor position]]
 	property "ShowOnCursor" {

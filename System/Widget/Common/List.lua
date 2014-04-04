@@ -788,11 +788,7 @@ class "List"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the minimum increment between allowed slider values]]
-	property "ScrollStep" {
-		Set = "SetScrollStep",
-		Get = "GetScrollStep",
-		Type = Number,
-	}
+	property "ScrollStep" { Type = Number }
 
 	__Doc__[[the display count in the list]]
 	property "DisplayItemCount" {
@@ -896,11 +892,7 @@ class "List"
 	}
 
 	__Doc__[[the list's style]]
-	property "Style" {
-		Set = "SetStyle",
-		Get = "GetStyle",
-		Type = ListStyle,
-	}
+	property "Style" { Type = ListStyle }
 
 	__Doc__[[the selected item's index]]
 	property "SelectedIndex" {
@@ -914,10 +906,7 @@ class "List"
 	}
 
 	__Doc__[[whether show tooltip or not]]
-	property "ShowTootip" {
-		Field = "__ShowTootip",
-		Type = Boolean,
-	}
+	property "ShowTootip" { Type = Boolean, }
 
 	------------------------------------------------------
 	-- Constructor

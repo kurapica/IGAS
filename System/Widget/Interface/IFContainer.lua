@@ -478,18 +478,12 @@ interface "IFContainer"
 	}
 
 	__Doc__[[Whether the layout panel is auto update]]
-	property "AutoLayout" {
-		Get = function(self)
-			return self.__AutoLayout or false
-		end,
-		Set = function(self, value)
-			self.__AutoLayout = value
-			if self:GetChild("Panel") then
-				self:GetChild("Panel").AutoLayout = value
-			end
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( function (self, value)
+		if self:GetChild("Panel") then
+			self:GetChild("Panel").AutoLayout = value
+		end
+	end )
+	property "AutoLayout" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Constructor

@@ -24,25 +24,16 @@ class "ComboBar"
 		-- Property
 		------------------------------------------------------
 		__Doc__[[Whether the combo point is activated]]
-		property "Activated" {
-			Get = function(self)
-				return self.__Activated or false
-			end,
-			Set = function(self, value)
-				if self.Activated ~= value then
-					self.__Activated = value
-
-					if value then
-						self.Glow.Deactivate.Playing = false
-						self.Glow.Active.Playing = true
-					else
-						self.Glow.Active.Playing = false
-						self.Glow.Deactivate.Playing = true
-					end
-				end
-			end,
-			Type = System.Boolean,
-		}
+		__Handler__( function(self, value)
+			if value then
+				self.Glow.Deactivate.Playing = false
+				self.Glow.Active.Playing = true
+			else
+				self.Glow.Active.Playing = false
+				self.Glow.Deactivate.Playing = true
+			end
+		end )
+		property "Activated" { Type = System.Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -101,21 +92,12 @@ class "ComboBar"
 	-- Property
 	------------------------------------------------------
 	-- Value
-	property "Value" {
-		Get = function(self)
-			return self.__Value
-		end,
-		Set = function(self, value)
-			if self.__Value ~= value then
-				for  i = 1, MAX_COMBO_POINTS do
-					self[i].Activated = i <= value
-				end
-
-				self.__Value = value
-			end
-		end,
-		Type = System.Number,
-	}
+	__Handler__( function (self, value)
+		for  i = 1, MAX_COMBO_POINTS do
+			self[i].Activated = i <= value
+		end
+	end )
+	property "Value" { Type = System.Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -126,8 +108,6 @@ class "ComboBar"
 	------------------------------------------------------
 	function ComboBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
-
-		self.__Value = 0
 
 		self.FrameStrata = "LOW"
 		self.Toplevel = true

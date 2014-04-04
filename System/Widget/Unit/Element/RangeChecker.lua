@@ -46,16 +46,8 @@ class "RangeChecker"
 		end,
 	}
 
-	__Doc__[[description]]
-	property "UseIndicator" {
-		Get = function(self)
-			return self.__UseIndicator
-		end,
-		Set = function(self, value)
-			self.__UseIndicator = value
-		end,
-		Type = Boolean,
-	}
+	__Doc__[[Whether use an indicator]]
+	property "UseIndicator" { Type = Boolean }
 
 	__Doc__[[The texture file path for the indicator]]
 	property "TexturePath" {

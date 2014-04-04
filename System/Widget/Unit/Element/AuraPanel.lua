@@ -142,26 +142,18 @@ class "AuraPanel"
 		property "Index" { Type = Number }
 
 		__Doc__[[Whether show the tooltip of the aura]]
-		property "ShowTooltip" {
-			Field = "__ShowTooltip",
-			Set = function(self, flag)
-				if flag ~= self.ShowTooltip then
-					self.__ShowTooltip = flag
-
-					if flag then
-						self.OnEnter = self.OnEnter + OnEnter
-						self.OnLeave = self.OnLeave + OnLeave
-						self.MouseEnabled = true
-					else
-						self.OnEnter = self.OnEnter - OnEnter
-						self.OnLeave = self.OnLeave - OnLeave
-						self.MouseEnabled = false
-					end
-				end
-			end,
-			Type = Boolean,
-			Default = true,
-		}
+		__Handler__( function(self, flag)
+			if flag then
+				self.OnEnter = self.OnEnter + OnEnter
+				self.OnLeave = self.OnLeave + OnLeave
+				self.MouseEnabled = true
+			else
+				self.OnEnter = self.OnEnter - OnEnter
+				self.OnLeave = self.OnLeave - OnLeave
+				self.MouseEnabled = false
+			end
+		end )
+		property "ShowTooltip" { Type = Boolean, Default = true }
 
 		------------------------------------------------------
 		-- Constructor
@@ -269,15 +261,7 @@ class "AuraPanel"
 	}
 
 	__Doc__[[Whether should highlight auras that casted by the player]]
-	property "HighLightPlayer" {
-		Get = function(self)
-			return self.__HighLightPlayer or false
-		end,
-		Set = function(self, value)
-			self.__HighLightPlayer = value
-		end,
-		Type = System.Boolean,
-	}
+	property "HighLightPlayer" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
