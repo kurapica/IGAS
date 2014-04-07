@@ -78,7 +78,7 @@ class "EclipseBar"
 	property "MoonActivated" { Type = Boolean }
 
 	__Handler__( function (self, dir) self.Marker:SetTexCoord(unpack(ECLIPSE_MARKER_COORDS[dir])) end )
-	property "Direction" { Type = IFEclipse.EclipseDirection, Default = IFEclipse.EclipseDirection.None }
+	property "Direction" { Type = EclipseDirection, Default = EclipseDirection.None }
 
 	property "MinMaxValue" {
 		Get = function(self)

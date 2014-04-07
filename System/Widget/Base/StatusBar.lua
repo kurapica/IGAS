@@ -192,4 +192,7 @@ class "StatusBar"
 	__Doc__[[whether the status bar's texture is rotated to match its orientation]]
 	property "RotatesTexture" { Type = Boolean }
 
+	__Doc__[[Whether the status bar's texture is reverse filled]]
+	property "ReverseFill" { Type = Boolean }
+
 endclass "StatusBar"

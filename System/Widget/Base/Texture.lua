@@ -453,7 +453,7 @@ class "Texture"
 		Get = function(self)
 			local path = self:GetTexture()
 
-			if type(path) == "string" and not strmatch(value, "^Color%-") and not strmatch(path, "^RTPortrait%d*") then
+			if type(path) == "string" and not strmatch(path, "^Color%-") and not strmatch(path, "^RTPortrait%d*") then
 				return path
 			end
 		end,

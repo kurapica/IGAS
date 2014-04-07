@@ -221,7 +221,7 @@ And in the **System** namespace, each basic data type have a **custom** struct t
 * System.Thread  - means the value should match : type(value) == "thread"
 * System.Table  - means the value should match : type(value) == "table"
 * System.RawTable  - means the value should match : type(value) == "table" and getmetatable(value) == nil
-* System.Any - Any value
+* System.Any - Any value except nil
 
 Those are the **basic** struct types, take the **System.Number** as an example to show how to use :
 

@@ -15,21 +15,36 @@ __Doc__[[Timer is used to fire an event on a specified interval]]
 class "Timer"
 	inherit "VirtualUIObject"
 
+	--Timers will not be fired more often than HZ-1 times per second.
+	local HZ = 11
+	local minInterval = 1 / (HZ - 1)
+
+	__StructType__(StructType.Custom)
+	__Default__( 0 )
+	struct "TimerInterval"
+		function Validate(value)
+			if type(value) ~= "number" or value < 0 then
+				value = 0
+			elseif value > 0 and value < minInterval then
+				value = minInterval
+			end
+			return value
+		end
+	endstruct "TimerInterval"
+
 	WorldFrame = IGAS.WorldFrame
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
     _Timer = _Timer or CreateFrame("Frame", nil, WorldFrame)
+    _Timer:Hide()
 
 	-- _Container is shared in all versions
 	_Container = _Container or {}
 	_TempContainer = _TempContainer or {}
 	_Updating = _Updating or false
-
-	--Timers will not be fired more often than HZ-1 times per second.
-	local HZ = 11
-	local minInterval = 1 / (HZ - 1)
+	_Working = false
 
 	local lastint = floor(GetTime() * HZ)
 
@@ -47,14 +62,12 @@ class "Timer"
 
 		-- Consider people will disable timer when a onTimer event triggered, and enable it when all is done, so, I don't use one container to control the enabled timers, another for disabled timers.
 		for timer, delay in pairs(_Container) do
-			if delay > 0 and delay < soon then
+			if delay > 0 and delay <= soon then
 				timer:Fire("OnTimer")
 
 				int = timer.Interval
 
 				if timer.Enabled and int > 0 then
-					if int < minInterval then int = minInterval end
-
 					-- set next time
 					_Container[timer] = now + int
 				end
@@ -72,6 +85,11 @@ class "Timer"
 			end
 		end
 
+		if not next(_Container) then
+			_Working = false
+			self:Hide()
+		end
+
 		wipe(_TempContainer)
 	end)
 
@@ -82,23 +100,28 @@ class "Timer"
 	event "OnTimer"
 
 	local function RefreshTimer(self)
-		if self.Interval == 0 or not self.Enabled then
+		local int = self.Interval
+
+		if int > 0 and self.Enabled then
+			if not _Container[self] then
+				if _Updating then
+					_TempContainer[self] = GetTime() + int
+				else
+					_Container[self] = GetTime() + int
+				end
+
+				if not _Working then
+					_Working = true
+					_Timer:Show()
+				end
+			end
+		else
 			if _Container[self] then
 				if _Updating then
 					_TempContainer[self] = 0
 				else
 					_Container[self] = nil
 				end
-			end
-		else
-			local int = self.Interval
-
-			if int < minInterval then int = minInterval end
-
-			if _Updating then
-				_TempContainer[self] = GetTime() + int
-			else
-				_Container[self] = GetTime() + int
 			end
 		end
 	end
@@ -108,7 +131,7 @@ class "Timer"
 	------------------------------------------------------
 	__Doc__[[Gets or sets the interval at which to fire the Elapsed event]]
 	__Handler__( RefreshTimer )
-	property "Interval" { Type = NaturalNumber }
+	property "Interval" { Type = TimerInterval }
 
 	__Doc__[[Whether the timer is enabled or disabled, default true]]
 	__Handler__( RefreshTimer )
@@ -118,7 +141,13 @@ class "Timer"
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
-		_Container[self] = nil
+		if _Container[self] then
+			if _Updating then
+				_TempContainer[self] = 0
+			else
+				_Container[self] = nil
+			end
+		end
 	end
 
 	------------------------------------------------------

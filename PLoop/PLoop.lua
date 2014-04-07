@@ -8531,7 +8531,7 @@ do
 		end
 	endclass "__Handler__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
 	class "__Default__"
 		inherit "__Attribute__"
@@ -8545,7 +8545,11 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			_NSInfo[target].Default = self.Default
+			if targetType == AttributeTargets.Property then
+				target.Default = self.Default
+			else
+				_NSInfo[target].Default = self.Default
+			end
 		end
 
 		------------------------------------------------------

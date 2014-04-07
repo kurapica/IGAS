@@ -31,7 +31,7 @@ _ColorMap = {
 	Disease = DebuffTypeColor.Disease,
 	Poison = DebuffTypeColor.Poison,
 
-	Default = ColorType(0, 1, 0),
+	GlobalDefault = ColorType(0, 1, 0),
 
     HUNTER = RAID_CLASS_COLORS.HUNTER,
     WARLOCK = RAID_CLASS_COLORS.WARLOCK,
@@ -75,14 +75,19 @@ function HealthBar_OnStateChanged(self, value)
 	end
 
 	if not color then
-		color = self.UseClassColor and select(2, UnitClass(self.Unit)) or "Default"
+		color = self.DefaultColor and "Default" or self.UseClassColor and select(2, UnitClass(self.Unit)) or "GlobalDefault"
 
 		if self.UseSmoothColor then
 			value = floor(value * 10) / 10
 
 			if self.__HealthBar_Previous == value then return end
 
-			r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
+			if color == "Default" then
+				r, g, b = self.DefaultColor.r, self.DefaultColor.g, self.DefaultColor.b
+			else
+				r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
+			end
+
 			color = value
 
 			-- Smooth the color
@@ -96,7 +101,11 @@ function HealthBar_OnStateChanged(self, value)
 		else
 			if self.__HealthBar_Previous == color then return end
 
-			r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
+			if color == "Default" then
+				r, g, b = self.DefaultColor.r, self.DefaultColor.g, self.DefaultColor.b
+			else
+				r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
+			end
 		end
 	else
 		if self.__HealthBar_Previous == color then return end
@@ -140,6 +149,10 @@ class "HealthBar"
 	__Doc__[[Whether smoothing the color changing]]
 	__Handler__(HealthBar_OnStateChanged)
 	property "UseSmoothColor" { Type = System.Boolean, }
+
+	__Doc__[[The default status bar's color]]
+	__Handler__(HealthBar_OnStateChanged)
+	property "DefaultColor" { Type = ColorType + nil }
 
 	------------------------------------------------------
 	-- Constructor
@@ -186,6 +199,9 @@ class "HealthBarFrequent"
 	__Handler__(HealthBar_OnStateChanged)
 	property "UseSmoothColor" { Type = System.Boolean, }
 
+	__Doc__[[The default status bar's color]]
+	__Handler__(HealthBar_OnStateChanged)
+	property "DefaultColor" { Type = ColorType + nil }
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
