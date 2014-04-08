@@ -27,6 +27,9 @@ class "Region"
 	__Doc__[[Run when the Region's visible state is changed]]
 	event "OnVisibleChanged"
 
+	__Doc__[[Run when the Region's location is changed]]
+	event "OnPositionChanged"
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -334,6 +337,10 @@ class "Region"
 				relativeTo = relativeTo or IGAS.UIParent
 				if relativeTo == self.Parent then
 					relativeTo = nil
+				elseif relativeTo.Parent == self.Parent then
+					relativeTo = relativeTo.Name
+				else
+					relativeTo = relativeTo and relativeTo:GetName()
 				end
 
 				if relativePoint == point then
@@ -343,7 +350,7 @@ class "Region"
 				if x == 0 then x = nil end
 				if y == 0 then y = nil end
 
-				ret[i] = AnchorPoint(point, x, y, relativeTo and relativeTo:GetName(), relativePoint)
+				ret[i] = AnchorPoint(point, x, y, relativeTo, relativePoint)
 			end
 
 			return ret
@@ -352,12 +359,20 @@ class "Region"
 			if #loc > 0 then
 				self:ClearAllPoints()
 				for _, anchor in ipairs(loc) do
-					local parent = anchor.relativeTo and IGAS:GetFrame(anchor.relativeTo) or self.Parent
+					local relativeTo = anchor.relativeTo
 
-					if parent then
-						self:SetPoint(anchor.point, parent, anchor.relativePoint or anchor.point, anchor.xOffset or 0, anchor.yOffset or 0)
+					if relativeTo then
+						relativeTo = self.Parent:GetChild(relativeTo) or IGAS:GetFrame(relativeTo)
+					else
+						relativeTo = self.Parent
+					end
+
+					if relativeTo then
+						self:SetPoint(anchor.point, relativeTo, anchor.relativePoint or anchor.point, anchor.xOffset or 0, anchor.yOffset or 0)
 					end
 				end
+
+				return self:Fire("OnPositionChanged")
 			end
 		end,
 		Type = Location,
