@@ -93,11 +93,12 @@ function HealthBar_OnStateChanged(self, value)
 			-- Smooth the color
 			if value > 0.5 then
 				r = (1 - value) * 2 * (1 - r) + r
+				b = b - b * (1-value) * 2
 			else
 				r = 1
 				g = g * value * 2
+				b = 0
 			end
-			b = b * value
 		else
 			if self.__HealthBar_Previous == color then return end
 
