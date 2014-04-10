@@ -3,12 +3,14 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFMana", version) then
 	return
 end
 
 _IFManaUnitList = _IFManaUnitList or UnitList(_Name)
+_IFManaSmoothUnitList = _IFManaSmoothUnitList or UnitList(_Name.."Smooth")
+_IFManaSmoothObjUnitList = _IFManaSmoothObjUnitList or UnitList(_Name.."SmoothObj")
 
 SPELL_POWER_MANA = _G.SPELL_POWER_MANA
 
@@ -36,13 +38,23 @@ function _IFManaUnitList:ParseEvent(event, unit, type)
 	if (unit and unit ~= "player") or (type and type ~= "MANA") then return end
 
 	if event == "UNIT_POWER" then
-		self:EachK("player", "Value", UnitPower(unit, SPELL_POWER_MANA))
+		local value = UnitPower(unit, SPELL_POWER_MANA)
+
+		self:EachK("player", "Value", value)
+		_IFManaSmoothObjUnitList:EachK("player", "RealValue", value)
 	elseif event == "UNIT_MAXPOWER" then
 		_MinMax.max = UnitPowerMax("player", SPELL_POWER_MANA)
+
 		self:EachK("player", "MinMaxValue", _MinMax)
-		self:EachK("player", "Value", UnitPower(unit, SPELL_POWER_MANA))
+		_IFManaSmoothUnitList:EachK("player", "MinMaxValue", _MinMax)
+
+		local value = UnitPower("player", SPELL_POWER_MANA)
+
+		self:EachK("player", "Value", value)
+		_IFManaSmoothObjUnitList:EachK("player", "RealValue", value)
 	else
 		self:EachK("player", "Refresh")
+		_IFManaSmoothUnitList:EachK("player", "Refresh")
 	end
 end
 
@@ -54,7 +66,32 @@ __Doc__[[
 interface "IFMana"
 	extend "IFUnitElement"
 
-	SPELL_POWER_MANA = SPELL_POWER_MANA
+	local function OnValueChanged(self, value)
+		self.Owner.Value = value
+	end
+
+	local function SwapUnitList(self, value)
+		if value then
+			_IFManaUnitList[self] = nil
+
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFManaSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFManaSmoothUnitList[self] = self.Unit
+		else
+			if self._SmoothValueObj then
+				_IFManaSmoothObjUnitList[self._SmoothValueObj] = nil
+			end
+			_IFManaSmoothUnitList[self] = nil
+
+			_IFManaUnitList[self] = self.Unit
+		end
+	end
 
 	------------------------------------------------------
 	-- Event
@@ -78,20 +115,38 @@ interface "IFMana"
 		self.MinMaxValue = _MinMax
 
 		self.Value = min
+
+		if self.Smoothing and self._SmoothValueObj then
+			self._SmoothValueObj.Value = self.Value
+		end
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[Whether smoothing the value changes]]
+	__Handler__(SwapUnitList)
+	property "Smoothing" { Type = System.Boolean }
+
+	__Doc__[[The delay time for smoothing value changes]]
+	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		if self.Unit == "player" then
-			_IFManaUnitList[self] = self.Unit
+		if self.Smoothing then
+			if not self._SmoothValueObj then
+				self._SmoothValueObj = SmoothValue()
+				self._SmoothValueObj.SmoothDelay = self.SmoothDelay
+				self._SmoothValueObj.Owner = self
+				self._SmoothValueObj.OnValueChanged = OnValueChanged
+			end
+
+			_IFManaSmoothObjUnitList[self._SmoothValueObj] = self.Unit
+			_IFManaSmoothUnitList[self] = self.Unit
 		else
-			_IFManaUnitList[self] = nil
+			_IFManaUnitList[self] = self.Unit
 		end
 	end
 
@@ -100,6 +155,13 @@ interface "IFMana"
 	------------------------------------------------------
 	function Dispose(self)
 		_IFManaUnitList[self] = nil
+		_IFManaSmoothUnitList[self] = nil
+
+		if self._SmoothValueObj then
+			_IFManaSmoothObjUnitList[self._SmoothValueObj] = nil
+			self._SmoothValueObj:Dispose()
+			self._SmoothValueObj = nil
+		end
 	end
 
 	------------------------------------------------------
