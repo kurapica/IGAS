@@ -14,14 +14,9 @@ class "LevelLabel"
 	inherit "FontString"
 	extend "IFUnitLevel"
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[The level's format like 'Lvl %s', default '%s']]
-	__Handler__( "Refresh" )
-	property "LevelFormat" { Type = System.String, Default = "%s" }
+	local function UpdateLabel(self)
+		local value = self.Value
 
-	__Handler__( function (self, value)
 		if value and value > 0 then
 			self.Text = self.LevelFormat:format(value)
 
@@ -42,7 +37,16 @@ class "LevelLabel"
 			self.Text = self.LevelFormat:format("???")
 			self:SetVertexColor(1.0, 0.82, 0.0)
 		end
-	end )
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	__Doc__[[The level's format like 'Lvl %s', default '%s']]
+	__Handler__( UpdateLabel )
+	property "LevelFormat" { Type = System.String, Default = "%s" }
+
+	__Handler__( UpdateLabel )
 	property "Value" { Type = System.Number + nil }
 
 	------------------------------------------------------

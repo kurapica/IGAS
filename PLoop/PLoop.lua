@@ -1153,9 +1153,11 @@ do
 											if old ~= value then
 												self[field] = value
 
-												fire(self, evt, value, old, name)
+												local ok, err = pcall(handler, self, value, old, name)
 
-												return handler(self, value, old, name)
+												if not ok then errorhandler(err) end
+
+												return fire(self, evt, value, old, name)
 											end
 										end
 									 or function (self, value)
@@ -2335,14 +2337,20 @@ do
 
 						rawset(self, oper.Field, value)
 
+						if oper.Handler then
+							local ok, err = pcall(oper.Handler, self, value, old, key)
+
+							if not ok then errorhandler(err) end
+						end
+
 						if oper.Event then
 							-- Fire the event
 							local handler = rawget(self, "__Events")
 							handler = handler and handler[oper.Event]
-							if handler then handler(self, value, old, key) end
+							if handler then return handler(self, value, old, key) end
 						end
 
-						return oper.Handler and oper.Handler(self, value, old, key)
+						return
 					else
 						return rawset(self, oper.Field, value)
 					end
