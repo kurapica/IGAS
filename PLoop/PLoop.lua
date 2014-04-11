@@ -5926,6 +5926,22 @@ do
 			return result
 		end
 	endinterface "Reflector"
+
+	------------------------------------------------------
+	-- System.ICloneable
+	------------------------------------------------------
+	__Doc__[[description]]
+	interface "ICloneable"
+
+		doc "ICloneable" [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		__Require__()
+		doc "Clone" [[Creates a new object that is a copy of the current instance.]]
+		function Clone(self) end
+	endinterface "ICloneable"
 end
 
 ------------------------------------------------------
@@ -8409,6 +8425,9 @@ do
 
 		doc "__Require__" [[Whether the method or property of the interface is required to be override]]
 
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = rawget(_NSInfo, owner)
 
@@ -8431,6 +8450,9 @@ do
 
 		doc "__Optional__" [[Whether the method or property of the interface is optional to be override]]
 
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = rawget(_NSInfo, owner)
 
@@ -8458,6 +8480,9 @@ do
 			"Pascal",	-- SetName
 		}
 
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
 		doc "NameCase" [[The name case of the generate method, in one program, only need to be set once, default is Pascal case]]
 		property "NameCase" { Type = NameCase, Default = NameCase.Pascal }
 
@@ -8476,6 +8501,9 @@ do
 
 		doc "__Event__" [[Used to bind an event to the property]]
 
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
 		doc "Event" [[The event that bind to the property]]
 		property "Event" { Type = String + nil }
 
@@ -8511,6 +8539,9 @@ do
 
 		doc "__Handler__" [[Used to bind an handler(method name or function) to the property]]
 
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
 		doc "Handler" [[The handler that bind to the property]]
 		property "Handler" { Type = String + Function + nil }
 
@@ -8546,6 +8577,9 @@ do
 
 		doc "__Default__" [[Used to set a default value for custom struct or enum]]
 
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
 		doc "Default" [[The default value]]
 		property "Default" { Type = Any + nil }
 
@@ -8577,6 +8611,52 @@ do
 			return Super(self)
 		end
 	endclass "__Default__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
+	class "__Setter__"
+		inherit "__Attribute__"
+
+		doc "__Setter__" [[Used to set the assign mode of the property]]
+
+		__Default__( "Assign" )
+		__Flags__()
+		enum "Setter" {
+			"Assign",
+			"Clone",
+			"Retain",
+			-- "Strong", this is default for lua
+			"Weak",
+		}
+
+		------------------------------------------------------
+		doc "Setter" [[The setter settings]]
+		property "Setter" { Type = Setter + nil }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			target.Setter = self.Setter
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Setter__(self)
+			self.Setter = nil
+
+			return Super(self)
+		end
+
+		__Arguments__{ Setter }
+		function __Setter__(self, value)
+			self.Setter = value
+
+			return Super(self)
+		end
+	endclass "__Setter__"
 
 	__AttributeUsage__{Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
