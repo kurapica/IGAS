@@ -334,6 +334,30 @@ do
 			storage[key] = value
 		end
 	end
+
+	function CloneObj(obj, deep)
+		local cls = getmetatable(obj)
+		local info = cls and rawget(_NSInfo, cls)
+
+		if info then
+			if type(obj.Clone) == "function" then
+				return obj:Clone(deep)
+			else
+				-- error("The object must extend from System.ICloneable.", 2)
+				return obj
+			end
+		elseif type(obj) == "table" then
+			local ret = {}
+
+			for k, v in pairs(obj) do
+				ret[k] = deep and Clone(v, deep) or v
+			end
+
+			return ret
+		else
+			return obj
+		end
+	end
 end
 
 ------------------------------------------------------
@@ -405,7 +429,7 @@ do
 					return info.Method[key] or info.Cache4Method[key]
 				end
 			elseif info.Type == TYPE_ENUM then
-				return type(key) == "string" and info.Enum[key:upper()] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
+				return type(key) == "string" and info.Enum[strupper(key)] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
 			elseif info.Type == TYPE_INTERFACE then
 				if info.SubNS and info.SubNS[key] then
 					return info.SubNS[key]
@@ -856,9 +880,9 @@ do
 						local c = head:sub(1, 1)
 
 						if useIs then
-							return "^[Ii]s[" .. c:upper() .. c:lower().."]" .. head:sub(2) .. "%w*" .. noun .. "$"
+							return "^[Ii]s[" .. strupper(c) .. strlower(c).."]" .. head:sub(2) .. "%w*" .. noun .. "$"
 						else
-							return "^[" .. c:upper() .. c:lower().."]" .. head:sub(2) .. "%w*" .. noun .. "$"
+							return "^[" .. strupper(c) .. strlower(c).."]" .. head:sub(2) .. "%w*" .. noun .. "$"
 						end
 					end
 				end
@@ -898,13 +922,9 @@ do
 			local cache = CACHE_TABLE()
 			wipe(info.Cache4Interface)
 			-- superclass interface
-			if info.SuperClass then
-				CloneInterfaceCache(info.Cache4Interface, _NSInfo[info.SuperClass].Cache4Interface, cache)
-			end
+			if info.SuperClass then CloneInterfaceCache(info.Cache4Interface, _NSInfo[info.SuperClass].Cache4Interface, cache) end
 			-- extend interface
-			for _, IF in ipairs(info.ExtendInterface) do
-				CloneInterfaceCache(info.Cache4Interface, _NSInfo[IF].Cache4Interface, cache)
-			end
+			for _, IF in ipairs(info.ExtendInterface) do CloneInterfaceCache(info.Cache4Interface, _NSInfo[IF].Cache4Interface, cache) end
 			-- self interface
 			CloneInterfaceCache(info.Cache4Interface, info.ExtendInterface, cache)
 			CACHE_TABLE(cache)
@@ -914,13 +934,9 @@ do
 			--- self event
 			CloneWithoutOverride(info.Cache4Event, info.Event)
 			--- superclass event
-			if info.SuperClass then
-				CloneWithoutOverride(info.Cache4Event, _NSInfo[info.SuperClass].Cache4Event)
-			end
+			if info.SuperClass then CloneWithoutOverride(info.Cache4Event, _NSInfo[info.SuperClass].Cache4Event) end
 			--- extend event
-			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride(info.Cache4Event, _NSInfo[IF].Cache4Event)
-			end
+			for _, IF in ipairs(info.ExtendInterface) do CloneWithoutOverride(info.Cache4Event, _NSInfo[IF].Cache4Event) end
 
 			-- Cache4Method
 			wipe(info.Cache4Method)
@@ -960,13 +976,9 @@ do
 			--- self method
 			CloneWithoutOverride4Method(info.Cache4Method, info.Method)
 			--- superclass method
-			if info.SuperClass then
-				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method)
-			end
+			if info.SuperClass then CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method) end
 			--- extend method
-			for _, IF in ipairs(info.ExtendInterface) do
-				CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method)
-			end
+			for _, IF in ipairs(info.ExtendInterface) do CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method) end
 
 			-- Cache4Property
 			wipe(info.Cache4Property)
@@ -979,7 +991,7 @@ do
 
 					for k, v in pairs(set) do
 						if type(k) == "string" then
-							k = k:lower()
+							k = strlower(k)
 
 							if k == "get" then
 								if type(v) == "function" or type(v) == "boolean" then
@@ -994,24 +1006,17 @@ do
 									prop.SetMethod = v
 								end
 							elseif k == "getmethod" then
-								if type(v) == "string" then
-									prop.GetMethod = v
-								end
+								if type(v) == "string" then prop.GetMethod = v end
 							elseif k == "setmethod" then
-								if type(v) == "string" then
-									prop.SetMethod = v
-								end
+								if type(v) == "string" then prop.SetMethod = v end
 							elseif k == "field" then
-								if type(v) == "string" and v ~= name then
-									prop.Field = v
-								end
+								if type(v) == "string" and v ~= name then prop.Field = v end
 							elseif k == "type" then
 								local ok, ret = pcall(BuildType, v, name)
 								if ok then
 									prop.Type = ret
 								else
 									ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
-
 									errorhandler(ret)
 								end
 							elseif k == "default" then
@@ -1024,14 +1029,16 @@ do
 								elseif type(v) == "function" then
 									prop.Handler = v
 								end
+							elseif k == "setter" and type(v) == "number" and floor(v) == v and v > 0 and v <= _NSInfo[Setter].MaxValue then
+								prop.Setter = v
+							elseif k == "getter" and type(v) == "number" and floor(v) == v and v > 0 and v <= _NSInfo[Getter].MaxValue then
+								prop.Getter = v
 							end
 						end
 					end
 
-					if prop.Type and prop.Default ~= nil then
-						if prop.Type:GetObjectType(prop.Default) == false then
-							prop.Default = nil
-						end
+					if prop.Type and prop.Default ~= nil and prop.Type:GetObjectType(prop.Default) == false then
+						prop.Default = nil
 					end
 
 					-- Clear
@@ -1042,13 +1049,8 @@ do
 
 					local useMethod = false
 
-					if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then
-						prop.GetMethod = nil
-					end
-
-					if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then
-						prop.SetMethod = nil
-					end
+					if prop.GetMethod and not info.Cache4Method[prop.GetMethod] then prop.GetMethod = nil end
+					if prop.SetMethod and not info.Cache4Method[prop.SetMethod] then prop.SetMethod = nil end
 
 					-- Auto generate GetMethod
 					if ( prop.Get == nil or prop.Get == true ) and not prop.GetMethod and not prop.Field then
@@ -1114,20 +1116,49 @@ do
 					end
 
 					-- Validate the Event
-					if prop.Event and not info.Cache4Event[prop.Event] then
-						prop.Event = nil
-					end
+					if prop.Event and not info.Cache4Event[prop.Event] then prop.Event = nil end
 
 					-- Validate the Handler
-					if prop.HandlerName then
-						prop.Handler = info.Cache4Method[prop.HandlerName]
+					if prop.HandlerName then prop.Handler = info.Cache4Method[prop.HandlerName] end
+
+					-- validate the Setter
+					if prop.Setter then
+						prop.SetClone = Reflector.ValidateFlags(Setter.Clone, prop.Setter) or nil
+						prop.SetDeepClone = Reflector.ValidateFlags(Setter.DeepClone, prop.Setter) or nil
+
+						if prop.Set == nil and not prop.SetMethod then
+							if Reflector.ValidateFlags(Setter.Retain, prop.Setter) and prop.Type and #(prop.Type) > 0 then
+								for _, ty in ipairs(prop.Type) do
+									local tinfo = _NSInfo[ty]
+
+									if tinfo.Type == TYPE_CLASS or tinfo.Type == TYPE_INTERFACE then
+										prop.SetRetain = true
+										break
+									end
+								end
+							end
+
+							if prop.Get == nil and not prop.GetMethod then
+								if Reflector.ValidateFlags(Setter.Weak, prop.Setter) then prop.SetWeak = true end
+							end
+						end
+
+						prop.Setter = nil
+					end
+
+					-- Validate the Getter
+					if prop.Getter then
+						prop.GetClone = Reflector.ValidateFlags(Getter.Clone, prop.Getter) or nil
+						prop.GetDeepClone = Reflector.ValidateFlags(Getter.DeepClone, prop.Getter) or nil
+
+						prop.Getter = nil
 					end
 
 					-- Auto generate Field or methods
-					if not useMethod and not prop.Field then
+					if not useMethod then
 						local name = prop.Name
 						local uname = name:gsub("^%a", strupper)
-						local field = "_" .. info.Name:match("^_*(.-)$") .. "_" .. uname
+						local field = prop.Field or "_" .. info.Name:match("^_*(.-)$") .. "_" .. uname
 
 						if set.Synthesize and env then
 							local evt = prop.Event
@@ -2228,6 +2259,7 @@ do
 		local rawset = rawset
 		local error = error
 		local tostring = tostring
+		local clone = CloneObj
 
 		local isCached = info.AutoCache or false
 
@@ -2237,9 +2269,7 @@ do
 			local oper
 
 			-- Dispose Method
-			if key == DISPOSE_METHOD then
-				return DisposeObject
-			end
+			if key == DISPOSE_METHOD then return DisposeObject end
 
 			-- Property Get
 			oper = Cache4Property[key]
@@ -2264,6 +2294,9 @@ do
 				if value == nil and oper.Default ~= nil then
 					return oper.Default
 				else
+					if prop.GetClone or prop.GetDeepClone then
+						value = clone(value, prop.GetDeepClone)
+					end
 					return value
 				end
 			end
@@ -2313,9 +2346,8 @@ do
 			-- Property Set
 			oper = Cache4Property[key]
 			if oper then
-				if oper.Type then
-					value = oper.Type:Validate(value, key, 2)
-				end
+				if oper.Type then value = oper.Type:Validate(value, key, 2) end
+				if oper.SetClone or oper.SetDeepClone then value = clone(value, oper.SetDeepClone) end
 
 				if oper.Set then
 					return oper.Set(self, value)
@@ -2986,9 +3018,9 @@ do
 
 		for i, v in pairs(set) do
 			if type(i) == "string" then
-				info.Enum[i:upper()] = v
+				info.Enum[strupper(i)] = v
 			elseif type(v) == "string" then
-				info.Enum[v:upper()] = v
+				info.Enum[strupper(v)] = v
 			end
 		end
 
@@ -2996,17 +3028,17 @@ do
 			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Enum)
 		end
 
+		-- Cache
+		info.Cache = info.Cache or {}
+		wipe(info.Cache)
+		for k, v in pairs(info.Enum) do info.Cache[v] = k end
+
 		if info.Default ~= nil then
 			local default = info.Default
 
-			if type(default) == "string" and info.Enum[default:upper()] then
-				info.Default = info.Enum[default:upper()]
-			else
-				for _, v in pairs(info.Enum) do
-					-- keep if existed
-					if default == v then return end
-				end
-
+			if type(default) == "string" and info.Enum[strupper(default)] then
+				info.Default = info.Enum[strupper(default)]
+			elseif info.Cache[default] == nil then
 				info.Default = nil
 			end
 		end
@@ -3698,7 +3730,7 @@ do
 		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
-		_type_ = _type_:upper()
+		_type_ = strupper(_type_)
 
 		if _type_ == _STRUCT_TYPE_MEMBER then
 			-- use member list, default type
@@ -4463,32 +4495,26 @@ do
 		]]
 		function ParseEnum(ns, value)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+			local info = rawget(_NSInfo, ns)
 
-			if ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_ENUM and _NSInfo[ns].Enum then
-				if _NSInfo[ns].IsFlags and type(value) == "number" then
-					local ret = {}
+			if info and info.Type == TYPE_ENUM then
+				if info.IsFlags and type(value) == "number" then
 
 					if value == 0 then
-						for n, v in pairs(_NSInfo[ns].Enum) do
-							if v == value then
-								return n
-							end
-						end
+						return info.Cache[value]
 					else
-						for n, v in pairs(_NSInfo[ns].Enum) do
+						local ret = {}
+
+						for n, v in pairs(info.Enum) do
 							if ValidateFlags(v, value) then
 								tinsert(ret, n)
 							end
 						end
-					end
 
-					return unpack(ret)
-				else
-					for n, v in pairs(_NSInfo[ns].Enum) do
-						if v == value then
-							return n
-						end
+						return unpack(ret)
 					end
+				else
+					return info.Cache[value]
 				end
 			end
 		end
@@ -5445,7 +5471,7 @@ do
 						targetType = querytype or "default"
 
 						if targetType:match("^%a") then
-							result = result .. "[" .. targetType:match("^%a"):upper() .. targetType:sub(2, -1) .. "] " .. name .. " :"
+							result = result .. "[" .. strupper(targetType:match("^%a")) .. targetType:sub(2, -1) .. "] " .. name .. " :"
 						else
 							result = result .. "[" .. targetType .. "] " .. name .. " :"
 						end
@@ -5925,6 +5951,14 @@ do
 
 			return result
 		end
+
+		doc "Clone" [[
+			<desc>Clone the object if possible</desc>
+			<param name="obj">the object to be cloned</param>
+			<param name="deep" optional="true" type="boolean">whether deep clone</param>
+			<return type="object">the clone or the object itself</return>
+		]]
+		Clone = CloneObj
 	endinterface "Reflector"
 
 	------------------------------------------------------
@@ -5964,36 +5998,28 @@ do
 			<param name="name" optional="true">the name present the value</param>
 			<param name="stack" optional="true">the stack level, default 1</param>
 			<return>the validated value</return>
+			<return>the validated type</return>
 		]]
 		function Validate(self, value, name, stack)
-			if value == nil and rawget(self, _ALLOW_NIL) then
-				return value
-			end
+			if value == nil and rawget(self, _ALLOW_NIL) then return value end
 
 			local flag, msg, info, new
-
 			local index = -1
-
 	        local types
 
-			while self[index] do
-				info = _NSInfo[self[index]]
-
+			info = rawget(_NSInfo, rawget(self, index))
+			while info do
 	            new = nil
 
-	            if not info then
-	                -- skip
-				elseif info.Type == TYPE_CLASS then
+	            if info.Type == TYPE_CLASS then
 					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then
 						return value
 					end
-
 					new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(info.Owner))
 				elseif info.Type == TYPE_INTERFACE then
 					if value and rawget(_NSInfo, value) and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then
 						return value
 					end
-
 					new = ("%s must be extended from [interface]%s."):format("%s", tostring(info.Owner))
 	            elseif info.Type then
 	                if value == info.Owner then
@@ -6016,9 +6042,10 @@ do
 				end
 
 				index = index - 1
+				info = rawget(_NSInfo, rawget(self, index))
 			end
 
-	        if types and types:len() >= 3 and not msg then
+	        if types and #types >= 3 and not msg then
 	            new = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
 
 	            if self.Name and self.Name ~= "" then
@@ -6033,7 +6060,7 @@ do
 	        end
 
 			for _, ns in ipairs(self) do
-				info = _NSInfo[ns]
+				info = rawget(_NSInfo, ns)
 
 				new = nil
 
@@ -6043,29 +6070,27 @@ do
 					-- Check if the value is an enumeration value of this structure
 					flag, new = pcall(ValidateStruct, ns, value)
 
-					if flag then
-						return new
-					end
+					if flag then return new, ns end
 
 					new = strtrim(new:match(":%d+:%s*(.-)$") or new)
 				elseif info.Type == TYPE_CLASS then
 					-- Check if the value is an instance of this class
 					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then
-						return value
+						return value, ns
 					end
 
 					new = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
 				elseif info.Type == TYPE_INTERFACE then
 					-- Check if the value is an instance of this interface
 					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then
-						return value
+						return value, ns
 					end
 
 					new = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
 				elseif info.Type == TYPE_ENUM then
 					-- Check if the value is an enumeration value of this enum
-					if type(value) == "string" and info.Enum[value:upper()] then
-						return info.Enum[value:upper()]
+					if type(value) == "string" and info.Enum[strupper(value)] then
+						return info.Enum[strupper(value)], ns
 					end
 
 					if info.MaxValue then
@@ -6074,21 +6099,13 @@ do
 
 						if value then
 							if value >= 1 and value <= info.MaxValue then
-								return floor(value)
+								return floor(value), ns
 							elseif value == 0 then
-								for _, v in pairs(info.Enum) do
-									if value == v then
-										return v
-									end
-								end
+								if info.Cache[value] then return value, ns end
 							end
 						end
 					else
-						for _, v in pairs(info.Enum) do
-							if value == v then
-								return v
-							end
-						end
+						if info.Cache[value] then return value, ns end
 					end
 
 					new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
@@ -6228,7 +6245,7 @@ do
 					end
 				elseif info.Type == TYPE_ENUM then
 					-- Check if the value is an enumeration value of this enum
-					if type(value) == "string" and info.Enum[value:upper()] then
+					if type(value) == "string" and info.Enum[strupper(value)] then
 						return ns
 					end
 
@@ -6239,14 +6256,12 @@ do
 						if value then
 							if value >= 1 and value <= info.MaxValue then
 								return ns
-							end
-						end
-					else
-						for _, v in pairs(info.Enum) do
-							if value == v then
+							elseif value == 0 and info.Cache[value] then
 								return ns
 							end
 						end
+					elseif info.Cache[value] then
+						return ns
 					end
 				elseif info.Type == TYPE_STRUCT then
 					-- Check if the value is an enumeration value of this structure
@@ -8612,22 +8627,31 @@ do
 		end
 	endclass "__Default__"
 
+	__Default__( "Assign" )
+	__Flags__()
+	enum "Setter" {
+		Assign = 0,	-- set directly
+		"Clone",	-- Clone struct or object of ICloneable
+		"DeepClone",-- Deep clone struct
+		"Retain",	-- Dispose old object
+		-- "Strong", this is default for lua
+		"Weak",		-- Weak value
+	}
+
+	__Default__( "Origin" )
+	__Flags__()
+	enum "Getter" {
+		Origin = 0,
+		"Clone",
+		"DeepClone",
+	}
+
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
 	class "__Setter__"
 		inherit "__Attribute__"
 
 		doc "__Setter__" [[Used to set the assign mode of the property]]
-
-		__Default__( "Assign" )
-		__Flags__()
-		enum "Setter" {
-			"Assign",
-			"Clone",
-			"Retain",
-			-- "Strong", this is default for lua
-			"Weak",
-		}
 
 		------------------------------------------------------
 		doc "Setter" [[The setter settings]]
@@ -8657,6 +8681,42 @@ do
 			return Super(self)
 		end
 	endclass "__Setter__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
+	class "__Getter__"
+		inherit "__Attribute__"
+
+		doc "__Getter__" [[Used to set the get mode of the property]]
+
+		------------------------------------------------------
+		doc "Getter" [[The getter settings]]
+		property "Getter" { Type = Getter + nil }
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType, owner, name)
+			target.Getter = self.Getter
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Getter__(self)
+			self.Getter = nil
+
+			return Super(self)
+		end
+
+		__Arguments__{ Getter }
+		function __Getter__(self, value)
+			self.Getter = value
+
+			return Super(self)
+		end
+	endclass "__Getter__"
 
 	__AttributeUsage__{Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
