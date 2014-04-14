@@ -168,6 +168,7 @@ end
 ------------------------------------------------------
 do
 	WEAK_KEY = {__mode = "k"}
+	WEAK_VALUE = {__mode = "v"}
 
 	THREAD_POOL_SIZE = 100
 
@@ -336,24 +337,25 @@ do
 	end
 
 	function CloneObj(obj, deep)
-		local cls = getmetatable(obj)
-		local info = cls and rawget(_NSInfo, cls)
+		if obj == nil then return end
 
-		if info then
-			if type(obj.Clone) == "function" then
-				return obj:Clone(deep)
+		if type(obj) == "table" then
+			if getmetatable(obj) then
+				if type(obj.Clone) == "function" then
+					return obj:Clone(deep)
+				else
+					-- error("The object must extend from System.ICloneable.", 2)
+					return obj
+				end
 			else
-				-- error("The object must extend from System.ICloneable.", 2)
-				return obj
-			end
-		elseif type(obj) == "table" then
-			local ret = {}
+				local ret = {}
 
-			for k, v in pairs(obj) do
-				ret[k] = deep and Clone(v, deep) or v
-			end
+				for k, v in pairs(obj) do
+					ret[k] = deep and Clone(v, deep) or v
+				end
 
-			return ret
+				return ret
+			end
 		else
 			return obj
 		end
@@ -1176,7 +1178,9 @@ do
 								info.Method[getName] = function (self)
 									return self[field]
 								end
+							end
 
+							if setName then
 								if evt then
 									info.Method[setName] = handler and
 										function (self, value)
@@ -1215,8 +1219,8 @@ do
 								end
 
 								-- Keep in the definition environment
-								setfenv(info.Method[getName], env)
-								setfenv(info.Method[setName], env)
+								--setfenv(info.Method[getName], env)
+								--setfenv(info.Method[setName], env)
 
 								info.Cache4Method[getName] = info.Method[getName]
 								info.Cache4Method[setName] = info.Method[setName]
@@ -2286,19 +2290,23 @@ do
 						value = Cache4Method[oper.GetMethod](self)
 					end
 				elseif oper.Field then
-					value = rawget(self, oper.Field)
+					if oper.SetWeak then
+						value = rawget(self, "__Weaks")
+						value = type(value) == "table" and rawget(value, oper.Field) or nil
+					else
+						value = rawget(self, oper.Field)
+					end
 				elseif oper.Default == nil then
 					error(("%s can't be read."):format(tostring(key)),2)
 				end
 
-				if value == nil and oper.Default ~= nil then
-					return oper.Default
-				else
-					if prop.GetClone or prop.GetDeepClone then
-						value = clone(value, prop.GetDeepClone)
-					end
-					return value
+				if value == nil then value = oper.Default end
+
+				if prop.GetClone or prop.GetDeepClone then
+					value = clone(value, prop.GetDeepClone)
 				end
+
+				return value
 			end
 
 			-- Method Get
@@ -2360,32 +2368,46 @@ do
 						return Cache4Method[oper](self, value)
 					end
 				elseif oper.Field then
-					if oper.Event or oper.Handler then
-						local old = rawget(self, oper.Field)
-
-						if old == nil then old = oper.Default end
-
-						if old == value then return end
-
-						rawset(self, oper.Field, value)
-
-						if oper.Handler then
-							local ok, err = pcall(oper.Handler, self, value, old, key)
-
-							if not ok then errorhandler(err) end
+					-- Check container
+					local container = self
+					if oper.SetWeak then
+						container = rawget(self, "__Weaks")
+						if type(container) ~= "table" then
+							container = setmetatable({}, WEAK_VALUE)
+							rawset(self, "__Weaks", container)
 						end
-
-						if oper.Event then
-							-- Fire the event
-							local handler = rawget(self, "__Events")
-							handler = handler and handler[oper.Event]
-							if handler then return handler(self, value, old, key) end
-						end
-
-						return
-					else
-						return rawset(self, oper.Field, value)
 					end
+
+					-- Check old value
+					local old = rawget(container, oper.Field)
+					if old == nil then old = oper.Default end
+					if old == value then return end -- ?should I compare it with fields?
+
+					-- Set the value
+					rawset(self, oper.Field, value)
+
+					-- Dispose old
+					if oper.SetRetain and old and old ~= oper.Default then
+						DisposeObject(old)
+						old = nil
+					end
+
+					-- Call handler
+					if oper.Handler then
+						local ok, err = pcall(oper.Handler, self, value, old, key)
+
+						if not ok then errorhandler(err) end
+					end
+
+					-- Fire event
+					if oper.Event then
+						-- Fire the event
+						local handler = rawget(self, "__Events")
+						handler = handler and handler[oper.Event]
+						if handler then return handler(self, value, old, key) end
+					end
+
+					return
 				else
 					error(("%s can't be written."):format(tostring(key)), 2)
 				end
