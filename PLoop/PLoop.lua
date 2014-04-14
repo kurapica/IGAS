@@ -164,11 +164,22 @@ do
 end
 
 ------------------------------------------------------
--- Thread Pool & Cache & SaveFixedMethod
+-- Thread Pool & Tools
 ------------------------------------------------------
 do
 	WEAK_KEY = {__mode = "k"}
 	WEAK_VALUE = {__mode = "v"}
+
+	SYNTHESIZE_ENV = {
+		rawset = rawset,
+		rawget = rawget,
+		type = type,
+		setmetatable = setmetatable,
+		getmetatable = getmetatable,
+		pcall = pcall,
+		errorhandler = errorhandler,
+		WEAK_VALUE = WEAK_VALUE,
+	}
 
 	THREAD_POOL_SIZE = 100
 
@@ -336,9 +347,31 @@ do
 		end
 	end
 
-	function CloneObj(obj, deep)
-		if obj == nil then return end
+	local function deepCloneObj(obj, cache)
+		if type(obj) == "table" then
+			if cache[obj] ~= nil then
+				return cache[obj]
+			elseif getmetatable(obj) then
+				cache[obj] = type(obj.Clone) == "function" and obj:Clone(true) or obj
 
+				return cache[obj]
+			else
+				local ret = {}
+
+				cache[obj] = ret
+
+				for k, v in pairs(obj) do
+					ret[k] = deepCloneObj(v, cache)
+				end
+
+				return ret
+			end
+		else
+			return obj
+		end
+	end
+
+	function CloneObj(obj, deep)
 		if type(obj) == "table" then
 			if getmetatable(obj) then
 				if type(obj.Clone) == "function" then
@@ -349,10 +382,19 @@ do
 				end
 			else
 				local ret = {}
+				local cache = deep and CACHE_TABLE()
+
+				if cache then cache[obj] = ret end
 
 				for k, v in pairs(obj) do
-					ret[k] = deep and Clone(v, deep) or v
+					if deep then
+						ret[k] = deepCloneObj(v, cache)
+					else
+						ret[k] = v == obj and ret or v
+					end
 				end
+
+				if cache then CACHE_TABLE(cache) end
 
 				return ret
 			end
@@ -360,6 +402,8 @@ do
 			return obj
 		end
 	end
+
+	SYNTHESIZE_ENV.clone = CloneObj
 end
 
 ------------------------------------------------------
@@ -1162,10 +1206,7 @@ do
 						local uname = name:gsub("^%a", strupper)
 						local field = prop.Field or "_" .. info.Name:match("^_*(.-)$") .. "_" .. uname
 
-						if set.Synthesize and env then
-							local evt = prop.Event
-							local handler = prop.Handler
-							local fire = Reflector.FireObjectEvent
+						if set.Synthesize then
 							local getName, setName
 
 							if set.Synthesize == __Synthesize__.NameCase.Pascal then
@@ -1174,62 +1215,98 @@ do
 								getName, setName = "get" .. uname, "set" .. uname
 							end
 
-							if getName then
-								info.Method[getName] = function (self)
-									return self[field]
-								end
-							end
-
-							if setName then
-								if evt then
-									info.Method[setName] = handler and
-										function (self, value)
-											local old =  self[name]
-											if old ~= value then
-												self[field] = value
-
-												local ok, err = pcall(handler, self, value, old, name)
-
-												if not ok then errorhandler(err) end
-
-												return fire(self, evt, value, old, name)
-											end
-										end
-									 or function (self, value)
-											local old =  self[name]
-											if old ~= value then
-												self[field] = value
-
-												return fire(self, evt, value, old, name)
-											end
-										end
-								else
-									info.Method[setName] = handler and
-										function (self, value)
-											local old =  self[name]
-											if old ~= value then
-												self[field] = value
-
-												return handler(self, value, old, name)
-											end
-										end
-									or function (self, value)
-											self[field] = value
-										end
-								end
-
-								-- Keep in the definition environment
-								--setfenv(info.Method[getName], env)
-								--setfenv(info.Method[setName], env)
-
-								info.Cache4Method[getName] = info.Method[getName]
-								info.Cache4Method[setName] = info.Method[setName]
-
-								prop.GetMethod = getName
-								prop.SetMethod = setName
+							-- Generate getMethod
+							local gbody = CACHE_TABLE()
+							if prop.Default ~= nil then tinsert(gbody, [[local default = ...]]) end
+							tinsert(gbody, [[return function (self)]])
+							tinsert(gbody, [[local value]])
+							if prop.SetWeak then
+								tinsert(gbody, [[value = rawget(self, "__Weaks")]])
+								tinsert(gbody, [[if type(value) == "table" then]])
+								tinsert(gbody, ([[value = rawget(value, "%s")]]):format(field))
+								tinsert(gbody, [[else]])
+								tinsert(gbody, [[value = nil]])
+								tinsert(gbody, [[end]])
 							else
-								prop.Field = field
+								tinsert(gbody, ([[value = rawget(self, "%s")]]):format(field))
 							end
+							if prop.Default ~= nil then tinsert(gbody, [[if value == nil then value = default end]]) end
+							if prop.GetClone or prop.GetDeepClone then
+								if prop.GetDeepClone then
+									tinsert(gbody, [[value = clone(value, true)]])
+								else
+									tinsert(gbody, [[value = clone(value)]])
+								end
+							end
+							tinsert(gbody, [[return value]])
+							tinsert(gbody, [[end]])
+
+							info.Method[getName] = loadstring(tblconcat(gbody, "\n"))(prop.Default)
+
+							-- Generate setMethod
+							wipe(gbody)
+							if prop.Default ~= nil then
+								if prop.Handler then
+									tinsert(gbody, [[local default, handler = ...]])
+								else
+									tinsert(gbody, [[local default = ...]])
+								end
+							elseif prop.Handler then
+								tinsert(gbody, [[local handler = ...]])
+							end
+							tinsert(gbody, [[return function (self, value)]])
+							if prop.SetClone or prop.SetDeepClone then
+								if prop.SetDeepClone then
+									tinsert(gbody, [[value = clone(value, true)]])
+								else
+									tinsert(gbody, [[value = clone(value)]])
+								end
+							end
+							tinsert(gbody, [[local container = self]])
+							if prop.SetWeak then
+								tinsert(gbody, [[container = rawget(self, "__Weaks")]])
+								tinsert(gbody, [[if type(container) ~= "table" then]])
+								tinsert(gbody, [[	container = setmetatable({}, WEAK_VALUE)]])
+								tinsert(gbody, [[	rawset(self, "__Weaks", container)]])
+								tinsert(gbody, [[end]])
+							end
+							tinsert(gbody, ([[local old = rawget(container, "%s")]]):format(field))
+							if prop.Default ~= nil then tinsert(gbody, [[if old == nil then old = default end]]) end
+							tinsert(gbody, [[if old == value then return end]])
+							tinsert(gbody, ([[rawset(container, "%s", value)]]):format(field))
+							if prop.SetRetain then
+								tinsert(gbody, [[if type(old) == "table" and getmetatable(old) and old ~= default then]])
+								tinsert(gbody, [[DisposeObject(old)]])
+								tinsert(gbody, [[old = nil]])
+								tinsert(gbody, [[end]])
+							end
+							if prop.Handler then
+								tinsert(gbody, ([[local ok, err = pcall(handler, self, value, old, "%s")]]):format(name))
+								tinsert(gbody, [[if not ok then errorhandler(err) end]])
+							end
+							if prop.Event then
+								tinsert(gbody, [[local evt = rawget(self, "__Events")]])
+								tinsert(gbody, ([[evt = evt and rawget(evt, "%s")]]):format(prop.Event))
+								tinsert(gbody, ([[if evt then return evt(self, value, old, "%s") end]]):format(name))
+							end
+							tinsert(gbody, [[end]])
+							if prop.Default ~= nil then
+								info.Method[setName] = loadstring(tblconcat(gbody, "\n"))(prop.Default, prop.Handler)
+							else
+								info.Method[setName] = loadstring(tblconcat(gbody, "\n"))(prop.Handler)
+							end
+
+							CACHE_TABLE(gbody)
+
+							-- Keep in the definition environment
+							setfenv(info.Method[getName], SYNTHESIZE_ENV)
+							setfenv(info.Method[setName], SYNTHESIZE_ENV)
+
+							info.Cache4Method[getName] = info.Method[getName]
+							info.Cache4Method[setName] = info.Method[setName]
+
+							prop.GetMethod = getName
+							prop.SetMethod = setName
 						else
 							prop.Field = field
 						end
@@ -1931,6 +2008,8 @@ do
 
 			rawset(self, "Disposed", true)
 		end
+
+		SYNTHESIZE_ENV.DisposeObject = DisposeObject
 	end
 
 	-- metatable for class's env
@@ -2292,7 +2371,11 @@ do
 				elseif oper.Field then
 					if oper.SetWeak then
 						value = rawget(self, "__Weaks")
-						value = type(value) == "table" and rawget(value, oper.Field) or nil
+						if type(value) == "table" then
+							value = rawget(value, oper.Field)
+						else
+							value = nil
+						end
 					else
 						value = rawget(self, oper.Field)
 					end
@@ -2302,8 +2385,8 @@ do
 
 				if value == nil then value = oper.Default end
 
-				if prop.GetClone or prop.GetDeepClone then
-					value = clone(value, prop.GetDeepClone)
+				if oper.GetClone or oper.GetDeepClone then
+					value = clone(value, oper.GetDeepClone)
 				end
 
 				return value
@@ -2384,7 +2467,7 @@ do
 					if old == value then return end -- ?should I compare it with fields?
 
 					-- Set the value
-					rawset(self, oper.Field, value)
+					rawset(container, oper.Field, value)
 
 					-- Dispose old
 					if oper.SetRetain and old and old ~= oper.Default then
@@ -2402,9 +2485,9 @@ do
 					-- Fire event
 					if oper.Event then
 						-- Fire the event
-						local handler = rawget(self, "__Events")
-						handler = handler and handler[oper.Event]
-						if handler then return handler(self, value, old, key) end
+						local evt = rawget(self, "__Events")
+						evt = evt and rawget(evt, oper.Event)
+						if evt then return evt(self, value, old, key) end
 					end
 
 					return
@@ -5982,22 +6065,6 @@ do
 		]]
 		Clone = CloneObj
 	endinterface "Reflector"
-
-	------------------------------------------------------
-	-- System.ICloneable
-	------------------------------------------------------
-	__Doc__[[description]]
-	interface "ICloneable"
-
-		doc "ICloneable" [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		__Require__()
-		doc "Clone" [[Creates a new object that is a copy of the current instance.]]
-		function Clone(self) end
-	endinterface "ICloneable"
 end
 
 ------------------------------------------------------
@@ -8789,6 +8856,21 @@ end
 -- System Namespace (Object & Module)
 ------------------------------------------------------
 do
+	------------------------------------------------------
+	-- System.ICloneable
+	------------------------------------------------------
+	interface "ICloneable"
+
+		doc "ICloneable" [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		__Require__()
+		doc "Clone" [[Creates a new object that is a copy of the current instance.]]
+		function Clone(self) end
+	endinterface "ICloneable"
+
 	__Final__()
 	__Doc__[[The root class of other classes. Object class contains several methodes for common use.]]
 	class "Object"
