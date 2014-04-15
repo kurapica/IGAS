@@ -2879,12 +2879,23 @@ do
 						if info.SubType == _STRUCT_TYPE_MEMBER then
 							info.Members = info.Members or {}
 							tinsert(info.Members, key)
+							if __Attribute__ then __Attribute__._ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
+
+							-- Auto generate Default
+							if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
+								local rinfo = _NSInfo[ret[1]]
+
+								if rinfo and (rinfo.Type == TYPE_STRUCT or rinfo.Type == TYPE_ENUM) and rinfo.Default ~= nil then
+									info.DefaultField = info.DefaultField or {}
+									info.DefaultField[key] = rinfo.Default
+								end
+							end
 						elseif info.SubType == _STRUCT_TYPE_ARRAY then
 							info.ArrayElement = ret
+							if __Attribute__ then __Attribute__._ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
 						end
 
-						-- Apply attribtue for fields, use the type object as the key
-						return __Attribute__ and __Attribute__._ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key)
+						return
 					else
 						error(strtrim(ret:match(":%d+:%s*(.-)$") or ret), 2)
 					end
@@ -2904,17 +2915,20 @@ do
 		local info = _NSInfo[strt]
 
 		if info.SubType ~= _STRUCT_TYPE_CUSTOM then
-			if type(value) ~= "table" then
-				wipe(_ValidatedCache)
-				error(("%s must be a table, got %s."):format("%s", type(value)))
-			end
+			if type(value) ~= "table" then wipe(_ValidatedCache) error(("%s must be a table, got %s."):format("%s", type(value))) end
 
 			if not _ValidatedCache[1] then _ValidatedCache[1] = value end
-
 			_ValidatedCache[value] = true
 
 			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
-				for _, n in ipairs(info.Members) do value[n] = info.StructEnv[n]:Validate(value[n]) end
+				for _, n in ipairs(info.Members) do
+					if value[n] == nil and info.DefaultField and info.DefaultField[n] ~= nil then
+						-- Deep clone to make sure no change on default value
+						value[n] = CloneObj(info.DefaultField[n], true)
+					else
+						value[n] = info.StructEnv[n]:Validate(value[n])
+					end
+				end
 			end
 
 			if info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
@@ -3105,6 +3119,8 @@ do
 		info.SubType = _STRUCT_TYPE_MEMBER
 		info.NameSpace = ns
 		info.Members = nil
+		info.Default = nil
+		info.DefaultField = nil
 		info.ArrayElement = nil
 		info.UserValidate = nil
 		info.Validate = nil
@@ -3197,6 +3213,7 @@ do
 			-- else all custom
 			info.SubType = _STRUCT_TYPE_CUSTOM
 			info.Members = nil
+			info.DefaultField = nil
 			info.ArrayElement = nil
 		end
 	end
@@ -7584,7 +7601,7 @@ do
 		end
 	endclass "__Handler__"
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property + AttributeTargets.Field, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
 	class "__Default__"
 		inherit "__Attribute__"
@@ -7601,8 +7618,18 @@ do
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
+			if self.Default == nil then return end
+
 			if targetType == AttributeTargets.Property then
 				target.Default = self.Default
+			elseif targetType == AttributeTargets.Field then
+				local info = _NSInfo[owner]
+				if not info or info.SubType ~= _STRUCT_TYPE_MEMBER then return end
+				local ty = rawget(info.StructEnv, target)
+				if not IsType(ty) or not ty:GetObjectType(self.Default) then return end
+
+				info.DefaultField = info.DefaultField or {}
+				info.DefaultField[target] = self.Default
 			else
 				_NSInfo[target].Default = self.Default
 			end
