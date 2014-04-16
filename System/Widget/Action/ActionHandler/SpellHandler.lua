@@ -29,6 +29,7 @@ function OnEnable(self)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
 
 	OnEnable = nil
+	UpdateStanceMap()
 end
 
 function LEARNED_SPELL_IN_TAB(self)

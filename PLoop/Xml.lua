@@ -13,6 +13,13 @@ namespace "System.Xml"
 	XML Parser
 --================]]
 do
+	strsub = string.gsub
+	strbyte = string.byte
+	strchar = string.char
+
+	_UTF8_Three_Char = 224
+	_UTF8_Two_Char = 192
+
 	_Token = {
 	}
 
@@ -45,42 +52,34 @@ do
 		[_Byte.LINEBREAK_N] = true,
 	}
 
-	function parseXmlElements(data, startp)
+	-- Get start byte of every word and word length
+	-- Ascii + UTF8
+	_EncodeGetChar = {
+		UTF8 = function (str, startp)
+			local byte = strbyte(str, startp)
+
+			return byte, byte >= _UTF8_Three_Char and 3 or byte >= _UTF8_Two_Char and 2 or 1
+		end,
+	}
+
+
+	function parseXmlElements(data, start, endp, encode)
 		startp = startp or 1
 		endp = endp or #data
+		encode = encode or "UTF8"
 
+		local getChar = _EncodeGetChar[encode]
 		local pos = startp
-		local byte = strbyte(data, pos)
+		local byte, len = getChar(data, pos)
 
-		if byte ~= LESSTHAN then
-			-- means text node
-			while byte do
-				if byte == LESSTHAN then
-					return XmlText(data:sub(startp, pos - 1)), pos
-				elseif byte == GREATERTHAN then
-					error("Not a validated xml.")
-				end
+		while pos <= endp and byte do
+			-- Only check ascii char
+			if len == 1 then
 
-				pos = pos + 1
-				byte = strbyte(data, pos)
 			end
 
-			return XmlText(data:sub(startp, pos - 1)), pos
-		else
-			-- means xml element
-			startp = pos + 1
-			pos = startp
-			byte = strbyte(data, pos)
-
-			-- match tag name
-			while byte do
-				if _Special[byte] then break end
-
-				pos = pos + 1
-				byte = strbyte(data, pos)
-			end
-
-
+			pos = pos + len
+			byte, len = getChar(data, pos)
 		end
 	end
 end
