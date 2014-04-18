@@ -16,67 +16,78 @@ do
 	strsub = string.gsub
 	strbyte = string.byte
 	strchar = string.char
-
-	_UTF8_Three_Char = 224
-	_UTF8_Two_Char = 192
+	newIndex = function(reset) _M.AutoIndex = reset or ((_M.AutoIndex or 0) + 1); return _M.AutoIndex end
 
 	_Token = {
+		-- Control worcds
+		AMP			= newIndex(1),
+		COLON		= newIndex(),
+		LESSTHAN	= newIndex(),
+		GREATERTHAN	= newIndex(),
+		SLASH		= newIndex(),
+		SINGLE_QUOTE= newIndex(),
+		DOUBLE_QUOTE= newIndex(),
+
+		SPACE		= newIndex(),
+		TAB			= newIndex(),
+
+		LF			= newIndex(),
+		CR			= newIndex(),
+
+		TAG_BEGIN 	= newIndex(),
+		TAG_END		= newIndex(),
+		PREFIX		= newIndex(),
+
+		URI			= newIndex(),	-- Uniform Resource Identifier
+
+		PROLOG		= newIndex(),	-- <?xml version="1.0" encoding="UTF-8"?>
 	}
 
-	_Byte = {
-		AMP = "&",
-		COLON = strbyte(":"),
-		LESSTHAN = strbyte("<"),
-		GREATERTHAN = strbyte(">"),
-		SLASH = strbyte("/"),
-		SINGLE_QUOTE = strbyte("'"),
-		DOUBLE_QUOTE = strbyte('"'),
+	_Encode = {
+		UTF8 = {
+			Byte = {
+				AMP			= "&",	-- "&amp;"
+				COLON		= ":",
+				LESSTHAN	= "<",	-- "&lt;"
+				GREATERTHAN	= ">",	-- "&gt;"
+				SLASH		= "/",
+				SINGLE_QUOTE= "'",	-- "&apos;"
+				DOUBLE_QUOTE= '"',	-- "&quot;"
 
-		SPACE = strbyte(" "),
-		TAB = strbyte("\t"),
+				SPACE		= " ",
+				TAB			= "\t",
 
-		LINEBREAK_N = strbyte("\n"),
-		LINEBREAK_R = strbyte("\r"),
+				LF			= "\n",
+				CR			= "\r",
+			},
+			Special = { string.gsub([[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]], 1, -1) },
+			GetChar = function (str, startp)
+				local byte = strbyte(str, startp)
+
+				return byte, byte >= 224 and 3 or byte >= 192 and 2 or 1
+			end,
+			IsStartNameChar = function (char)
+				return char == ":" or (char >= "A" and char <= "Z") or char == "_" or (char >= "a" and char <= "z") or char >= 192
+			end,
+			IsNameChar = function (char)
+				return char == ":" or (char >= "A" and char <= "Z") or char == "_" or (char >= "a" and char <= "z") or char >= 192
+					or char == "-" or char == "." or (char >= "0" or char <= "9") or strbyte(char) == 0xB7
+			end,
+		},
 	}
-
-	_Special = {
-		[_Byte.COLON] = true,
-		[_Byte.LESSTHAN] = true,
-		[_Byte.GREATERTHAN] = true,
-		[_Byte.SLASH] = true,
-		[_Byte.SINGLE_QUOTE] = true,
-		[_Byte.DOUBLE_QUOTE] = true,
-		[_Byte.SPACE] = true,
-		[_Byte.TAB] = true,
-		[_Byte.LINEBREAK_R] = true,
-		[_Byte.LINEBREAK_N] = true,
-	}
-
-	-- Get start byte of every word and word length
-	-- Ascii + UTF8
-	_EncodeGetChar = {
-		UTF8 = function (str, startp)
-			local byte = strbyte(str, startp)
-
-			return byte, byte >= _UTF8_Three_Char and 3 or byte >= _UTF8_Two_Char and 2 or 1
-		end,
-	}
-
 
 	function parseXmlElements(data, start, endp, encode)
 		startp = startp or 1
 		endp = endp or #data
 		encode = encode or "UTF8"
 
-		local getChar = _EncodeGetChar[encode]
+		local getChar = _Encode[encode].GetChar
 		local pos = startp
 		local byte, len = getChar(data, pos)
 
 		while pos <= endp and byte do
 			-- Only check ascii char
-			if len == 1 then
 
-			end
 
 			pos = pos + len
 			byte, len = getChar(data, pos)
