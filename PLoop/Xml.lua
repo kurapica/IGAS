@@ -43,45 +43,133 @@ do
 		PROLOG		= newIndex(),	-- <?xml version="1.0" encoding="UTF-8"?>
 	}
 
+	_Byte = {
+		AMP			= "&",	-- "&amp;"
+		COLON		= ":",
+		LESSTHAN	= "<",	-- "&lt;"
+		GREATERTHAN	= ">",	-- "&gt;"
+		SLASH		= "/",
+		SINGLE_QUOTE= "'",	-- "&apos;"
+		DOUBLE_QUOTE= '"',	-- "&quot;"
+
+		SPACE		= " ",
+		TAB			= "\t",
+
+		LF			= "\n",
+		CR			= "\r",
+	}
+
+	_Special = { string.gsub([[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]], 1, -1) },
+
 	_Encode = {
-		UTF8 = {
-			Byte = {
-				AMP			= "&",	-- "&amp;"
-				COLON		= ":",
-				LESSTHAN	= "<",	-- "&lt;"
-				GREATERTHAN	= ">",	-- "&gt;"
-				SLASH		= "/",
-				SINGLE_QUOTE= "'",	-- "&apos;"
-				DOUBLE_QUOTE= '"',	-- "&quot;"
-
-				SPACE		= " ",
-				TAB			= "\t",
-
-				LF			= "\n",
-				CR			= "\r",
-			},
-			Special = { string.gsub([[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]], 1, -1) },
-			GetChar = function (str, startp)
+		["UTF-8"] = {
+			Default = function (str, startp)
 				local byte = strbyte(str, startp)
+				local len = byte < 192 and 1 or
+							byte < 224 and 2 or
+							byte < 240 and 3 or
+							byte < 248 and 4 or
+							byte < 252 and 5 or
+							byte < 254 and 6 or -1
 
-				return byte, byte >= 224 and 3 or byte >= 192 and 2 or 1
+				if len == -1 then
+					return false
+				elseif len > 1 then
+					byte = byte % ( 2 ^ ( 8 - len ))
+
+					for i = 1, len do
+						local nbyte = strbyte(str, startp + i)
+						if not nbyte then return false end
+						byte = byte * 64 + len % 64
+					end
+				end
+
+				return byte, len
 			end,
-			IsStartNameChar = function (char)
-				return char == ":" or (char >= "A" and char <= "Z") or char == "_" or (char >= "a" and char <= "z") or char >= 192
+		},
+		["UTF-16"] = {
+			BigEndian = function (str, startp)
+				local obyte, sbyte = strbyte(str, startp, startp + 1)
+
+				if obyte <= 0xD7 then
+					-- two bytes
+					return obyte * 256 + sbyte, 2
+				elseif obyte >= 0xD8 and obyte <= 0xDB then
+					-- four byte
+					local tbyte, fbyte = strbyte(str, startp + 2, startp + 3)
+					if tbyte >= 0xDC and tbyte <= 0xDF then
+						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, 4
+					else
+						return false
+					end
+				else
+					return false
+				end
 			end,
-			IsNameChar = function (char)
-				return char == ":" or (char >= "A" and char <= "Z") or char == "_" or (char >= "a" and char <= "z") or char >= 192
-					or char == "-" or char == "." or (char >= "0" or char <= "9") or strbyte(char) == 0xB7
-			end,
+			LittleEndian = function (str, startp)
+				local sbyte, obyte = strbyte(str, startp, startp + 1)
+
+				if obyte <= 0xD7 then
+					-- two bytes
+					return obyte * 256 + sbyte, 2
+				elseif obyte >= 0xD8 and obyte <= 0xDB then
+					-- four byte
+					local fbyte, tbyte = strbyte(str, startp + 2, startp + 3)
+					if tbyte >= 0xDC and tbyte <= 0xDF then
+						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, 4
+					else
+						return false
+					end
+				else
+					return false
+				end
+			end
 		},
 	}
 
-	function parseXmlElements(data, start, endp, encode)
-		startp = startp or 1
-		endp = endp or #data
-		encode = encode or "UTF8"
+	function loadFile(data, fileEncode, isBigEndian)
+		-- Checking byte order mark
+		local bom = data:byte(1, 4)
+		local encode = "UTF-8"
+		local startp = 1
+		local bigEndian
 
-		local getChar = _Encode[encode].GetChar
+		if bom[1] == 0xEF and bom[2] == 0xBB and bom[3] == 0xBF then
+			encode = "UTF-8"
+			startp = 4
+		--[[elseif bom[1] == 0xFF and bom[2] == 0xFE and bom[3] == 0x00 and bom[4] == 0x00 then
+			encode = "UTF-32"
+			bigEndian = false
+			startp = 5
+		elseif bom[1] == 0x00 and bom[2] == 0x00 and bom[3] == 0xFE and bom[4] == 0xFF then
+			encode = "UTF-32"
+			bigEndian = true
+			startp = 5--]]
+		elseif bom[1] == 0xFF and bom[2] == 0xFE then
+			encode = "UTF-16"
+			bigEndian = false
+			startp = 3
+		elseif bom[1] == 0xFE and bom[2] == 0xFF then
+			encode = "UTF-16"
+			bigEndian = true
+			startp = 3
+		end
+
+		if ( not encode or not fileEncode or encode == fileEncode ) and
+			( isBigEndian == nil or ( (encode == "UTF-16" or encode == "UTF-32") and bigEndian == isBigEndian )) then
+
+			return parseXmlElements(data, startp, encode, bigEndian)
+		else
+			return false
+		end
+	end
+
+	function parseXmlElements(data, start, encode, isBigEndian)
+		encode = encode or "UTF-8"
+		startp = startp or 1
+		local endp = endp or #data
+
+		local getChar = isBigEndian and _Encode[encode].BigEndian or _Encode[encode].LittleEndian or _Encode[encode].Default
 		local pos = startp
 		local byte, len = getChar(data, pos)
 
