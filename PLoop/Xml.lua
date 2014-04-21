@@ -13,14 +13,27 @@ namespace "System.Xml"
 	XML Parser
 --================]]
 do
+	tinsert = table.insert
+	tremove = table.remove
 	strsub = string.gsub
 	strbyte = string.byte
 	strchar = string.char
 	newIndex = function(reset) _M.AutoIndex = reset or ((_M.AutoIndex or 0) + 1); return _M.AutoIndex end
 
 	_Token = {
+		NAME_START	= newIndex(),
+		NAME_CHAR	= newIndex(),
+		NAME		= newIndex(),
+		NAMES		= newIndex(),
+		NAME_TOKEN	= newIndex(),
+		NAME_TOKENS	= newIndex(),
+
+		TAG_START	= newIndex(),
+		TAG_END		= newIndex(),
+
+
 		-- Control worcds
-		AMP			= newIndex(1),
+		AMP			= newIndex(),
 		COLON		= newIndex(),
 		LESSTHAN	= newIndex(),
 		GREATERTHAN	= newIndex(),
@@ -33,30 +46,25 @@ do
 
 		LF			= newIndex(),
 		CR			= newIndex(),
-
-		TAG_BEGIN 	= newIndex(),
-		TAG_END		= newIndex(),
-		PREFIX		= newIndex(),
-
-		URI			= newIndex(),	-- Uniform Resource Identifier
-
-		PROLOG		= newIndex(),	-- <?xml version="1.0" encoding="UTF-8"?>
 	}
 
 	_Byte = {
-		AMP			= "&",	-- "&amp;"
-		COLON		= ":",
-		LESSTHAN	= "<",	-- "&lt;"
-		GREATERTHAN	= ">",	-- "&gt;"
-		SLASH		= "/",
-		SINGLE_QUOTE= "'",	-- "&apos;"
-		DOUBLE_QUOTE= '"',	-- "&quot;"
+		AMP			= strbyte("&"),	-- "&amp;"
+		COLON		= strbyte(":"),
+		LESSTHAN	= strbyte("<"),	-- "&lt;"
+		GREATERTHAN	= strbyte(">"),	-- "&gt;"
+		SLASH		= strbyte("/"),
+		SINGLE_QUOTE= strbyte("'"),	-- "&apos;"
+		DOUBLE_QUOTE= strbyte('"'),	-- "&quot;"
+		UNDERLINE	= strbyte("_"),
+		MINUS		= strbyte("-"),
+		PERIOD		= strbyte("."),
 
-		SPACE		= " ",
-		TAB			= "\t",
+		SPACE		= strbyte(" "),
+		TAB			= strbyte("\t"),
 
-		LF			= "\n",
-		CR			= "\r",
+		LF			= strbyte("\n"),
+		CR			= strbyte("\r"),
 	}
 
 	_Special = { string.gsub([[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]], 1, -1) },
@@ -127,6 +135,77 @@ do
 		},
 	}
 
+	_WhiteSpace = {
+		Single = {
+			[_Byte.SPACE] = true,
+			[_Byte.TAB] = true,
+			[_Byte.CR] = true,
+			[_Byte.LF] = true,
+		},
+	}
+
+	_ValidChar = {
+		Single = {
+			[_Byte.TAB] = true,
+			[_Byte.CR] = true,
+			[_Byte.LF] = true,
+		},
+		Range = {
+			{ 0x20, 0xD7FF },
+			{ 0xE000 , 0xFFFD },
+			{ 0x10000 , 0x10FFFF },
+		},
+	}
+
+	_NameStartChar = {
+		Single = {
+			[_Byte.COLON] = true,
+			[_Byte.UNDERLINE] = true,
+		},
+		Range = {
+			{ strbyte("A"), strbyte("Z") },
+			{ strbyte("a"), strbyte("z") },
+			{ 0xC0, 0xD6 },
+			{ 0xD8, 0xF6 },
+			{ 0xF8, 0x2FF },
+			{ 0x370, 0x37D },
+			{ 0x37F, 0x1FFF },
+			{ 0x200C, 0x200D },
+			{ 0x2070, 0x218F },
+			{ 0x2C00, 0x2FEF },
+			{ 0x3001, 0xD7FF },
+			{ 0xF900, 0xFDCF },
+			{ 0xFDF0, 0xFFFD },
+			{ 0x10000, 0xEFFFF },
+		},
+	}
+
+	_NameChar = {
+		Base = _NameStartChar,
+		Single = {
+			[_Byte.MINUS] = true,
+			[_Byte.PERIOD] = true,
+			[ 0xB7 ] = true,
+		},
+		Range = {
+			{ strbyte("0"), strbyte("9") },
+			{ 0x0300, 0x036F },
+			{ 0x203F, 0x2040 },
+		},
+	},
+
+	function isChar(char, define)
+		if define.Base and isChar(char, define.Base) then return true end
+		if define.Single and define.Single[char] then return true end
+		if define.Range then
+			for _, range in ipairs(define.Range) do
+				if char < range[0] then break end
+				if char <= range[1] then return true end
+			end
+		end
+		return false
+	end
+
 	function loadFile(data, fileEncode, isBigEndian)
 		-- Checking byte order mark
 		local bom = data:byte(1, 4)
@@ -171,14 +250,30 @@ do
 
 		local getChar = isBigEndian and _Encode[encode].BigEndian or _Encode[encode].LittleEndian or _Encode[encode].Default
 		local pos = startp
-		local byte, len = getChar(data, pos)
+		local char, len = 0, 0
+		local line, lineStart = 0, 0
+		local stackToken, stackName = {}, {}
 
-		while pos <= endp and byte do
-			-- Only check ascii char
-
-
+		while pos <= endp do
 			pos = pos + len
-			byte, len = getChar(data, pos)
+			char, len = getChar(data, pos)
+
+			if char == false or not isChar(char, _ValidChar) then
+				error("Not a valid char at line " .. line .. " column " .. (pos - lineStart), 2)
+			end
+
+			if char < 128 then
+				if char == _Byte.LESSTHAN then
+					tinsert(stackToken, _Token.TAG_START)
+				elseif char == _Byte.GREATERTHAN then
+					tinsert(stackToken, _Token.TAG_END)
+				elseif char == _Byte.SLASH then
+					tinsert(stackToken, _Token.SLASH)
+
+				end
+			else
+
+			end
 		end
 	end
 end
