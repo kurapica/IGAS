@@ -32,42 +32,127 @@ do
 		TAG_END		= newIndex(),
 
 
-		-- Control worcds
-		AMP			= newIndex(),
-		COLON		= newIndex(),
-		LESSTHAN	= newIndex(),
-		GREATERTHAN	= newIndex(),
-		SLASH		= newIndex(),
-		SINGLE_QUOTE= newIndex(),
-		DOUBLE_QUOTE= newIndex(),
-
 		SPACE		= newIndex(),
 		TAB			= newIndex(),
 
 		LF			= newIndex(),
 		CR			= newIndex(),
+
+		EXCLAMATION	= newIndex(),
+		DOUBLE_QUOTE= newIndex(),
+		NUMBER_SIGN	= newIndex(),
+		DOLLAR_SIGN	= newIndex(),
+		PERCENT		= newIndex(),
+		AMP			= newIndex(),
+		SINGLE_QUOTE= newIndex(),
+		LEFTPAREN	= newIndex(),
+		RIGHTPAREN	= newIndex(),
+		ASTERISK	= newIndex(),
+		PLUS		= newIndex(),
+		COMMA		= newIndex(),
+		MINUS		= newIndex(),
+		PERIOD		= newIndex(),
+		SLASH		= newIndex(),
+		COLON		= newIndex(),
+		SEMICOLON	= newIndex(),
+		LESSTHAN	= newIndex(),
+		EQUALS		= newIndex(),
+		GREATERTHAN	= newIndex(),
+		QUESTION	= newIndex(),
+		AT_SIGN		= newIndex(),
+		LEFTBRACKET	= newIndex(),
+		BACKSLASH	= newIndex(),
+		RIGHTBRACKET= newIndex(),
+		CARET		= newIndex(),
+		UNDERLINE	= newIndex(),
+		GRAVE_ACCENT= newIndex(),
+		LEFTWING	= newIndex(),
+		VERTICAL	= newIndex(),
+		RIGHTWING	= newIndex(),
+		TILDE		= newIndex(),
 	}
 
 	_Byte = {
-		AMP			= strbyte("&"),	-- "&amp;"
-		COLON		= strbyte(":"),
-		LESSTHAN	= strbyte("<"),	-- "&lt;"
-		GREATERTHAN	= strbyte(">"),	-- "&gt;"
-		SLASH		= strbyte("/"),
-		SINGLE_QUOTE= strbyte("'"),	-- "&apos;"
-		DOUBLE_QUOTE= strbyte('"'),	-- "&quot;"
-		UNDERLINE	= strbyte("_"),
-		MINUS		= strbyte("-"),
-		PERIOD		= strbyte("."),
-
 		SPACE		= strbyte(" "),
 		TAB			= strbyte("\t"),
 
 		LF			= strbyte("\n"),
 		CR			= strbyte("\r"),
+
+		EXCLAMATION	= strbyte("!"),
+		DOUBLE_QUOTE= strbyte('"'),
+		NUMBER_SIGN	= strbyte("#"),
+		DOLLAR_SIGN	= strbyte("$"),
+		PERCENT		= strbyte("%"),
+		AMP			= strbyte("&"),
+		SINGLE_QUOTE= strbyte("'"),
+		LEFTPAREN	= strbyte("("),
+		RIGHTPAREN	= strbyte(")"),
+		ASTERISK	= strbyte("*"),
+		PLUS		= strbyte("+"),
+		COMMA		= strbyte(","),
+		MINUS		= strbyte("-"),
+		PERIOD		= strbyte("."),
+		SLASH		= strbyte("/"),
+		COLON		= strbyte(":"),
+		SEMICOLON	= strbyte(";"),
+		LESSTHAN	= strbyte("<"),
+		EQUALS		= strbyte("="),
+		GREATERTHAN	= strbyte(">"),
+		QUESTION	= strbyte("?"),
+		AT_SIGN		= strbyte("@"),
+		LEFTBRACKET	= strbyte("["),
+		BACKSLASH	= strbyte("\\"),
+		RIGHTBRACKET= strbyte("]"),
+		CARET		= strbyte("^"),
+		UNDERLINE	= strbyte("_"),
+		GRAVE_ACCENT= strbyte("`"),
+		LEFTWING	= strbyte("{"),
+		VERTICAL	= strbyte("|"),
+		RIGHTWING	= strbyte("}"),
+		TILDE		= strbyte("~"),
 	}
 
-	_Special = { string.gsub([[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]], 1, -1) },
+	_Special = {
+		[_Bytes.SPACE] = _Token.SPACE,
+		[_Bytes.TAB] = _Token.TAB,
+
+		[_Bytes.LF] = _Token.LF,
+		[_Bytes.CR] = _Token.CR,
+
+		[_Bytes.EXCLAMATION] = _Token.EXCLAMATION,
+		[_Bytes.DOUBLE_QUOTE] = _Token.DOUBLE_QUOTE,
+		[_Bytes.NUMBER_SIGN] = _Token.NUMBER_SIGN,
+		[_Bytes.DOLLAR_SIGN] = _Token.DOLLAR_SIGN,
+		[_Bytes.PERCENT] = _Token.PERCENT,
+		[_Bytes.AMP] = _Token.AMP,
+		[_Bytes.SINGLE_QUOTE] = _Token.SINGLE_QUOTE,
+		[_Bytes.LEFTPAREN] = _Token.LEFTPAREN,
+		[_Bytes.RIGHTPAREN] = _Token.RIGHTPAREN,
+		[_Bytes.ASTERISK] = _Token.ASTERISK,
+		[_Bytes.PLUS] = _Token.PLUS,
+		[_Bytes.COMMA] = _Token.COMMA,
+		[_Bytes.MINUS] = _Token.MINUS,
+		[_Bytes.PERIOD] = _Token.PERIOD,
+		[_Bytes.SLASH] = _Token.SLASH,
+		[_Bytes.COLON] = _Token.COLON,
+		[_Bytes.SEMICOLON] = _Token.SEMICOLON,
+		[_Bytes.LESSTHAN] = _Token.LESSTHAN,
+		[_Bytes.EQUALS] = _Token.EQUALS,
+		[_Bytes.GREATERTHAN] = _Token.GREATERTHAN,
+		[_Bytes.QUESTION] = _Token.QUESTION,
+		[_Bytes.AT_SIGN] = _Token.AT_SIGN,
+		[_Bytes.LEFTBRACKET] = _Token.LEFTBRACKET,
+		[_Bytes.BACKSLASH] = _Token.BACKSLASH,
+		[_Bytes.RIGHTBRACKET] = _Token.RIGHTBRACKET,
+		[_Bytes.CARET] = _Token.CARET,
+		[_Bytes.UNDERLINE] = _Token.UNDERLINE,
+		[_Bytes.GRAVE_ACCENT] = _Token.GRAVE_ACCENT,
+		[_Bytes.LEFTWING] = _Token.LEFTWING,
+		[_Bytes.VERTICAL] = _Token.VERTICAL,
+		[_Bytes.RIGHTWING] = _Token.RIGHTWING,
+		[_Bytes.TILDE] = _Token.TILDE,
+	}
 
 	_Encode = {
 		["UTF-8"] = {
@@ -253,26 +338,24 @@ do
 		local char, len = 0, 0
 		local line, lineStart = 0, 0
 		local stackToken, stackName = {}, {}
+		local stackLen = 0
+		local cdata = false
 
 		while pos <= endp do
 			pos = pos + len
 			char, len = getChar(data, pos)
 
-			if char == false or not isChar(char, _ValidChar) then
+			if not char or not isChar(char, _ValidChar) then
 				error("Not a valid char at line " .. line .. " column " .. (pos - lineStart), 2)
 			end
 
-			if char < 128 then
-				if char == _Byte.LESSTHAN then
-					tinsert(stackToken, _Token.TAG_START)
-				elseif char == _Byte.GREATERTHAN then
-					tinsert(stackToken, _Token.TAG_END)
-				elseif char == _Byte.SLASH then
-					tinsert(stackToken, _Token.SLASH)
+			if _Special[char] then
+				if isChar(char, _WhiteSpace) then
 
+				else
+					tinsert(stackToken, _Special[char])
+					stackLen = stackLen + 1
 				end
-			else
-
 			end
 		end
 	end
