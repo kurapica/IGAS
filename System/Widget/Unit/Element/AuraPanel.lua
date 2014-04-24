@@ -76,6 +76,7 @@ class "AuraPanel"
 
 				-- Texture
 				self.Icon.TexturePath = texture
+				if texture then self.Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9) end
 
 				-- Count
 				if count and count > 1 then
