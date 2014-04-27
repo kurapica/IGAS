@@ -19,6 +19,11 @@ do
 	strbyte = string.byte
 	strchar = string.char
 	newIndex = function(reset) _M.AutoIndex = reset or ((_M.AutoIndex or 0) + 1); return _M.AutoIndex end
+	metaParser = {
+		__call = function(self, stackToken, stackInfo, stackLen)
+
+		end,
+	}
 
 	_Token = {
 		NAME_START	= newIndex(),
@@ -277,7 +282,19 @@ do
 			{ 0x0300, 0x036F },
 			{ 0x203F, 0x2040 },
 		},
-	},
+	}
+
+	_TokenParser = {
+		[_Token.LF] = {
+			function (stackToken, stackLen)
+				if stackToken[stackLen-1] == _Token.CR then
+					stackToken[stackLen-1] = _Token.LF
+					tremove(stackToken)
+					return 1
+				end
+			end,
+		}
+	}
 
 	function isChar(char, define)
 		if define.Base and isChar(char, define.Base) then return true end
@@ -291,7 +308,7 @@ do
 		return false
 	end
 
-	function loadFile(data, fileEncode, isBigEndian)
+	function loadXML(data, fileEncode, isBigEndian)
 		-- Checking byte order mark
 		local bom = data:byte(1, 4)
 		local encode = "UTF-8"
@@ -328,6 +345,25 @@ do
 		end
 	end
 
+	function throwError(msg, stackToken, stackPos, pos)
+		local line = 1
+		local linePos = 0
+		local newline = _Token.LF
+		local ret = _Token.CR
+
+		for i, token in ipairs(stackToken) do
+			if stackPos[i] < pos then
+				if token == newline or token == ret then
+					line = line + 1
+					linePos = stackPos[i]
+				end
+			else
+				break
+			end
+		end
+		error(([[Error at line %d column %d : %s]]):format(line, pos - linePos, msg), 3)
+	end
+
 	function parseXmlElements(data, start, encode, isBigEndian)
 		encode = encode or "UTF-8"
 		startp = startp or 1
@@ -336,17 +372,16 @@ do
 		local getChar = isBigEndian and _Encode[encode].BigEndian or _Encode[encode].LittleEndian or _Encode[encode].Default
 		local pos = startp
 		local char, len = 0, 0
-		local line, lineStart = 0, 0
-		local stackToken, stackName = {}, {}
+		local stackToken, stackPos = {}, {}
 		local stackLen = 0
-		local cdata = false
+		local token
 
 		while pos <= endp do
 			pos = pos + len
 			char, len = getChar(data, pos)
 
 			if not char or not isChar(char, _ValidChar) then
-				error("Not a valid char at line " .. line .. " column " .. (pos - lineStart), 2)
+				return throwError("Not a valid char.", stackToken, stackPos, pos)
 			end
 
 			if _Special[char] then
@@ -355,6 +390,17 @@ do
 				else
 					tinsert(stackToken, _Special[char])
 					stackLen = stackLen + 1
+				end
+			end
+
+			if _TokenParser[token] then
+				for _, parser in ipairs(_TokenParser[token]) do
+					local rm = parser(stackToken, stackLen)
+					if rm > 0 then
+						for i = 1, rm do tremove(stackPos) end
+						stackLen = stackLen - rm
+						break
+					end
 				end
 			end
 		end
