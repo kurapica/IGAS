@@ -18,10 +18,111 @@ do
 	strsub = string.gsub
 	strbyte = string.byte
 	strchar = string.char
+	wipe = function(t) for k in pairs(t) do t[k] = nil end end
+	cache = setmetatable({}, {__call = function(self, tbl) if tbl then wipe(tbl) tinsert(self, tbl) else return tremove(self) or {} end end,})
 	newIndex = function(reset) _M.AutoIndex = reset or ((_M.AutoIndex or 0) + 1); return _M.AutoIndex end
-	metaParser = {
-		__call = function(self, stackToken, stackInfo, stackLen)
+	stackAPI = {
+		New = function()
+			local stack = { Token = {}, Pos = {}, Info = {}, StackLen = 0 }
 
+			for k, v in pairs(stackAPI) do if k ~= "New" then stack[k] = v end end
+
+			return stack
+		end,
+		Push = function(self, token, pos, info)
+			local index = self.StackLen + 1
+
+			self.Token[index] = token
+			self.Pos[index] = pos
+			self.Info[index] = info
+
+			self.StackLen = index
+
+			return self:Parse()
+		end,
+		Pop = function(self)
+			local index = self.StackLen
+
+			if index == 0 then return end
+
+			local token = self.Token[index]
+			local pos = self.Pos[index]
+			local info = self.Info[index]
+
+			self.Token[index] = nil
+			self.Pos[index] = nil
+			self.Info[index] = nil
+
+			self.StackLen = self.StackLen - 1
+
+			return token, pos, info
+		end,
+		Parse = function(self)
+			local index = self.StackLen
+			local token = self.Token[index]
+
+			if _TokenParser[token] then
+				for _, parser in ipairs(_TokenParser[token]) do
+					if type(parser) == "function" then
+						if parser(self) then
+							return self:Parse()
+						end
+					elseif type(parser) == "table" then
+						local match = true
+						for i = #parser, 1, -1 do
+							if parser[i] == self.Token[index] then
+								index = index - 1
+							else
+								match = false
+								break
+							end
+						end
+
+						if match then
+							local buildInfo = parser.BuildInfo
+							local tmp = buildInfo and cache()
+							local token, pos, info
+
+							for i = #parser, 1, -1 do
+								token, pos, info = self:Pop()
+
+								if tmp then tinsert(tmp, 1, info) end
+							end
+
+							local newInfo
+							if tmp then
+								newIndex = buildInfo(tmp)
+								cache(tmp)
+							end
+
+							self:Push(parser[0], pos, newInfo)
+
+							return self:Parse()
+						end
+					end
+				end
+			end
+		end,
+		ThrowError = function(self, msg, pos)
+			local line = 1
+			local linePos = 0
+			local newLine = _Token.LF
+			local sToken = self.Token
+			local sPos = self.Pos
+			local sInfo = self.Info
+
+			for i = 1, self.StackLen do
+				if sPos[i] < pos then
+					if sToken == newLine then
+						line = line + 1
+						linePos = sPos[i] + sInfo[i] or 1
+					end
+				else
+					break
+				end
+			end
+
+			error(([[Error at line %d column %d : %s]]):format(line, pos - linePos + 1, msg), 3)
 		end,
 	}
 
@@ -35,6 +136,8 @@ do
 
 		TAG_START	= newIndex(),
 		TAG_END		= newIndex(),
+
+		WHITE_SPACE = newIndex(),
 
 
 		SPACE		= newIndex(),
@@ -119,8 +222,8 @@ do
 	}
 
 	_Special = {
-		[_Bytes.SPACE] = _Token.SPACE,
-		[_Bytes.TAB] = _Token.TAB,
+		[_Bytes.SPACE] = _Token.WHITE_SPACE,
+		[_Bytes.TAB] = _Token.WHITE_SPACE,
 
 		[_Bytes.LF] = _Token.LF,
 		[_Bytes.CR] = _Token.CR,
@@ -225,15 +328,6 @@ do
 		},
 	}
 
-	_WhiteSpace = {
-		Single = {
-			[_Byte.SPACE] = true,
-			[_Byte.TAB] = true,
-			[_Byte.CR] = true,
-			[_Byte.LF] = true,
-		},
-	}
-
 	_ValidChar = {
 		Single = {
 			[_Byte.TAB] = true,
@@ -286,14 +380,19 @@ do
 
 	_TokenParser = {
 		[_Token.LF] = {
-			function (stackToken, stackLen)
-				if stackToken[stackLen-1] == _Token.CR then
-					stackToken[stackLen-1] = _Token.LF
-					tremove(stackToken)
-					return 1
-				end
-			end,
-		}
+			[0] = _Token.LF,
+			_Token.CR,
+			_Token.LF,
+
+			BuildInfo = function(infos)
+				return 2
+			end
+		},
+		[_Token.WHITE_SPACE] = {
+			[0] = _Token.WHITE_SPACE,
+			_Token.WHITE_SPACE,
+			_Token.WHITE_SPACE,
+		},
 	}
 
 	function isChar(char, define)
@@ -345,25 +444,6 @@ do
 		end
 	end
 
-	function throwError(msg, stackToken, stackPos, pos)
-		local line = 1
-		local linePos = 0
-		local newline = _Token.LF
-		local ret = _Token.CR
-
-		for i, token in ipairs(stackToken) do
-			if stackPos[i] < pos then
-				if token == newline or token == ret then
-					line = line + 1
-					linePos = stackPos[i]
-				end
-			else
-				break
-			end
-		end
-		error(([[Error at line %d column %d : %s]]):format(line, pos - linePos, msg), 3)
-	end
-
 	function parseXmlElements(data, start, encode, isBigEndian)
 		encode = encode or "UTF-8"
 		startp = startp or 1
@@ -372,8 +452,7 @@ do
 		local getChar = isBigEndian and _Encode[encode].BigEndian or _Encode[encode].LittleEndian or _Encode[encode].Default
 		local pos = startp
 		local char, len = 0, 0
-		local stackToken, stackPos = {}, {}
-		local stackLen = 0
+		local stack = stackAPI:New()
 		local token
 
 		while pos <= endp do
@@ -381,27 +460,15 @@ do
 			char, len = getChar(data, pos)
 
 			if not char or not isChar(char, _ValidChar) then
-				return throwError("Not a valid char.", stackToken, stackPos, pos)
+				return stack:ThrowError("Not a valid char.", pos)
 			end
 
 			if _Special[char] then
-				if isChar(char, _WhiteSpace) then
+				stack:Push(_Special[char], pos)
 
-				else
-					tinsert(stackToken, _Special[char])
-					stackLen = stackLen + 1
-				end
-			end
 
-			if _TokenParser[token] then
-				for _, parser in ipairs(_TokenParser[token]) do
-					local rm = parser(stackToken, stackLen)
-					if rm > 0 then
-						for i = 1, rm do tremove(stackPos) end
-						stackLen = stackLen - rm
-						break
-					end
-				end
+			else
+
 			end
 		end
 	end
