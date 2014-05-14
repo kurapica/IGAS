@@ -86,7 +86,7 @@ do
 							for i = #parser, 1, -1 do
 								token, pos, info = self:Pop()
 
-								if tmp then tinsert(tmp, 1, info) end
+								if tmp then tmp[i] = info end
 							end
 
 							local newInfo
@@ -134,8 +134,10 @@ do
 		NAME_TOKEN	= newIndex(),
 		NAME_TOKENS	= newIndex(),
 
-		TAG_START	= newIndex(),
-		TAG_END		= newIndex(),
+		OPEN_TAG	= newIndex(),
+		CLOSE_TAG	= newIndex(),
+
+		EMP_ELEMENT	= newIndex(),
 
 		WHITE_SPACE = newIndex(),
 
@@ -378,20 +380,58 @@ do
 		},
 	}
 
-	_TokenParser = {
+	_XMLTokenParser = {
 		[_Token.LF] = {
-			[0] = _Token.LF,
-			_Token.CR,
-			_Token.LF,
+			{	-- CRLF -> LF
+				[0] = _Token.LF,
+				_Token.CR,
+				_Token.LF,
 
-			BuildInfo = function(infos)
-				return 2
-			end
+				BuildInfo = function(infos)
+					return 2
+				end,
+			},
 		},
 		[_Token.WHITE_SPACE] = {
-			[0] = _Token.WHITE_SPACE,
-			_Token.WHITE_SPACE,
-			_Token.WHITE_SPACE,
+			{	-- No duplicated white space
+				[0] = _Token.WHITE_SPACE,
+				_Token.WHITE_SPACE,
+				_Token.WHITE_SPACE,
+			},
+		},
+		[_Token.GREATERTHAN] = {
+			{	-- <tagname> -> open tag
+				[0] = _Token.OPEN_TAG,
+				_Token.LESSTHAN,
+				_Token.NAME,
+				_Token.GREATERTHAN,
+
+				BuildInfo = function(infos)
+					return infos[2]
+				end,
+			},
+			{	-- </tagname> -> close tag
+				[0] = _Token.CLOSE_TAG,
+				_Token.LESSTHAN,
+				_Token.SLASH,
+				_Token.NAME,
+				_Token.GREATERTHAN,
+
+				BuildInfo = function(infos)
+					return infos[3]
+				end,
+			},
+			{	--<tagname/> -> empty element
+				[0] = _Token.EMP_ELEMENT,
+				_Token.LESSTHAN,
+				_Token.NAME,
+				_Token.SLASH,
+				_Token.GREATERTHAN,
+
+				BuildInfo = function(infos)
+					return XmlNode{ Name = infos[2] }
+				end,
+			},
 		},
 	}
 
@@ -467,7 +507,8 @@ do
 				stack:Push(_Special[char], pos)
 
 
-			else
+			elseif isChar(char, _NameStartChar) then
+				-- scan full name
 
 			end
 		end
