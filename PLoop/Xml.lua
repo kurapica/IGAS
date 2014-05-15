@@ -287,7 +287,7 @@ do
 					end
 				end
 
-				return byte, len
+				return byte, strsub(str, startp, startp + len - 1), len
 			end,
 		},
 		["UTF-16"] = {
@@ -296,12 +296,12 @@ do
 
 				if obyte <= 0xD7 then
 					-- two bytes
-					return obyte * 256 + sbyte, 2
+					return obyte * 256 + sbyte, strchar(obyte, sbyte), 2
 				elseif obyte >= 0xD8 and obyte <= 0xDB then
 					-- four byte
 					local tbyte, fbyte = strbyte(str, startp + 2, startp + 3)
 					if tbyte >= 0xDC and tbyte <= 0xDF then
-						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, 4
+						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, strchar(obyte, sbyte, tbyte, fbyte), 4
 					else
 						return false
 					end
@@ -314,12 +314,12 @@ do
 
 				if obyte <= 0xD7 then
 					-- two bytes
-					return obyte * 256 + sbyte, 2
+					return obyte * 256 + sbyte, strchar(obyte, sbyte), 2
 				elseif obyte >= 0xD8 and obyte <= 0xDB then
 					-- four byte
 					local fbyte, tbyte = strbyte(str, startp + 2, startp + 3)
 					if tbyte >= 0xDC and tbyte <= 0xDF then
-						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, 4
+						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, strchar(obyte, sbyte, tbyte, fbyte), 4
 					else
 						return false
 					end
@@ -491,25 +491,44 @@ do
 
 		local getChar = isBigEndian and _Encode[encode].BigEndian or _Encode[encode].LittleEndian or _Encode[encode].Default
 		local pos = startp
-		local char, len = 0, 0
+		local char, string
+		local len = 0
 		local stack = stackAPI:New()
-		local token
 
 		while pos <= endp do
 			pos = pos + len
-			char, len = getChar(data, pos)
+			char, string, len = getChar(data, pos)
 
 			if not char or not isChar(char, _ValidChar) then
 				return stack:ThrowError("Not a valid char.", pos)
 			end
 
 			if _Special[char] then
-				stack:Push(_Special[char], pos)
+				local token = _Special[char]
 
+				if token == _Token.DOUBLE_QUOTE or token == _Toke n.SINGLE_QUOTE then
 
+				else
+					stack:Push(token, pos)
+				end
 			elseif isChar(char, _NameStartChar) then
-				-- scan full name
+				local spos = pos
+				local name = string
 
+				-- scan full name
+				while pos <= endp do
+					pos = pos + len
+					char, string, len = getChar(data, pos)
+
+					if not char or not isChar(char, _NameChar) then
+						len = 0
+						break
+					end
+
+					name = name .. string
+				end
+
+				stack:Push(_Token.NAME, spos, name)
 			end
 		end
 	end
