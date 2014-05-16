@@ -224,44 +224,44 @@ do
 	}
 
 	_Special = {
-		[_Bytes.SPACE] = _Token.WHITE_SPACE,
-		[_Bytes.TAB] = _Token.WHITE_SPACE,
+		[_Byte.SPACE] = _Token.WHITE_SPACE,
+		[_Byte.TAB] = _Token.WHITE_SPACE,
 
-		[_Bytes.LF] = _Token.LF,
-		[_Bytes.CR] = _Token.CR,
+		[_Byte.LF] = _Token.LF,
+		[_Byte.CR] = _Token.CR,
 
-		[_Bytes.EXCLAMATION] = _Token.EXCLAMATION,
-		[_Bytes.DOUBLE_QUOTE] = _Token.DOUBLE_QUOTE,
-		[_Bytes.NUMBER_SIGN] = _Token.NUMBER_SIGN,
-		[_Bytes.DOLLAR_SIGN] = _Token.DOLLAR_SIGN,
-		[_Bytes.PERCENT] = _Token.PERCENT,
-		[_Bytes.AMP] = _Token.AMP,
-		[_Bytes.SINGLE_QUOTE] = _Token.SINGLE_QUOTE,
-		[_Bytes.LEFTPAREN] = _Token.LEFTPAREN,
-		[_Bytes.RIGHTPAREN] = _Token.RIGHTPAREN,
-		[_Bytes.ASTERISK] = _Token.ASTERISK,
-		[_Bytes.PLUS] = _Token.PLUS,
-		[_Bytes.COMMA] = _Token.COMMA,
-		[_Bytes.MINUS] = _Token.MINUS,
-		[_Bytes.PERIOD] = _Token.PERIOD,
-		[_Bytes.SLASH] = _Token.SLASH,
-		[_Bytes.COLON] = _Token.COLON,
-		[_Bytes.SEMICOLON] = _Token.SEMICOLON,
-		[_Bytes.LESSTHAN] = _Token.LESSTHAN,
-		[_Bytes.EQUALS] = _Token.EQUALS,
-		[_Bytes.GREATERTHAN] = _Token.GREATERTHAN,
-		[_Bytes.QUESTION] = _Token.QUESTION,
-		[_Bytes.AT_SIGN] = _Token.AT_SIGN,
-		[_Bytes.LEFTBRACKET] = _Token.LEFTBRACKET,
-		[_Bytes.BACKSLASH] = _Token.BACKSLASH,
-		[_Bytes.RIGHTBRACKET] = _Token.RIGHTBRACKET,
-		[_Bytes.CARET] = _Token.CARET,
-		[_Bytes.UNDERLINE] = _Token.UNDERLINE,
-		[_Bytes.GRAVE_ACCENT] = _Token.GRAVE_ACCENT,
-		[_Bytes.LEFTWING] = _Token.LEFTWING,
-		[_Bytes.VERTICAL] = _Token.VERTICAL,
-		[_Bytes.RIGHTWING] = _Token.RIGHTWING,
-		[_Bytes.TILDE] = _Token.TILDE,
+		[_Byte.EXCLAMATION] = _Token.EXCLAMATION,
+		[_Byte.DOUBLE_QUOTE] = _Token.DOUBLE_QUOTE,
+		[_Byte.NUMBER_SIGN] = _Token.NUMBER_SIGN,
+		[_Byte.DOLLAR_SIGN] = _Token.DOLLAR_SIGN,
+		[_Byte.PERCENT] = _Token.PERCENT,
+		[_Byte.AMP] = _Token.AMP,
+		[_Byte.SINGLE_QUOTE] = _Token.SINGLE_QUOTE,
+		[_Byte.LEFTPAREN] = _Token.LEFTPAREN,
+		[_Byte.RIGHTPAREN] = _Token.RIGHTPAREN,
+		[_Byte.ASTERISK] = _Token.ASTERISK,
+		[_Byte.PLUS] = _Token.PLUS,
+		[_Byte.COMMA] = _Token.COMMA,
+		[_Byte.MINUS] = _Token.MINUS,
+		[_Byte.PERIOD] = _Token.PERIOD,
+		[_Byte.SLASH] = _Token.SLASH,
+		[_Byte.COLON] = _Token.COLON,
+		[_Byte.SEMICOLON] = _Token.SEMICOLON,
+		[_Byte.LESSTHAN] = _Token.LESSTHAN,
+		[_Byte.EQUALS] = _Token.EQUALS,
+		[_Byte.GREATERTHAN] = _Token.GREATERTHAN,
+		[_Byte.QUESTION] = _Token.QUESTION,
+		[_Byte.AT_SIGN] = _Token.AT_SIGN,
+		[_Byte.LEFTBRACKET] = _Token.LEFTBRACKET,
+		[_Byte.BACKSLASH] = _Token.BACKSLASH,
+		[_Byte.RIGHTBRACKET] = _Token.RIGHTBRACKET,
+		[_Byte.CARET] = _Token.CARET,
+		[_Byte.UNDERLINE] = _Token.UNDERLINE,
+		[_Byte.GRAVE_ACCENT] = _Token.GRAVE_ACCENT,
+		[_Byte.LEFTWING] = _Token.LEFTWING,
+		[_Byte.VERTICAL] = _Token.VERTICAL,
+		[_Byte.RIGHTWING] = _Token.RIGHTWING,
+		[_Byte.TILDE] = _Token.TILDE,
 	}
 
 	_Encode = {
@@ -506,7 +506,7 @@ do
 			if _Special[char] then
 				local token = _Special[char]
 
-				if token == _Token.DOUBLE_QUOTE or token == _Toke n.SINGLE_QUOTE then
+				if token == _Token.DOUBLE_QUOTE or token == _Token.SINGLE_QUOTE then
 
 				else
 					stack:Push(token, pos)

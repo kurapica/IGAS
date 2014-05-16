@@ -1,3 +1,6 @@
+2014/05/16
+    Save memory usage by replace property and struct field's type to an unique version, complex types won't be replaced for now.
+
 2014/04/04
     __Default__ attribute added to provide default value for custom struct and enum, when used as property type, the default value would be used for the property.
 

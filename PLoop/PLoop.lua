@@ -25,15 +25,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
 --
---     Pure Lua Object-Oriented Program System
+--	 Pure Lua Object-Oriented Program System
 --
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Author           kurapica.igas@gmail.com
--- Create Date      2011/02/01
--- Last Update Date 2014/04/04
--- Version          r94
+-- Author		   kurapica.igas@gmail.com
+-- Create Date	  2011/02/01
+-- Last Update Date 2014/05/016
+-- Version		  r95
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -444,7 +444,7 @@ do
 			ok, _type1 = pcall(BuildType, v1)
 			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
 
-			ok, _type2 = pcall(BuildType, v2, nil, true)
+			ok, _type2 = pcall(BuildType, v2, true)
 			if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
 
 			return _type1 + _type2
@@ -453,7 +453,7 @@ do
 		_MetaNS.__unm = function(v1)
 			local ok, _type1
 
-			ok, _type1 = pcall(BuildType, v1, nil, true)
+			ok, _type1 = pcall(BuildType, v1, true)
 			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
 
 			return _type1
@@ -599,13 +599,12 @@ end
 do
 	function IsType(self) return getmetatable(self) == Type end
 
-	function BuildType(ns, name, onlyClass)
+	function BuildType(ns, onlyClass)
 		local allowNil = false
 
 		if ns == nil then
 			allowNil = true
 		elseif IsType(ns) then
-			if name then ns.Name = name end
 			return ns
 		end
 
@@ -614,15 +613,32 @@ do
 
 			_type.AllowNil = allowNil or nil
 			if ns then if onlyClass then _type[-1] = ns else _type[1] = ns end end
-			if name then _type.Name = name end
 
 			return _type
 		else
-			if name then
-				error(("The value of %s must be combination of nil, struct, enum, interface or class."):format(name))
+			error("The type must be combination of nil, struct, enum, interface or class.")
+		end
+	end
+
+	_UniqueType = setmetatable({}, WEAK_KEY)
+	_UniqueWithNilType = setmetatable({}, WEAK_VALUE)
+
+	function GetUniqueType(self)
+		if IsType(self) then
+			-- No unique for complex type
+			if self[-1] or #self ~= 1 then return self end
+
+			if self.AllowNil then
+				if _UniqueWithNilType[self[1]] then return _UniqueWithNilType[self[1]] end
+				_UniqueWithNilType[self[1]] = self
+				return self
 			else
-				error("The type must be combination of nil, struct, enum, interface or class.")
+				if _UniqueType[self[1]] then return _UniqueType[self[1]] end
+				_UniqueType[self[1]] = self
+				return self
 			end
+		else
+			return self
 		end
 	end
 end
@@ -901,9 +917,9 @@ do
 							elseif k == "field" then
 								if v ~= name then prop.Field = v end
 							elseif k == "type" then
-								local ok, ret = pcall(BuildType, v, name)
+								local ok, ret = pcall(BuildType, v)
 								if ok then
-									prop.Type = ret
+									prop.Type = GetUniqueType(ret)
 								else
 									errorhandler(strtrim(ret:match(":%d+:%s*(.-)$") or ret))
 								end
@@ -1969,7 +1985,7 @@ do
 
 	function TrySetProperty(self, name, value) self[name] = value end
 
-	function UpdateMetaTable4Cls(cls)
+	function UpdateMetaTable4Cls(cls, update)
 		local info = _NSInfo[cls]
 		local MetaTable = info.MetaTable
 
@@ -1986,6 +2002,8 @@ do
 		local clone = CloneObj
 
 		local isCached = info.AutoCache or false
+
+		if update then MetaTable.__index = nil end
 
 		MetaTable.__metatable = cls
 
@@ -2076,7 +2094,7 @@ do
 			-- Property Set
 			oper = Cache4Property[key]
 			if oper then
-				if oper.Type then value = oper.Type:Validate(value, key, 2) end
+				if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
 				if oper.SetClone or oper.SetDeepClone then value = clone(value, oper.SetDeepClone) end
 
 				if oper.Set then
@@ -2415,8 +2433,7 @@ do
 
 			if not isCached and info.AutoCache then
 				-- So, the __index need re-build
-				info.MetaTable.__index = nil
-				UpdateMetaTable4Cls(info.Owner)
+				UpdateMetaTable4Cls(info.Owner, true)
 			end
 		end
 	end
@@ -2601,7 +2618,7 @@ do
 
 			if #cache > 0 then
 				tinsert(cache, 1, tostring(info.Owner) .. " lack declaration of :")
-				ret = tblconcat(cache, "\n    ")
+				ret = tblconcat(cache, "\n")
 			end
 
 			CACHE_TABLE(cacheIF)
@@ -2871,7 +2888,7 @@ do
 					-- Don't save to environment until need it
 					value = nil
 				elseif (value == nil or IsType(value) or IsNameSpace(value)) then
-					local ok, ret = pcall(BuildType, value, key)
+					local ok, ret = pcall(BuildType, value)
 
 					if ok then
 						rawset(self, key, ret)
@@ -2926,7 +2943,7 @@ do
 						-- Deep clone to make sure no change on default value
 						value[n] = CloneObj(info.DefaultField[n], true)
 					else
-						value[n] = info.StructEnv[n]:Validate(value[n])
+						value[n] = info.StructEnv[n]:Validate(value[n], n)
 					end
 				end
 			end
@@ -2936,13 +2953,13 @@ do
 				local ele = info.ArrayElement
 
 				for i, v in ipairs(value) do
-					flag, ret = pcall(ele.Validate, ele, v)
+					flag, ret = pcall(ele.Validate, ele, v, "Element")
 
 					if flag then
 						value[i] = ret
 					else
 						wipe(_ValidatedCache)
-						error(strtrim(ret:match(":%d+:%s*(.-)$") or ret):gsub("%%s([_%w]+)", "%%s["..i.."]"))
+						error(strtrim(ret:match(":%d+:%s*(.-)$") or ret):gsub("%%s[_%w]+", "%%s["..i.."]"))
 					end
 				end
 			end
@@ -3189,6 +3206,15 @@ do
 				elseif not pcall(ValidateStruct, info.Owner, info.Default) then
 					info.Default = nil
 				end
+			end
+
+			-- Make field type unique
+			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+				for _, n in ipairs(info.Members) do
+					info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
+				end
+			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+				info.ArrayElement = GetUniqueType(info.ArrayElement)
 			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
@@ -4263,7 +4289,7 @@ do
 				types = vtype
 			end
 
-			local ok, _type = pcall(BuildType, types, name)
+			local ok, _type = pcall(BuildType, types)
 
 			if ok then
 				if _type then
@@ -5309,90 +5335,91 @@ do
 		doc "Validate" [[
 			<desc>Used to validate the value</desc>
 			<param name="value"></param>
-			<param name="name" optional="true">the name present the value</param>
+			<param name="partName" optional="true">the name of the field</param>
+			<param name="mainName" optional="true">the name present the value</param>
 			<param name="stack" optional="true">the stack level, default 1</param>
 			<return>the validated value</return>
 			<return>the validated type</return>
 		]]
-		function Validate(self, value, name, stack)
+		function Validate(self, value, partName, mainName, stack)
 			if value == nil and rawget(self, _ALLOW_NIL) then return value end
 
-			local flag, msg, info, new
+			local flag, errorMsg, info, tmpMsg
 			local index = -1
-	        local types
+			local types
 
 			info = _NSInfo[rawget(self, index)]
-			while info do
-	            new = nil
+			if info then
+				while info do
+					tmpMsg = nil
 
-	            if info.Type == TYPE_CLASS then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then return value end
-					new = ("%s must be or must be subclass of [class]%s."):format("%s", tostring(info.Owner))
-				elseif info.Type == TYPE_INTERFACE then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then return value end
-					new = ("%s must be extended from [interface]%s."):format("%s", tostring(info.Owner))
-	            elseif info.Type then
-	                if value == info.Owner then
-	                    return value
-	                else
-	                    types = (types or "") .. tostring(info.Owner) .. ", "
-	                end
+					if info.Type == TYPE_CLASS then
+						if IsChildClass(info.Owner, value) then return value end
+						tmpMsg = ("%s must be subclass of [class]%s."):format("%s", tostring(info.Owner))
+					elseif info.Type == TYPE_INTERFACE then
+						if IsExtend(info.Owner, value) then return value end
+						tmpMsg = ("%s must extended from [interface]%s."):format("%s", tostring(info.Owner))
+					elseif value == info.Owner then
+						return value
+					else
+						types = (types or "") .. tostring(info.Owner) .. ", "
+					end
+
+					if tmpMsg and not errorMsg then
+						if partName and partName ~= "" then
+							if tmpMsg:find("%%s([_%w]+)") then
+								errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
+							else
+								errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
+							end
+						else
+							errorMsg = tmpMsg
+						end
+					end
+
+					index = index - 1
+					info = _NSInfo[rawget(self, index)]
 				end
 
-				if new and not msg then
-					if self.Name and self.Name ~= "" then
-						if new:find("%%s([_%w]+)") then
-							msg = new:gsub("%%s", "%%s"..self.Name..".")
+				if types and #types >= 3 and not errorMsg then
+					tmpMsg = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
+
+					if partName and partName ~= "" then
+						if tmpMsg:find("%%s([_%w]+)") then
+							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
 						else
-							msg = new:gsub("%%s", "%%s"..self.Name)
+							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
 						end
 					else
-						msg = new
+						errorMsg = tmpMsg
 					end
 				end
-
-				index = index - 1
-				info = _NSInfo[rawget(self, index)]
 			end
-
-	        if types and #types >= 3 and not msg then
-	            new = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
-
-	            if self.Name and self.Name ~= "" then
-	                if new:find("%%s([_%w]+)") then
-	                    msg = new:gsub("%%s", "%%s"..self.Name..".")
-	                else
-	                    msg = new:gsub("%%s", "%%s"..self.Name)
-	                end
-	            else
-	                msg = new
-	            end
-	        end
 
 			for _, ns in ipairs(self) do
 				info = _NSInfo[ns]
 
-				new = nil
+				tmpMsg = nil
 
 				if not info then
 					-- do nothing
 				elseif info.Type == TYPE_STRUCT then
 					-- Check if the value is an enumeration value of this structure
-					flag, new = pcall(ValidateStruct, ns, value)
+					flag, tmpMsg = pcall(ValidateStruct, ns, value)
 
-					if flag then return new, ns end
+					if flag then return tmpMsg, ns end
 
-					new = strtrim(new:match(":%d+:%s*(.-)$") or new)
+					tmpMsg = strtrim(tmpMsg:match(":%d+:%s*(.-)$") or tmpMsg)
 				elseif info.Type == TYPE_CLASS then
 					-- Check if the value is an instance of this class
 					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then return value, ns end
 
-					new = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
+					tmpMsg = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
 				elseif info.Type == TYPE_INTERFACE then
 					-- Check if the value is an instance of this interface
 					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then return value, ns end
 
-					new = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
+					tmpMsg = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
 				elseif info.Type == TYPE_ENUM then
 					-- Check if the value is an enumeration value of this enum
 					if type(value) == "string" and info.Enum[strupper(value)] then return info.Enum[strupper(value)], ns end
@@ -5412,28 +5439,28 @@ do
 						if info.Cache[value] then return value, ns end
 					end
 
-					new = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
+					tmpMsg = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
 				end
 
-				if new and not msg then
-					if self.Name and self.Name ~= "" then
-						if new:find("%%s([_%w]+)") then
-							msg = new:gsub("%%s", "%%s"..self.Name..".")
+				if tmpMsg and not errorMsg then
+					if partName and partName ~= "" then
+						if tmpMsg:find("%%s([_%w]+)") then
+							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
 						else
-							msg = new:gsub("%%s", "%%s"..self.Name)
+							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
 						end
 					else
-						msg = new
+						errorMsg = tmpMsg
 					end
 				end
 			end
 
-			if msg and rawget(self, _ALLOW_NIL) and not msg:match("%(Optional%)$") then msg = msg .. "(Optional)" end
+			if errorMsg and rawget(self, _ALLOW_NIL) and not errorMsg:match("%(Optional%)$") then errorMsg = errorMsg .. "(Optional)" end
 
-			if msg then
-				if name and msg:find("%%s") then msg = msg:gsub("%%s[_%w]*", name) end
+			if errorMsg then
+				if mainName and errorMsg:find("%%s") then errorMsg = errorMsg:gsub("%%s[_%w]*", mainName) end
 
-				error(msg, (stack or 1) + 1)
+				error(errorMsg, (stack or 1) + 1)
 			end
 
 			return value
@@ -5493,14 +5520,14 @@ do
 			while self[index] do
 				info = _NSInfo[self[index]]
 
-	            if not info then
-	                -- skip
+				if not info then
+					-- skip
 				elseif info.Type == TYPE_CLASS then
 					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then return info.Owner end
 				elseif info.Type == TYPE_INTERFACE then
 					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then return info.Owner end
-	            elseif info.Type then
-	                if value == info.Owner then return info.Owner end
+				elseif info.Type then
+					if value == info.Owner then return info.Owner end
 				end
 
 				index = index - 1
@@ -5607,7 +5634,7 @@ do
 			if IsNameSpace(v2) then
 				local ok, _type2
 
-				ok, _type2 = pcall(BuildType, v2, nil, true)
+				ok, _type2 = pcall(BuildType, v2, true)
 				if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
 
 				return v1 + _type2
@@ -5723,16 +5750,16 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function EventHandler(self, evt, owner)
-	    	if not Reflector.ObjectIsClass(evt, Event) then error("Usage : EventHandler(event, owner) - 'event' must be an object of 'System.Event'.") end
-	    	if not Reflector.GetObjectClass(owner) then error("Usage : EventHandler(event, owner) - 'owner' must be an object.") end
+		function EventHandler(self, evt, owner)
+			if not Reflector.ObjectIsClass(evt, Event) then error("Usage : EventHandler(event, owner) - 'event' must be an object of 'System.Event'.") end
+			if not Reflector.GetObjectClass(owner) then error("Usage : EventHandler(event, owner) - 'owner' must be an object.") end
 
-	    	self.Event = evt
-	    	self.Owner = owner
+			self.Event = evt
+			self.Owner = owner
 
-	    	-- Active the thread status based on the attribute setting
-	    	if evt.ThreadActivated then self.ThreadActivated = true end
-	    end
+			-- Active the thread status based on the attribute setting
+			if evt.ThreadActivated then self.ThreadActivated = true end
+		end
 
 		------------------------------------------------------
 		-- Meta-Method
@@ -5875,7 +5902,6 @@ do
 				for i = 1, self.MinArgs do
 					local arg = self[i]
 					local value = cache[i]
-					local ok
 
 					if value == nil then
 						-- No check
@@ -5886,11 +5912,10 @@ do
 
 							return false
 						end
-					else
+					elseif arg.Type and arg.Type:GetObjectType(value) == false then
 						-- Validate the value
-						ok, value = pcall(arg.Type.Validate, arg.Type, value)
-
-						if not ok then CACHE_TABLE(cache) return false end
+						CACHE_TABLE(cache)
+						return false
 					end
 
 					cache[i] = value
@@ -5900,16 +5925,14 @@ do
 				for i = self.MinArgs + 1, count do
 					local arg = self[i] or self[argsCount]
 					local value = cache[i]
-					local ok
 
 					if value == nil then
 						-- No check
 						if arg.Default ~= nil then value = arg.Default end
-					elseif arg.Type then
+					elseif arg.Type and arg.Type:GetObjectType(value) == false then
 						-- Validate the value
-						ok, value = pcall(arg.Type.Validate, arg.Type, value)
-
-						if not ok then CACHE_TABLE(cache) return false end
+						CACHE_TABLE(cache)
+						return false
 					end
 
 					cache[i] = value
@@ -6040,7 +6063,7 @@ do
 			-- Clear the thread
 			self.Thread = nil
 
-			-- Validation self once, maybe no need to waste time
+			--[[ Validation self once, maybe no need to waste time
 			if false and self.HasSelf then
 				local value = select(1, ...)
 				local owner = self.Owner
@@ -6052,7 +6075,7 @@ do
 
 					error(self.Usage, 2)
 				end
-			end
+			end--]]
 
 			if MatchArgs(self, ...) then
 				if self.Thread then
@@ -7091,7 +7114,7 @@ do
 		IsList = Boolean + nil
 
 		function Validate(value)
-			value.Type = value.Type and BuildType(value.Type, "Type") or nil
+			value.Type = value.Type and BuildType(value.Type) or nil
 
 			if value.Type and value.Default ~= nil then
 				if value.Type:GetObjectType(value.Default) == false then value.Default = nil end
@@ -7345,6 +7368,12 @@ do
 			if Reflector.IsClass(target) then _NSInfo[target].AutoCache = true end
 		end
 	endclass "__Cache__"
+
+	-- Apply Attribute to Type class
+	do
+		__Cache__:ApplyAttribute(Type, AttributeTargets.Class)
+		UpdateMetaTable4Cls(Type, true)
+	end
 
 	enum "StructType" {
 		"Member",
@@ -7765,11 +7794,11 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function __Doc__(self, data)
-	    	self.Doc = data
+		function __Doc__(self, data)
+			self.Doc = data
 
-	    	return Super(self)
-	    end
+			return Super(self)
+		end
 
 		------------------------------------------------------
 		-- Meta-method
@@ -8149,7 +8178,7 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-	    function Module(self, parent, name)
+		function Module(self, parent, name)
 			local prevName
 
 			-- Check args
@@ -8170,23 +8199,23 @@ do
 			end
 
 			-- Save the module's information
-	    	if prevName then
-	    		if parent then
-	    			_ModuleInfo[parent].Modules = _ModuleInfo[parent].Modules or {}
-	    			_ModuleInfo[parent].Modules[prevName] = self
-	    		else
-	    			_Module[prevName] = self
-	    		end
-	    	else
-	    		parent = nil
-	    	end
+			if prevName then
+				if parent then
+					_ModuleInfo[parent].Modules = _ModuleInfo[parent].Modules or {}
+					_ModuleInfo[parent].Modules[prevName] = self
+				else
+					_Module[prevName] = self
+				end
+			else
+				parent = nil
+			end
 
-	    	_ModuleInfo[self] = {
-		    	Owner = self,
-		    	Name = prevName,
-		    	Parent = parent,
-		    }
-	    end
+			_ModuleInfo[self] = {
+				Owner = self,
+				Name = prevName,
+				Parent = parent,
+			}
+		end
 
 		------------------------------------------------------
 		-- metamethod
