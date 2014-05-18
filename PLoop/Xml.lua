@@ -107,13 +107,14 @@ do
 			local line = 1
 			local linePos = 0
 			local newLine = _Token.LF
+			local ret = _Token.CR
 			local sToken = self.Token
 			local sPos = self.Pos
 			local sInfo = self.Info
 
 			for i = 1, self.StackLen do
 				if sPos[i] < pos then
-					if sToken == newLine then
+					if sToken == newLine or sToken == ret then
 						line = line + 1
 						linePos = sPos[i] + sInfo[i] or 1
 					end
@@ -133,6 +134,8 @@ do
 		NAMES		= newIndex(),
 		NAME_TOKEN	= newIndex(),
 		NAME_TOKENS	= newIndex(),
+
+		VALUE		= newIndex(),
 
 		OPEN_TAG	= newIndex(),
 		CLOSE_TAG	= newIndex(),
@@ -392,13 +395,6 @@ do
 				end,
 			},
 		},
-		[_Token.WHITE_SPACE] = {
-			{	-- No duplicated white space
-				[0] = _Token.WHITE_SPACE,
-				_Token.WHITE_SPACE,
-				_Token.WHITE_SPACE,
-			},
-		},
 		[_Token.GREATERTHAN] = {
 			{	-- <tagname> -> open tag
 				[0] = _Token.OPEN_TAG,
@@ -503,11 +499,36 @@ do
 				return stack:ThrowError("Not a valid char.", pos)
 			end
 
+			-- Check last token for open tag
+			if stack.Token[stack.StackLen] == _Token.OPEN_TAG then
+
+			end
+
 			if _Special[char] then
 				local token = _Special[char]
 
-				if token == _Token.DOUBLE_QUOTE or token == _Token.SINGLE_QUOTE then
+				if token == _Token.WHITE_SPACE then
+					-- Skip
+				elseif token == _Token.DOUBLE_QUOTE or token == _Token.SINGLE_QUOTE then
+					local spos = pos
+					local startChar = char
+					local value = ""
 
+					-- scan full name
+					while pos <= endp do
+						pos = pos + len
+						char, string, len = getChar(data, pos)
+
+						if not char or not isChar(char, _ValidChar)  then
+							return stack:ThrowError("Not a valid char.", pos)
+						elseif startChar == char then
+							break
+						end
+
+						value = value .. string
+					end
+
+					stack:Push(_Token.VALUE, spos, value)
 				else
 					stack:Push(token, pos)
 				end
@@ -521,8 +542,7 @@ do
 					char, string, len = getChar(data, pos)
 
 					if not char or not isChar(char, _NameChar) then
-						len = 0
-						break
+						len = 0 break
 					end
 
 					name = name .. string
