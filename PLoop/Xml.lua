@@ -18,18 +18,28 @@ do
 	strsub = string.gsub
 	strbyte = string.byte
 	strchar = string.char
+	strtrim = strtrim or function(s) return s and (s:gsub("^%s*(.-)%s*$", "%1")) or "" end
 	wipe = function(t) for k in pairs(t) do t[k] = nil end end
 	cache = setmetatable({}, {__call = function(self, tbl) if tbl then wipe(tbl) tinsert(self, tbl) else return tremove(self) or {} end end,})
-	newIndex = function(reset) _M.AutoIndex = reset or ((_M.AutoIndex or 0) + 1); return _M.AutoIndex end
+	newIndex = function(flag) _M.AutoIndex = type(flag) == "number" and flag or flag and _M.AutoIndex or (_M.AutoIndex + 1); return _M.AutoIndex end
 	stackAPI = {
 		New = function()
-			local stack = { Token = {}, Pos = {}, Info = {}, StackLen = 0 }
+			local stack = { Token = {}, Pos = {}, Info = {}, Line = {}, StackLen = 0 }
 
 			for k, v in pairs(stackAPI) do if k ~= "New" then stack[k] = v end end
 
 			return stack
 		end,
 		Push = function(self, token, pos, info)
+			-- Scan line and combine white space
+			if token == _Token.LF then
+				return self.PreToken ~= _Token.CR and tinsert(self.Line, pos)
+			elseif token == _Token.CR then
+				return tinsert(self.Line, pos)
+			elseif token == _Token.WHITE_SPACE then
+				return
+			end
+
 			local index = self.StackLen + 1
 
 			self.Token[index] = token
@@ -37,6 +47,8 @@ do
 			self.Info[index] = info
 
 			self.StackLen = index
+
+			self.PreToken = token
 
 			return self:Parse()
 		end,
@@ -64,17 +76,42 @@ do
 			if _TokenParser[token] then
 				for _, parser in ipairs(_TokenParser[token]) do
 					if type(parser) == "function" then
-						if parser(self) then
-							return self:Parse()
-						end
+						return parser(self) and self:Parse()
 					elseif type(parser) == "table" then
 						local match = true
-						for i = #parser, 1, -1 do
-							if parser[i] == self.Token[index] then
+						local i = #parser
+						local target = parser[i]
+						local option = parser[-i] or 1
+						local isSet = type(target) == "table"
+						local moveNext = false
+						local matched = 0
+
+						index = self.StackLen
+						token = self.Token[index]
+
+						while token and i >= 1 do
+							moveNext = true
+
+							if isSet and target[token] or target == token then
+								if option == "*" or option == "+" then
+									moveNext = false
+									matched	= matched + 1
+								end
+
 								index = index - 1
-							else
+								token = self.Token[index]
+							elseif option == 1 or (option == "+" and matched == 0) then
 								match = false
 								break
+							end
+
+							if moveNext then
+								i = i - 1
+
+								target = parser[i]
+								option = parser[-i] or 1
+
+								matched = 0
 							end
 						end
 
@@ -82,16 +119,22 @@ do
 							local buildInfo = parser.BuildInfo
 							local tmp = buildInfo and cache()
 							local token, pos, info
+							local newInfo
 
-							for i = #parser, 1, -1 do
+							for i = #parser, index+1, -1 do
 								token, pos, info = self:Pop()
 
-								if tmp then tmp[i] = info end
+								if info then
+									if tmp then
+										tinsert(tmp, 1, info)
+									else
+										newInfo = newInfo or info
+									end
+								end
 							end
 
-							local newInfo
 							if tmp then
-								newIndex = buildInfo(tmp)
+								newInfo = buildInfo(self, tmp, pos)
 								cache(tmp)
 							end
 
@@ -104,23 +147,14 @@ do
 			end
 		end,
 		ThrowError = function(self, msg, pos)
-			local line = 1
+			local line = 0
 			local linePos = 0
-			local newLine = _Token.LF
-			local ret = _Token.CR
-			local sToken = self.Token
-			local sPos = self.Pos
-			local sInfo = self.Info
 
-			for i = 1, self.StackLen do
-				if sPos[i] < pos then
-					if sToken == newLine or sToken == ret then
-						line = line + 1
-						linePos = sPos[i] + sInfo[i] or 1
-					end
-				else
-					break
-				end
+			for i, p in ipairs(self.Line) do
+				line = line + 1
+				linePos = p
+
+				if pos < p then break end
 			end
 
 			error(([[Error at line %d column %d : %s]]):format(line, pos - linePos + 1, msg), 3)
@@ -128,7 +162,7 @@ do
 	}
 
 	_Token = {
-		NAME_START	= newIndex(),
+		NAME_START	= newIndex(1),
 		NAME_CHAR	= newIndex(),
 		NAME		= newIndex(),
 		NAMES		= newIndex(),
@@ -140,7 +174,8 @@ do
 		OPEN_TAG	= newIndex(),
 		CLOSE_TAG	= newIndex(),
 
-		EMP_ELEMENT	= newIndex(),
+		ELEMENT		= newIndex(),
+		ATTRIBUTE	= newIndex(),
 
 		WHITE_SPACE = newIndex(),
 
@@ -384,48 +419,84 @@ do
 	}
 
 	_XMLTokenParser = {
-		[_Token.LF] = {
-			{	-- CRLF -> LF
-				[0] = _Token.LF,
-				_Token.CR,
-				_Token.LF,
-
-				BuildInfo = function(infos)
-					return 2
-				end,
-			},
-		},
 		[_Token.GREATERTHAN] = {
-			{	-- <tagname> -> open tag
-				[0] = _Token.OPEN_TAG,
-				_Token.LESSTHAN,
-				_Token.NAME,
-				_Token.GREATERTHAN,
+			{	-- <tagname key=value> -> open tag
+				[ newIndex(0) ] = _Token.OPEN_TAG,
 
-				BuildInfo = function(infos)
-					return infos[2]
+				[ newIndex() ] = _Token.LESSTHAN,
+				[ newIndex() ] = _Token.NAME,
+				[ newIndex() ] = _Token.ATTRIBUTE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = _Token.GREATERTHAN,
+
+				BuildInfo = function(self, infos)
+					local node = XmlNode( infos[1] )
+
+					for i = 2, #infos do
+						node:AddAttribute(infos[i])
+					end
+
+					return node
 				end,
 			},
 			{	-- </tagname> -> close tag
-				[0] = _Token.CLOSE_TAG,
-				_Token.LESSTHAN,
-				_Token.SLASH,
-				_Token.NAME,
-				_Token.GREATERTHAN,
+				[ newIndex(0) ] = _Token.CLOSE_TAG,
 
-				BuildInfo = function(infos)
-					return infos[3]
-				end,
+				[ newIndex() ] = _Token.LESSTHAN,
+				[ newIndex() ] = _Token.SLASH,
+				[ newIndex() ] = _Token.NAME,
+				[ newIndex() ] = _Token.GREATERTHAN,
 			},
 			{	--<tagname/> -> empty element
-				[0] = _Token.EMP_ELEMENT,
-				_Token.LESSTHAN,
-				_Token.NAME,
-				_Token.SLASH,
-				_Token.GREATERTHAN,
+				[ newIndex(0) ] = _Token.ELEMENT,
 
-				BuildInfo = function(infos)
-					return XmlNode{ Name = infos[2] }
+				[ newIndex() ] = _Token.LESSTHAN,
+				[ newIndex() ] = _Token.NAME,
+				[ newIndex() ] = _Token.ATTRIBUTE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = _Token.SLASH,
+				[ newIndex() ] = _Token.GREATERTHAN,
+
+				BuildInfo = function(self, infos)
+					local node = XmlNode( infos[1] )
+
+					for i = 2, #infos do
+						node:AddAttribute(infos[i])
+					end
+
+					return node
+				end,
+			},
+			{
+				-- <tagname> element* </tagname> -> element
+				[ newIndex(0) ] = _Token.ELEMENT,
+
+				[ newIndex() ] = _Token.OPEN_TAG,
+				[ newIndex() ] = _Token.ELEMENT, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = _Token.CLOSE_TAG,
+
+				BuildInfo = function(self, infos, pos)
+					local node = infos[1]
+
+					if node.Name == infos[#infos] then
+						for i = 2, #infos - 1 do
+							node:AddChild(infos[i])
+						end
+
+						return node
+					else
+						return self:ThrowError(("Open tag %s is not closed"):format(node.Name), pos)
+					end
+				end,
+			},
+			{
+				-- key = value
+				[ newIndex(0) ] = _Token.ATTRIBUTE,
+
+				[ newIndex() ] = Token.NAME,
+				[ newIndex() ] = Token.EQUALS,
+				[ newIndex() ] = Token.VALUE,
+
+				BuildInfo = function(self, infos, pos)
+					return XmlAttribute(infos[1], infos[2])
 				end,
 			},
 		},
@@ -499,9 +570,30 @@ do
 				return stack:ThrowError("Not a valid char.", pos)
 			end
 
-			-- Check last token for open tag
+			-- Check last token for open tag & scan text element
 			if stack.Token[stack.StackLen] == _Token.OPEN_TAG then
+				local spos = pos
+				local startChar = char
+				local text = ""
 
+				while pos <= endp do
+					if not char or not isChar(char, _ValidChar)  then
+						return stack:ThrowError("Not a valid char.", pos)
+					elseif _Special[char] == _Token.LESSTHAN then
+						break
+					else
+						text = text .. string
+					end
+
+					pos = pos + len
+					char, string, len = getChar(data, pos)
+				end
+
+				text = strtrim(text)
+				if text ~= "" then
+					-- Insert a text element
+					stack:Push(_Token.ELEMENT, spos, XmlText(text))
+				end
 			end
 
 			if _Special[char] then
@@ -553,6 +645,11 @@ do
 		end
 	end
 end
+
+struct "XmlAttribute"
+	key = String
+	value = String
+endstruct "XmlAttribute"
 
 __Doc__[[Represents a single node in the XML document.]]
 class "XmlNode"
