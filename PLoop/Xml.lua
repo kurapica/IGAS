@@ -36,7 +36,7 @@ do
 				return self.PreToken ~= _Token.CR and tinsert(self.Line, pos)
 			elseif token == _Token.CR then
 				return tinsert(self.Line, pos)
-			elseif token == _Token.WHITE_SPACE then
+			elseif token == _Token.WHITE_SPACE and self.PreToken == _Token.WHITE_SPACE then
 				return
 			end
 
@@ -424,18 +424,33 @@ do
 				[ newIndex(0) ] = _Token.OPEN_TAG,
 
 				[ newIndex() ] = _Token.LESSTHAN,
+				[ newIndex() ] = _Token.NAME, [ -newIndex(true) ] = "?",
+				[ newIndex() ] = _Token.COLON, [ -newIndex(true) ] = "?",
 				[ newIndex() ] = _Token.NAME,
-				[ newIndex() ] = _Token.ATTRIBUTE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = {
+					[ _Token.ATTRIBUTE ] = true,
+					[ _Token.WHITE_SPACE ] = true,
+				}, [ -newIndex(true) ] = "*",
 				[ newIndex() ] = _Token.GREATERTHAN,
 
 				BuildInfo = function(self, infos)
-					local node = XmlNode( infos[1] )
+					if type(infos[2]) == "string" then
+						local node = XmlNode{ Prefix = infos[1], Name = infos[2] }
 
-					for i = 2, #infos do
-						node:AddAttribute(infos[i])
+						for i = 3, #infos do
+							node:AddAttribute(infos[i])
+						end
+
+						return node
+					else
+						local node = XmlNode{ Name = infos[1] }
+
+						for i = 2, #infos do
+							node:AddAttribute(infos[i])
+						end
+
+						return node
 					end
-
-					return node
 				end,
 			},
 			{	-- </tagname> -> close tag
@@ -443,26 +458,48 @@ do
 
 				[ newIndex() ] = _Token.LESSTHAN,
 				[ newIndex() ] = _Token.SLASH,
+				[ newIndex() ] = _Token.NAME, [ -newIndex(true) ] = "?",
+				[ newIndex() ] = _Token.COLON, [ -newIndex(true) ] = "?",
 				[ newIndex() ] = _Token.NAME,
+				[ newIndex() ] = _Token.WHITE_SPACE, [ -newIndex(true) ] = "*",
 				[ newIndex() ] = _Token.GREATERTHAN,
+
+				BuildInfo = function(self, infos, pos)
+					return table.concat( infos, ":")
+				end,
 			},
-			{	--<tagname/> -> empty element
+			{	--<prefix:tagname/> -> empty element
 				[ newIndex(0) ] = _Token.ELEMENT,
 
 				[ newIndex() ] = _Token.LESSTHAN,
+				[ newIndex() ] = _Token.NAME, [ -newIndex(true) ] = "?",
+				[ newIndex() ] = _Token.COLON, [ -newIndex(true) ] = "?",
 				[ newIndex() ] = _Token.NAME,
-				[ newIndex() ] = _Token.ATTRIBUTE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = {
+					[ _Token.ATTRIBUTE ] = true,
+					[ _Token.WHITE_SPACE ] = true,
+				}, [ -newIndex(true) ] = "*",
 				[ newIndex() ] = _Token.SLASH,
 				[ newIndex() ] = _Token.GREATERTHAN,
 
 				BuildInfo = function(self, infos)
-					local node = XmlNode( infos[1] )
+					if type(infos[2]) == "string" then
+						local node = XmlNode{ Prefix = infos[1], Name = infos[2] }
 
-					for i = 2, #infos do
-						node:AddAttribute(infos[i])
+						for i = 3, #infos do
+							node:AddAttribute(infos[i])
+						end
+
+						return node
+					else
+						local node = XmlNode{ Name = infos[1] }
+
+						for i = 2, #infos do
+							node:AddAttribute(infos[i])
+						end
+
+						return node
 					end
-
-					return node
 				end,
 			},
 			{
@@ -470,13 +507,16 @@ do
 				[ newIndex(0) ] = _Token.ELEMENT,
 
 				[ newIndex() ] = _Token.OPEN_TAG,
-				[ newIndex() ] = _Token.ELEMENT, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = {
+					[ _Token.ELEMENT] = true,
+					[ _Token.WHITE_SPACE] = true,
+				}, [ -newIndex(true) ] = "*",
 				[ newIndex() ] = _Token.CLOSE_TAG,
 
 				BuildInfo = function(self, infos, pos)
 					local node = infos[1]
 
-					if node.Name == infos[#infos] then
+					if (node.Prefix and node.Prefix .. ":" or "") .. node.Name == infos[#infos] then
 						for i = 2, #infos - 1 do
 							node:AddChild(infos[i])
 						end
@@ -488,15 +528,25 @@ do
 				end,
 			},
 			{
-				-- key = value
+				-- prefix:key = value
 				[ newIndex(0) ] = _Token.ATTRIBUTE,
 
-				[ newIndex() ] = Token.NAME,
-				[ newIndex() ] = Token.EQUALS,
-				[ newIndex() ] = Token.VALUE,
+				[ newIndex() ] = _Token.NAME, [ -newIndex(true) ] = "?",
+				[ newIndex() ] = _Token.COLON, [ -newIndex(true) ] = "?",
+				[ newIndex() ] = _Token.NAME,
+				[ newIndex() ] = _Token.WHITE_SPACE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = _Token.EQUALS,
+				[ newIndex() ] = _Token.WHITE_SPACE, [ -newIndex(true) ] = "*",
+				[ newIndex() ] = _Token.VALUE,
 
 				BuildInfo = function(self, infos, pos)
-					return XmlAttribute(infos[1], infos[2])
+					if #infos == 3 then
+						return XmlAttribute(infos[1], infos[2], infos[3])
+					elseif #infos == 2 then
+						return XmlAttribute(nil, infos[1], infos[2])
+					else
+						return self:ThrowError("Impossible.", pos)
+					end
 				end,
 			},
 		},
@@ -562,6 +612,13 @@ do
 		local len = 0
 		local stack = stackAPI:New()
 
+		local lt = _Byte.LESSTHAN
+		local gt = _Byte.GREATERTHAN
+		local cr = _Byte.CR
+		local lf = _Byte.LF
+
+		local inTag = false
+
 		while pos <= endp do
 			pos = pos + len
 			char, string, len = getChar(data, pos)
@@ -570,8 +627,26 @@ do
 				return stack:ThrowError("Not a valid char.", pos)
 			end
 
-			-- Check last token for open tag & scan text element
-			if stack.Token[stack.StackLen] == _Token.OPEN_TAG then
+			if char == lt then
+				-- <
+				if not inTag then
+					inTag = true
+				else
+					return stack:ThrowError("The embed tag is not allowed.", pos)
+				end
+
+				stack:Push(_Token.LESSTHAN, pos)
+			elseif char == gt then
+				-- >
+				if inTag then
+					inTag = false
+				else
+					return stack:ThrowError("The '>' char can't be used here.", pos)
+				end
+
+				stack:Push(_Token.GREATERTHAN, pos)
+			elseif inTag == 0 then
+				-- As text element
 				local spos = pos
 				local startChar = char
 				local text = ""
@@ -579,7 +654,8 @@ do
 				while pos <= endp do
 					if not char or not isChar(char, _ValidChar)  then
 						return stack:ThrowError("Not a valid char.", pos)
-					elseif _Special[char] == _Token.LESSTHAN then
+					elseif char == lt then
+						len = 0
 						break
 					else
 						text = text .. string
@@ -594,61 +670,63 @@ do
 					-- Insert a text element
 					stack:Push(_Token.ELEMENT, spos, XmlText(text))
 				end
-			end
+			else
+				-- Parse
+				if _Special[char] then
+					local token = _Special[char]
 
-			if _Special[char] then
-				local token = _Special[char]
+					if token == _Token.DOUBLE_QUOTE or token == _Token.SINGLE_QUOTE then
+						local spos = pos
+						local startChar = char
+						local value = ""
 
-				if token == _Token.WHITE_SPACE then
-					-- Skip
-				elseif token == _Token.DOUBLE_QUOTE or token == _Token.SINGLE_QUOTE then
+						-- scan full name
+						while pos <= endp do
+							pos = pos + len
+							char, string, len = getChar(data, pos)
+
+							if not char or not isChar(char, _ValidChar)  then
+								return stack:ThrowError("Not a valid char.", pos)
+							elseif startChar == char then
+								break
+							elseif char == cr or char == lf then
+								return stack:ThrowError("The string is not closed.", pos)
+							end
+
+							value = value .. string
+						end
+
+						stack:Push(_Token.VALUE, spos, value)
+					else
+						stack:Push(token, pos)
+					end
+				elseif isChar(char, _NameStartChar) then
 					local spos = pos
-					local startChar = char
-					local value = ""
+					local name = string
 
 					-- scan full name
 					while pos <= endp do
 						pos = pos + len
 						char, string, len = getChar(data, pos)
 
-						if not char or not isChar(char, _ValidChar)  then
-							return stack:ThrowError("Not a valid char.", pos)
-						elseif startChar == char then
-							break
+						if not char or not isChar(char, _NameChar) then
+							len = 0 break
 						end
 
-						value = value .. string
+						name = name .. string
 					end
 
-					stack:Push(_Token.VALUE, spos, value)
-				else
-					stack:Push(token, pos)
+					stack:Push(_Token.NAME, spos, name)
 				end
-			elseif isChar(char, _NameStartChar) then
-				local spos = pos
-				local name = string
-
-				-- scan full name
-				while pos <= endp do
-					pos = pos + len
-					char, string, len = getChar(data, pos)
-
-					if not char or not isChar(char, _NameChar) then
-						len = 0 break
-					end
-
-					name = name .. string
-				end
-
-				stack:Push(_Token.NAME, spos, name)
 			end
 		end
 	end
 end
 
 struct "XmlAttribute"
-	key = String
-	value = String
+	Prefix = String + nil
+	Key = String
+	Value = String
 endstruct "XmlAttribute"
 
 __Doc__[[Represents a single node in the XML document.]]
@@ -760,8 +838,8 @@ class "XmlNode"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-    function XmlNode(self, ...)
-
+	__Arguments__{}
+    function XmlNode(self)
     end
 endclass "XmlNode"
 
