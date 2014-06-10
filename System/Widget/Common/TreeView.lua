@@ -9,9 +9,10 @@
 --				2011/06/20	OnDoubleClick script added.
 --				2012/03/25  Recode to increase the performance
 --              2013/04/26  NoOrderChange property is added to TreeNode
+--              2014/06/10	Fix display error when clicking vscroll
 
 -- Check Version
-local version = 17
+local version = 18
 if not IGAS:NewAddon("IGAS.Widget.TreeView", version) then
 	return
 end
@@ -928,7 +929,7 @@ class "TreeView"
 		_UpdatingTree[self] = true
 
 		local btn, toggleBtn, text, line, texture
-		local offset = self:GetChild("ScrollBar").Value
+		local offset = floor(self:GetChild("ScrollBar").Value)
 		local node, startNode = self:GetChild(_Index2Name(1))
 
 		local cnt = ceil((self:GetChild("ScrollBar").Height - 14) / _Height)
