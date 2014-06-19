@@ -30,10 +30,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Author		   kurapica.igas@gmail.com
--- Create Date	  2011/02/01
--- Last Update Date 2014/06/03
--- Version		  r96
+-- Author			kurapica.igas@gmail.com
+-- Create Date		2011/02/01
+-- Last Update Date 2014/06/19
+-- Version			r97
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -1031,8 +1031,8 @@ do
 
 					-- Validate the Getter
 					if prop.Getter then
-						prop.GetClone = Reflector.ValidateFlags(Getter.Clone, prop.Getter) or nil
 						prop.GetDeepClone = Reflector.ValidateFlags(Getter.DeepClone, prop.Getter) or nil
+						prop.GetClone = Reflector.ValidateFlags(Getter.Clone, prop.Getter) or prop.GetDeepClone
 
 						prop.Getter = nil
 					end
@@ -1060,9 +1060,9 @@ do
 							tinsert(gbody, [[return function (self)]])
 							tinsert(gbody, [[local value]])
 							if prop.SetWeak then
-								tinsert(gbody, [[value = rawget(self, "__Weaks")]])
+								tinsert(gbody, [[value = rawget(self, "__WeakFields")]])
 								tinsert(gbody, [[if type(value) == "table" then]])
-								tinsert(gbody, [[value = rawget(value, field)]])
+								tinsert(gbody, [[value = value[field] ]])
 								tinsert(gbody, [[else]])
 								tinsert(gbody, [[value = nil]])
 								tinsert(gbody, [[end]])
@@ -1070,7 +1070,7 @@ do
 								tinsert(gbody, [[value = rawget(self, field)]])
 							end
 							if prop.Default ~= nil then tinsert(gbody, [[if value == nil then value = default end]]) end
-							if prop.GetClone or prop.GetDeepClone then
+							if prop.GetClone then
 								if prop.GetDeepClone then
 									tinsert(gbody, [[value = clone(value, true)]])
 								else
@@ -1105,10 +1105,10 @@ do
 							end
 							tinsert(gbody, [[local container = self]])
 							if prop.SetWeak then
-								tinsert(gbody, [[container = rawget(self, "__Weaks")]])
+								tinsert(gbody, [[container = rawget(self, "__WeakFields")]])
 								tinsert(gbody, [[if type(container) ~= "table" then]])
 								tinsert(gbody, [[	container = setmetatable({}, WEAK_VALUE)]])
-								tinsert(gbody, [[	rawset(self, "__Weaks", container)]])
+								tinsert(gbody, [[	rawset(self, "__WeakFields", container)]])
 								tinsert(gbody, [[end]])
 							end
 							tinsert(gbody, [[local old = rawget(container, field)]])
@@ -2029,9 +2029,9 @@ do
 					end
 				elseif oper.Field then
 					if oper.SetWeak then
-						value = rawget(self, "__Weaks")
+						value = rawget(self, "__WeakFields")
 						if type(value) == "table" then
-							value = rawget(value, oper.Field)
+							value = value[oper.Field]
 						else
 							value = nil
 						end
@@ -2044,7 +2044,7 @@ do
 
 				if value == nil then value = oper.Default end
 
-				if oper.GetClone or oper.GetDeepClone then value = clone(value, oper.GetDeepClone) end
+				if oper.GetClone then value = clone(value, oper.GetDeepClone) end
 
 				return value
 			end
@@ -2095,7 +2095,7 @@ do
 			oper = Cache4Property[key]
 			if oper then
 				if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
-				if oper.SetClone or oper.SetDeepClone then value = clone(value, oper.SetDeepClone) end
+				if oper.SetClone then value = clone(value, oper.SetDeepClone) end
 
 				if oper.Set then
 					return oper.Set(self, value)
@@ -2111,10 +2111,10 @@ do
 					-- Check container
 					local container = self
 					if oper.SetWeak then
-						container = rawget(self, "__Weaks")
+						container = rawget(self, "__WeakFields")
 						if type(container) ~= "table" then
 							container = setmetatable({}, WEAK_VALUE)
-							rawset(self, "__Weaks", container)
+							rawset(self, "__WeakFields", container)
 						end
 					end
 
