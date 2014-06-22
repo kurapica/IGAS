@@ -23,10 +23,13 @@ do
 	cache = setmetatable({}, {__call = function(self, tbl) if tbl then wipe(tbl) tinsert(self, tbl) else return tremove(self) or {} end end,})
 	newIndex = function(flag) _M.AutoIndex = type(flag) == "number" and flag or flag and _M.AutoIndex or (_M.AutoIndex + 1); return _M.AutoIndex end
 	stackAPI = {
-		New = function()
+		New = function( data, getChar )
 			local stack = { Token = {}, Pos = {}, Info = {}, Line = {}, StackLen = 0 }
 
 			for k, v in pairs(stackAPI) do if k ~= "New" then stack[k] = v end end
+
+			stack.Data = data
+			stack.GetChar = getChar
 
 			return stack
 		end,
@@ -150,14 +153,29 @@ do
 			local line = 0
 			local linePos = 0
 
+			-- Get the error line
 			for i, p in ipairs(self.Line) do
 				line = line + 1
-				linePos = p
 
 				if pos < p then break end
+				linePos = p
 			end
 
-			error(([[Error at line %d column %d : %s]]):format(line, pos - linePos + 1, msg), 3)
+			-- Calc the error position
+			local sp = linePos + 1
+			local data = self.Data
+			local char, string, len
+			local wlen = 0
+			local lf = _Byte.LF
+
+			while sp < pos do
+				char, string, len = self:GetChar(data, sp)
+				sp = sp + len
+
+				if char ~= lf then wlen = wlen + 1 end
+			end
+
+			return error(([[Error at line %d column %d : %s]]):format(line, wlen + 1, msg), 2)
 		end,
 	}
 
@@ -610,7 +628,7 @@ do
 		local pos = startp
 		local char, string
 		local len = 0
-		local stack = stackAPI:New()
+		local stack = stackAPI:New(data, getChar)
 
 		local lt = _Byte.LESSTHAN
 		local gt = _Byte.GREATERTHAN
