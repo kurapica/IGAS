@@ -111,14 +111,17 @@ do
 							if moveNext then
 								i = i - 1
 
+								if i == 0 then break end
+
 								target = parser[i]
 								option = parser[-i] or 1
+								isSet = type(target) == "table"
 
 								matched = 0
 							end
 						end
 
-						if match then
+						if match and i == 0 then
 							local buildInfo = parser.BuildInfo
 							local tmp = buildInfo and cache()
 							local token, pos, info
