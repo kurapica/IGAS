@@ -2383,7 +2383,7 @@ The last part, let's get a view of the **System** namespace.
 			__NonExpandable__
 			__NonInheritable__
 			__StructType__
-			__Thread__
+			__Delegate__
 			__Unique__
 
 

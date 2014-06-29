@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/06/19
--- Version			r97
+-- Last Update Date 2014/06/26
+-- Version			r98
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -188,6 +188,7 @@ do
 	end
 
 	function CallThread(func, ...)
+		if type(func) == "thread" and status(func) == "suspended" then return resume(func, ...) end
 		if running() then return func( ... ) end
 
 		local th = THREAD_POOL()
@@ -4148,7 +4149,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasEvent(cls, name) then obj[name].ThreadActivated = true end
+					if HasEvent(cls, name) then obj[name].Delegate = CallThread end
 				end
 			end
 		end
@@ -4164,12 +4165,12 @@ do
 			if IsClass(obj) then
 				local evt = _NSInfo[obj].Cache4Event[sc]
 
-				return evt and evt.ThreadActivated or false
+				return evt and evt.Delegate == CallThread
 			else
 				local cls = GetObjectClass(obj)
 
 				if cls and HasEvent(cls, sc) then
-					return obj[sc].ThreadActivated or false
+					return obj[sc].Delegate == CallThread
 				end
 			end
 
@@ -4190,7 +4191,7 @@ do
 				for i = 1, select('#', ...) do
 					name = select(i, ...)
 
-					if HasEvent(cls, name) then obj[name].ThreadActivated = false end
+					if HasEvent(cls, name) and obj[name].Delegate == CallThread then obj[name].Delegate = nil end
 				end
 			end
 		end
@@ -5252,9 +5253,7 @@ do
 			<param name="...">the parameters</param>
 			<return>the return value of the func</return>
 		]]
-		function ThreadCall(func, ...)
-			return CallThread(func, ...)
-		end
+		ThreadCall = CallThread
 
 		doc "IsEqual" [[
 			<desc>Whether the two objects are objects with same settings</desc>
@@ -5676,8 +5675,8 @@ do
 		doc "Name" [[The event's name]]
 		property "Name" { Type = String, Default = "Anonymous" }
 
-		doc "ThreadActivated" [[Whether the event is thread activated]]
-		property "ThreadActivated" { Type = Boolean }
+		doc "Delegate" [[The delegate for the event handler, used to wrap the event call]]
+		property "Delegate" { Type = Function + nil }
 
 		------------------------------------------------------
 		-- Constructor
@@ -5745,11 +5744,11 @@ do
 		doc "Blocked" [[Whether the event handler is blocked]]
 		property "Blocked" { Type = Boolean }
 
-		doc "ThreadActivated" [[Whether the event handler is thread activated]]
-		property "ThreadActivated" { Type = Boolean }
-
-		doc "Handler" [[description]]
+		doc "Handler" [[The customer's handler]]
 		property "Handler" { Field = 0, Type = Function + nil, Handler = FireOnEventHandlerChanged }
+
+		doc "Delegate" [[The delegate for the event handler, used to wrap the event call]]
+		property "Delegate" { Type = Function + nil }
 
 		------------------------------------------------------
 		-- Constructor
@@ -5760,9 +5759,7 @@ do
 
 			self.Event = evt
 			self.Owner = owner
-
-			-- Active the thread status based on the attribute setting
-			if evt.ThreadActivated then self.ThreadActivated = true end
+			self.Delegate = evt.Delegate
 		end
 
 		------------------------------------------------------
@@ -5788,33 +5785,12 @@ do
 			return self
 		end
 
-		function __call(self, obj, ...)
-			-- The event call is so frequent
-			-- keep local for optimization
-			if self.Blocked then return end
-
-			local owner = self.Owner
-			local asParam, useThread, ret
-
-			asParam = (obj ~= owner)
-			useThread = self.ThreadActivated
+		local function RaiseEvent(self, owner, ...)
+			local ret = false
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
-				-- Call the handler
-				if useThread then
-					if asParam then
-						ret = CallThread(handler, owner, obj, ...)
-					else
-						ret = CallThread(handler, obj, ...)
-					end
-				else
-					if asParam then
-						ret = handler(owner, obj, ...)
-					else
-						ret = handler(obj, ...)
-					end
-				end
+				ret = handler(owner, ...)
 
 				-- means it's disposed
 				if rawget(owner, "Disposed") then ret = true end
@@ -5823,22 +5799,24 @@ do
 				if ret then break end
 			end
 
-			-- Call the final handler
-			if not ret and self[0] then
-				local handler = self[0]
+			-- Call the custom handler
+			return not ret and self[0] and self[0](owner, ...)
+		end
 
-				if useThread then
-					if asParam then
-						CallThread(handler, owner, obj, ...)
-					else
-						CallThread(handler, obj, ...)
-					end
+		function __call(self, obj, ...)
+			if self.Blocked then return end
+
+			if self.Delegate then
+				if self.Owner ~= obj then
+					return self.Delegate(RaiseEvent, self, self.Owner, obj, ...)
 				else
-					if asParam then
-						handler(owner, obj, ...)
-					else
-						handler(obj, ...)
-					end
+					return self.Delegate(RaiseEvent, self, obj, ...)
+				end
+			else
+				if self.Owner ~= obj then
+					return RaiseEvent(self, self.Owner, obj, ...)
+				else
+					return RaiseEvent(self, obj, ...)
 				end
 			end
 		end
@@ -7342,26 +7320,50 @@ do
 	-- More usable attributes
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Thread__"
+	class "__Delegate__"
 		inherit "__Attribute__"
-		doc "__Thread__" [[Whether the event is thread activated by defalut, or wrap the method as coroutine]]
+		doc "__Delegate__" [[Wrap the method/event call in a delegate function]]
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc "Delegate" [[The delegate function]]
+		property "Delegate" { Type = Function + nil }
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			local CallThread = CallThread
+			local delegate = self.Delegate
+			if not delegate then return end
 
 			if targetType == AttributeTargets.Method then
 				if type(target) == "function" then
 					-- Wrap the target method
-					return function (...) return CallThread(target, ...) end
+					return function (...) return delegate(target, ...) end
 				end
 			elseif targetType == AttributeTargets.Event then
-				_NSInfo[owner].Event[target].ThreadActivated = true
+				_NSInfo[owner].Event[target].Delegate = delegate
 			end
+
+			self.Delegate = nil
 		end
-	endclass "__Thread__"
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__{}
+		function __Delegate__(self)
+			self.Delegate = nil
+			return Super(self)
+		end
+
+		__Arguments__{ Function }
+		function __Delegate__(self, value)
+			self.Delegate = value
+			return Super(self)
+		end
+	endclass "__Delegate__"
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
@@ -7615,6 +7617,7 @@ do
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
 			target.Handler = self.Handler
+			self.Handler = nil
 		end
 
 		------------------------------------------------------
