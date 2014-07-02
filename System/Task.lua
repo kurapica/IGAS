@@ -2,9 +2,19 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "0.1.0"
+Module "System.Task" "0.2.0"
 
 namespace "System"
+
+------------------------------------------------------
+-- Constant Settings
+------------------------------------------------------
+do
+	PHASE_THRESHOLD = 100 	-- The max task operation time per phase
+	TASK_THRESHOLD = 50		-- The max task operation time per task
+
+	PHASE_TIME_FACTOR = 0.4 -- The factor used to calculate the task operation time per phase
+end
 
 ------------------------------------------------------
 -- Task API
@@ -20,27 +30,39 @@ do
 	g_Phase = 0 		-- The Nth phase based on GetTime()
 	g_Threshold = 0 	-- The threshold based on GetFramerate(), in ms
 	g_TimeUsage = 0 	-- The used time based on debugprofilestop() in one phase
+	g_InPhase = false
 
-	r_Header = nil 		-- The core task header
-	r_Tail = nil 		-- The tail task header
+	local r_Header = nil-- The core task header
+	local r_Tail = nil 	-- The tail task header
 
 	p_Header = {}		-- The header pointer
 	p_Tail = {}			-- The tail pointer
 
 	c_Task = {}			-- Cache for useless task objects
 	c_Event = {}		-- Cache for registered events
+	c_Cost = setmetatable({}, {__mode="k"}) -- Cache for cost ms of task
 
 	callThread = System.Reflector.ThreadCall
 
 	-- Phase API
 	function StartPhase()
+		if g_InPhase then return end
+
+		g_InPhase = true
+
 		-- One phase per one time
 		local now = GetTime()
 		if now ~= g_Phase then
 			-- Prepare the phase
 			g_Phase = now
-			g_Threshold = debugprofilestop() ＋ 1000 / GetFramerate()	-- @todo: need a better solution
 
+			local opTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
+			if opTime > PHASE_THRESHOLD then opTime = PHASE_THRESHOLD end
+
+			g_Threshold = debugprofilestop() + opTime
+		end
+
+		if g_Threshold > debugprofilestop() do
 			-- Move task to core based on priority
 			for i = HIGH_PRIORITY, LOW_PRIORITY do
 				if p_Header[i] then
@@ -79,34 +101,32 @@ do
 				end
 			end
 
+			if not ok then pcall(geterrorhandler(), msg) end
+
 			wipe(task)
 			tinsert(c_Task, task)
-
-			if not ok then geterrorhandler()(msg)
 		end
+
+		g_InPhase = false
+
+		-- Try again if have time with high priority tasks
+		return not r_Header and g_Threshold > debugprofilestop() and p_Header[HIGH_PRIORITY] and StartPhase()
 	end
 
 	-- Queue API
-	function QueueTask(priority, task)
+	function QueueTask(priority, task, tail, noStart)
 		if p_Tail[priority] then
 			p_Tail[priority].Next = task
+			p_Tail[priority] = tail or task
 		else
-			p_Tail[priority] = task
+			p_Tail[priority] = tail or task
 			p_Header[priority] = task
 		end
 
-		while task.Next do task = task.Next end
-
-		p_Tail[priority] = task
-
-		if type(priority) == "number" then
-			return StartPhase()
-		end
+		return not noStart and StartPhase()
 	end
 
-	function NewDelayTask(delay, task)
-		local time = GetTime() + delay
-
+	function QueueDelayTask(time, task)
 		task.Time = time
 
 		local header = p_Header[DELAY_EVENT]
@@ -124,9 +144,11 @@ do
 			task.Next = header
 			p_Header[DELAY_EVENT] = task
 		end
+
+		if not task.Next then p_Tail[DELAY_EVENT] = task end
 	end
 
-	function NewEventTask(event, task)
+	function QueueEventTask(event, task)
 		if not c_Event[event] then
 			TaskManager:RegisterEvent(event)
 
@@ -139,7 +161,15 @@ do
 			end
 		end
 
-		return QueueTask(event, task)
+		local tail = p_Tail[event]
+
+		if tail then
+			tail.Next = task
+			p_Tail[event] = task
+		else
+			p_Header[event] = task
+			p_Tail[event] = task
+		end
 	end
 end
 
@@ -151,8 +181,12 @@ do
 
 	-- Delay Event Handler
 	TaskManager:SetScript("OnUpdate", function(self, elapsed)
-		local header = p_Header[DELAY_EVENT]
 		local now = GetTime()
+
+		-- Make sure unexpected error won't stop the whole task system
+		if now > g_Phase then g_InPhase = false end
+
+		local header = p_Header[DELAY_EVENT]
 
 		if header and header.Time <= now then
 			local otail = header
@@ -166,7 +200,7 @@ do
 			p_Header[DELAY_EVENT] = tail
 			otail.Next = nil
 
-			return QueueTask(LOW_PRIORITY, header)
+			return QueueTask(LOW_PRIORITY, header, otail)
 		else
 			return StartPhase()
 		end
@@ -175,14 +209,15 @@ do
 	-- System Event Handler
 	TaskManager:SetScript("OnEvent", function(self, event, ...)
 		local header = p_Header[event]
-		if not header then return end
+		local tail = p_Tail[event]
+		if not header or not tail then return end
 
 		-- Clear
 		p_Header[event] = nil
 		p_Tail[event] = nil
 
 		-- Attach to Queue
-		return QueueTask(NORMAL_PRIORITY, header)
+		return QueueTask(NORMAL_PRIORITY, header, tail)
 	end)
 end
 
@@ -235,9 +270,9 @@ interface "Task"
 
 		task.NArgs = 2
 
-		task[1] = tonumber(delay) or 0
+		task[1] = (tonumber(delay) or 0) + GetTime()
 		task[2] = dTask
-		task.Method = NewDelayTask
+		task.Method = QueueDelayTask
 
 		return QueueTask(LOW_PRIORITY, task)
 	end
@@ -259,7 +294,6 @@ interface "Task"
 		end
 
 		dTask.Method = callable
-		dTask.Delay = tonumber(delay) or 0
 
 		local task = tremove(c_Task) or {}
 
@@ -267,7 +301,7 @@ interface "Task"
 
 		task[1] = tostring(event)
 		task[2] = dTask
-		task.Method = NewEventTask
+		task.Method = QueueEventTask
 
 		return QueueTask(NORMAL_PRIORITY, task)
 	end
@@ -298,7 +332,16 @@ interface "Task"
 	------------------------------------------------------
 	__Doc__[[Check if the current thread should keep running or wait for next time slice]]
 	function Continue()
-		-- body
+		local thread = running()
+		assert(thread, "Task.Continue() can only be used in a thread.")
+
+		local task = tremove(c_Task) or {}
+		task.NArgs = 0
+		task.Method = thread
+
+		QueueTask(HIGH_PRIORITY, task, nil, true)
+
+		return yield()
 	end
 
 	__Doc__[[
@@ -306,7 +349,25 @@ interface "Task"
 		<param name="delay">the time to delay</param>
 	]]
 	function Delay(delay)
-		-- body
+		local thread = running()
+		assert(thread, "Task.Delay(delay) can only be used in a thread.")
+
+		local dTask = tremove(c_Task) or {}
+
+		dTask.NArgs = 0
+		dTask.Method = thread
+
+		local task = tremove(c_Task) or {}
+
+		task.NArgs = 2
+
+		task[1] = (tonumber(delay) or 0) + GetTime()
+		task[2] = dTask
+		task.Method = QueueDelayTask
+
+		QueueTask(LOW_PRIORITY, task, nil, true)
+
+		return yield()
 	end
 
 	__Doc__[[
@@ -314,6 +375,24 @@ interface "Task"
 		<param name="event">the system event name</param>
 	]]
 	function Event(event)
-		-- body
+		local thread = running()
+		assert(thread, "Task.Event(event) can only be used in a thread.")
+
+		local dTask = tremove(c_Task) or {}
+
+		dTask.NArgs = 0
+		dTask.Method = thread
+
+		local task = tremove(c_Task) or {}
+
+		task.NArgs = 2
+
+		task[1] = tostring(event)
+		task[2] = dTask
+		task.Method = QueueEventTask
+
+		QueueTask(NORMAL_PRIORITY, task, nil, true)
+
+		return yield()
 	end
 endinterface "Task"
