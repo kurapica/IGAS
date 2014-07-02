@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/06/26
--- Version			r98
+-- Last Update Date 2014/07/02
+-- Version			r99
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -143,6 +143,7 @@ end
 do
 	WEAK_KEY = {__mode = "k"}
 	WEAK_VALUE = {__mode = "v"}
+	WEAK_ALL = {__mode = "kv"}
 
 	SYNTHESIZE_ENV = {
 		rawset = rawset,
@@ -355,7 +356,7 @@ do
 		__mode = "k",
 	})
 
-	_SuperMap = setmetatable({}, {__mode = "kv"})
+	_SuperMap = setmetatable({}, WEAK_ALL)
 
 	-- metatable for namespaces
 	_MetaNS = getmetatable(_NameSpace)
@@ -2164,20 +2165,17 @@ do
 
 				if value == nil and not oper[key] then return end
 
-				if not oper[key] then
-					oper[key] = EventHandler(Cache4Event[key], self)
-				end
+				if not oper[key] then oper[key] = EventHandler(Cache4Event[key], self) end
 				oper = oper[key]
 
 				if value == nil or type(value) == "function" then
 					oper.Handler = value
+					return
 				elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
-					oper:Copy(value)
+					return oper:Copy(value)
 				else
 					error("Can't set this value to the event handler.", 2)
 				end
-
-				return
 			end
 
 			-- Custom newindex metametods
@@ -2922,7 +2920,7 @@ do
 	end
 
 	-- Some struct object may ref to each others, that would crash the validation
-	_ValidatedCache = setmetatable({}, {__mode = "kv"})
+	_ValidatedCache = setmetatable({}, WEAK_ALL)
 
 	function ValidateStruct(strt, value)
 		if _ValidatedCache[value] then return value end
@@ -5703,17 +5701,14 @@ do
 			<desc>Check if the event handler is empty</desc>
 			<return type="boolean">true if the event handler has no functions</return>
 		]]
-		function IsEmpty(self)
-			return #self == 0 and self[0] == nil
-		end
+		function IsEmpty(self) return #self == 0 and self[0] == nil end
 
 		doc "Clear" [[Clear all handlers]]
 		function Clear(self)
-			local flag = false
-
-			for i = #self, 0, -1 do flag = true self[i] = nil end
-
-			return flag and FireOnEventHandlerChanged(self)
+			if #self > 0 or self[0] then
+				for i = #self, 1, -1 do self[self[i]] = nil self[i] = nil end self[0] = nil
+				return FireOnEventHandlerChanged(self)
+			end
 		end
 
 		doc "Copy" [[
@@ -5721,15 +5716,12 @@ do
 			<param name="src" type="System.EventHandler">the event handler source</param>
 		]]
 		function Copy(self, src)
-			local flag = false
+			if self ~= src and getmetatable(src) == EventHandler and self.Event == src.Event then
+				for i = #self, 1, -1 do self[self[i]] = nil self[i] = nil end self[0] = nil
+				for i = #src, 1, -1 do self[src[i]] = src[src[i]] self[i] = src[i] end self[0] = src[0]
 
-			if Reflector.ObjectIsClass(src, EventHandler) and self.Event == src.Event and self ~= src then
-				for i = #self, 0, -1 do flag = true self[i] = nil end
-
-				for i = #src, 0, -1 do flag = true self[i] = src[i] end
+				return FireOnEventHandlerChanged(self)
 			end
-
-			return flag and FireOnEventHandlerChanged(self)
 		end
 
 		------------------------------------------------------
@@ -5772,6 +5764,15 @@ do
 
 			tinsert(self, func)
 
+			-- Check if the func is added by the class's constructor
+			local env = getfenv(func)
+			if env and env[OWNER_FIELD] then
+				local info = rawget(_NSInfo, env[OWNER_FIELD])
+				if info and info.Cache4Event and info.Cache4Event[self.Event.Name] then
+					self[func] = info.Cache4Event[self.Event.Name].Delegate
+				end
+			end
+
 			FireOnEventHandlerChanged(self)
 
 			return self
@@ -5780,17 +5781,22 @@ do
 		function __sub(self, func)
 			if type(func) ~= "function" then error("Usage: obj.OnXXXX = obj.OnXXXX - func", 2) end
 
-			for i, f in ipairs(self) do if f == func then tremove(self, i) FireOnEventHandlerChanged(self) break end end
+			for i, f in ipairs(self) do if f == func then tremove(self, i) self[f] = nil FireOnEventHandlerChanged(self) break end end
 
 			return self
 		end
 
 		local function RaiseEvent(self, owner, ...)
 			local ret = false
+			local delegate
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
-				ret = handler(owner, ...)
+				if self[handler] then
+					ret = self[handler](handler, owner, ...)
+				else
+					ret = handler(owner, ...)
+				end
 
 				-- means it's disposed
 				if rawget(owner, "Disposed") then ret = true end
@@ -5800,24 +5806,22 @@ do
 			end
 
 			-- Call the custom handler
-			return not ret and self[0] and self[0](owner, ...)
+			if not ret and self[0] then
+				if self.Delegate then
+					return self.Delegate(self[0], owner, ...)
+				else
+					return self[0](owner, ...)
+				end
+			end
 		end
 
 		function __call(self, obj, ...)
 			if self.Blocked then return end
 
-			if self.Delegate then
-				if self.Owner ~= obj then
-					return self.Delegate(RaiseEvent, self, self.Owner, obj, ...)
-				else
-					return self.Delegate(RaiseEvent, self, obj, ...)
-				end
+			if self.Owner ~= obj then
+				return RaiseEvent(self, self.Owner, obj, ...)
 			else
-				if self.Owner ~= obj then
-					return RaiseEvent(self, self.Owner, obj, ...)
-				else
-					return RaiseEvent(self, obj, ...)
-				end
+				return RaiseEvent(self, obj, ...)
 			end
 		end
 

@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "0.2.0"
+Module "System.Task" "1.0.0"
 
 namespace "System"
 
@@ -21,26 +21,28 @@ end
 ------------------------------------------------------
 do
 	CORE_PRIORITY = 0 	-- For Task Job
-	HIGH_PRIORITY = 1 	-- For Direct call
-	NORMAL_PRIORITY = 2 -- For Threading, Event
+	HIGH_PRIORITY = 1 	-- For Direct, Continue, Thread
+	NORMAL_PRIORITY = 2 -- For Event, Next
 	LOW_PRIORITY = 3 	-- For Delay
 
 	DELAY_EVENT = "DELAY"
 
 	g_Phase = 0 		-- The Nth phase based on GetTime()
 	g_Threshold = 0 	-- The threshold based on GetFramerate(), in ms
-	g_TimeUsage = 0 	-- The used time based on debugprofilestop() in one phase
 	g_InPhase = false
+	g_TaskCount = 0
+	g_StartTime = 0
+	g_EndTime = 0
+	g_AverageTime = 0
 
 	local r_Header = nil-- The core task header
-	local r_Tail = nil 	-- The tail task header
+	local r_Tail = nil 	-- The core task tail
 
 	p_Header = {}		-- The header pointer
 	p_Tail = {}			-- The tail pointer
 
 	c_Task = {}			-- Cache for useless task objects
 	c_Event = {}		-- Cache for registered events
-	c_Cost = setmetatable({}, {__mode="k"}) -- Cache for cost ms of task
 
 	callThread = System.Reflector.ThreadCall
 
@@ -56,13 +58,14 @@ do
 			-- Prepare the phase
 			g_Phase = now
 
-			local opTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
-			if opTime > PHASE_THRESHOLD then opTime = PHASE_THRESHOLD end
+			if g_TaskCount > 0 then
+				local avg = (g_EndTime - g_StartTime) / g_TaskCount
 
-			g_Threshold = debugprofilestop() + opTime
-		end
+				g_AverageTime = (g_AverageTime > 0) and (g_AverageTime + avg) / 2 or avg
+			end
 
-		if g_Threshold > debugprofilestop() do
+			g_TaskCount = 0
+
 			-- Move task to core based on priority
 			for i = HIGH_PRIORITY, LOW_PRIORITY do
 				if p_Header[i] then
@@ -78,6 +81,27 @@ do
 					p_Tail[i] = nil
 				end
 			end
+
+			local task = r_Header
+
+			while task do g_TaskCount = g_TaskCount + 1 task = task.Next end
+
+			local opTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
+
+			if g_AverageTime * g_TaskCount > opTime then opTime = g_AverageTime * g_TaskCount end
+			if opTime > PHASE_THRESHOLD then opTime = PHASE_THRESHOLD end
+
+			g_StartTime = debugprofilestop()
+			g_Threshold = g_StartTime + opTime
+		elseif not r_Header and p_Header[HIGH_PRIORITY] then
+			-- Only tasks of high priority can be executed with several generations in one phase
+			r_Header = p_Header[HIGH_PRIORITY]
+			r_Tail = p_Tail[HIGH_PRIORITY]
+
+			p_Header[HIGH_PRIORITY] = nil
+			p_Tail[HIGH_PRIORITY] = nil
+
+			while task do g_TaskCount = g_TaskCount + 1 task = task.Next end
 		end
 
 		-- It's time to execute tasks
@@ -107,10 +131,12 @@ do
 			tinsert(c_Task, task)
 		end
 
+		g_EndTime = debugprofilestop()
+
 		g_InPhase = false
 
 		-- Try again if have time with high priority tasks
-		return not r_Header and g_Threshold > debugprofilestop() and p_Header[HIGH_PRIORITY] and StartPhase()
+		return not r_Header and g_Threshold > g_EndTime and p_Header[HIGH_PRIORITY] and StartPhase()
 	end
 
 	-- Queue API
@@ -229,7 +255,7 @@ interface "Task"
 	-- Task Creation Method
 	------------------------------------------------------
 	__Doc__[[
-		<desc>Call method directly</desc>
+		<desc>Call method with high priority, the method should be called as soon as possible.</desc>
 		<format>callable[, ...]</format>
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
@@ -246,6 +272,26 @@ interface "Task"
 		task.Method = callable
 
 		return QueueTask(HIGH_PRIORITY, task)
+	end
+
+	__Doc__[[
+		<desc>Call method with normal priority, the method should be called in the next phase.</desc>
+		<format>callable[, ...]</format>
+		<param name="callable">Callable object, function, thread, table with __call</param>
+		<param name="...">method parameter</param>
+	]]
+	function NextCall(callable, ...)
+		local task = tremove(c_Task) or {}
+
+		task.NArgs = select('#', ...)
+
+		for i = 1, task.NArgs do
+			task[i] = select(i, ...)
+		end
+
+		task.Method = callable
+
+		return QueueTask(NORMAL_PRIORITY, task)
 	end
 
 	__Doc__[[
@@ -324,7 +370,7 @@ interface "Task"
 
 		task.Method = callThread
 
-		return QueueTask(NORMAL_PRIORITY, task)
+		return QueueTask(HIGH_PRIORITY, task)
 	end
 
 	------------------------------------------------------
@@ -340,6 +386,20 @@ interface "Task"
 		task.Method = thread
 
 		QueueTask(HIGH_PRIORITY, task, nil, true)
+
+		return yield()
+	end
+
+	__Doc__[[Make the current thread wait for next phase]]
+	function Next()
+		local thread = running()
+		assert(thread, "Task.Next() can only be used in a thread.")
+
+		local task = tremove(c_Task) or {}
+		task.NArgs = 0
+		task.Method = thread
+
+		QueueTask(NORMAL_PRIORITY, task, nil, true)
 
 		return yield()
 	end
