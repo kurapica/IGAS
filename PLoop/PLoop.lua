@@ -1661,12 +1661,16 @@ do
 		__exist = true,		-- ClassName(...)	-- return object if existed
 	}
 
+	_InitObject = setmetatable({}, WEAK_ALL)
+
 	--------------------------------------------------
 	-- Init & Dispose System
 	--------------------------------------------------
 	do
 		function InitObjectWithInterface(cls, obj)
 			local ok, msg, info
+
+			_InitObject[obj] = true
 
 			for _, IF in ipairs(_NSInfo[cls].Cache4Interface) do
 				info = _NSInfo[IF]
@@ -2194,6 +2198,8 @@ do
 		local count = select('#', ...)
 		local initTable = select(1, ...)
 
+		_InitObject[obj] = true
+
 		if not ( count == 1 and type(initTable) == "table" and getmetatable(initTable) == nil ) then initTable = nil end
 
 		while info do
@@ -2263,6 +2269,8 @@ do
 			-- Don't think there would be interfaces for the unique class, just for safe
 			InitObjectWithInterface(cls, info.UniqueObject)
 
+			_InitObject[info.UniqueObject] = nil
+
 			return info.UniqueObject
 		end
 
@@ -2278,9 +2286,11 @@ do
 
 		local ok, ret = pcall(Class1Obj, cls, obj, ...)
 
-		if not ok then DisposeObject(obj) error(ret, 2) end
+		if not ok then _InitObject[obj] = nil DisposeObject(obj) error(ret, 2) end
 
 		InitObjectWithInterface(cls, obj)
+
+		_InitObject[obj] = nil
 
 		if info.UniqueObject then info.UniqueObject = obj end
 
@@ -5765,11 +5775,13 @@ do
 			tinsert(self, func)
 
 			-- Check if the func is added by the class's constructor
-			local env = getfenv(func)
-			if env and env[OWNER_FIELD] then
-				local info = rawget(_NSInfo, env[OWNER_FIELD])
-				if info and info.Cache4Event and info.Cache4Event[self.Event.Name] then
-					self[func] = info.Cache4Event[self.Event.Name].Delegate
+			if _InitObject[self.Owner] then
+				local env = getfenv(func)
+				if env and env[OWNER_FIELD] then
+					local info = rawget(_NSInfo, env[OWNER_FIELD])
+					if info and info.Cache4Event and info.Cache4Event[self.Event.Name] then
+						self[func] = info.Cache4Event[self.Event.Name].Delegate
+					end
 				end
 			end
 

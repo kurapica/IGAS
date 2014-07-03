@@ -14,6 +14,7 @@ do
 	TASK_THRESHOLD = 50		-- The max task operation time per task
 
 	PHASE_TIME_FACTOR = 0.4 -- The factor used to calculate the task operation time per phase
+	PHASE_ADD_FACTOR = 1.5 	-- The factor used to calculate the additional task operation time based on current one
 end
 
 ------------------------------------------------------
@@ -28,15 +29,23 @@ do
 	DELAY_EVENT = "DELAY"
 
 	g_Phase = 0 		-- The Nth phase based on GetTime()
+	g_PhaseTime = 0
 	g_Threshold = 0 	-- The threshold based on GetFramerate(), in ms
 	g_InPhase = false
-	g_TaskCount = 0
+	g_FinishedTask = 0
+	g_TaskCount = {
+		[HIGH_PRIORITY] = 0,
+		[NORMAL_PRIORITY] = 0,
+		[LOW_PRIORITY] = 0,
+	}
 	g_StartTime = 0
 	g_EndTime = 0
-	g_AverageTime = 0
+	g_AverageTime = 20 	-- A useless init value
+	g_RequireTime = false
 
 	local r_Header = nil-- The core task header
 	local r_Tail = nil 	-- The core task tail
+	local r_Count = 0 	-- The core task count
 
 	p_Header = {}		-- The header pointer
 	p_Tail = {}			-- The tail pointer
@@ -57,14 +66,16 @@ do
 		if now ~= g_Phase then
 			-- Prepare the phase
 			g_Phase = now
+			g_RequireTime = false
 
-			if g_TaskCount > 0 then
-				local avg = (g_EndTime - g_StartTime) / g_TaskCount
+			-- Task system also cost some time
+			g_StartTime = debugprofilestop()
 
-				g_AverageTime = (g_AverageTime > 0) and (g_AverageTime + avg) / 2 or avg
+			-- Calculate the average time per task
+			if g_FinishedTask > 0 then
+				g_AverageTime = (g_AverageTime + (g_EndTime - g_StartTime) / g_FinishedTask) / 2
+				g_FinishedTask = 0
 			end
-
-			g_TaskCount = 0
 
 			-- Move task to core based on priority
 			for i = HIGH_PRIORITY, LOW_PRIORITY do
@@ -72,43 +83,60 @@ do
 					if r_Header and r_Tail then
 						r_Tail.Next = p_Header[i]
 						r_Tail = p_Tail[i]
+						r_Count = r_Count + g_TaskCount[i]
 					else
 						r_Header = p_Header[i]
 						r_Tail = p_Tail[i]
+						r_Count = g_TaskCount[i]
 					end
 
 					p_Header[i] = nil
 					p_Tail[i] = nil
+					g_TaskCount[i] = 0
 				end
 			end
 
 			local task = r_Header
 
-			while task do g_TaskCount = g_TaskCount + 1 task = task.Next end
+			g_PhaseTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
 
-			local opTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
+			if g_PhaseTime > PHASE_THRESHOLD then g_PhaseTime = PHASE_THRESHOLD end
 
-			if g_AverageTime * g_TaskCount > opTime then opTime = g_AverageTime * g_TaskCount end
-			if opTime > PHASE_THRESHOLD then opTime = PHASE_THRESHOLD end
-
-			g_StartTime = debugprofilestop()
-			g_Threshold = g_StartTime + opTime
+			g_Threshold = g_StartTime + g_PhaseTime
 		elseif not r_Header and p_Header[HIGH_PRIORITY] then
 			-- Only tasks of high priority can be executed with several generations in one phase
 			r_Header = p_Header[HIGH_PRIORITY]
 			r_Tail = p_Tail[HIGH_PRIORITY]
+			r_Count = g_TaskCount[HIGH_PRIORITY]
 
 			p_Header[HIGH_PRIORITY] = nil
 			p_Tail[HIGH_PRIORITY] = nil
-
-			while task do g_TaskCount = g_TaskCount + 1 task = task.Next end
+			g_TaskCount[HIGH_PRIORITY] = 0
 		end
 
 		-- It's time to execute tasks
-		while r_Header and g_Threshold > debugprofilestop() do
+		while r_Header do
 			local task = r_Header
 			local ok, msg
+			local stop = debugprofilestop()
 
+			if g_Threshold <= stop and not g_RequireTime then
+				-- One time per phase
+				g_RequireTime = true
+
+				-- Consider tasks in next phase to smooth the performance
+				local cost = (r_Count + g_TaskCount[HIGH_PRIORITY] + g_TaskCount[NORMAL_PRIORITY] + g_TaskCount[LOW_PRIORITY]) * g_AverageTime / 2
+
+				if cost + g_PhaseTime > PHASE_THRESHOLD then cost = PHASE_THRESHOLD - g_PhaseTime end
+
+				g_Threshold = g_Threshold + cost
+
+				if g_Threshold <= stop then break end
+
+				task = r_Header
+			end
+
+			-- Execute task
 			r_Header = r_Header.Next
 
 			if type(task.Method) == "thread" then
@@ -127,6 +155,9 @@ do
 
 			if not ok then pcall(geterrorhandler(), msg) end
 
+			g_FinishedTask = g_FinishedTask + 1
+			r_Count = r_Count - 1
+
 			wipe(task)
 			tinsert(c_Task, task)
 		end
@@ -140,13 +171,21 @@ do
 	end
 
 	-- Queue API
-	function QueueTask(priority, task, tail, noStart)
+	function QueueTask(priority, task, noStart)
+		local tail, ntail, count = task, task.Next, 1
+
+		while ntail do tail, ntail, count = ntail, ntail.Next, count + 1 end
+
 		if p_Tail[priority] then
 			p_Tail[priority].Next = task
-			p_Tail[priority] = tail or task
+			p_Tail[priority] = tail
+
+			g_TaskCount[priority] = g_TaskCount[priority] + count
 		else
-			p_Tail[priority] = tail or task
 			p_Header[priority] = task
+			p_Tail[priority] = tail
+
+			g_TaskCount[priority] = count
 		end
 
 		return not noStart and StartPhase()
@@ -226,7 +265,7 @@ do
 			p_Header[DELAY_EVENT] = tail
 			otail.Next = nil
 
-			return QueueTask(LOW_PRIORITY, header, otail)
+			return QueueTask(LOW_PRIORITY, header)
 		else
 			return StartPhase()
 		end
@@ -235,15 +274,14 @@ do
 	-- System Event Handler
 	TaskManager:SetScript("OnEvent", function(self, event, ...)
 		local header = p_Header[event]
-		local tail = p_Tail[event]
-		if not header or not tail then return end
+		if not header then return end
 
 		-- Clear
 		p_Header[event] = nil
 		p_Tail[event] = nil
 
 		-- Attach to Queue
-		return QueueTask(NORMAL_PRIORITY, header, tail)
+		return QueueTask(NORMAL_PRIORITY, header)
 	end)
 end
 
@@ -385,7 +423,7 @@ interface "Task"
 		task.NArgs = 0
 		task.Method = thread
 
-		QueueTask(HIGH_PRIORITY, task, nil, true)
+		QueueTask(HIGH_PRIORITY, task, true)
 
 		return yield()
 	end
@@ -399,7 +437,7 @@ interface "Task"
 		task.NArgs = 0
 		task.Method = thread
 
-		QueueTask(NORMAL_PRIORITY, task, nil, true)
+		QueueTask(NORMAL_PRIORITY, task, true)
 
 		return yield()
 	end
@@ -425,7 +463,7 @@ interface "Task"
 		task[2] = dTask
 		task.Method = QueueDelayTask
 
-		QueueTask(LOW_PRIORITY, task, nil, true)
+		QueueTask(LOW_PRIORITY, task, true)
 
 		return yield()
 	end
@@ -451,7 +489,7 @@ interface "Task"
 		task[2] = dTask
 		task.Method = QueueEventTask
 
-		QueueTask(NORMAL_PRIORITY, task, nil, true)
+		QueueTask(NORMAL_PRIORITY, task, true)
 
 		return yield()
 	end
