@@ -9,11 +9,12 @@
 --                      2011/10/29  OnHook Script added.
 --                      2011/10/31  New SlashCmd System for addon & module.
 --                      2013/08/05  Remove the version check, seal the definition environment
+--                      2014/07/03	Recode with System.Task
 
 ------------------------------------------------------
 -- Addon system definition environment
 ------------------------------------------------------
-Module "System.Addon" "1.16.0"
+Module "System.Addon" "1.17.0"
 
 namespace "System"
 
@@ -43,7 +44,7 @@ _Addon_MetaData = _Addon_MetaData or setmetatable({}, _MetaWK)
 ------------------------------------------------------
 do
 	_EventManager = _EventManager or CreateFrame("Frame")
-	_EventDistribution =  _EventDistribution or {}
+	_EventDistribution = _EventDistribution or {}
 
 	_UsedEvent = _UsedEvent or {}
 

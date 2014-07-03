@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "1.0.0"
+Module "System.Task" "1.1.0"
 
 namespace "System"
 
@@ -10,8 +10,7 @@ namespace "System"
 -- Constant Settings
 ------------------------------------------------------
 do
-	PHASE_THRESHOLD = 100 	-- The max task operation time per phase
-	TASK_THRESHOLD = 50		-- The max task operation time per task
+	PHASE_THRESHOLD = 50 	-- The max task operation time per phase
 
 	PHASE_TIME_FACTOR = 0.4 -- The factor used to calculate the task operation time per phase
 	PHASE_ADD_FACTOR = 1.5 	-- The factor used to calculate the additional task operation time based on current one
@@ -188,7 +187,7 @@ do
 			g_TaskCount[priority] = count
 		end
 
-		return not noStart and StartPhase()
+		return not noStart and priority == HIGH_PRIORITY and StartPhase()
 	end
 
 	function QueueDelayTask(time, task)
@@ -265,10 +264,10 @@ do
 			p_Header[DELAY_EVENT] = tail
 			otail.Next = nil
 
-			return QueueTask(LOW_PRIORITY, header)
-		else
-			return StartPhase()
+			QueueTask(NORMAL_PRIORITY, header, true)
 		end
+
+		return StartPhase()
 	end)
 
 	-- System Event Handler
@@ -280,8 +279,17 @@ do
 		p_Header[event] = nil
 		p_Tail[event] = nil
 
+		-- Fill args
+		local task = header
+		while task do
+			task.NArgs = select('#', ...)
+			for i = 1, task.NArgs do task[i] = select(i, ...) end
+
+			task = task.Next
+		end
+
 		-- Attach to Queue
-		return QueueTask(NORMAL_PRIORITY, header)
+		return QueueTask(HIGH_PRIORITY, header)
 	end)
 end
 
@@ -303,9 +311,7 @@ interface "Task"
 
 		task.NArgs = select('#', ...)
 
-		for i = 1, task.NArgs do
-			task[i] = select(i, ...)
-		end
+		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callable
 
@@ -323,9 +329,7 @@ interface "Task"
 
 		task.NArgs = select('#', ...)
 
-		for i = 1, task.NArgs do
-			task[i] = select(i, ...)
-		end
+		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callable
 
@@ -344,9 +348,7 @@ interface "Task"
 
 		dTask.NArgs = select('#', ...)
 
-		for i = 1, dTask.NArgs do
-			dTask[i] = select(i, ...)
-		end
+		for i = 1, dTask.NArgs do dTask[i] = select(i, ...) end
 
 		dTask.Method = callable
 
@@ -366,17 +368,11 @@ interface "Task"
 		<format>event, callable[, ...]</format>
 		<param name="event">the system event name</param>
 		<param name="callable">Callable object, function, thread, table with __call</param>
-		<param name="...">method parameter</param>
 	]]
-	function EventCall(event, callable, ...)
+	function EventCall(event, callable)
 		local dTask = tremove(c_Task) or {}
 
-		dTask.NArgs = select('#', ...)
-
-		for i = 1, dTask.NArgs do
-			dTask[i] = select(i, ...)
-		end
-
+		dTask.NArgs = 0
 		dTask.Method = callable
 
 		local task = tremove(c_Task) or {}
@@ -402,9 +398,7 @@ interface "Task"
 		task.NArgs = select('#', ...) + 1
 
 		task[1] = callable
-		for i = 1, task.NArgs do
-			task[i + 1] = select(i, ...)
-		end
+		for i = 1, task.NArgs do task[i + 1] = select(i, ...) end
 
 		task.Method = callThread
 
