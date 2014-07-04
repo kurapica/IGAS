@@ -464,12 +464,15 @@ interface "IFModule"
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Fired when the addon(module) and it's saved variables is loaded]]
+	__Delegate__( Task.DirectCall )
 	event "OnLoad"
 
 	__Doc__[[Fired when the addon(module) is enabled]]
+	__Delegate__( Task.DirectCall )
 	event "OnEnable"
 
 	__Doc__[[Fired when the addon(module) is disabled]]
+	__Delegate__( Task.DirectCall )
 	event "OnDisable"
 
 	__Doc__[[Fired when the addon(module) is dispoing]]
@@ -480,6 +483,7 @@ interface "IFModule"
 		<param name="option">the first word in slash command</param>
 		<param name="info">remain string</param>
 	]]
+	__Delegate__( Task.DirectCall )
 	event "OnSlashCmd"
 
 	__Doc__[[
@@ -487,6 +491,7 @@ interface "IFModule"
 		<param name="function">the hooked function name</param>
 		<param name="...">arguments from the hooked function</param>
 	]]
+	__Delegate__( Task.DirectCall )
 	event "OnHook"
 
 	__Doc__[[
@@ -494,6 +499,7 @@ interface "IFModule"
 		<param name="event">string, the event's name</param>
 		<param name="...">the event's parameters</param>
 	]]
+	__Delegate__( Task.DirectCall )
 	event "OnEvent"
 
 	------------------------------------------------------

@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "1.1.0"
+Module "System.Task" "1.2.0"
 
 namespace "System"
 
@@ -11,9 +11,7 @@ namespace "System"
 ------------------------------------------------------
 do
 	PHASE_THRESHOLD = 50 	-- The max task operation time per phase
-
 	PHASE_TIME_FACTOR = 0.4 -- The factor used to calculate the task operation time per phase
-	PHASE_ADD_FACTOR = 1.5 	-- The factor used to calculate the additional task operation time based on current one
 end
 
 ------------------------------------------------------
@@ -25,7 +23,9 @@ do
 	NORMAL_PRIORITY = 2 -- For Event, Next
 	LOW_PRIORITY = 3 	-- For Delay
 
-	DELAY_EVENT = "DELAY"
+	DELAY_EVENT = -1
+
+	g_Inited = false
 
 	g_Phase = 0 		-- The Nth phase based on GetTime()
 	g_PhaseTime = 0
@@ -40,7 +40,7 @@ do
 	g_StartTime = 0
 	g_EndTime = 0
 	g_AverageTime = 20 	-- A useless init value
-	g_RequireTime = false
+	g_ReqAddTime = false
 
 	local r_Header = nil-- The core task header
 	local r_Tail = nil 	-- The core task tail
@@ -63,18 +63,17 @@ do
 		-- One phase per one time
 		local now = GetTime()
 		if now ~= g_Phase then
-			-- Prepare the phase
+			-- Init the phase
 			g_Phase = now
-			g_RequireTime = false
-
-			-- Task system also cost some time
-			g_StartTime = debugprofilestop()
+			g_ReqAddTime = false
 
 			-- Calculate the average time per task
 			if g_FinishedTask > 0 then
 				g_AverageTime = (g_AverageTime + (g_EndTime - g_StartTime) / g_FinishedTask) / 2
 				g_FinishedTask = 0
 			end
+
+			g_StartTime = debugprofilestop()
 
 			-- Move task to core based on priority
 			for i = HIGH_PRIORITY, LOW_PRIORITY do
@@ -95,11 +94,13 @@ do
 				end
 			end
 
-			local task = r_Header
-
-			g_PhaseTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
-
-			if g_PhaseTime > PHASE_THRESHOLD then g_PhaseTime = PHASE_THRESHOLD end
+			if g_Inited then
+				g_PhaseTime = 1000 * PHASE_TIME_FACTOR / GetFramerate()
+				if g_PhaseTime > PHASE_THRESHOLD then g_PhaseTime = PHASE_THRESHOLD end
+			else
+				-- just for safe
+				g_PhaseTime = 1000000
+			end
 
 			g_Threshold = g_StartTime + g_PhaseTime
 		elseif not r_Header and p_Header[HIGH_PRIORITY] then
@@ -115,13 +116,13 @@ do
 
 		-- It's time to execute tasks
 		while r_Header do
-			local task = r_Header
+			local task, args = r_Header, r_Header.Args or r_Header
 			local ok, msg
 			local stop = debugprofilestop()
 
-			if g_Threshold <= stop and not g_RequireTime then
+			if g_Threshold <= stop and not g_ReqAddTime then
 				-- One time per phase
-				g_RequireTime = true
+				g_ReqAddTime = true
 
 				-- Consider tasks in next phase to smooth the performance
 				local cost = (r_Count + g_TaskCount[HIGH_PRIORITY] + g_TaskCount[NORMAL_PRIORITY] + g_TaskCount[LOW_PRIORITY]) * g_AverageTime / 2
@@ -138,24 +139,44 @@ do
 			-- Execute task
 			r_Header = r_Header.Next
 
-			if type(task.Method) == "thread" then
-				if task.NArgs > 0 then
-					ok, msg = resume(task.Method, unpack(task, 1, task.NArgs))
+			if not task.Cancel then
+				local nargs = args.NArgs
+				local call = type(task.Method) == "thread" and resume or pcall
+
+				if nargs == 0 then
+					ok, msg = call(task.Method)
+				elseif nargs == 1 then
+					ok, msg = call(task.Method, args[1])
+				elseif nargs == 2 then
+					ok, msg = call(task.Method, args[1], args[2])
+				elseif nargs == 3 then
+					ok, msg = call(task.Method, args[1], args[2], args[3])
+				elseif nargs == 4 then
+					ok, msg = call(task.Method, args[1], args[2], args[3], args[4])
 				else
-					ok, msg = resume(task.Method)
+					ok, msg = call(task.Method, unpack(args, 1, nargs))
 				end
-			else
-				if task.NArgs > 0 then
-					ok, msg = pcall(task.Method, unpack(task, 1, task.NArgs))
-				else
-					ok, msg = pcall(task.Method)
+
+				if not ok then pcall(geterrorhandler(), msg) end
+
+				if task.Sibling then
+					local sib = task.Sibling
+
+					while sib and sib ~= task do sib.Method, sib.Cancel, sib = nil, true, sib.Sibling end
 				end
+
+				g_FinishedTask = g_FinishedTask + 1
 			end
 
-			if not ok then pcall(geterrorhandler(), msg) end
-
-			g_FinishedTask = g_FinishedTask + 1
 			r_Count = r_Count - 1
+
+			if args ~= task then
+				args.Used = args.Used - 1
+				if args.Used == 0 then
+					wipe(args)
+					tinsert(c_Task, args)
+				end
+			end
 
 			wipe(task)
 			tinsert(c_Task, task)
@@ -217,9 +238,9 @@ do
 			TaskManager:RegisterEvent(event)
 
 			if not TaskManager:IsEventRegistered(event) then
-				wipe(task)				-- empty the task, should we?
-				tinsert(c_Task, task)	-- reuse the task
-				return geterrorhandler()(("No '%s' event exist."):format(event))
+				wipe(task)
+				tinsert(c_Task, task)
+				return false
 			else
 				c_Event[event] = true
 			end
@@ -234,6 +255,8 @@ do
 			p_Header[event] = task
 			p_Tail[event] = task
 		end
+
+		return true
 	end
 end
 
@@ -246,6 +269,8 @@ do
 	-- Delay Event Handler
 	TaskManager:SetScript("OnUpdate", function(self, elapsed)
 		local now = GetTime()
+
+		g_Inited = true
 
 		-- Make sure unexpected error won't stop the whole task system
 		if now > g_Phase then g_InPhase = false end
@@ -281,9 +306,17 @@ do
 
 		-- Fill args
 		local task = header
+
+		local args = tremove(c_Task) or {}
+
+		args.NArgs = select('#', ...) + 1
+		args.Used = 0
+		args[1] = event
+		for i = 1, args.NArgs do args[i + 1] = select(i, ...) end
+
 		while task do
-			task.NArgs = select('#', ...)
-			for i = 1, task.NArgs do task[i] = select(i, ...) end
+			task.Args = args
+			args.Used = args.Used + 1
 
 			task = task.Next
 		end
@@ -310,7 +343,6 @@ interface "Task"
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
-
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callable
@@ -328,7 +360,6 @@ interface "Task"
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
-
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callable
@@ -344,46 +375,30 @@ interface "Task"
 		<param name="...">method parameter</param>
 	]]
 	function DelayCall(delay, callable, ...)
-		local dTask = tremove(c_Task) or {}
-
-		dTask.NArgs = select('#', ...)
-
-		for i = 1, dTask.NArgs do dTask[i] = select(i, ...) end
-
-		dTask.Method = callable
-
 		local task = tremove(c_Task) or {}
 
-		task.NArgs = 2
+		task.NArgs = select('#', ...)
+		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
-		task[1] = (tonumber(delay) or 0) + GetTime()
-		task[2] = dTask
-		task.Method = QueueDelayTask
+		task.Method = callable
 
-		return QueueTask(LOW_PRIORITY, task)
+		return QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
 	end
 
 	__Doc__[[
-		<desc>Call method wait for system event</desc>
+		<desc>Call method after special system event</desc>
 		<format>event, callable[, ...]</format>
 		<param name="event">the system event name</param>
 		<param name="callable">Callable object, function, thread, table with __call</param>
+		<return>true if the event is existed and task is registered</return>
 	]]
 	function EventCall(event, callable)
-		local dTask = tremove(c_Task) or {}
-
-		dTask.NArgs = 0
-		dTask.Method = callable
-
 		local task = tremove(c_Task) or {}
 
-		task.NArgs = 2
+		task.NArgs = 0
+		task.Method = callable
 
-		task[1] = tostring(event)
-		task[2] = dTask
-		task.Method = QueueEventTask
-
-		return QueueTask(NORMAL_PRIORITY, task)
+		return QueueEventTask(tostring(event), task)
 	end
 
 	__Doc__[[
@@ -392,17 +407,79 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
 	]]
-	function ThreadCall(callable, ...)
+	function ThreadCall(...)
 		local task = tremove(c_Task) or {}
 
-		task.NArgs = select('#', ...) + 1
-
-		task[1] = callable
-		for i = 1, task.NArgs do task[i + 1] = select(i, ...) end
+		task.NArgs = select('#', ...)
+		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callThread
 
 		return QueueTask(HIGH_PRIORITY, task)
+	end
+
+	__Doc__[[
+		<desc>Call method after special system events or several times</desc>
+		<format>[delay, ][event, ... ,] callable</format>
+		<param name="delay">the time to delay</param>
+		<param name="event">the system event name</param>
+		<param name="callable">Callable object, function, thread, table with __call</param>
+		<return>true if the task is registered</return>
+	]]
+	function WaitCall(...)
+		local nargs = select('#', ...)
+		local callable = select(nargs, ...)
+
+		if type(callable) == "function" or type(callable) == "table" or type(callable) == "thread" then
+			local delayed = false
+			local header = nil
+			local tail = nil
+
+			for i = 1, nargs - 1 do
+				local v = select(i, ...)
+
+				if type(v) == "number" and not delayed then
+					delayed = true
+
+					local task = tremove(c_Task) or {}
+					task.NArgs = 0
+					task.Method = callable
+
+					QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
+
+					if tail then
+						tail.Sibling = task
+						tail = task
+					else
+						header, tail = task, task
+					end
+				elseif type(v) == "string" then
+					local task = tremove(c_Task) or {}
+					task.NArgs = 0
+					task.Method = callable
+
+					if QueueEventTask(v, task) then
+						if tail then
+							tail.Sibling = task
+							tail = task
+						else
+							header, tail = task, task
+						end
+					else
+						wipe(task)
+						tinsert(c_Task, task)
+					end
+				end
+			end
+
+			if not header then return false end
+
+			tail.Sibling = header
+
+			return true
+		end
+
+		return false
 	end
 
 	------------------------------------------------------
@@ -444,20 +521,12 @@ interface "Task"
 		local thread = running()
 		assert(thread, "Task.Delay(delay) can only be used in a thread.")
 
-		local dTask = tremove(c_Task) or {}
-
-		dTask.NArgs = 0
-		dTask.Method = thread
-
 		local task = tremove(c_Task) or {}
 
-		task.NArgs = 2
+		task.NArgs = 0
+		task.Method = thread
 
-		task[1] = (tonumber(delay) or 0) + GetTime()
-		task[2] = dTask
-		task.Method = QueueDelayTask
-
-		QueueTask(LOW_PRIORITY, task, true)
+		QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
 
 		return yield()
 	end
@@ -465,25 +534,79 @@ interface "Task"
 	__Doc__[[
 		<desc>Make the current thread wait for a system event</desc>
 		<param name="event">the system event name</param>
+		<return>true if the event is existed and task is registered</return>
 	]]
 	function Event(event)
 		local thread = running()
 		assert(thread, "Task.Event(event) can only be used in a thread.")
 
-		local dTask = tremove(c_Task) or {}
-
-		dTask.NArgs = 0
-		dTask.Method = thread
-
 		local task = tremove(c_Task) or {}
 
-		task.NArgs = 2
+		task.NArgs = 0
+		task.Method = thread
 
-		task[1] = tostring(event)
-		task[2] = dTask
-		task.Method = QueueEventTask
+		if QueueEventTask(tostring(event), task) then
+			return yield()
+		else
+			error(("No '%s' event existed."):format(event), 2)
+		end
+	end
 
-		QueueTask(NORMAL_PRIORITY, task, true)
+	__Doc__[[
+		<desc>Call method after special system events or several times</desc>
+		<format>[delay, ][event, ... ,] callable</format>
+		<param name="delay">the time to delay</param>
+		<param name="event">the system event name</param>
+		<return>true if the task is registered</return>
+	]]
+	function Wait(...)
+		local thread = running()
+		assert(thread, "Task.Wait(delay, event, ...) can only be used in a thread.")
+
+		local delayed = false
+		local header = nil
+		local tail = nil
+
+		for i = 1, select('#', ...) do
+			local v = select(i, ...)
+
+			if type(v) == "number" and not delayed then
+				delayed = true
+
+				local task = tremove(c_Task) or {}
+				task.NArgs = 0
+				task.Method = thread
+
+				QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
+
+				if tail then
+					tail.Sibling = task
+					tail = task
+				else
+					header, tail = task, task
+				end
+			elseif type(v) == "string" then
+				local task = tremove(c_Task) or {}
+				task.NArgs = 0
+				task.Method = thread
+
+				if QueueEventTask(v, task) then
+					if tail then
+						tail.Sibling = task
+						tail = task
+					else
+						header, tail = task, task
+					end
+				else
+					wipe(task)
+					tinsert(c_Task, task)
+				end
+			end
+		end
+
+		if not header then error("No existed event or delay is specified.", 2) end
+
+		tail.Sibling = header
 
 		return yield()
 	end
