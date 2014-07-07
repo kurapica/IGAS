@@ -1,15 +1,15 @@
 -- Addon & Module System
--- Author: kurapica.igas@gmail.com
+-- Author      : kurapica.igas@gmail.com
 -- Create Date : 2011/02/26
 -- ChangeLog   :
---						2011/03/16	Modify the enable-disable system.
---						2011/06/12	Allow access Base namespaces without imports them.
---						2011/06/27	GetModules method added for addon & module
---                      2011/08/03  Hook System added.
---                      2011/10/29  OnHook Script added.
---                      2011/10/31  New SlashCmd System for addon & module.
---                      2013/08/05  Remove the version check, seal the definition environment
---                      2014/07/03	Recode with System.Task
+--               2011/03/16	Modify the enable-disable system.
+--               2011/06/12	Allow access Base namespaces without imports them.
+--               2011/06/27	GetModules method added for addon & module
+--               2011/08/03  Hook System added.
+--               2011/10/29  OnHook Script added.
+--               2011/10/31  New SlashCmd System for addon & module.
+--               2013/08/05  Remove the version check, seal the definition environment
+--               2014/07/03	Recode with System.Task
 
 ------------------------------------------------------
 -- Addon system definition environment
@@ -21,18 +21,18 @@ namespace "System"
 ------------------------------------------------------
 -- Global Definition
 ------------------------------------------------------
-_MetaWK = _MetaWK or {__mode = "k"}
+_MetaWK = {__mode = "k"}
 
-_Logined = _Logined or false
+_Logined = false
 
-_Addon = _Addon or {}
+_Addon = {}
 
-_Addon_Loaded = _Addon_Loaded or setmetatable({}, _MetaWK)
-_Addon_Disabled = _Addon_Disabled or setmetatable({}, _MetaWK)
-_Addon_DefaultState = _Addon_DefaultState or setmetatable({}, _MetaWK)
-_Addon_SavedVariables = _Addon_SavedVariables or setmetatable({}, _MetaWK)
-_Addon_NoAutoWrapper = _Addon_NoAutoWrapper or setmetatable({}, _MetaWK)
-_Addon_MetaData = _Addon_MetaData or setmetatable({}, _MetaWK)
+_Addon_Loaded = setmetatable({}, _MetaWK)
+_Addon_Disabled = setmetatable({}, _MetaWK)
+_Addon_DefaultState = setmetatable({}, _MetaWK)
+_Addon_SavedVariables = setmetatable({}, _MetaWK)
+_Addon_NoAutoWrapper = setmetatable({}, _MetaWK)
+_Addon_MetaData = setmetatable({}, _MetaWK)
 
 ------------------------------------------------------
 -- _EventManager
@@ -43,10 +43,10 @@ _Addon_MetaData = _Addon_MetaData or setmetatable({}, _MetaWK)
 -- _EventManager:UnregisterAll(obj)
 ------------------------------------------------------
 do
-	_EventManager = _EventManager or CreateFrame("Frame")
-	_EventDistribution = _EventDistribution or {}
+	_EventManager = CreateFrame("Frame")
+	_EventDistribution = {}
 
-	_UsedEvent = _UsedEvent or {}
+	_UsedEvent = {}
 
 	-- Register
 	function _EventManager:Register(event, obj)
@@ -222,10 +222,10 @@ end
 -- _HookManager:SecureUnHookAll(obj)
 ------------------------------------------------------
 do
-	_HookManager = _HookManager or {}
+	_HookManager = {}
 
 	-- Normal Hook API
-	_HookDistribution = _HookDistribution or {}
+	_HookDistribution = {}
 
 	function _HookManager:Hook(obj, target, targetFunc, handler)
 		if type(target[targetFunc]) == "function" or (_HookDistribution[target] and _HookDistribution[target][targetFunc]) then
@@ -290,7 +290,7 @@ do
 	end
 
 	-- Secure Hook API
-	_SecureHookDistribution = _SecureHookDistribution or {}
+	_SecureHookDistribution = {}
 
 	function _HookManager:SecureHook(obj, target, targetFunc, handler)
 		if type(target[targetFunc]) == "function" or (_SecureHookDistribution[target] and _SecureHookDistribution[target][targetFunc]) then
@@ -353,8 +353,8 @@ end
 -- _SlashCmdManager:AddSlashCmd(obj, cmd, ...)
 ------------------------------------------------------
 do
-	_SlashCmdManager = _SlashCmdManager or {}
-	_SlashFuncs = _SlashFuncs or {}
+	_SlashCmdManager = {}
+	_SlashFuncs = {}
 
 	-- SlashCmd Operation
 	local function GetSlashCmdArgs(msg, input)

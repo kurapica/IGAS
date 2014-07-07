@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "1.2.0"
+Module "System.Task" "2.0.0"
 
 namespace "System"
 
@@ -10,14 +10,17 @@ namespace "System"
 -- Constant Settings
 ------------------------------------------------------
 do
-	PHASE_THRESHOLD = 50 	-- The max task operation time per phase
-	PHASE_TIME_FACTOR = 0.4 -- The factor used to calculate the task operation time per phase
+	PHASE_THRESHOLD = 50 		-- The max task operation time per phase
+	PHASE_TIME_FACTOR = 0.4 	-- The factor used to calculate the task operation time per phase
+	PHASE_BALANCE_FACTOR = 0.3	-- The factor used to balance tasks between the current and next phase
 end
 
 ------------------------------------------------------
 -- Task API
 ------------------------------------------------------
 do
+	Log = System.Logger("IGAS")
+
 	CORE_PRIORITY = 0 	-- For Task Job
 	HIGH_PRIORITY = 1 	-- For Direct, Continue, Thread
 	NORMAL_PRIORITY = 2 -- For Event, Next
@@ -41,6 +44,10 @@ do
 	g_EndTime = 0
 	g_AverageTime = 20 	-- A useless init value
 	g_ReqAddTime = false
+
+	-- For diagnosis
+	g_DelayedTask = 0
+	g_MaxPhaseTime = 0
 
 	local r_Header = nil-- The core task header
 	local r_Tail = nil 	-- The core task tail
@@ -86,9 +93,17 @@ do
 			g_Phase = now
 			g_ReqAddTime = false
 
+			-- For diagnosis
+			g_DelayedTask = g_DelayedTask + r_Count
+
 			-- Calculate the average time per task
 			if g_FinishedTask > 0 then
-				g_AverageTime = (g_AverageTime + (g_EndTime - g_StartTime) / g_FinishedTask) / 2
+				local phaseCost = g_EndTime - g_StartTime
+
+				-- For diagnosis
+				if phaseCost > g_MaxPhaseTime then g_MaxPhaseTime = phaseCost end
+
+				g_AverageTime = (g_AverageTime + phaseCost / g_FinishedTask) / 2
 				g_FinishedTask = 0
 			end
 
@@ -144,7 +159,7 @@ do
 				g_ReqAddTime = true
 
 				-- Consider tasks in next phase to smooth the performance
-				local cost = (r_Count + g_TaskCount[HIGH_PRIORITY] + g_TaskCount[NORMAL_PRIORITY] + g_TaskCount[LOW_PRIORITY]) * g_AverageTime / 2
+				local cost = (r_Count + g_TaskCount[HIGH_PRIORITY] + g_TaskCount[NORMAL_PRIORITY] + g_TaskCount[LOW_PRIORITY]) * g_AverageTime * PHASE_BALANCE_FACTOR
 
 				if cost + g_PhaseTime > PHASE_THRESHOLD then cost = PHASE_THRESHOLD - g_PhaseTime end
 
@@ -180,8 +195,9 @@ do
 
 				if task.Sibling then
 					local sib = task.Sibling
+					task.Sibling = nil
 
-					while sib and sib ~= task do sib.Method, sib.Cancel, sib = nil, true, sib.Sibling end
+					while sib do sib.Method, sib.Cancel, sib = nil, true, sib.Sibling end
 				end
 
 				g_FinishedTask = g_FinishedTask + 1
@@ -498,7 +514,7 @@ interface "Task"
 	end
 
 	------------------------------------------------------
-	-- Thread Helper
+	-- Thread Task API
 	------------------------------------------------------
 	__Doc__[[Check if the current thread should keep running or wait for next time slice]]
 	function Continue()
@@ -625,3 +641,27 @@ interface "Task"
 		return yield()
 	end
 endinterface "Task"
+
+------------------------------------------------------
+-- Task System Diagnose
+------------------------------------------------------
+do
+	function Diagnose()
+		if Log.LogLevel <= 1 then
+			Log(1, "[System.Task]-----------------")
+
+			Log(1, "[Delayed] %d", g_DelayedTask)
+			Log(1, "[Average] %.2f ms", g_AverageTime)
+			Log(1, "[Max Phase] %.2f ms", g_MaxPhaseTime)
+
+			Log(1, "[System.Task]-----------------")
+		end
+
+		g_DelayedTask = 0
+		g_MaxPhaseTime = 0
+
+		return Task.DelayCall(60, Diagnose)
+	end
+
+	Task.DelayCall(60, Diagnose)
+end

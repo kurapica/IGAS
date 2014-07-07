@@ -1,8 +1,9 @@
  -- Author      : Kurapica
--- Create Date : 2013/08/13
--- ChangeLog   :
+-- Create Date  : 2013/08/13
+-- ChangeLog    :
+--                2014/07/07 Recode with System.Task for older version
 
-Module "System.Threading" "1.10.0"
+Module "System.Threading" "2.0.0"
 
 namespace "System"
 
