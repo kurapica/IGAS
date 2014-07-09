@@ -1,23 +1,113 @@
--- Author      : Kurapica
--- ChangreLog  :
---				2010.01.13	Change the Timer's Parent to WorldFrame
---				2011/03/13	Recode as class
---				2011/05/29	Recode
+-- Author     : Kurapica
+-- ChangreLog :
+--              2010.01.13 Change the Timer's Parent to WorldFrame
+--              2011/03/13 Recode as class
+--              2014/07/08 Recode with System.Task
 
 -- Check Version
-local version = 11
+local version = 12
 
 if not IGAS:NewAddon("IGAS.Widget.Timer", version) then
 	return
 end
 
+import "System.Task"
+
+r_Started = false
+r_TimerCount = 0
+r_PreviousTime = 0
+
+p_Start = nil
+p_Work = nil
+
+function Process()
+	local now = GetTime()
+	local percent = (now - r_PreviousTime) / 0.1
+	if percent > 1 then percent = 1 end
+
+	r_PreviousTime = now
+
+	if r_Started then
+		p_Work = p_Work or p_Start
+
+		if p_Work then
+			for i = 1, ceil( r_TimerCount * percent ) do
+				if p_Work._AwakeTime >= now then
+					p_Work._AwakeTime = GetTime() + p_Work.Interval
+
+					p_Work:Fire("OnTimer")
+				end
+				p_Work = p_Work._Next
+			end
+		end
+
+		return NextCall( Process )
+	end
+end
+
+function QueueRing(self)
+	if not self._Previous then
+		if p_Start == nil then
+			p_Start = self
+			self._Previous = self
+			self._Next = self
+		else
+			local tail = p_Start._Previous
+
+			self._Previous = tail
+			self._Next = p_Start
+
+			tail._Next = self
+
+			p_Start._Previous = self
+		end
+
+		r_TimerCount = r_TimerCount + 1
+
+		if r_TimerCount == 1 then
+			-- Start the process
+			r_Started = true
+			r_PreviousTime = GetTime()
+			return NextCall( Process )
+		end
+	end
+end
+
+function UnqueueRing(self)
+	if self._Previous then
+		local prev = self._Previous
+		local next = self._Next
+
+		prev._Next = next
+		next._Previous = prev
+
+		if self == p_Start then p_Start = next end
+		if self == p_Start then p_Start = nil end
+
+		if self == p_Work then p_Work = next end
+		if self == p_Work then p_Work = nil end
+
+		self._Next = nil
+		self._Previous = nil
+
+		r_TimerCount = r_TimerCount - 1
+
+		if r_TimerCount == 0 then r_Started = false end
+	end
+end
+
+function RefreshTimer(self)
+	if self.Interval > 0 and self.Enabled then
+		self._AwakeTime = GetTime() + self.Interval
+		return QueueRing(self)
+	elseif p_Start == self or self._Previous then
+		return UnqueueRing(self)
+	end
+end
+
 __Doc__[[Timer is used to fire an event on a specified interval]]
 class "Timer"
 	inherit "VirtualUIObject"
-
-	--Timers will not be fired more often than HZ-1 times per second.
-	local HZ = 11
-	local minInterval = 1 / (HZ - 1)
 
 	__StructType__(StructType.Custom)
 	__Default__( 0 )
@@ -25,106 +115,18 @@ class "Timer"
 		function Validate(value)
 			if type(value) ~= "number" or value < 0 then
 				value = 0
-			elseif value > 0 and value < minInterval then
-				value = minInterval
+			elseif value > 0 and value < 0.1 then
+				value = 0.1
 			end
 			return value
 		end
 	endstruct "TimerInterval"
 
-	WorldFrame = IGAS.WorldFrame
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-    _Timer = _Timer or CreateFrame("Frame", nil, WorldFrame)
-    _Timer:Hide()
-
-	-- _Container is shared in all versions
-	_Container = _Container or {}
-	_TempContainer = _TempContainer or {}
-	_Updating = _Updating or false
-	_Working = false
-
-	local lastint = floor(GetTime() * HZ)
-
-	_Timer:SetScript("OnUpdate", function(self, elapsed)
-		local now = GetTime()
-		local nowint = floor(now * HZ)
-
-		-- Reduce cpu cost.
-		if nowint == lastint then return end
-
-		local soon = now + 0.1
-		local int
-
-		_Updating = true
-
-		-- Consider people will disable timer when a onTimer event triggered, and enable it when all is done, so, I don't use one container to control the enabled timers, another for disabled timers.
-		for timer, delay in pairs(_Container) do
-			if delay > 0 and delay <= soon then
-				timer:Fire("OnTimer")
-
-				int = timer.Interval
-
-				if timer.Enabled and int > 0 then
-					-- set next time
-					_Container[timer] = now + int
-				end
-			end
-		end
-
-		lastint = nowint
-		_Updating = false
-
-		for timer, delay in pairs(_TempContainer) do
-			if delay <= 0 then
-				_Container[timer] = nil
-			else
-				_Container[timer] = delay
-			end
-		end
-
-		if not next(_Container) then
-			_Working = false
-			self:Hide()
-		end
-
-		wipe(_TempContainer)
-	end)
-
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Run when the timer is at the right time]]
-	event "OnTimer"
-
-	local function RefreshTimer(self)
-		local int = self.Interval
-
-		if int > 0 and self.Enabled then
-			if not _Container[self] then
-				if _Updating then
-					_TempContainer[self] = GetTime() + int
-				else
-					_Container[self] = GetTime() + int
-				end
-
-				if not _Working then
-					_Working = true
-					_Timer:Show()
-				end
-			end
-		else
-			if _Container[self] then
-				if _Updating then
-					_TempContainer[self] = 0
-				else
-					_Container[self] = nil
-				end
-			end
-		end
-	end
+	__Delegate__( Task.DirectCall )	event "OnTimer"
 
 	------------------------------------------------------
 	-- Property
@@ -140,15 +142,7 @@ class "Timer"
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
-	function Dispose(self)
-		if _Container[self] then
-			if _Updating then
-				_TempContainer[self] = 0
-			else
-				_Container[self] = nil
-			end
-		end
-	end
+	Dispose = UnqueueRing
 
 	------------------------------------------------------
 	-- Constructor

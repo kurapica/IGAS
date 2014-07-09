@@ -5783,6 +5783,10 @@ do
 						self[func] = info.Cache4Event[self.Event.Name].Delegate
 					end
 				end
+			else
+				-- So delegate can be changed before add handler
+				-- a little trick but useful
+				self[func] = self.Delegate
 			end
 
 			FireOnEventHandlerChanged(self)
@@ -5798,16 +5802,29 @@ do
 			return self
 		end
 
-		local function RaiseEvent(self, owner, ...)
+		function __call(self, obj, ...)
+			if self.Blocked then return end
+
 			local ret = false
-			local delegate
+			local owner = self.Owner
+			local isOwner = owner == obj
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
-				if self[handler] then
-					ret = self[handler](handler, owner, ...)
+				local delegate = rawget(self, handler)
+
+				if delegate then
+					if isOwner then
+						ret = delegate(handler, owner, ...)
+					else
+						ret = delegate(handler, owner, obj, ...)
+					end
 				else
-					ret = handler(owner, ...)
+					if isOwner then
+						ret = handler(owner, ...)
+					else
+						ret = handler(owner, obj, ...)
+					end
 				end
 
 				-- means it's disposed
@@ -5819,21 +5836,21 @@ do
 
 			-- Call the custom handler
 			if not ret and self[0] then
-				if self.Delegate then
-					return self.Delegate(self[0], owner, ...)
+				local delegate = self.Delegate
+
+				if delegate then
+					if isOwner then
+						return delegate(self[0], owner, ...)
+					else
+						return delegate(self[0], owner, obj, ...)
+					end
 				else
-					return self[0](owner, ...)
+					if isOwner then
+						return self[0](owner, ...)
+					else
+						return self[0](owner, obj, ...)
+					end
 				end
-			end
-		end
-
-		function __call(self, obj, ...)
-			if self.Blocked then return end
-
-			if self.Owner ~= obj then
-				return RaiseEvent(self, self.Owner, obj, ...)
-			else
-				return RaiseEvent(self, obj, ...)
 			end
 		end
 

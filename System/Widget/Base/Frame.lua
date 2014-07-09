@@ -61,7 +61,7 @@ class "Frame"
 	event "OnEvent"
 
 	__Doc__[[Run when the frame's visbility changes to hidden]]
-	event "OnHide"
+	__Delegate__( Task.DirectCall )	event "OnHide"
 
 	__Doc__[[
 		<desc>Run when a keyboard key is pressed if the frame is keyboard enabled</desc>
