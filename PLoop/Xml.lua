@@ -23,13 +23,14 @@ do
 	cache = setmetatable({}, {__call = function(self, tbl) if tbl then wipe(tbl) tinsert(self, tbl) else return tremove(self) or {} end end,})
 	newIndex = function(flag) _M.AutoIndex = type(flag) == "number" and flag or flag and _M.AutoIndex or (_M.AutoIndex + 1); return _M.AutoIndex end
 	stackAPI = {
-		New = function( data, getChar )
+		New = function( data, getChar, parser )
 			local stack = { Token = {}, Pos = {}, Info = {}, Line = {}, StackLen = 0 }
 
 			for k, v in pairs(stackAPI) do if k ~= "New" then stack[k] = v end end
 
 			stack.Data = data
 			stack.GetChar = getChar
+			stack.Parser = parser
 
 			return stack
 		end,
@@ -76,8 +77,8 @@ do
 			local index = self.StackLen
 			local token = self.Token[index]
 
-			if _TokenParser[token] then
-				for _, parser in ipairs(_TokenParser[token]) do
+			if self.Parser[token] then
+				for _, parser in ipairs(self.Parser[token]) do
 					if type(parser) == "function" then
 						return parser(self) and self:Parse()
 					elseif type(parser) == "table" then
@@ -172,7 +173,7 @@ do
 			local lf = _Byte.LF
 
 			while sp < pos do
-				char, string, len = self:GetChar(data, sp)
+				char, string, len = self.GetChar(data, sp)
 				sp = sp + len
 
 				if char ~= lf then wlen = wlen + 1 end
@@ -327,6 +328,7 @@ do
 		["UTF-8"] = {
 			Default = function (str, startp)
 				local byte = strbyte(str, startp)
+				if not byte then return false end
 				local len = byte < 192 and 1 or
 							byte < 224 and 2 or
 							byte < 240 and 3 or
@@ -352,6 +354,7 @@ do
 		["UTF-16"] = {
 			BigEndian = function (str, startp)
 				local obyte, sbyte = strbyte(str, startp, startp + 1)
+				if not obyte or not sbyte then return false end
 
 				if obyte <= 0xD7 then
 					-- two bytes
@@ -359,6 +362,8 @@ do
 				elseif obyte >= 0xD8 and obyte <= 0xDB then
 					-- four byte
 					local tbyte, fbyte = strbyte(str, startp + 2, startp + 3)
+					if not tbyte or not fbyte then return false end
+
 					if tbyte >= 0xDC and tbyte <= 0xDF then
 						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, strchar(obyte, sbyte, tbyte, fbyte), 4
 					else
@@ -370,6 +375,7 @@ do
 			end,
 			LittleEndian = function (str, startp)
 				local sbyte, obyte = strbyte(str, startp, startp + 1)
+				if not obyte or not sbyte then return false end
 
 				if obyte <= 0xD7 then
 					-- two bytes
@@ -377,6 +383,8 @@ do
 				elseif obyte >= 0xD8 and obyte <= 0xDB then
 					-- four byte
 					local fbyte, tbyte = strbyte(str, startp + 2, startp + 3)
+					if not tbyte or not fbyte then return false end
+
 					if tbyte >= 0xDC and tbyte <= 0xDF then
 						return ((obyte - 0xD8) * 256 + sbyte) * 1024 + ((tbyte - 0xDC) * 256 + fbyte) + 0x10000, strchar(obyte, sbyte, tbyte, fbyte), 4
 					else
@@ -578,8 +586,8 @@ do
 		if define.Single and define.Single[char] then return true end
 		if define.Range then
 			for _, range in ipairs(define.Range) do
-				if char < range[0] then break end
-				if char <= range[1] then return true end
+				if char < range[1] then break end
+				if char <= range[2] then return true end
 			end
 		end
 		return false
@@ -631,7 +639,7 @@ do
 		local pos = startp
 		local char, string
 		local len = 0
-		local stack = stackAPI:New(data, getChar)
+		local stack = stackAPI.New(data, getChar, _XMLTokenParser)
 
 		local lt = _Byte.LESSTHAN
 		local gt = _Byte.GREATERTHAN
@@ -640,7 +648,7 @@ do
 
 		local inTag = false
 
-		while pos <= endp do
+		while pos < endp do
 			pos = pos + len
 			char, string, len = getChar(data, pos)
 
@@ -741,6 +749,8 @@ do
 				end
 			end
 		end
+
+		return stack
 	end
 end
 
@@ -759,6 +769,15 @@ class "XmlNode"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+	function AddAttribute(self, attr)
+		self.__Attributes = self.__Attributes or {}
+		tinsert(self.__Attributes, attr)
+	end
+
+	function AddChild(self, node)
+		self.__ChildNodes = self.__ChildNodes or {}
+		tinsert(self.__ChildNodes, node)
+	end
 
 	------------------------------------------------------
 	-- Property
