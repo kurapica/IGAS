@@ -519,7 +519,7 @@ interface "Task"
 	__Doc__[[Check if the current thread should keep running or wait for next time slice]]
 	function Continue()
 		local thread = running()
-		assert(thread, "Task.Continue() can only be used in a thread.")
+		if not thread then error("Task.Continue() can only be used in a thread.", 2) end
 
 		local task = c_Task()
 		task.NArgs = 0
@@ -533,7 +533,7 @@ interface "Task"
 	__Doc__[[Make the current thread wait for next phase]]
 	function Next()
 		local thread = running()
-		assert(thread, "Task.Next() can only be used in a thread.")
+		if not thread then error("Task.Next() can only be used in a thread.", 2) end
 
 		local task = c_Task()
 		task.NArgs = 0
@@ -550,7 +550,7 @@ interface "Task"
 	]]
 	function Delay(delay)
 		local thread = running()
-		assert(thread, "Task.Delay(delay) can only be used in a thread.")
+		if not thread then error("Task.Delay(delay) can only be used in a thread.", 2) end
 
 		local task = c_Task()
 
@@ -569,7 +569,7 @@ interface "Task"
 	]]
 	function Event(event)
 		local thread = running()
-		assert(thread, "Task.Event(event) can only be used in a thread.")
+		if not thread then error("Task.Event(event) can only be used in a thread.", 2) end
 
 		local task = c_Task()
 
@@ -592,7 +592,7 @@ interface "Task"
 	]]
 	function Wait(...)
 		local thread = running()
-		assert(thread, "Task.Wait(delay, event, ...) can only be used in a thread.")
+		if not thread then error("Task.Wait(delay, event, ...) can only be used in a thread.", 2) end
 
 		local delayed = false
 		local header = nil

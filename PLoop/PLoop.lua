@@ -5759,7 +5759,7 @@ do
 			if not Reflector.ObjectIsClass(evt, Event) then error("Usage : EventHandler(event, owner) - 'event' must be an object of 'System.Event'.") end
 			if not Reflector.GetObjectClass(owner) then error("Usage : EventHandler(event, owner) - 'owner' must be an object.") end
 
-			self.Event = evt
+			self.Event = evt.Name
 			self.Owner = owner
 			self.Delegate = evt.Delegate
 		end
@@ -5786,7 +5786,7 @@ do
 			else
 				-- So delegate can be changed before add handler
 				-- a little trick but useful
-				self[func] = self.Delegate
+				self[func] = rawget(self, "__Delegate")
 			end
 
 			FireOnEventHandlerChanged(self)
@@ -5802,29 +5802,17 @@ do
 			return self
 		end
 
-		function __call(self, obj, ...)
-			if self.Blocked then return end
-
+		local function raiseEvent(self, owner, ...)
 			local ret = false
-			local owner = self.Owner
-			local isOwner = owner == obj
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
 				local delegate = rawget(self, handler)
 
 				if delegate then
-					if isOwner then
-						ret = delegate(handler, owner, ...)
-					else
-						ret = delegate(handler, owner, obj, ...)
-					end
+					ret = delegate(handler, owner, ...)
 				else
-					if isOwner then
-						ret = handler(owner, ...)
-					else
-						ret = handler(owner, obj, ...)
-					end
+					ret = handler(owner, ...)
 				end
 
 				-- means it's disposed
@@ -5836,25 +5824,27 @@ do
 
 			-- Call the custom handler
 			if not ret and self[0] then
-				local delegate = self.Delegate
+				local delegate = rawget(self, "__Delegate")
 
 				if delegate then
-					if isOwner then
-						return delegate(self[0], owner, ...)
-					else
-						return delegate(self[0], owner, obj, ...)
-					end
+					return delegate(self[0], owner, ...)
 				else
-					if isOwner then
-						return self[0](owner, ...)
-					else
-						return self[0](owner, obj, ...)
-					end
+					return self[0](owner, ...)
 				end
 			end
 		end
 
-		function __tostring(self) return tostring(EventHandler) .. "( " .. tostring(self.Event) .. " )" end
+		function __call(self, obj, ...)
+			if self.Blocked then return end
+
+			local owner = self.Owner
+
+			if owner == obj then
+				return raiseEvent(self, obj, ...)
+			else
+				return raiseEvent(self, owner, obj, ...)
+			end
+		end
 	endclass "EventHandler"
 
 	class "FixedMethod"
