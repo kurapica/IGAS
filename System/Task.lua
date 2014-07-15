@@ -58,24 +58,7 @@ do
 
 	-- Cache for useless task objects
 	c_Count = 0
-	c_Task = setmetatable({}, {
-		__call = function (self, v)
-			if v then
-				wipe(v)
-				if c_Count < 1000 then
-					c_Count = c_Count + 1
-					tinsert(self, v)
-				end
-			else
-				if c_Count > 0 then
-					c_Count = c_Count - 1
-					return tremove(self)
-				else
-					return {}
-				end
-			end
-		end,
-	})
+	c_Task = {}
 	c_Event = {}		-- Cache for registered events
 
 	callThread = System.Reflector.ThreadCall
@@ -175,20 +158,39 @@ do
 
 			if not task.Cancel then
 				local nargs = args.NArgs
-				local call = type(task.Method) == "thread" and resume or pcall
-
-				if nargs == 0 then
-					ok, msg = call(task.Method)
-				elseif nargs == 1 then
-					ok, msg = call(task.Method, args[1])
-				elseif nargs == 2 then
-					ok, msg = call(task.Method, args[1], args[2])
-				elseif nargs == 3 then
-					ok, msg = call(task.Method, args[1], args[2], args[3])
-				elseif nargs == 4 then
-					ok, msg = call(task.Method, args[1], args[2], args[3], args[4])
+				local method = task.Method
+				if type(method) == "thread" then
+					if status(method) == "suspended" then
+						if nargs == 0 then
+							ok, msg = resume(method)
+						elseif nargs == 1 then
+							ok, msg = resume(method, args[1])
+						elseif nargs == 2 then
+							ok, msg = resume(method, args[1], args[2])
+						elseif nargs == 3 then
+							ok, msg = resume(method, args[1], args[2], args[3])
+						elseif nargs == 4 then
+							ok, msg = resume(method, args[1], args[2], args[3], args[4])
+						else
+							ok, msg = resume(method, unpack(args, 1, nargs))
+						end
+					else
+						ok = true
+					end
 				else
-					ok, msg = call(task.Method, unpack(args, 1, nargs))
+					if nargs == 0 then
+						ok, msg = pcall(method)
+					elseif nargs == 1 then
+						ok, msg = pcall(method, args[1])
+					elseif nargs == 2 then
+						ok, msg = pcall(method, args[1], args[2])
+					elseif nargs == 3 then
+						ok, msg = pcall(method, args[1], args[2], args[3])
+					elseif nargs == 4 then
+						ok, msg = pcall(method, args[1], args[2], args[3], args[4])
+					else
+						ok, msg = pcall(method, unpack(args, 1, nargs))
+					end
 				end
 
 				if not ok then pcall(geterrorhandler(), msg) end
@@ -208,11 +210,11 @@ do
 			if args ~= task then
 				args.Used = args.Used - 1
 				if args.Used == 0 then
-					c_Task(args)
+					tinsert(c_Task, wipe(args))
 				end
 			end
 
-			c_Task(task)
+			tinsert(c_Task, wipe(task))
 		end
 
 		g_EndTime = debugprofilestop()
@@ -271,7 +273,7 @@ do
 			TaskManager:RegisterEvent(event)
 
 			if not TaskManager:IsEventRegistered(event) then
-				c_Task(task)
+				tinsert(c_Task, wipe(task))
 				return false
 			else
 				c_Event[event] = true
@@ -339,7 +341,7 @@ do
 		-- Fill args
 		local task = header
 
-		local args = c_Task()
+		local args = tremove(c_Task) or {}
 
 		args.NArgs = select('#', ...) + 1
 		args.Used = 0
@@ -372,7 +374,7 @@ interface "Task"
 		<param name="...">method parameter</param>
 	]]
 	function DirectCall(callable, ...)
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
@@ -389,7 +391,7 @@ interface "Task"
 		<param name="...">method parameter</param>
 	]]
 	function NextCall(callable, ...)
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
@@ -407,7 +409,7 @@ interface "Task"
 		<param name="...">method parameter</param>
 	]]
 	function DelayCall(delay, callable, ...)
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
@@ -425,7 +427,7 @@ interface "Task"
 		<return>true if the event is existed and task is registered</return>
 	]]
 	function EventCall(event, callable)
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = 0
 		task.Method = callable
@@ -440,7 +442,7 @@ interface "Task"
 		<param name="...">method parameter</param>
 	]]
 	function ThreadCall(...)
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
@@ -473,7 +475,7 @@ interface "Task"
 				if type(v) == "number" and not delayed then
 					delayed = true
 
-					local task = c_Task()
+					local task = tremove(c_Task) or {}
 					task.NArgs = 0
 					task.Method = callable
 
@@ -486,7 +488,7 @@ interface "Task"
 						header, tail = task, task
 					end
 				elseif type(v) == "string" then
-					local task = c_Task()
+					local task = tremove(c_Task) or {}
 					task.NArgs = 0
 					task.Method = callable
 
@@ -498,7 +500,7 @@ interface "Task"
 							header, tail = task, task
 						end
 					else
-						c_Task(task)
+						tinsert(c_Task, wipe(task))
 					end
 				end
 			end
@@ -521,7 +523,7 @@ interface "Task"
 		local thread = running()
 		if not thread then error("Task.Continue() can only be used in a thread.", 2) end
 
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 		task.NArgs = 0
 		task.Method = thread
 
@@ -535,7 +537,7 @@ interface "Task"
 		local thread = running()
 		if not thread then error("Task.Next() can only be used in a thread.", 2) end
 
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 		task.NArgs = 0
 		task.Method = thread
 
@@ -552,7 +554,7 @@ interface "Task"
 		local thread = running()
 		if not thread then error("Task.Delay(delay) can only be used in a thread.", 2) end
 
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = 0
 		task.Method = thread
@@ -571,7 +573,7 @@ interface "Task"
 		local thread = running()
 		if not thread then error("Task.Event(event) can only be used in a thread.", 2) end
 
-		local task = c_Task()
+		local task = tremove(c_Task) or {}
 
 		task.NArgs = 0
 		task.Method = thread
@@ -604,7 +606,7 @@ interface "Task"
 			if type(v) == "number" and not delayed then
 				delayed = true
 
-				local task = c_Task()
+				local task = tremove(c_Task) or {}
 				task.NArgs = 0
 				task.Method = thread
 
@@ -617,7 +619,7 @@ interface "Task"
 					header, tail = task, task
 				end
 			elseif type(v) == "string" then
-				local task = c_Task()
+				local task = tremove(c_Task) or {}
 				task.NArgs = 0
 				task.Method = thread
 
@@ -629,7 +631,7 @@ interface "Task"
 						header, tail = task, task
 					end
 				else
-					c_Task(task)
+					tinsert(c_Task, wipe(task))
 				end
 			end
 		end

@@ -65,7 +65,7 @@ do
 	strupper = string.upper
 	strlower = string.lower
 	strtrim = strtrim or function(s) return s and (s:gsub("^%s*(.-)%s*$", "%1")) or "" end
-	wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end end
+	wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
 
 	tblconcat = tblconcat or table.concat
 	tinsert = tinsert or table.insert
@@ -7906,7 +7906,7 @@ do
 			<param name="event">the event name</param>
 			<param name="...">the event's arguments</param>
 		]]
-		Fire = FireObjectEvent
+		Fire = Reflector.FireObjectEvent
 
 		__Doc__[[
 			<desc>Block some events for the object</desc>

@@ -31,7 +31,7 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	_DBL_CLK_CHK = 0.3
 	_FIRST_WAITTIME = 0.3
-	_CONTINUE_WAITTIME = 0.1
+	_CONTINUE_WAITTIME = 0.03
 	_ConcatReturn = nil
 
 	_UTF8_Three_Char = 224

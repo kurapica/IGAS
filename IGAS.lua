@@ -55,6 +55,7 @@ wipe = wipe or function(t)
 	for k in pairs(t) do
 		t[k] = nil
 	end
+	return t
 end
 
 geterrorhandler = geterrorhandler or function()

@@ -494,7 +494,7 @@ interface "IFModule"
 		<param name="event">string, the event's name</param>
 		<param name="...">the event's parameters</param>
 	]]
-	__Delegate__( Task.DirectCall )	event "OnEvent"
+	event "OnEvent"
 
 	------------------------------------------------------
 	-- Method

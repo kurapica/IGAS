@@ -32,7 +32,7 @@ function Process()
 
 		if p_Work then
 			for i = 1, ceil( r_TimerCount * percent ) do
-				if p_Work._AwakeTime >= now then
+				if p_Work._AwakeTime <= now then
 					p_Work._AwakeTime = GetTime() + p_Work.Interval
 
 					p_Work:Fire("OnTimer")
@@ -126,7 +126,7 @@ class "Timer"
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Run when the timer is at the right time]]
-	__Delegate__( Task.DirectCall )	event "OnTimer"
+	event "OnTimer"
 
 	------------------------------------------------------
 	-- Property
