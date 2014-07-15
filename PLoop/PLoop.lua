@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/07/02
--- Version			r99
+-- Last Update Date 2014/07/15
+-- Version			r100
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -135,6 +135,9 @@ do
 
 	-- Base env field
 	BASE_ENV_FIELD = "__PLOOP_BASE_ENV"
+
+	-- Local env field
+	LOCAL_ENV_FIELD = "__PLOOP_LOCAL"
 end
 
 ------------------------------------------------------
@@ -189,8 +192,7 @@ do
 	end
 
 	function CallThread(func, ...)
-		if type(func) == "thread" and status(func) == "suspended" then return resume(func, ...) end
-		if running() then return func( ... ) end
+		if type(func) == "thread" and status(func) == "suspended" then return chkValue( resume(func, ...) ) end
 
 		local th = THREAD_POOL()
 
@@ -338,6 +340,12 @@ do
 	end
 
 	SYNTHESIZE_ENV.clone = CloneObj
+
+	-- Local marker
+	LOCAL_CACHE = setmetatable({}, WEAK_KEY)
+
+	function SetLocal(flag) LOCAL_CACHE[running() or 0] = flag or nil end
+	function IsLocal() return LOCAL_CACHE[running() or 0] end
 end
 
 ------------------------------------------------------
@@ -1228,6 +1236,9 @@ do
 			-- Check owner
 			if key == info.Name then return info.Owner end
 
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
+
 			-- Check keywords
 			if _KeyWord4IFEnv[key] then return _KeyWord4IFEnv[key] end
 
@@ -1266,12 +1277,16 @@ do
 			-- Check method, so definition environment can use existed method
 			-- created by another definition environment for the same interface
 			value = info.Method[key]
-
 			if value then rawset(self, key, value) return value end
+
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then rawset(self, key, value) return value end
+			end
 
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
-
 			if value ~= nil then rawset(self, key, value) return value end
 		end
 
@@ -1282,6 +1297,9 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
+
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			-- Check keywords
 			if _KeyWord4IFEnv[key] then return _KeyWord4IFEnv[key] end
@@ -1315,6 +1333,12 @@ do
 			value = info.Method[key]
 			if value then return value end
 
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then return value end
+			end
+
 			-- Check Base
 			return self[BASE_ENV_FIELD][key]
 		end
@@ -1345,7 +1369,11 @@ do
 
 			if type(key) == "string" and type(value) == "function" then
 				-- Don't save to environment until need it
-				return SaveFixedMethod(info.Method, key, value, info.Owner)
+				if IsLocal() then
+					return SaveFixedMethod(self[LOCAL_ENV_FIELD], key, value, info.Owner)
+				else
+					return SaveFixedMethod(info.Method, key, value, info.Owner)
+				end
 			end
 
 			rawset(self, key, value)
@@ -1372,7 +1400,7 @@ do
 	function interface(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], 2) end
 		local fenv = getfenv(2)
-		local ns = GetNameSpace4Env(fenv)
+		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create interface or get it
 		local IF
@@ -1661,16 +1689,12 @@ do
 		__exist = true,		-- ClassName(...)	-- return object if existed
 	}
 
-	_InitObject = setmetatable({}, WEAK_ALL)
-
 	--------------------------------------------------
 	-- Init & Dispose System
 	--------------------------------------------------
 	do
 		function InitObjectWithInterface(cls, obj)
 			local ok, msg, info
-
-			_InitObject[obj] = true
 
 			for _, IF in ipairs(_NSInfo[cls].Cache4Interface) do
 				info = _NSInfo[IF]
@@ -1732,6 +1756,9 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
+
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			if key == _SuperIndex then
 				if info.SuperClass then
@@ -1806,12 +1833,16 @@ do
 			-- Check method, so definition environment can use existed method
 			-- created by another definition environment for the same class
 			value = info.Method[key]
-
 			if value then rawset(self, key, value) return value end
+
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then rawset(self, key, value) return value end
+			end
 
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
-
 			if value ~= nil then rawset(self, key, value) return value end
 		end
 
@@ -1821,6 +1852,9 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
+
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			if key == _SuperIndex then
 				if info.SuperClass then
@@ -1887,8 +1921,13 @@ do
 			-- Check method, so definition environment can use existed method
 			-- created by another definition environment for the same class
 			value = info.Method[key]
-
 			if value then return value end
+
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then return value end
+			end
 
 			-- Check Base
 			return self[BASE_ENV_FIELD][key]
@@ -1931,7 +1970,11 @@ do
 
 			if type(key) == "string" and type(value) == "function" then
 				-- Don't save to environment until need it
-				return SaveFixedMethod(info.Method, key, value, info.Owner)
+				if IsLocal() then
+					return SaveFixedMethod(self[LOCAL_ENV_FIELD], key, value, info.Owner)
+				else
+					return SaveFixedMethod(info.Method, key, value, info.Owner)
+				end
 			end
 
 			rawset(self, key, value)
@@ -2198,8 +2241,6 @@ do
 		local count = select('#', ...)
 		local initTable = select(1, ...)
 
-		_InitObject[obj] = true
-
 		if not ( count == 1 and type(initTable) == "table" and getmetatable(initTable) == nil ) then initTable = nil end
 
 		while info do
@@ -2269,8 +2310,6 @@ do
 			-- Don't think there would be interfaces for the unique class, just for safe
 			InitObjectWithInterface(cls, info.UniqueObject)
 
-			_InitObject[info.UniqueObject] = nil
-
 			return info.UniqueObject
 		end
 
@@ -2286,11 +2325,9 @@ do
 
 		local ok, ret = pcall(Class1Obj, cls, obj, ...)
 
-		if not ok then _InitObject[obj] = nil DisposeObject(obj) error(ret, 2) end
+		if not ok then DisposeObject(obj) error(ret, 2) end
 
 		InitObjectWithInterface(cls, obj)
-
-		_InitObject[obj] = nil
 
 		if info.UniqueObject then info.UniqueObject = obj end
 
@@ -2304,7 +2341,7 @@ do
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], 2) end
 
 		local fenv = getfenv(2)
-		local ns = GetNameSpace4Env(fenv)
+		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
 		local cls
@@ -2717,7 +2754,7 @@ do
 		end
 
 		local fenv = getfenv(2)
-		local ns = GetNameSpace4Env(fenv)
+		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
 		local enm
@@ -2773,6 +2810,9 @@ do
 			-- Check owner
 			if key == info.Name then return info.Owner end
 
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
+
 			if key == "Validate" then return info.UserValidate end
 
 			-- Check keywords
@@ -2814,9 +2854,14 @@ do
 			value = info.Method and info.Method[key]
 			if value then rawset(self, key, value) return value end
 
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then rawset(self, key, value) return value end
+			end
+
 			-- Check Base
 			value = self[BASE_ENV_FIELD][key]
-
 			if value ~= nil then rawset(self, key, value) return value end
 		end
 
@@ -2826,6 +2871,9 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
+
+			-- Check local
+			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			if key == "Validate" then return info.UserValidate end
 
@@ -2860,6 +2908,12 @@ do
 			value = info.Method and info.Method[key]
 			if value then return value end
 
+			-- Check Local
+			if rawget(self, LOCAL_ENV_FIELD) then
+				value = self[LOCAL_ENV_FIELD][key]
+				if value then return value end
+			end
+
 			-- Check Base
 			return self[BASE_ENV_FIELD][key]
 		end
@@ -2888,11 +2942,15 @@ do
 
 			if type(key) == "string"  then
 				if type(value) == "function" then
-					-- Cache the method for the struct data
-					info.Method = info.Method or {}
+					if IsLocal() then
+						return SaveFixedMethod(self[LOCAL_ENV_FIELD], key, value, info.Owner)
+					else
+						-- Cache the method for the struct data
+						info.Method = info.Method or {}
 
-					-- Don't save to environment until need it
-					return SaveFixedMethod(info.Method, key, value, info.Owner)
+						-- Don't save to environment until need it
+						return SaveFixedMethod(info.Method, key, value, info.Owner)
+					end
 				elseif (value == nil or IsType(value) or IsNameSpace(value)) then
 					local ok, ret = pcall(BuildType, value)
 
@@ -3115,7 +3173,7 @@ do
 	function struct(name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], 2) end
 		local fenv = getfenv(2)
-		local ns = GetNameSpace4Env(fenv)
+		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
 		local strt
@@ -4141,67 +4199,6 @@ do
 			local handler = rawget(obj, "__Events")
 			handler = handler and rawget(handler, evt)
 			if handler then return handler(obj, ...) end
-		end
-
-		doc "ActiveThread" [[
-			<desc>Active thread mode for special events.</desc>
-			<param name="object">the object</param>
-			<param name="...">the event name list</param>
-			<usage>System.Reflector.ActiveThread(obj, "OnClick", "OnEnter")</usage>
-		]]
-		function ActiveThread(obj, ...)
-			local cls = GetObjectClass(obj)
-			local name
-
-			if cls then
-				for i = 1, select('#', ...) do
-					name = select(i, ...)
-
-					if HasEvent(cls, name) then obj[name].Delegate = CallThread end
-				end
-			end
-		end
-
-		doc "IsThreadActivated" [[
-			<desc>Whether the thread mode is activated for special events.</desc>
-			<param name="obect">the object</param>
-			<param name="event">the event name</param>
-			<return type="boolean">true if the object has active thread mode for the given event.</return>
-			<usage>System.Reflector.IsThreadActivated(obj, "OnClick")</usage>
-		]]
-		function IsThreadActivated(obj, sc)
-			if IsClass(obj) then
-				local evt = _NSInfo[obj].Cache4Event[sc]
-
-				return evt and evt.Delegate == CallThread
-			else
-				local cls = GetObjectClass(obj)
-
-				if cls and HasEvent(cls, sc) then
-					return obj[sc].Delegate == CallThread
-				end
-			end
-
-			return false
-		end
-
-		doc "InactiveThread" [[
-			<desc>Inactive thread mode for special events.</desc>
-			<param name="object">the object</param>
-			<param name="...">the event name list</param>
-			<usage>System.Reflector.InactiveThread(obj, "OnClick", "OnEnter")</usage>
-		]]
-		function InactiveThread(obj, ...)
-			local cls = GetObjectClass(obj)
-			local name
-
-			if cls then
-				for i = 1, select('#', ...) do
-					name = select(i, ...)
-
-					if HasEvent(cls, name) and obj[name].Delegate == CallThread then obj[name].Delegate = nil end
-				end
-			end
 		end
 
 		doc "BlockEvent" [[
@@ -5702,7 +5699,7 @@ do
 	class "EventHandler"
 		doc "EventHandler" [[The object event handler]]
 
-		local function FireOnEventHandlerChanged(self) return Reflector.FireObjectEvent(self.Owner, "OnEventHandlerChanged", self.Event.Name) end
+		local function FireOnEventHandlerChanged(self) return Reflector.FireObjectEvent(self.Owner, "OnEventHandlerChanged", self.Event) end
 
 		------------------------------------------------------
 		-- Method
@@ -5716,7 +5713,7 @@ do
 		doc "Clear" [[Clear all handlers]]
 		function Clear(self)
 			if #self > 0 or self[0] then
-				for i = #self, 1, -1 do self[self[i]] = nil self[i] = nil end self[0] = nil
+				for i = #self, 1, -1 do self[i] = nil end self[0] = nil
 				return FireOnEventHandlerChanged(self)
 			end
 		end
@@ -5727,8 +5724,8 @@ do
 		]]
 		function Copy(self, src)
 			if self ~= src and getmetatable(src) == EventHandler and self.Event == src.Event then
-				for i = #self, 1, -1 do self[self[i]] = nil self[i] = nil end self[0] = nil
-				for i = #src, 1, -1 do self[src[i]] = src[src[i]] self[i] = src[i] end self[0] = src[0]
+				for i = #self, 1, -1 do self[i] = nil end self[0] = nil
+				for i = #src, 1, -1 do self[i] = src[i] end self[0] = src[0]
 
 				return FireOnEventHandlerChanged(self)
 			end
@@ -5740,8 +5737,8 @@ do
 		doc "Owner" [[The owner of the event handler]]
 		property "Owner" { Type = Table }
 
-		doc "Event" [[The event type of the handler]]
-		property "Event" { Type = Event }
+		doc "Event" [[The event's name]]
+		property "Event" { Type = String }
 
 		doc "Blocked" [[Whether the event handler is blocked]]
 		property "Blocked" { Type = Boolean }
@@ -5773,22 +5770,6 @@ do
 			for _, f in ipairs(self) do if f == func then return self end end
 
 			tinsert(self, func)
-
-			-- Check if the func is added by the class's constructor
-			if _InitObject[self.Owner] then
-				local env = getfenv(func)
-				if env and env[OWNER_FIELD] then
-					local info = rawget(_NSInfo, env[OWNER_FIELD])
-					if info and info.Cache4Event and info.Cache4Event[self.Event.Name] then
-						self[func] = info.Cache4Event[self.Event.Name].Delegate
-					end
-				end
-			else
-				-- So delegate can be changed before add handler
-				-- a little trick but useful
-				self[func] = rawget(self, "__Delegate")
-			end
-
 			FireOnEventHandlerChanged(self)
 
 			return self
@@ -5797,7 +5778,7 @@ do
 		function __sub(self, func)
 			if type(func) ~= "function" then error("Usage: obj.OnXXXX = obj.OnXXXX - func", 2) end
 
-			for i, f in ipairs(self) do if f == func then tremove(self, i) self[f] = nil FireOnEventHandlerChanged(self) break end end
+			for i, f in ipairs(self) do if f == func then tremove(self, i) FireOnEventHandlerChanged(self) break end end
 
 			return self
 		end
@@ -5807,42 +5788,34 @@ do
 
 			-- Call the stacked handlers
 			for _, handler in ipairs(self) do
-				local delegate = rawget(self, handler)
-
-				if delegate then
-					ret = delegate(handler, owner, ...)
-				else
-					ret = handler(owner, ...)
-				end
-
-				-- means it's disposed
-				if rawget(owner, "Disposed") then ret = true end
+				ret = handler(owner, ...) or rawget(owner, "Disposed")
 
 				-- Any handler return true means to stop all
 				if ret then break end
 			end
 
 			-- Call the custom handler
-			if not ret and self[0] then
-				local delegate = rawget(self, "__Delegate")
-
-				if delegate then
-					return delegate(self[0], owner, ...)
-				else
-					return self[0](owner, ...)
-				end
-			end
+			return not ret and self[0] and self[0](owner, ...)
 		end
 
 		function __call(self, obj, ...)
 			if self.Blocked then return end
 
 			local owner = self.Owner
+			local delegte = self.Delegate
 
-			if owner == obj then
-				return raiseEvent(self, obj, ...)
+			if delegte then
+				if owner == obj then
+					return delegte(raiseEvent, self, obj, ...)
+				else
+					return delegte(raiseEvent, self, owner, obj, ...)
+				end
 			else
-				return raiseEvent(self, owner, obj, ...)
+				if owner == obj then
+					return raiseEvent(self, obj, ...)
+				else
+					return raiseEvent(self, owner, obj, ...)
+				end
 			end
 		end
 	endclass "EventHandler"
@@ -7845,6 +7818,23 @@ do
 			self.Doc = nil
 		end
 	endclass "__Doc__"
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Interface + AttributeTargets.Method, Inherited = false, RunOnce = true}
+	class "__Local__"
+		inherit "__Attribute__"
+
+		doc "__Local__" [[Used to mark the features like class, struct, interface, enum and method as local.]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self) return SetLocal(false) end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __Local__(self) SetLocal(true) return Super(self) end
+	endclass "__Local__"
 end
 
 ------------------------------------------------------
@@ -7854,15 +7844,12 @@ do
 	------------------------------------------------------
 	-- System.ICloneable
 	------------------------------------------------------
+	__Doc__ [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
 	interface "ICloneable"
-
-		doc "ICloneable" [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
-
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
-		__Require__()
-		doc "Clone" [[Creates a new object that is a copy of the current instance.]]
+		__Require__() __Doc__[[Creates a new object that is a copy of the current instance.]]
 		function Clone(self) end
 	endinterface "ICloneable"
 
@@ -7898,89 +7885,47 @@ do
 			<desc>Get the class type of the object</desc>
 			<return type="class">the object's class</return>
 		]]
-		function GetClass(self)
-			return Reflector.GetObjectClass(self)
-		end
+		GetClass = Reflector.GetObjectClass
 
 		__Doc__[[
 			<desc>Check if the object is an instance of the class</desc>
 			<param name="class"></param>
 			<return type="boolean">true if the object is an instance of the class</return>
 		]]
-		function IsClass(self, cls)
-			return Reflector.ObjectIsClass(self, cls)
-		end
+		IsClass = Reflector.ObjectIsClass
 
 		__Doc__[[
 			<desc>Check if the object is extend from the interface</desc>
 			<param name="interface"></param>
 			<return type="boolean">true if the object is extend from the interface</return>
 		]]
-		function IsInterface(self, IF)
-			return Reflector.ObjectIsInterface(self, IF)
-		end
+		IsInterface = Reflector.ObjectIsInterface
 
 		__Doc__[[
 			<desc>Fire an object's event, to trigger the object's event handlers</desc>
 			<param name="event">the event name</param>
 			<param name="...">the event's arguments</param>
 		]]
-		function Fire(self, evt, ...)
-			-- No more check , just fire the event as quick as we can
-			local handler = rawget(self, "__Events")
-			handler = handler and handler[evt]
-			return handler and handler(self, ...)
-		end
-
-		__Doc__[[
-			<desc>Active the thread mode for special events</desc>
-			<param name="...">the event's name list</param>
-		]]
-		function ActiveThread(self, ...)
-			return Reflector.ActiveThread(self, ...)
-		end
-
-		__Doc__[[
-			<desc>Check if the thread mode is actived for the event</desc>
-			<param name="event">the event's name</param>
-			<return type="boolean">true if the event is in thread mode</return>
-		]]
-		function IsThreadActivated(self, sc)
-			return Reflector.IsThreadActivated(self, sc)
-		end
-
-		__Doc__[[
-			<desc>Turn off the thread mode for the events</desc>
-			<param name="...">the event's name list</param>
-		]]
-		function InactiveThread(self, ...)
-			return Reflector.InactiveThread(self, ...)
-		end
+		Fire = FireObjectEvent
 
 		__Doc__[[
 			<desc>Block some events for the object</desc>
 			<param name="...">the event's name list</param>
 		]]
-		function BlockEvent(self, ...)
-			return Reflector.BlockEvent(self, ...)
-		end
+		BlockEvent = Reflector.BlockEvent
 
 		__Doc__[[
 			<desc>Check if the event is blocked for the object</desc>
 			<param name="event">the event's name</param>
 			<return type="boolean">true if th event is blocked</return>
 		]]
-		function IsEventBlocked(self, sc)
-			return Reflector.IsEventBlocked(self, sc)
-		end
+		IsEventBlocked = Reflector.IsEventBlocked
 
 		__Doc__[[
 			<desc>Un-Block some events for the object</desc>
 			<param name="...">the event's name list</param>
 		]]
-		function UnBlockEvent(self, ...)
-			return Reflector.UnBlockEvent(self, ...)
-		end
+		UnBlockEvent = Reflector.UnBlockEvent
 
 		__Doc__[[
 			<desc>Call method or function as a thread</desc>

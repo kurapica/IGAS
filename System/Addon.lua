@@ -703,6 +703,18 @@ interface "IFModule"
 	end
 
 	__Doc__[[
+		<desc>Active thread mode for special events.</desc>
+		<param name="...">the event name list</param>
+	]]
+	function ActiveThread(self, ...)
+		for i = 1, select('#', ...) do
+			local name = select(i, ...)
+
+			if self:HasEvent(name) then self[name].Delegate = Reflector.ThreadCall end
+		end
+	end
+
+	__Doc__[[
 		<desc>Check if the addon(module) is enabled</desc>
 		<return type="boolean">true if the addon(module) is enabled</return>
 	]]

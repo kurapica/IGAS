@@ -64,6 +64,18 @@ class "UIObject"
 	-- Method
 	------------------------------------------------------
 	__Doc__[[
+		<desc>Active thread mode for special events.</desc>
+		<param name="...">the event name list</param>
+	]]
+	function ActiveThread(self, ...)
+		for i = 1, select('#', ...) do
+			local name = select(i, ...)
+
+			if self:HasEvent(name) then self[name].Delegate = Reflector.ThreadCall end
+		end
+	end
+
+	__Doc__[[
 		<desc>Get the class name of the object</desc>
 		<return type="string">the object's class name</return>
 	]]
