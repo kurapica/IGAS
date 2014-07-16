@@ -80,7 +80,7 @@ function HealthBar_OnStateChanged(self, value)
 		if self.UseSmoothColor then
 			value = floor(value * 10) / 10
 
-			if self.__HealthBar_Previous == value then return end
+			if self.__HealthBar_PreColor == color and self.__HealthBar_PreValue == value then return end
 
 			if color == "Default" then
 				r, g, b = self.DefaultColor.r, self.DefaultColor.g, self.DefaultColor.b
@@ -88,7 +88,7 @@ function HealthBar_OnStateChanged(self, value)
 				r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
 			end
 
-			color = value
+			self.__HealthBar_PreValue = value
 
 			-- Smooth the color
 			if value > 0.5 then
@@ -100,7 +100,7 @@ function HealthBar_OnStateChanged(self, value)
 				b = 0
 			end
 		else
-			if self.__HealthBar_Previous == color then return end
+			if self.__HealthBar_PreColor == color then return end
 
 			if color == "Default" then
 				r, g, b = self.DefaultColor.r, self.DefaultColor.g, self.DefaultColor.b
@@ -109,12 +109,12 @@ function HealthBar_OnStateChanged(self, value)
 			end
 		end
 	else
-		if self.__HealthBar_Previous == color then return end
+		if self.__HealthBar_PreColor == color then return end
 
 		r, g, b = _ColorMap[color].r, _ColorMap[color].g, _ColorMap[color].b
 	end
 
-	self.__HealthBar_Previous = color
+	self.__HealthBar_PreColor = color
 
 	return self:SetStatusBarColor(r, g, b)
 end

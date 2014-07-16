@@ -357,17 +357,21 @@ endclass "UnitList"
 __Doc__[[SmoothValue is used to smooth the value changes]]
 class "SmoothValue"
 
+	import "System.Task"
+
 	_Smoothing = {}
 	_Running = false
+	_PreviousTime = 0
 
-	_SmoothFrame = CreateFrame("Frame")
-	_SmoothFrame:Hide()
-
-	_SmoothFrame:SetScript("OnUpdate", function(self, elpased)
+	local function Process()
 		if not next(_Smoothing) then
 			_Running = false
-			return self:Hide()
+			return
 		end
+
+		local new = GetTime()
+		local elpased = GetTime() - _PreviousTime
+		_PreviousTime = new
 
 		for obj in pairs(_Smoothing) do
 			local now = obj.NowDelay
@@ -383,7 +387,9 @@ class "SmoothValue"
 				obj.Value = (obj.RealValue - obj.OldValue) * (1 - now / obj.SmoothDelay) + obj.OldValue
 			end
 		end
-	end)
+
+		return NextCall( Process )
+	end
 
 	local function SetRealValue(self, new, old)
 		self.NowDelay = self.SmoothDelay
@@ -393,7 +399,8 @@ class "SmoothValue"
 
 		if not _Running then
 			_Running = true
-			_SmoothFrame:Show()
+			_PreviousTime = GetTime()
+			return NextCall( Process )
 		end
 	end
 
