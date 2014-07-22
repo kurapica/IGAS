@@ -3284,10 +3284,14 @@ do
 			-- Make field type unique
 			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
 				for _, n in ipairs(info.Members) do
-					info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
+					if not ATTRIBUTE_INSTALLED or not __Attribute__._IsFieldAttributeDefined(info.Owner, n) then
+						info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
+					end
 				end
 			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-				info.ArrayElement = GetUniqueType(info.ArrayElement)
+				if not ATTRIBUTE_INSTALLED or not __Attribute__._IsFieldAttributeDefined(info.Owner) then
+					info.ArrayElement = GetUniqueType(info.ArrayElement)
+				end
 			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
@@ -6105,6 +6109,7 @@ do
 			[AttributeTargets.Field] = setmetatable({}, WEAK_KEY),
 			[AttributeTargets.NameSpace] = setmetatable({}, WEAK_KEY),
 		}
+
 		-- A little trick
 		_AttributeTargetsCache = _NSInfo[AttributeTargets].Cache
 
@@ -6365,7 +6370,7 @@ do
 			<return name="target"></return>
 		]]
 		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
-			if not _AttributeTargetsCache[targetType] then
+			if not _AttributeCache[targetType] then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'targetType' is invalid.", 2)
 			elseif not ValidateTargetType(target, targetType) then
 				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'target' is invalid.", 2)
@@ -6376,8 +6381,7 @@ do
 			if not owner and IsNameSpace(target) then owner = target end
 
 			-- Consume the prepared Attributes
-			local thread = running()
-			local prepared = thread and _ThreadPreparedAttributes[thread] or _PreparedAttributes
+			local prepared = _ThreadPreparedAttributes[running()] or _PreparedAttributes
 
 			-- Filter with the usage
 			if prepared and #prepared > 0 then
@@ -6520,7 +6524,7 @@ do
 			<return name="target"></return>
 		]]
 		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
-			if not _AttributeTargetsCache[targetType] then
+			if not _AttributeCache[targetType] then
 				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
 			elseif  not ValidateTargetType(source, targetType) then
 				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
@@ -6612,6 +6616,8 @@ do
 
 			if not config then
 				return false
+			elseif not type then
+				return true
 			elseif getmetatable(config) then
 				return getmetatable(config) == type
 			else
