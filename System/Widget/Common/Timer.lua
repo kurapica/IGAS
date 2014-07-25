@@ -112,7 +112,7 @@ class "Timer"
 	__StructType__(StructType.Custom)
 	__Default__( 0 )
 	struct "TimerInterval"
-		function Validate(value)
+		function TimerInterval(value)
 			if type(value) ~= "number" or value < 0 then
 				value = 0
 			elseif value > 0 and value < 0.1 then

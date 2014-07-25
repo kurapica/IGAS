@@ -124,7 +124,7 @@ end
 ------------------------------------------------------
 __StructType__(StructType.Custom)
 struct "LocaleString"
-	function Validate(value)
+	function LocaleString(value)
 		if type(value) ~= "string" then
 			error(format("%s must be a string, got %s.", "%s", type(value)))
 		end
@@ -138,7 +138,7 @@ endstruct "LocaleString"
 __StructType__(StructType.Custom)
 __Default__( 1 )
 struct "PositiveNumber"
-	function Validate(value)
+	function PositiveNumber(value)
 		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
 		value = floor(value)
 		if value <= 0 then error("%s must be greater than zero.") end
@@ -149,7 +149,7 @@ endstruct "PositiveNumber"
 __StructType__(StructType.Custom)
 __Default__( 0 )
 struct "NaturalNumber"
-	function Validate(value)
+	function NaturalNumber(value)
 		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
 		value = floor(value)
 		if value < 0 then error("%s must be a natural number.") end

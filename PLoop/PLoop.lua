@@ -2815,8 +2815,6 @@ do
 			-- Check local
 			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
-			if key == "Validate" then return info.UserValidate end
-
 			-- Check keywords
 			if _KeyWord4StrtEnv[key] then return _KeyWord4StrtEnv[key] end
 
@@ -2877,8 +2875,6 @@ do
 			-- Check local
 			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
-			if key == "Validate" then return info.UserValidate end
-
 			-- Check keywords
 			if _KeyWord4StrtEnv[key] then return _KeyWord4StrtEnv[key] end
 
@@ -2927,19 +2923,10 @@ do
 
 			if key == info.Name then
 				if type(value) == "function" then
-					info.Initializer = value
+					info.Validator = value
 					return
 				else
-					error(("'%s' must be a function as the Initializer."):format(key), 2)
-				end
-			end
-
-			if key == "Validate" then
-				if value == nil or type(value) == "function" then
-					info.UserValidate = value
-					return
-				else
-					error(("'%s' must be a function used for validation."):format(key), 2)
+					error(("'%s' must be a function as the Validator."):format(key), 2)
 				end
 			end
 
@@ -3030,8 +3017,8 @@ do
 			end
 		end
 
-		if type(info.UserValidate) == "function" then
-			local flag, ret = pcall(info.UserValidate, value)
+		if type(info.Validator) == "function" then
+			local flag, ret = pcall(info.Validator, value)
 
 			if not flag then
 				wipe(_ValidatedCache)
@@ -3046,15 +3033,11 @@ do
 		return value
 	end
 
-	function InitializeStructObj(info, obj)
-		if type(obj) == "table" then
-			if info.Method then
-				for k, v in pairs(info.Method) do
-					if obj[k] == nil then obj[k] = v end
-				end
+	function CopyStructMethods(info, obj)
+		if info.Method and type(obj) == "table" then
+			for k, v in pairs(info.Method) do
+				if obj[k] == nil then obj[k] = v end
 			end
-
-			if info.Initializer then pcall(info.Initializer, obj) end
 		end
 
 		return obj
@@ -3072,7 +3055,7 @@ do
 		if initTable then
 			local ok, value = pcall(ValidateStruct, strt, initTable)
 
-			if ok then return InitializeStructObj(info, value) end
+			if ok then return CopyStructMethods(info, value) end
 
 			initErrMsg = value
 		end
@@ -3086,7 +3069,7 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				return InitializeStructObj(info, value)
+				return CopyStructMethods(info, value)
 			else
 				value = initErrMsg or value
 				value = strtrim(value:match(":%d+:%s*(.-)$") or value)
@@ -3108,23 +3091,21 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				return InitializeStructObj(info, value)
+				return CopyStructMethods(info, value)
 			else
 				value = initErrMsg or value
 				value = strtrim(value:match(":%d+:%s*(.-)$") or value)
 				value = value:gsub("%%s%.", ""):gsub("%%s", "")
 				error(("Usage : %s(...) - %s"):format(tostring(strt), value), 3)
 			end
-		elseif type(info.UserValidate) == "function"  then
+		else
 			-- For custom struct
-			local ok, ret = pcall(info.UserValidate, ...)
+			local ok, value = pcall(ValidateStruct, strt, ...)
 
-			if not ok then error(strtrim(ret:match(":%d+:%s*(.-)$") or ret):gsub("%%s", "[".. info.Name .."]"), 3) end
+			if not ok then error(strtrim(value:match(":%d+:%s*(.-)$") or value):gsub("%%s", "[".. info.Name .."]"), 3) end
 
-			return ret
+			return value
 		end
-
-		error(("struct '%s' is abstract."):format(tostring(strt)), 3)
 	end
 
 	function BuildStructValidate(strt)
@@ -3182,10 +3163,9 @@ do
 		info.Default = nil
 		info.DefaultField = nil
 		info.ArrayElement = nil
-		info.UserValidate = nil
+		info.Validator = nil
 		info.Validate = nil
 		info.Method = nil
-		info.Initializer = nil
 		info.Import4Env = nil
 
 		info.StructEnv = setmetatable({
@@ -3325,14 +3305,14 @@ do
 		structtype "CUSTOM"
 		default( false )
 
-		function Validate(value) return value and true or false end
+		function Boolean(value) return value and true or false end
 	endstruct "Boolean"
 
 	struct "String"
 		structtype "CUSTOM"
 		default( "" )
 
-		function Validate(value)
+		function String(value)
 			if type(value) ~= "string" then error(("%s must be a string, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3342,7 +3322,7 @@ do
 		structtype "CUSTOM"
 		default( 0 )
 
-		function Validate(value)
+		function Number(value)
 			if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3351,7 +3331,7 @@ do
 	struct "Function"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function Function(value)
 			if type(value) ~= "function" then error(("%s must be a function, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3360,7 +3340,7 @@ do
 	struct "Table"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function Table(value)
 			if type(value) ~= "table" then error(("%s must be a table, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3369,7 +3349,7 @@ do
 	struct "RawTable"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function RawTable(value)
 			if type(value) ~= "table" then
 				error(("%s must be a table, got %s."):format("%s", type(value)))
 			elseif getmetatable(value) ~= nil then
@@ -3382,7 +3362,7 @@ do
 	struct "Userdata"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function Userdata(value)
 			if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3391,7 +3371,7 @@ do
 	struct "Thread"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function Thread(value)
 			if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end
 			return value
 		end
@@ -3400,7 +3380,7 @@ do
 	struct "Any"
 		structtype "CUSTOM"
 
-		function Validate(value)
+		function Any(value)
 			assert(value ~= nil, "%s can't be nil.")
 
 			return value
@@ -7066,7 +7046,7 @@ do
 		Default = Any + nil
 		IsList = Boolean + nil
 
-		function Validate(value)
+		function Argument(value)
 			value.Type = value.Type and BuildType(value.Type) or nil
 
 			if value.Type and value.Default ~= nil then
