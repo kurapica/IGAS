@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/07/21
--- Version			r101
+-- Last Update Date 2014/07/25
+-- Version			r102
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -2927,9 +2927,10 @@ do
 
 			if key == info.Name then
 				if type(value) == "function" then
-					return SaveFixedMethod(info, "Constructor", value, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
+					info.Initializer = value
+					return
 				else
-					error(("'%s' must be a function as the constructor."):format(key), 2)
+					error(("'%s' must be a function as the Initializer."):format(key), 2)
 				end
 			end
 
@@ -3012,9 +3013,7 @@ do
 						value[n] = info.StructEnv[n]:Validate(value[n], n)
 					end
 				end
-			end
-
-			if info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
 				local flag, ret
 				local ele = info.ArrayElement
 
@@ -3047,13 +3046,18 @@ do
 		return value
 	end
 
-	function CopyStructMethods(info, dest)
-		if info.Method and type(dest) == "table" then
-			for k, v in pairs(info.Method) do
-				if dest[k] == nil then dest[k] = v end
+	function InitializeStructObj(info, obj)
+		if type(obj) == "table" then
+			if info.Method then
+				for k, v in pairs(info.Method) do
+					if obj[k] == nil then obj[k] = v end
+				end
 			end
+
+			if info.Initializer then pcall(info.Initializer, obj) end
 		end
-		return dest
+
+		return obj
 	end
 
 	function Struct2Obj(strt, ...)
@@ -3061,52 +3065,16 @@ do
 
 		local count = select("#", ...)
 		local initTable = select(1, ...)
+		local initErrMsg
 
 		if not ( count == 1 and type(initTable) == "table" and getmetatable(initTable) == nil ) then initTable = nil end
 
 		if initTable then
 			local ok, value = pcall(ValidateStruct, strt, initTable)
 
-			if ok then return CopyStructMethods(info, value) end
-		end
+			if ok then return InitializeStructObj(info, value) end
 
-		-- Constructor
-		if info.Constructor then
-			local ctor = info.Constructor
-
-			while getmetatable(ctor) do
-				ctor.Thread = nil
-
-				if ctor:MatchArgs(...) then
-					break
-				elseif ctor.Thread then
-					-- Remove argument container
-					resume(ctor.Thread, false)
-					ctor.Thread = nil
-				end
-
-				ctor = ctor.Next
-			end
-
-			local ok, value
-
-			if type(ctor) == "function" then
-				ok, value = pcall(ctor, ...)
-			elseif ctor then
-				if ctor.Thread then
-					ok, value = pcall(ctor.Method, select(2, resume(ctor.Thread, false)))
-				else
-					ok, value = pcall(ctor.Method, ...)
-				end
-			else
-				error(("%s has no constructor support such arguments"):format(tostring(strt)), 2)
-			end
-
-			if ok then
-				return CopyStructMethods(info, value)
-			else
-				error(strtrim(value:match(":%d+:%s*(.-)$") or value), 3)
-			end
+			initErrMsg = value
 		end
 
 		-- Default Constructor
@@ -3118,8 +3086,9 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				return CopyStructMethods(info, value)
+				return InitializeStructObj(info, value)
 			else
+				value = initErrMsg or value
 				value = strtrim(value:match(":%d+:%s*(.-)$") or value)
 				value = value:gsub("%%s%.", ""):gsub("%%s", "")
 
@@ -3139,8 +3108,9 @@ do
 			local ok, value = pcall(ValidateStruct, strt, ret)
 
 			if ok then
-				return CopyStructMethods(info, value)
+				return InitializeStructObj(info, value)
 			else
+				value = initErrMsg or value
 				value = strtrim(value:match(":%d+:%s*(.-)$") or value)
 				value = value:gsub("%%s%.", ""):gsub("%%s", "")
 				error(("Usage : %s(...) - %s"):format(tostring(strt), value), 3)
@@ -3215,7 +3185,7 @@ do
 		info.UserValidate = nil
 		info.Validate = nil
 		info.Method = nil
-		info.Constructor = nil
+		info.Initializer = nil
 		info.Import4Env = nil
 
 		info.StructEnv = setmetatable({

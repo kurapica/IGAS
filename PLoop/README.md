@@ -3318,31 +3318,6 @@ Some points about the function :
 
 
 
-Thread
-====
-
-In the **System.Object** class, there is methods like **ActiveThread**, **ThreadCall**, also an attribute **System.__Thread__**, those features are used to bring the coroutine system into the PLoop system.
-
-System.Object.ThreadCall
-----
-
-	[Class] System.Object - [Method] ThreadCall :
-
-		Description :
-			Call method or function as a thread
-
-		Format :
-			object:ThreadCall(methodname|function, ...)
-
-		Parameter :
-			methodname|function
-			... - the arguments
-
-		Return :
-			nil
-
-
-
 
 Tips
 ====
