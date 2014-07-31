@@ -5678,6 +5678,29 @@ do
 
 		function __unm(v1) error("Can't use unary '-' before a Type", 2) end
 
+		function __eq(v1, v2)
+			if getmetatable(v1) == Type and getmetatable(v2) == Type and v1.AllowNil == v2.AllowNil and #v1 == #v2 then
+				local index = -1
+				while rawget(v1, index) do
+					if v1[index] == v2[index] then
+						index = index - 1
+					else
+						return false
+					end
+				end
+
+				if rawget(v2, index) then return false end
+
+				for i = 1, #v1 do
+					if v1[i] ~= v2[i] then return false end
+				end
+
+				return true
+			else
+				return false
+			end
+		end
+
 		function __tostring(self)
 			local ret = ""
 
@@ -5994,12 +6017,12 @@ do
 
 			while getmetatable(self) do
 				local fUsage = self.Usage
-				--local params = fUsage:match("Usage : %w+.(.+)")
+				local params = fUsage:match("Usage : %w+.(.+)")
 
-				--if params and not usage[params] then
-				--	usage[params] = true
+				if params and not usage[params] then
+					usage[params] = true
 					tinsert(usage, fUsage)
-				--end
+				end
 
 				self = self.Next
 			end
@@ -7188,7 +7211,7 @@ do
 		end
 
 		function Argument(value)
-			value.Type = value.Type and BuildType(value.Type) or nil
+			value.Type = GetUniqueType(value.Type and BuildType(value.Type) or nil)
 
 			if value.Type and value.Default ~= nil then
 				value.Default = value.Type:GetValidatedValue(value.Default)
