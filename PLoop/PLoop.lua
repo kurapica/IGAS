@@ -5242,7 +5242,7 @@ do
 			local info = cls and _NSInfo[cls]
 			if info then
 				if cls ~= getmetatable(obj2) then return false end
-				if info.Metatable.__eq then return false end
+				if info.MetaTable.__eq then return false end
 
 				-- Check properties
 				for name, prop in pairs(info.Cache4Property) do
