@@ -10,11 +10,12 @@
 --               2011/10/31 New SlashCmd System for addon & module.
 --               2013/08/05 Remove the version check, seal the definition environment
 --               2014/07/03	Recode with System.Task
+--               2014/08/13 OnQuit event added for PLAYER_LOGOUT
 
 ------------------------------------------------------
 -- Addon system definition environment
 ------------------------------------------------------
-Module "System.Addon" "1.17.0"
+Module "System.Addon" "1.18.0"
 
 namespace "System"
 
@@ -98,6 +99,8 @@ do
 
 	--  Special Settings for _EventManager
 	do
+		local fireEvent = Object.Fire
+
 		function _EventManager:OnEvent(event, ...)
 			local chk, ret
 
@@ -111,7 +114,7 @@ do
 			if _EventDistribution[event] then
 				for obj in pairs(_EventDistribution[event]) do
 					if not _Addon_Disabled[obj] then
-						Object.Fire(obj, "OnEvent", event, ...)
+						fireEvent(obj, "OnEvent", event, ...)
 					end
 				end
 			end
@@ -119,7 +122,7 @@ do
 
 		-- Loading
 		local function loading(self)
-			Object.Fire(self, "OnLoad")
+			fireEvent(self, "OnLoad")
 
 			local mdls = self:GetModules()
 
@@ -133,7 +136,7 @@ do
 		-- Enabling
 		local function enabling(self)
 			if not _Addon_Disabled[self] then
-				Object.Fire(self, "OnEnable")
+				fireEvent(self, "OnEnable")
 
 				local mdls = self:GetModules()
 
@@ -141,6 +144,19 @@ do
 					for _, mdl in ipairs(mdls) do
 						enabling(mdl)
 					end
+				end
+			end
+		end
+
+		-- Quit
+		local function quit(self)
+			fireEvent(self, "OnQuit")
+
+			local mdls = self:GetModules()
+
+			if mdls then
+				for _, mdl in ipairs(mdls) do
+					quit(mdl)
 				end
 			end
 		end
@@ -195,8 +211,16 @@ do
 			_M._Logined = true
 		end
 
+		function _EventManager:PLAYER_LOGOUT()
+			for _, addon in pairs(_Addon) do
+				-- quit addons
+				quit(addon)
+			end
+		end
+
 		_UsedEvent.ADDON_LOADED = true
 		_UsedEvent.PLAYER_LOGIN = true
+		_UsedEvent.PLAYER_LOGOUT = true
 
 		_EventManager:Hide()
 		_EventManager:UnregisterAllEvents()
@@ -474,6 +498,9 @@ interface "IFModule"
 
 	__Doc__[[Fired when the addon(module) is dispoing]]
 	event "OnDispose"
+
+	__Doc__[[Fired when the player log out]]
+	event "OnQuit"
 
 	__Doc__[[
 		<desc>Fired when the addon(module) registered slash commands is called</desc>

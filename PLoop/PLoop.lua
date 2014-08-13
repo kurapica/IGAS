@@ -220,7 +220,7 @@ do
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
 		if ATTRIBUTE_INSTALLED then
-			value = __Attribute__._ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
+			value = _ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
 		end
 
 		if ATTRIBUTE_INSTALLED and targetType ~= AttributeTargets.Constructor then
@@ -601,7 +601,7 @@ do
 
 		local ns = SetNameSpace4Env(getfenv(2), name)
 
-		return ns and ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(ns, AttributeTargets.NameSpace)
+		return ns and ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(ns, AttributeTargets.NameSpace)
 	end
 end
 
@@ -1500,7 +1500,7 @@ do
 		setfenv(2, interfaceEnv)
 
 		-- No super target for interface
-		return ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface)
+		return ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface)
 	end
 
 	------------------------------------
@@ -1603,7 +1603,7 @@ do
 
 		info.Event[name] = info.Event[name] or Event(name)
 
-		return ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		return ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
 	end
 
 	function SetPropertyWithSet(info, name, set)
@@ -1617,7 +1617,7 @@ do
 		prop.Name = name
 		prop.Predefined = set
 
-		return ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
+		return ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
 	end
 
 	------------------------------------
@@ -1633,7 +1633,7 @@ do
 	--- End the interface's definition and restore the environment
 	------------------------------------
 	function endinterface(name)
-		if ATTRIBUTE_INSTALLED then __Attribute__._ClearPreparedAttributes() end
+		if ATTRIBUTE_INSTALLED then _ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endinterface "interfacename"]], 2) end
 
@@ -2461,7 +2461,7 @@ do
 		}
 
 		if ATTRIBUTE_INSTALLED then
-			__Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
+			_ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
 		end
 
 		-- Set the environment to class's environment
@@ -2514,7 +2514,7 @@ do
 		-- rawset(env, _SuperIndex, superCls)
 
 		-- Copy Metatable
-		if ATTRIBUTE_INSTALLED then __Attribute__._ClearPreparedAttributes() end
+		if ATTRIBUTE_INSTALLED then _ClearPreparedAttributes() end
 
 		for meta, flag in pairs(_KeyMeta) do
 			local rMeta = flag and meta or "_" .. meta
@@ -2523,9 +2523,7 @@ do
 		end
 
 		-- Clone Attributes
-		if ATTRIBUTE_INSTALLED then
-			__Attribute__._CloneAttributes(superCls, info.Owner, AttributeTargets.Class)
-		end
+		return ATTRIBUTE_INSTALLED and _CloneAttributes(superCls, info.Owner, AttributeTargets.Class)
 	end
 
 	------------------------------------
@@ -2639,7 +2637,7 @@ do
 
 		info.Event[name] = info.Event[name] or Event(name)
 
-		return ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		return ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
 	end
 
 	------------------------------------
@@ -2655,7 +2653,7 @@ do
 	--- End the class's definition and restore the environment
 	------------------------------------
 	function endclass(name)
-		if ATTRIBUTE_INSTALLED then __Attribute__._ClearPreparedAttributes() end
+		if ATTRIBUTE_INSTALLED then _ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endclass "classname"]], 2) end
 
@@ -2752,7 +2750,7 @@ do
 			end
 		end
 
-		if ATTRIBUTE_INSTALLED then __Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Enum) end
+		if ATTRIBUTE_INSTALLED then _ConsumePreparedAttributes(info.Owner, AttributeTargets.Enum) end
 
 		-- Cache
 		info.Cache = info.Cache or {}
@@ -2992,7 +2990,7 @@ do
 						if info.SubType == _STRUCT_TYPE_MEMBER then
 							info.Members = info.Members or {}
 							tinsert(info.Members, key)
-							if ATTRIBUTE_INSTALLED then __Attribute__._ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
+							if ATTRIBUTE_INSTALLED then _ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
 
 							-- Auto generate Default
 							if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
@@ -3005,7 +3003,7 @@ do
 							end
 						elseif info.SubType == _STRUCT_TYPE_ARRAY then
 							info.ArrayElement = ret
-							if ATTRIBUTE_INSTALLED then __Attribute__._ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
+							if ATTRIBUTE_INSTALLED then _ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
 						end
 
 						return
@@ -3221,7 +3219,7 @@ do
 		-- Set the environment to class's environment
 		setfenv(2, info.StructEnv)
 
-		return ATTRIBUTE_INSTALLED and __Attribute__._ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+		return ATTRIBUTE_INSTALLED and _ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
 	end
 
 	------------------------------------
@@ -3253,7 +3251,7 @@ do
 	--- End the class's definition and restore the environment
 	------------------------------------
 	function endstruct(name)
-		if ATTRIBUTE_INSTALLED then __Attribute__._ClearPreparedAttributes() end
+		if ATTRIBUTE_INSTALLED then _ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endstruct "structname"]], 2) end
 
@@ -6238,12 +6236,9 @@ do
 	namespace "System"
 
 	------------------------------------------------------
-	-- System.__Attribute__
+	-- Attribute Core
 	------------------------------------------------------
-	class "__Attribute__"
-
-		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
-
+	do
 		_PreparedAttributes = {}
 		_ThreadPreparedAttributes = setmetatable({}, WEAK_KEY)
 
@@ -6265,46 +6260,29 @@ do
 
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
-			__call = function(self, key)
-				if key then
-					if type(key) == "table" and self[key] then
-						for attr in pairs(key) do
-							key[attr] = nil
-							if not rawget(attr, "Disposed") then attr:Dispose() end
-						end
-
-						tinsert(self, key)
+			__call = function(self, cache)
+				if cache then
+					for attr in pairs(cache) do
+						if getmetatable(attr) and not rawget(attr, "Disposed") then attr:Dispose() end
 					end
+					wipe(cache)
+					tinsert(self, cache)
 				else
-					if #self > 0 then
-						return tremove(self, #self)
-					else
-						local ret = {}
-
-						-- Mark it as recycle table
-						self[ret] = true
-
-						return ret
-					end
+					return tremove(self) or {}
 				end
 			end,
 		})
 
-		local function SendToPrepared(self)
-			-- Send to prepared cache
-			local thread = running()
-			local prepared
+		local function GetCustomAttribute(target, targetType, type)
+			local config = _AttributeCache[targetType][target]
 
-			if thread then
-				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
-				prepared = _ThreadPreparedAttributes[thread]
+			if not config then
+				return
+			elseif getmetatable(config) then
+				return getmetatable(config) == type and config or nil
 			else
-				prepared = _PreparedAttributes
+				for _, attr in ipairs(config) do if getmetatable(attr) == type then return attr end end
 			end
-
-			for i, v in ipairs(prepared) do if v == self then return end end
-
-			tinsert(prepared, self)
 		end
 
 		local function ParseTarget(target, targetType, owner, name)
@@ -6373,7 +6351,7 @@ do
 				if Reflector.IsEqual(config, attr) then return false end
 
 				if not skipMulti and getmetatable(config) == getmetatable(attr) then
-					local usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+					local usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 					if not usage or not usage.AllowMultiple then return false end
 				end
@@ -6428,7 +6406,7 @@ do
 
 						_AttributeCache[targetType][target] = nil
 					else
-						local usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+						local usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 						if usage and not usage.Inherited and usage.RunOnce then
 							_AttributeCache[targetType][target] = nil
@@ -6454,7 +6432,7 @@ do
 
 							tremove(config, i)
 						else
-							local usage = _GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
+							local usage = GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
 
 							if usage and not usage.Inherited and usage.RunOnce then
 								config[i]:Dispose()
@@ -6488,10 +6466,23 @@ do
 			return target
 		end
 
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		doc "_ClearPreparedAttributes" [[Clear the prepared attributes]]
+		function _SendAttributeToPrepared(self)
+			-- Send to prepared cache
+			local thread = running()
+			local prepared
+
+			if thread then
+				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
+				prepared = _ThreadPreparedAttributes[thread]
+			else
+				prepared = _PreparedAttributes
+			end
+
+			for i, v in ipairs(prepared) do if v == self then return end end
+
+			tinsert(prepared, self)
+		end
+
 		function _ClearPreparedAttributes(noDispose)
 			local thread = running()
 
@@ -6510,24 +6501,7 @@ do
 			end
 		end
 
-		doc "_ConsumePreparedAttributes" [[
-			<desc>Set the prepared attributes for target</desc>
-			<param name="target">the target's owner</param>
-			<param name="targetType" type="System.AttributeTargets">the target's type</param>
-			<param name="superTarget" optional="true">the super target the contains several attributes to be inherited</param>
-			<param name="owner" optional="true">the class|interface object, the owner of the target</param>
-			<param name="name" optional="true">the target's name</param>
-			<return name="target"></return>
-		]]
 		function _ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
-			if not _AttributeCache[targetType] then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'targetType' is invalid.", 2)
-			elseif not ValidateTargetType(target, targetType) then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'target' is invalid.", 2)
-			elseif superTarget and not ValidateTargetType(superTarget, targetType) then
-				error("Usage : __Attribute__._ConsumePreparedAttributes(target, targetType[, superTarget[, owner, name]]) - 'superTarget' is invalid.", 2)
-			end
-
 			if not owner and IsNameSpace(target) then owner = target end
 
 			-- Consume the prepared Attributes
@@ -6542,7 +6516,7 @@ do
 				for i = 1, #prepared do
 					local attr = prepared[i]
 					cls = getmetatable(attr)
-					usage = _GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
+					usage = GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
 
 					if usage and usage.AttributeTarget > 0 and not Reflector.ValidateFlags(targetType, usage.AttributeTarget) then
 						errorhandler("Can't apply the " .. tostring(cls) .. " attribute to the " .. ParseTarget(target, targetType, owner, name))
@@ -6603,7 +6577,7 @@ do
 
 				if config then
 					if getmetatable(config) then
-						usage = _GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+						usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
 
 						if not usage or usage.Inherited then
 							prepared = prepared or {}
@@ -6612,7 +6586,7 @@ do
 						end
 					else
 						for _, attr in ipairs(config) do
-							usage = _GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
+							usage = GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
 
 							if not usage or usage.Inherited then
 								prepared = prepared or {}
@@ -6663,25 +6637,7 @@ do
 			return target
 		end
 
-		doc "_CloneAttributes" [[
-			<desc>Clone the attributes</desc>
-			<param name="source">the source</param>
-			<param name="target">the target</param>
-			<param name="targetType" type="System.AttributeTargets">the target's type</param>
-			<param name="owner" optional="true">the class|interface object, the owner of the target</param>
-			<param name="name" optional="true">the target's name</param>
-			<param name="removeSource" type="boolean" optional="true">true if remove attributes settings from the source</param>
-			<return name="target"></return>
-		]]
 		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
-			if not _AttributeCache[targetType] then
-				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'targetType' is invalid.", 2)
-			elseif  not ValidateTargetType(source, targetType) then
-				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'source' is invalid.", 2)
-			elseif  not ValidateTargetType(target, targetType) then
-				error("Usage : __Attribute__._CloneAttributes(source, target, targetType[, owner, name]) - 'target' is invalid.", 2)
-			end
-
 			if source == target then return end
 
 			local config = _AttributeCache[targetType][source]
@@ -6753,6 +6709,15 @@ do
 
 			return target
 		end
+	end
+
+	------------------------------------------------------
+	-- System.__Attribute__
+	------------------------------------------------------
+	class "__Attribute__"
+
+		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
+
 
 		doc "_IsDefined" [[
 			<desc>Check whether the target contains such type attribute</desc>
@@ -7117,7 +7082,7 @@ do
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function __Attribute__(self) SendToPrepared(self) end
+		__Attribute__ = _SendAttributeToPrepared
 	endclass "__Attribute__"
 
 	-- Attribute system on
@@ -7436,37 +7401,37 @@ do
 
 		-- System.__Unique__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Unique__)
 		__Final__:ApplyAttribute(__Unique__)
 
 		-- System.__Flags__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Flags__)
 		__Final__:ApplyAttribute(__Flags__)
 
 		-- System.__AttributeUsage__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
-		__Attribute__._ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
 		__Final__:ApplyAttribute(__AttributeUsage__)
 		__NonInheritable__:ApplyAttribute(__AttributeUsage__)
 
 		-- System.__Final__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Final__)
 		__Final__:ApplyAttribute(__Final__)
 
 		-- System.__NonInheritable__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true}
-		__Attribute__._ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__NonInheritable__)
 		__Final__:ApplyAttribute(__NonInheritable__)
 
 		-- System.__Arguments__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, Inherited = false, RunOnce = true }
-		__Attribute__._ConsumePreparedAttributes(__Arguments__, AttributeTargets.Class)
+		_ConsumePreparedAttributes(__Arguments__, AttributeTargets.Class)
 		__Arguments__()
 		SaveFixedMethod(_NSInfo[__Arguments__], "Constructor", _NSInfo[__Arguments__].Constructor, __Arguments__, AttributeTargets.Constructor)
 
@@ -8559,7 +8524,7 @@ do
 
 			setfenv(depth + 1, self)
 
-			__Attribute__._ClearPreparedAttributes()
+			_ClearPreparedAttributes()
 		end
 
 		--[[
