@@ -3,8 +3,9 @@
 -- ChangeLog
 --                2011/10/31 code added as ColorType's member
 --                2012/12/03 Add more color to FontColor
+--                2014/08/24 Add default value for several enums
 
-local version = 5
+local version = 6
 
 if not IGAS:NewAddon("IGAS.Widget", version) then
 	return
@@ -53,6 +54,7 @@ enum "DrawLayer" {
 	"HIGHLIGHT",
 }
 -- AlphaMode
+__Default__"ADD"
 enum "AlphaMode" {
 	"DISABLE",
 	"BLEND",
@@ -61,6 +63,7 @@ enum "AlphaMode" {
 	"MOD",
 }
 -- OutLineType
+__Default__"NONE"
 enum "OutLineType" {
 	"NONE",
 	"NORMAL",
@@ -89,6 +92,7 @@ enum "Orientation" {
 	"VERTICAL",
 }
 -- AttributeType
+__Default__"nil"
 enum "AttributeType" {
 	"nil",
 	"boolean",
@@ -96,18 +100,21 @@ enum "AttributeType" {
 	"string",
 }
 -- AnimLoopType
+__Default__"NONE"
 enum "AnimLoopType" {
 	"NONE",
 	"REPEAT",
 	"BOUNCE",
 }
 -- AnimLoopStateType
+__Default__"NONE"
 enum "AnimLoopStateType" {
 	"NONE",
 	"FORWARD",
 	"REVERSE",
 }
 -- AnimSmoothType
+__Default__"NONE"
 enum "AnimSmoothType" {
 	"NONE",
 	"IN",
@@ -116,6 +123,7 @@ enum "AnimSmoothType" {
 	"OUT_IN",
 }
 -- AnimCurveType
+__Default__"NONE"
 enum "AnimCurveType" {
 	"NONE",
 	"SMOOTH",
