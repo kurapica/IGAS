@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -1161,6 +1161,8 @@ do
 			local alert = _RecycleAlert()
 			local width, height = self:GetSize()
 
+			alert.Parent = self
+
 			alert:ClearAllPoints()
 			alert:SetSize(width*1.4, height*1.4)
 			alert:SetPoint("CENTER", self, "CENTER")
@@ -1449,6 +1451,7 @@ do
 		if self._ActionButton then
 			self._ActionButton._IFActionHandler_OverLay = nil
 			self._ActionButton = nil
+			self.Parent = _IFActionHandler_ManagerFrame
 			self:StopAnimation()
 			self:ClearAllPoints()
 			self:Hide()

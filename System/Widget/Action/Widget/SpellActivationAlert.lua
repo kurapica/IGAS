@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.SpellActivationAlert", version) then
 	return
 end
@@ -261,7 +261,7 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animInAnts)
 		alpha.Order = 1
 		alpha.Duration = 0.2
-		alpha.StartDelay = 0.3
+		alpha.StartDelay = 0.2
 		alpha.Change = 1
 
 		animInInnerGlow.OnPlay = AnimIn_OnPlay
