@@ -27,6 +27,7 @@ function OnEnable(self)
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 	OnEnable = nil
 	UpdateStanceMap()
@@ -76,6 +77,10 @@ end
 
 function CURRENT_SPELL_CAST_CHANGED(self)
 	return handler:Refresh(RefreshButtonState)
+end
+
+function PLAYER_ENTERING_WORLD(self)
+	return handler:Refresh()
 end
 
 function UpdateStanceMap()
