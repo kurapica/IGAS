@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/07/25
--- Version			r102
+-- Last Update Date 2014/09/03
+-- Version			r103
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -6242,18 +6242,7 @@ do
 		_PreparedAttributes = {}
 		_ThreadPreparedAttributes = setmetatable({}, WEAK_KEY)
 
-		_AttributeCache = {
-			[AttributeTargets.Class] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Constructor] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Enum] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Event] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Interface] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Method] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Property] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Struct] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.Field] = setmetatable({}, WEAK_KEY),
-			[AttributeTargets.NameSpace] = setmetatable({}, WEAK_KEY),
-		}
+		_AttributeCache = setmetatable({}, WEAK_KEY)
 
 		-- A little trick
 		_AttributeTargetsCache = _NSInfo[AttributeTargets].Cache
@@ -6273,8 +6262,8 @@ do
 			end,
 		})
 
-		local function GetCustomAttribute(target, targetType, type)
-			local config = _AttributeCache[targetType][target]
+		local function GetCustomAttribute(target, type)
+			local config = _AttributeCache[target]
 
 			if not config then
 				return
@@ -6289,7 +6278,7 @@ do
 			if targetType == AttributeTargets.Class then
 				return "[Class]" .. tostring(target)
 			elseif targetType == AttributeTargets.Constructor then
-				return "[Class.Constructor]" .. tostring(target)
+				return "[Class.Constructor]" .. tostring(owner)
 			elseif targetType == AttributeTargets.Enum then
 				return "[Enum]" .. tostring(target)
 			elseif targetType == AttributeTargets.Event then
@@ -6351,7 +6340,7 @@ do
 				if Reflector.IsEqual(config, attr) then return false end
 
 				if not skipMulti and getmetatable(config) == getmetatable(attr) then
-					local usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+					local usage = GetCustomAttribute(getmetatable(config), __AttributeUsage__)
 
 					if not usage or not usage.AllowMultiple then return false end
 				end
@@ -6362,9 +6351,9 @@ do
 			return true
 		end
 
-		local function _ApplyAttributes(target, targetType, owner, name, start)
+		local function _ApplyAttributes(target, targetType, owner, name, start, config)
 			-- Apply the attributes
-			local config = _AttributeCache[targetType][target]
+			config = config or _AttributeCache[target]
 
 			if config then
 				local ok, ret, arg1, arg2, arg3, arg4
@@ -6404,13 +6393,12 @@ do
 					if not ok then
 						errorhandler(ret)
 
-						_AttributeCache[targetType][target] = nil
+						_AttributeCache[target] = nil
 					else
-						local usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+						local usage = GetCustomAttribute(getmetatable(config), __AttributeUsage__)
 
-						if usage and not usage.Inherited and usage.RunOnce then
-							_AttributeCache[targetType][target] = nil
-
+						if targetType == AttributeTargets.Constructor or (usage and not usage.Inherited and usage.RunOnce) then
+							_AttributeCache[target] = nil
 							config:Dispose()
 						end
 
@@ -6432,9 +6420,9 @@ do
 
 							tremove(config, i)
 						else
-							local usage = GetCustomAttribute(getmetatable(config[i]), AttributeTargets.Class, __AttributeUsage__)
+							local usage = GetCustomAttribute(getmetatable(config[i]), __AttributeUsage__)
 
-							if usage and not usage.Inherited and usage.RunOnce then
+							if targetType == AttributeTargets.Constructor or (usage and not usage.Inherited and usage.RunOnce) then
 								config[i]:Dispose()
 								tremove(config, i)
 							end
@@ -6456,9 +6444,9 @@ do
 					end
 
 					if #config == 0 then
-						_AttributeCache[targetType][oldTarget] = nil
+						_AttributeCache[oldTarget] = nil
 					elseif #config == 1 then
-						_AttributeCache[targetType][oldTarget] = config[1]
+						_AttributeCache[oldTarget] = config[1]
 					end
 				end
 			end
@@ -6516,7 +6504,7 @@ do
 				for i = 1, #prepared do
 					local attr = prepared[i]
 					cls = getmetatable(attr)
-					usage = GetCustomAttribute(cls, AttributeTargets.Class, __AttributeUsage__)
+					usage = GetCustomAttribute(cls, __AttributeUsage__)
 
 					if usage and usage.AttributeTarget > 0 and not Reflector.ValidateFlags(targetType, usage.AttributeTarget) then
 						errorhandler("Can't apply the " .. tostring(cls) .. " attribute to the " .. ParseTarget(target, targetType, owner, name))
@@ -6542,9 +6530,9 @@ do
 			end
 
 			-- Check if already existed
-			if _AttributeCache[targetType][target] then
+			if _AttributeCache[target] then
 				if prepared and #prepared > 0 then
-					local config = _AttributeCache[targetType][target]
+					local config = _AttributeCache[target]
 					local noUseAttr = _AttributeCache4Dispose()
 
 					-- remove equal attributes
@@ -6560,24 +6548,29 @@ do
 					if prepared and #prepared > 0 then
 						-- Erase old no-multi attributes
 						if getmetatable(config) then
-							if not ValidateUsable(prepared, config) then _AttributeCache[targetType][target] = nil end
+							if not ValidateUsable(prepared, config) then
+								_AttributeCache[target] = nil
+								config:Dispose()
+							end
 						else
 							for i = #config, 1, -1 do
-								if not ValidateUsable(prepared, config[i]) then tremove(config, i) end
+								if not ValidateUsable(prepared, config[i]) then
+									tremove(config, i):Dispose()
+								end
 							end
 
-							if #config == 0 then _AttributeCache[targetType][target] = nil end
+							if #config == 0 then _AttributeCache[target] = nil end
 						end
 					end
 				end
 			elseif superTarget then
 				-- get inheritable attributes from superTarget
-				local config = _AttributeCache[targetType][superTarget]
+				local config = _AttributeCache[superTarget]
 				local usage
 
 				if config then
 					if getmetatable(config) then
-						usage = GetCustomAttribute(getmetatable(config), AttributeTargets.Class, __AttributeUsage__)
+						usage = GetCustomAttribute(getmetatable(config), __AttributeUsage__)
 
 						if not usage or usage.Inherited then
 							prepared = prepared or {}
@@ -6586,7 +6579,7 @@ do
 						end
 					else
 						for _, attr in ipairs(config) do
-							usage = GetCustomAttribute(getmetatable(attr), AttributeTargets.Class, __AttributeUsage__)
+							usage = GetCustomAttribute(getmetatable(attr), __AttributeUsage__)
 
 							if not usage or usage.Inherited then
 								prepared = prepared or {}
@@ -6599,11 +6592,11 @@ do
 			end
 
 			-- Save & apply the attributes for target
-			if #prepared > 0 then
+			if prepared and #prepared > 0 then
 				local start = 1
 
-				if _AttributeCache[targetType][target] then
-					local config = _AttributeCache[targetType][target]
+				if _AttributeCache[target] then
+					local config = _AttributeCache[target]
 
 					if getmetatable(config) then config = { config } end
 
@@ -6611,12 +6604,12 @@ do
 
 					for _, attr in ipairs(prepared) do tinsert(config, attr) end
 
-					_AttributeCache[targetType][target] = config
+					_AttributeCache[target] = config
 				else
 					if #prepared == 1 then
-						_AttributeCache[targetType][target] = prepared[1]
+						_AttributeCache[target] = prepared[1]
 					else
-						_AttributeCache[targetType][target] = { unpack(prepared) }
+						_AttributeCache[target] = { unpack(prepared) }
 					end
 				end
 
@@ -6625,11 +6618,14 @@ do
 				local ret =  _ApplyAttributes(target, targetType, owner, name, start) or target
 
 				if target ~= ret then
-					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
-					_AttributeCache[targetType][target] = nil
+					_AttributeCache[ret] = _AttributeCache[target]
+					_AttributeCache[target] = nil
 
 					target = ret
 				end
+
+				-- No custom attribute for constructor
+				if targetType == AttributeTargets.Constructor then _AttributeCache[target] = nil end
 			end
 
 			_ClearPreparedAttributes()
@@ -6640,26 +6636,26 @@ do
 		function _CloneAttributes(source, target, targetType, owner, name, removeSource)
 			if source == target then return end
 
-			local config = _AttributeCache[targetType][source]
+			local config = _AttributeCache[source]
 
 			-- Save & apply the attributes for target
 			if config then
 				local start = 1
 
 				-- Check existed attributes
-				if _AttributeCache[targetType][target] then
-					local attrs = _AttributeCache[targetType][target]
+				if _AttributeCache[target] then
+					local attrs = _AttributeCache[target]
 
 					if getmetatable(config) then
 						if not ValidateUsable(attrs, config) then
-							if removeSource then _AttributeCache[targetType][source] = nil end
+							if removeSource then _AttributeCache[source] = nil end
 
 							return target
 						end
 
 						if getmetatable(attrs) then
 							attrs = { attrs }
-							_AttributeCache[targetType][target] = attrs
+							_AttributeCache[target] = attrs
 						end
 
 						start = #attrs + 1
@@ -6671,7 +6667,7 @@ do
 						for i = 1, #config do if ValidateUsable(attrs, config[i]) then tinsert(usableAttr, config[i]) end end
 
 						if #usableAttr == 0 then
-							if removeSource then _AttributeCache[targetType][source] = nil end
+							if removeSource then _AttributeCache[source] = nil end
 
 							_AttributeCache4Dispose(usableAttr)
 
@@ -6680,7 +6676,7 @@ do
 
 						if getmetatable(attrs) then
 							attrs = { attrs }
-							_AttributeCache[targetType][target] = attrs
+							_AttributeCache[target] = attrs
 						end
 
 						start = #attrs + 1
@@ -6692,19 +6688,19 @@ do
 						_AttributeCache4Dispose(usableAttr)
 					end
 				else
-					_AttributeCache[targetType][target] = config
+					_AttributeCache[target] = config
 				end
 
 				local ret =  _ApplyAttributes(target, targetType, owner, name, start) or target
 
 				if target ~= ret then
-					_AttributeCache[targetType][ret] = _AttributeCache[targetType][target]
-					_AttributeCache[targetType][target] = nil
+					_AttributeCache[ret] = _AttributeCache[target]
+					_AttributeCache[target] = nil
 
 					target = ret
 				end
 
-				if removeSource then _AttributeCache[targetType][source] = nil end
+				if removeSource then _AttributeCache[source] = nil end
 			end
 
 			return target
@@ -6718,16 +6714,8 @@ do
 
 		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
 
-
-		doc "_IsDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class | event | method | property | struct | interface | enum</param>
-			<param name="targetType" type="System.AttributeTargets">the target's type</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		function _IsDefined(target, targetType, type)
-			local config = _AttributeCache[targetType][target]
+		local function _IsDefined(target, type)
+			local config = _AttributeCache[target]
 
 			if not config then
 				return false
@@ -6737,8 +6725,8 @@ do
 				return getmetatable(config) == type
 			else
 				for _, attr in ipairs(config) do if getmetatable(attr) == type then return true end end
-				return false
 			end
+			return false
 		end
 
 		doc "_IsClassAttributeDefined" [[
@@ -6748,17 +6736,7 @@ do
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
 		function _IsClassAttributeDefined(target, type)
-			if Reflector.IsClass(target) then return _IsDefined(target, AttributeTargets.Class, type) end
-		end
-
-		doc "_IsConstructorAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		function _IsConstructorAttributeDefined(target, type)
-			if Reflector.IsClass(target) then return _IsDefined(target, AttributeTargets.Constructor, type) end
+			if Reflector.IsClass(target) then return _IsDefined(target, type) end
 		end
 
 		doc "_IsEnumAttributeDefined" [[
@@ -6768,7 +6746,7 @@ do
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
 		function _IsEnumAttributeDefined(target, type)
-			if Reflector.IsEnum(target) then return _IsDefined(target, AttributeTargets.Enum, type) end
+			if Reflector.IsEnum(target) then return _IsDefined(target, type) end
 		end
 
 		doc "_IsEventAttributeDefined" [[
@@ -6782,7 +6760,7 @@ do
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Event[event] then
-				return _IsDefined(info.Cache4Event[event], AttributeTargets.Event, type)
+				return _IsDefined(info.Cache4Event[event], type)
 			end
 		end
 
@@ -6793,7 +6771,7 @@ do
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
 		function _IsInterfaceAttributeDefined(target, type)
-			if Reflector.IsInterface(target) then return _IsDefined(target, AttributeTargets.Interface, type) end
+			if Reflector.IsInterface(target) then return _IsDefined(target, type) end
 		end
 
 		doc "_IsMethodAttributeDefined" [[
@@ -6805,10 +6783,10 @@ do
 		]]
 		function _IsMethodAttributeDefined(target, method, type)
 			if type(target) == "function" then
-				return _IsDefined(target, AttributeTargets.Method, method)
+				return _IsDefined(target, method)
 			elseif getmetatable(target) == FixedMethod then
 				while target do
-					if _IsDefined(target, AttributeTargets.Method, method) then return true end
+					if _IsDefined(target, method) then return true end
 
 					target = getmetatable(target) and target.Next
 				end
@@ -6828,7 +6806,7 @@ do
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[prop] then
-				return _IsDefined(info.Cache4Property[prop], AttributeTargets.Property, type)
+				return _IsDefined(info.Cache4Property[prop], type)
 			end
 		end
 
@@ -6839,7 +6817,7 @@ do
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
 		function _IsStructAttributeDefined(target, type)
-			if Reflector.IsStruct(target) then return _IsDefined(target, AttributeTargets.Struct, type) end
+			if Reflector.IsStruct(target) then return _IsDefined(target, type) end
 		end
 
 		doc "_IsFieldAttributeDefined" [[
@@ -6855,12 +6833,12 @@ do
 			if info and info.Type == TYPE_STRUCT then
 				if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0 then
 					for _, part in ipairs(info.Members) do
-						if part == field then return _IsDefined(info.StructEnv[field], AttributeTargets.Field, type) end
+						if part == field then return _IsDefined(info.StructEnv[field], type) end
 					end
 				elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-					return _IsDefined(info.ArrayElement, AttributeTargets.Field, type)
+					return _IsDefined(info.ArrayElement, type)
 				elseif info.SubType == _STRUCT_TYPE_CUSTOM then
-					return _IsDefined(info.StructEnv[field], AttributeTargets.Field, type)
+					return _IsDefined(info.StructEnv[field], type)
 				end
 			end
 
@@ -6874,18 +6852,11 @@ do
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
 		function _IsNameSpaceAttributeDefined(target, type)
-			if Reflector.IsStruct(target) then return _IsDefined(target, AttributeTargets.NameSpace, type) end
+			if Reflector.GetNameSpaceName(target) then return _IsDefined(target, type) end
 		end
 
-		doc "_GetCustomAttribute" [[
-			<desc>Return the attributes of the given type for the target</desc>
-			<param name="target">class | event | method | property | struct | interface | enum</param>
-			<param name="targetType" type="System.AttributeTargets">the target's type</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		function _GetCustomAttribute(target, targetType, type)
-			local config = _AttributeCache[targetType][target]
+		local function _GetCustomAttribute(target, type)
+			local config = _AttributeCache[target]
 
 			if not config then
 				return
@@ -6920,17 +6891,7 @@ do
 			<return>the attribute objects</return>
 		]]
 		function _GetClassAttribute(target, type)
-			if Reflector.IsClass(target) then return _GetCustomAttribute(target, AttributeTargets.Class, type) end
-		end
-
-		doc "_GetConstructorAttribute" [[
-			<desc>Return the attributes of the given type for the class's constructor</desc>
-			<param name="target">class</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		function _GetConstructorAttribute(target, type)
-			if Reflector.IsClass(target) then return _GetCustomAttribute(target, AttributeTargets.Constructor, type) end
+			if Reflector.IsClass(target) then return _GetCustomAttribute(target, type) end
 		end
 
 		doc "_GetEnumAttribute" [[
@@ -6940,7 +6901,7 @@ do
 			<return>the attribute objects</return>
 		]]
 		function _GetEnumAttribute(target, type)
-			if Reflector.IsEnum(target) then return _GetCustomAttribute(target, AttributeTargets.Enum, type) end
+			if Reflector.IsEnum(target) then return _GetCustomAttribute(target, type) end
 		end
 
 		doc "_GetEventAttribute" [[
@@ -6954,7 +6915,7 @@ do
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Event[event] then
-				return _GetCustomAttribute(info.Cache4Event[event], AttributeTargets.Event, type)
+				return _GetCustomAttribute(info.Cache4Event[event], type)
 			end
 		end
 
@@ -6965,7 +6926,7 @@ do
 			<return>the attribute objects</return>
 		]]
 		function _GetInterfaceAttribute(target, type)
-			if Reflector.IsInterface(target) then return _GetCustomAttribute(target, AttributeTargets.Interface, type) end
+			if Reflector.IsInterface(target) then return _GetCustomAttribute(target, type) end
 		end
 
 		doc "_GetMethodAttribute" [[
@@ -6979,12 +6940,12 @@ do
 		]]
 		function _GetMethodAttribute(target, method, type)
 			if type(target) == "function" then
-				return _GetCustomAttribute(target, AttributeTargets.Method, method)
+				return _GetCustomAttribute(target, method)
 			elseif getmetatable(target) == FixedMethod then
 				local result
 
 				while target do
-					result = _GetCustomAttribute(target, AttributeTargets.Method, method)
+					result = _GetCustomAttribute(target, method)
 					if result then return result end
 
 					target = getmetatable(target) and target.Next
@@ -7005,7 +6966,7 @@ do
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and info.Cache4Property[prop] then
-				return _GetCustomAttribute(info.Cache4Property[prop], AttributeTargets.Property, type)
+				return _GetCustomAttribute(info.Cache4Property[prop], type)
 			end
 		end
 
@@ -7016,7 +6977,7 @@ do
 			<return>the attribute objects</return>
 		]]
 		function _GetStructAttribute(target, type)
-			if Reflector.IsStruct(target) then return _GetCustomAttribute(target, AttributeTargets.Struct, type) end
+			if Reflector.IsStruct(target) then return _GetCustomAttribute(target, type) end
 		end
 
 		doc "_GetFieldAttribute" [[
@@ -7032,12 +6993,12 @@ do
 			if info and info.Type == TYPE_STRUCT then
 				if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0 then
 					for _, part in ipairs(info.Members) do
-						if part == field then return _GetCustomAttribute(info.StructEnv[field], AttributeTargets.Field, type) end
+						if part == field then return _GetCustomAttribute(info.StructEnv[field], type) end
 					end
 				elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-					return _GetCustomAttribute(info.ArrayElement, AttributeTargets.Field, type)
+					return _GetCustomAttribute(info.ArrayElement, type)
 				elseif info.SubType == _STRUCT_TYPE_CUSTOM then
-					return _GetCustomAttribute(info.StructEnv[field], AttributeTargets.Field, type)
+					return _GetCustomAttribute(info.StructEnv[field], type)
 				end
 			end
 		end
@@ -7049,7 +7010,7 @@ do
 			<return>the attribute objects</return>
 		]]
 		function _GetNameSpaceAttribute(target, type)
-			if Reflector.GetNameSpaceName(target) then return _GetCustomAttribute(target, AttributeTargets.NameSpace, type) end
+			if Reflector.GetNameSpaceName(target) then return _GetCustomAttribute(target, type) end
 		end
 
 		doc "ApplyAttribute" [[
