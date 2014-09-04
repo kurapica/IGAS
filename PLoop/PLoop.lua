@@ -6244,9 +6244,6 @@ do
 
 		_AttributeCache = setmetatable({}, WEAK_KEY)
 
-		-- A little trick
-		_AttributeTargetsCache = _NSInfo[AttributeTargets].Cache
-
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
 			__call = function(self, cache)
@@ -6261,6 +6258,74 @@ do
 				end
 			end,
 		})
+
+		function GetTargetAttributes(target, targetType, owner, name)
+			local info = _NSInfo[owner or target]
+
+			if targetType == AttributeTargets.Event then
+				local eInfo = info.Cache4Event[name]
+				return eInfo and eInfo.Attribute
+			elseif targetType == AttributeTargets.Method then
+				if info.Method[name] then
+					return info.Attributes and info.Attributes[name]
+				else
+					if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] then
+						return GetTargetAttributes(target, targetType, info.SuperClass, name)
+					end
+
+					if info.ExtendInterface then
+						for _, IF in ipairs(info.ExtendInterface) do
+							if _NSInfo[IF].Cache4Method[name] then
+								return GetTargetAttributes(target, targetType, IF, name)
+							end
+						end
+					end
+				end
+			elseif targetType == AttributeTargets.Property then
+				local pInfo = info.Cache4Property[name]
+				return pInfo and pInfo.Attribute
+			elseif targetType == AttributeTargets.Field then
+				return info.Attributes and info.Attributes[name]
+			elseif targetType ~= AttributeTargets.Constructor then
+				return info.Attribute
+			end
+		end
+
+		function SaveTargetAttributes(target, targetType, owner, name, config)
+			local info = _NSInfo[owner or target]
+
+			if targetType == AttributeTargets.Event then
+				local eInfo = info.Cache4Event[name]
+				if eInfo then eInfo.Attribute = config end
+			elseif targetType == AttributeTargets.Method then
+				if info.Method[name] then
+					if config then
+						info.Attributes = info.Attributes or {}
+						info.Attributes[name] = config
+					elseif info.Attributes then
+						info.Attributes[name] = nil
+					end
+					return info.Attributes and info.Attributes[name]
+				end
+			elseif targetType == AttributeTargets.Property then
+				local pInfo = info.Cache4Property[name]
+				if pInfo then pInfo.Attribute = config end
+			elseif targetType == AttributeTargets.Field then
+				for i, n in ipairs(info.Members) do
+					if n == name then
+						if config then
+							info.Attributes = info.Attributes or {}
+							info.Attributes[name] = config
+						elseif info.Attributes then
+							info.Attributes[name] = nil
+						end
+						break
+					end
+				end
+			elseif targetType ~= AttributeTargets.Constructor then
+				info.Attribute = config
+			end
+		end
 
 		local function GetCustomAttribute(target, type)
 			local config = _AttributeCache[target]
