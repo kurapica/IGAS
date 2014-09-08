@@ -220,7 +220,7 @@ do
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
 		if ATTRIBUTE_INSTALLED then
-			value = ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, targetType ~= AttributeTargets.Constructor and GetSuperMethod(owner, key) or nil, owner, key) or value
+			value = ConsumePreparedAttributes(value, targetType or AttributeTargets.Method, owner, key) or value
 		end
 
 		if ATTRIBUTE_INSTALLED and targetType ~= AttributeTargets.Constructor then
@@ -1232,34 +1232,6 @@ do
 				for subcls in pairs(info.ExtendClass) do RefreshCache(subcls) end
 			end
 		end
-
-		function GetSuperProperty(cls, name)
-			local info = _NSInfo[cls]
-
-			if info.SuperClass and _NSInfo[info.SuperClass].Cache4Property[name] then
-				return _NSInfo[info.SuperClass].Cache4Property[name]
-			end
-
-			if info.ExtendInterface then
-				for _, IF in ipairs(info.ExtendInterface) do
-					if _NSInfo[IF].Cache4Property[name] then return _NSInfo[IF].Cache4Property[name] end
-				end
-			end
-		end
-
-		function GetSuperMethod(cls, name)
-			local info = _NSInfo[cls]
-
-			if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] then
-				return _NSInfo[info.SuperClass].Cache4Method[name]
-			end
-
-			if info.ExtendInterface then
-				for _, IF in ipairs(info.ExtendInterface) do
-					if _NSInfo[IF].Cache4Method[name] then return _NSInfo[IF].Cache4Method[name] end
-				end
-			end
-		end
 	end
 
 	-- metatable for interface's env
@@ -1603,7 +1575,7 @@ do
 
 		info.Event[name] = info.Event[name] or Event(name)
 
-		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, info.Owner, name)
 	end
 
 	function SetPropertyWithSet(info, name, set)
@@ -1617,7 +1589,7 @@ do
 		prop.Name = name
 		prop.Predefined = set
 
-		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(prop, AttributeTargets.Property, GetSuperProperty(info.Owner, name), info.Owner, name)
+		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(prop, AttributeTargets.Property, info.Owner, name)
 	end
 
 	------------------------------------
@@ -2461,7 +2433,7 @@ do
 		}
 
 		if ATTRIBUTE_INSTALLED then
-			ConsumePreparedAttributes(info.Owner, AttributeTargets.Class, info.SuperClass)
+			ConsumePreparedAttributes(info.Owner, AttributeTargets.Class)
 		end
 
 		-- Set the environment to class's environment
@@ -2637,7 +2609,7 @@ do
 
 		info.Event[name] = info.Event[name] or Event(name)
 
-		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, nil, info.Owner, name)
+		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Event[name], AttributeTargets.Event, info.Owner, name)
 	end
 
 	------------------------------------
@@ -2996,7 +2968,7 @@ do
 						if info.SubType == _STRUCT_TYPE_MEMBER then
 							info.Members = info.Members or {}
 							tinsert(info.Members, key)
-							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
+							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Field, info.Owner, key) end
 
 							-- Auto generate Default
 							if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
@@ -3009,7 +2981,7 @@ do
 							end
 						elseif info.SubType == _STRUCT_TYPE_ARRAY then
 							info.ArrayElement = ret
-							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Field, nil, info.Owner, key) end
+							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Field, info.Owner, key) end
 						end
 
 						return
@@ -6321,6 +6293,52 @@ do
 			end
 		end
 
+		function GetSuperAttributes(target, targetType, owner, name)
+			local info = _NSInfo[owner or target]
+
+			if targetType == AttributeTargets.Event then
+				if info.SuperClass and _NSInfo[info.SuperClass].Cache4Event[name] then
+					return _NSInfo[info.SuperClass].Cache4Event[name].Attribute
+				end
+
+				if info.ExtendInterface then
+					for _, IF in ipairs(info.ExtendInterface) do
+						if _NSInfo[IF].Cache4Event[name] then
+							return _NSInfo[IF].Cache4Event[name].Attribute
+						end
+					end
+				end
+			elseif targetType == AttributeTargets.Method then
+				if info.SuperClass and _NSInfo[info.SuperClass].Cache4Method[name] then
+					return GetTargetAttributes(nil, targetType, info.SuperClass, name)
+				end
+
+				if info.ExtendInterface then
+					for _, IF in ipairs(info.ExtendInterface) do
+						if _NSInfo[IF].Cache4Method[name] then
+							return GetTargetAttributes(nil, targetType, IF, name)
+						end
+					end
+				end
+			elseif targetType == AttributeTargets.Property then
+				if info.SuperClass and _NSInfo[info.SuperClass].Cache4Property[name] then
+					return GetTargetAttributes(nil, targetType, info.SuperClass, name)
+				end
+
+				if info.ExtendInterface then
+					for _, IF in ipairs(info.ExtendInterface) do
+						if _NSInfo[IF].Cache4Property[name] then
+							return GetTargetAttributes(nil, targetType, IF, name)
+						end
+					end
+				end
+			elseif targetType == AttributeTargets.Class then
+				if info.SuperClass then
+					return _NSInfo[info.SuperClass].Attribute
+				end
+			end
+		end
+
 		function SaveTargetAttributes(target, targetType, owner, name, config)
 			local info = _NSInfo[owner or target]
 
@@ -6351,6 +6369,8 @@ do
 				end
 			elseif targetType ~= AttributeTargets.Constructor then
 				info.Attribute = config
+			else
+				-- DisposeAttributes(config)
 			end
 		end
 
@@ -6423,6 +6443,7 @@ do
 			config = config or GetTargetAttributes(target, targetType, owner, name)
 
 			if config then
+				local oldTarget = target
 				local ok, ret, arg1, arg2, arg3, arg4
 
 				-- Some target can't be send to the attribute's ApplyAttribute directly
@@ -6445,7 +6466,7 @@ do
 					arg2 = targetType
 					arg3 = owner
 				elseif targetType == AttributeTargets.Constructor then
-					arg1 = target
+					arg1 = getmetatable(target) and target.Method or target
 					arg2 = targetType
 					arg3 = owner
 					arg4 = name
@@ -6460,23 +6481,34 @@ do
 					if not ok then
 						errorhandler(ret)
 
-						_AttributeCache[target] = nil
+						config:Dispose()
+						SaveTargetAttributes(target, targetType, owner, name, nil)
+						config = nil
 					else
 						local usage = GetAttributeUsage(getmetatable(config))
 
-						if targetType == AttributeTargets.Constructor or (usage and not usage.Inherited and usage.RunOnce) then
-							_AttributeCache[target] = nil
+						if usage and not usage.Inherited and usage.RunOnce then
 							config:Dispose()
+							SaveTargetAttributes(target, targetType, owner, name, nil)
+							config = nil
 						end
 
 						if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
 							-- The method may be wrapped in the apply operation
-							if type(ret) == "function" or getmetatable(ret) == FixedMethod then target = ret end
+							if ret and ret ~= target and (type(ret) == "function" or getmetatable(ret) == FixedMethod) then
+								if getmetatable(target) then
+									if getmetatable(ret) then
+										target = ret
+									else
+										target.Method = ret
+									end
+								else
+									target = ret
+								end
+							end
 						end
 					end
 				else
-					local oldTarget = target
-
 					start = start or 1
 
 					for i = #config, start, -1 do
@@ -6485,37 +6517,42 @@ do
 						if not ok then
 							errorhandler(ret)
 
-							tremove(config, i)
+							tremove(config, i):Dispose()
 						else
 							local usage = GetAttributeUsage(getmetatable(config[i]))
 
-							if targetType == AttributeTargets.Constructor or (usage and not usage.Inherited and usage.RunOnce) then
-								config[i]:Dispose()
-								tremove(config, i)
+							if usage and not usage.Inherited and usage.RunOnce then
+								tremove(config, i):Dispose()
 							end
 
 							if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
-								if type(ret) == "function" then
-									if type(target) == "function" then
-										target = ret
+								-- The method may be wrapped in the apply operation
+								if ret and ret ~= target and (type(ret) == "function" or getmetatable(ret) == FixedMethod) then
+									if getmetatable(target) then
+										if getmetatable(ret) then
+											target = ret
+											arg1 = target.Method
+										else
+											target.Method = ret
+										end
 									else
-										target.Method = ret
+										target = ret
 									end
-									arg1 = ret
-								elseif getmetatable(ret) == FixedMethod then
-									target = ret
-									arg1 = target.Method
 								end
 							end
 						end
 					end
 
-					if #config == 0 then
-						_AttributeCache[oldTarget] = nil
-					elseif #config == 1 then
-						_AttributeCache[oldTarget] = config[1]
+					if #config == 0 or #config == 1 then
+						config = config[1] or nil
+						SaveTargetAttributes(oldTarget, targetType, owner, name, config)
 					end
 				end
+			end
+
+			if oldTarget ~= target and config then
+				SaveTargetAttributes(oldTarget, targetType, owner, name, nil)
+				SaveTargetAttributes(target, targetType, owner, name, config)
 			end
 
 			return target
@@ -6556,7 +6593,7 @@ do
 			end
 		end
 
-		function ConsumePreparedAttributes(target, targetType, superTarget, owner, name)
+		function ConsumePreparedAttributes(target, targetType, owner, name)
 			if not owner and IsNameSpace(target) then owner = target end
 
 			-- Consume the prepared Attributes
@@ -6586,8 +6623,7 @@ do
 				for i = #prepared, 1, -1 do
 					local attr = prepared[i]
 					if not usableAttr[attr] then
-						noUseAttr[attr] = true
-						tremove(prepared, i)
+						noUseAttr[tremove(prepared, i)] = true
 					end
 				end
 
@@ -6597,16 +6633,17 @@ do
 			end
 
 			-- Check if already existed
-			if _AttributeCache[target] then
+			local pconfig = GetTargetAttributes(target, targetType, owner, name)
+			local sconfig = GetSuperAttributes(target, targetType, owner, name)
+
+			if pconfig then
 				if prepared and #prepared > 0 then
-					local config = _AttributeCache[target]
 					local noUseAttr = _AttributeCache4Dispose()
 
 					-- remove equal attributes
 					for i = #prepared, 1, -1 do
-						if not ValidateAttributeUsable(config, prepared[i], true) then
-							noUseAttr[prepared[i]] = true
-							tremove(prepared, i)
+						if not ValidateAttributeUsable(pconfig, prepared[i], true) then
+							noUseAttr[tremove(prepared, i)] = true
 						end
 					end
 
@@ -6614,45 +6651,42 @@ do
 
 					if prepared and #prepared > 0 then
 						-- Erase old no-multi attributes
-						if getmetatable(config) then
-							if not ValidateAttributeUsable(prepared, config) then
-								_AttributeCache[target] = nil
-								config:Dispose()
+						if getmetatable(pconfig) then
+							if not ValidateAttributeUsable(prepared, pconfig) then
+								SaveTargetAttributes(target, targetType, owner, name, nil)
+								pconfig:Dispose()
 							end
 						else
-							for i = #config, 1, -1 do
-								if not ValidateAttributeUsable(prepared, config[i]) then
-									tremove(config, i):Dispose()
+							for i = #pconfig, 1, -1 do
+								if not ValidateAttributeUsable(prepared, pconfig[i]) then
+									tremove(pconfig, i):Dispose()
 								end
 							end
 
-							if #config == 0 then _AttributeCache[target] = nil end
+							if #pconfig == 0 then SaveTargetAttributes(target, targetType, owner, name, nil) end
 						end
 					end
 				end
-			elseif superTarget then
+			elseif sconfig then
 				-- get inheritable attributes from superTarget
-				local config = _AttributeCache[superTarget]
 				local usage
 
-				if config then
-					if getmetatable(config) then
-						usage = GetAttributeUsage(getmetatable(config))
+				if getmetatable(sconfig) then
+					usage = GetAttributeUsage(getmetatable(sconfig))
+
+					if not usage or usage.Inherited then
+						prepared = prepared or {}
+
+						if ValidateAttributeUsable(prepared, sconfig) then tinsert(prepared, sconfig) end
+					end
+				else
+					for _, attr in ipairs(sconfig) do
+						usage = GetAttributeUsage(getmetatable(attr))
 
 						if not usage or usage.Inherited then
 							prepared = prepared or {}
 
-							if ValidateAttributeUsable(prepared, config) then tinsert(prepared, config) end
-						end
-					else
-						for _, attr in ipairs(config) do
-							usage = GetAttributeUsage(getmetatable(attr))
-
-							if not usage or usage.Inherited then
-								prepared = prepared or {}
-
-								if ValidateAttributeUsable(prepared, attr) then tinsert(prepared, attr) end
-							end
+							if ValidateAttributeUsable(prepared, attr) then tinsert(prepared, attr) end
 						end
 					end
 				end
@@ -6661,9 +6695,10 @@ do
 			-- Save & apply the attributes for target
 			if prepared and #prepared > 0 then
 				local start = 1
+				local config = nil
 
-				if _AttributeCache[target] then
-					local config = _AttributeCache[target]
+				if pconfig then
+					config = pconfig
 
 					if getmetatable(config) then config = { config } end
 
@@ -6671,28 +6706,18 @@ do
 
 					for _, attr in ipairs(prepared) do tinsert(config, attr) end
 
-					_AttributeCache[target] = config
 				else
 					if #prepared == 1 then
-						_AttributeCache[target] = prepared[1]
+						config = prepared[1]
 					else
-						_AttributeCache[target] = { unpack(prepared) }
+						config = { unpack(prepared) }
 					end
 				end
 
 				wipe(prepared)
+				SaveTargetAttributes(target, targetType, owner, name, config)
 
-				local ret = ApplyAttributes(target, targetType, owner, name, start) or target
-
-				if target ~= ret then
-					_AttributeCache[ret] = _AttributeCache[target]
-					_AttributeCache[target] = nil
-
-					target = ret
-				end
-
-				-- No custom attribute for constructor
-				if targetType == AttributeTargets.Constructor then _AttributeCache[target] = nil end
+				target = ApplyAttributes(target, targetType, owner, name, start, config) or target
 			end
 
 			ClearPreparedAttributes()
