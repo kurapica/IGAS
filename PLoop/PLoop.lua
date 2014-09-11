@@ -3261,14 +3261,10 @@ do
 			-- Make field type unique
 			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
 				for _, n in ipairs(info.Members) do
-					if not ATTRIBUTE_INSTALLED or not __Attribute__._IsFieldAttributeDefined(info.Owner, n) then
-						info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
-					end
+					info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
 				end
 			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-				if not ATTRIBUTE_INSTALLED or not __Attribute__._IsFieldAttributeDefined(info.Owner) then
-					info.ArrayElement = GetUniqueType(info.ArrayElement)
-				end
+				info.ArrayElement = GetUniqueType(info.ArrayElement)
 			end
 		else
 			error(("%s is not closed."):format(info.Name), 2)
@@ -4562,7 +4558,7 @@ do
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
-		__Doc__[[Whether allow nil or not]]
+		doc [[Whether allow nil or not]]
 		property "AllowNil" { Type = Boolean }
 
 		------------------------------------------------------
@@ -5467,14 +5463,24 @@ do
 	------------------------------------------------------
 	do
 		_PreparedAttributes = {}
-		_ThreadPreparedAttributes = setmetatable({}, WEAK_KEY)
+		_ThreadPreparedAttributes = setmetatable({}, {
+			__mode = "k",
+			__index = function (self, key)
+				if key then
+					rawset(self, key, {})
+					return rawget(self, key)
+				else
+					return _PreparedAttributes
+				end
+			end,
+		})
 
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
 			__call = function(self, cache)
 				if cache then
 					for attr in pairs(cache) do
-						if getmetatable(attr) and not rawget(attr, "Disposed") then attr:Dispose() end
+						if getmetatable(attr) then attr:Dispose() end
 					end
 					wipe(cache)
 					tinsert(self, cache)
@@ -5486,7 +5492,7 @@ do
 
 		function DisposeAttributes(config)
 			if type(config) ~= "table" then return end
-			if getmetatable(config) and not rawget(config, "Disposed") then
+			if getmetatable(config) then
 				return config:Dispose()
 			else
 				for _, attr in pairs(config) do DisposeAttributes(attr) end
@@ -5674,7 +5680,7 @@ do
 			return true
 		end
 
-		function ApplyAttributes(target, targetType, owner, name, start, config, noDispose)
+		function ApplyAttributes(target, targetType, owner, name, start, config)
 			-- Check config
 			config = config or GetTargetAttributes(target, targetType, owner, name)
 
@@ -5753,22 +5759,13 @@ do
 						ok, ret = pcall(config[i].ApplyAttribute, config[i], arg1, arg2, arg3, arg4)
 
 						if not ok then
+							tremove(config, i):Dispose()
 							errorhandler(ret)
-
-							if noDispose then
-								tremove(config, i)
-							else
-								tremove(config, i):Dispose()
-							end
 						else
 							local usage = GetAttributeUsage(getmetatable(config[i]))
 
 							if usage and not usage.Inherited and usage.RunOnce then
-								if noDispose then
-									tremove(config, i)
-								else
-									tremove(config, i):Dispose()
-								end
+								tremove(config, i):Dispose()
 							end
 
 							if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
@@ -5802,15 +5799,7 @@ do
 
 		function SendAttributeToPrepared(self)
 			-- Send to prepared cache
-			local thread = running()
-			local prepared
-
-			if thread then
-				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
-				prepared = _ThreadPreparedAttributes[thread]
-			else
-				prepared = _PreparedAttributes
-			end
+			local prepared = _ThreadPreparedAttributes[running()]
 
 			for i, v in ipairs(prepared) do if v == self then return end end
 
@@ -5818,45 +5807,28 @@ do
 		end
 
 		function RemoveAttributeToPrepared(self)-- Send to prepared cache
-			local thread = running()
-			local prepared
-
-			if thread then
-				_ThreadPreparedAttributes[thread] = _ThreadPreparedAttributes[thread] or {}
-				prepared = _ThreadPreparedAttributes[thread]
-			else
-				prepared = _PreparedAttributes
-			end
+			local prepared = _ThreadPreparedAttributes[running()]
 
 			for i, v in ipairs(prepared) do if v == self then return tremove(prepared, i) end end
 		end
 
 		function ClearPreparedAttributes(noDispose)
-			local thread = running()
+			local prepared = _ThreadPreparedAttributes[running()]
 
-			if thread then
-				if _ThreadPreparedAttributes[thread] then
-					if not noDispose then
-						for _, attr in ipairs(_ThreadPreparedAttributes[thread]) do attr:Dispose() end
-					end
-					wipe(_ThreadPreparedAttributes[thread])
-				end
-			else
-				if not noDispose then
-					for _, attr in ipairs(_PreparedAttributes) do attr:Dispose() end
-				end
-				wipe(_PreparedAttributes)
+			if not noDispose then
+				for _, attr in ipairs(prepared) do attr:Dispose() end
 			end
+			wipe(prepared)
 		end
 
 		function ConsumePreparedAttributes(target, targetType, owner, name)
 			owner = owner or target
 
 			-- Consume the prepared Attributes
-			local prepared = _ThreadPreparedAttributes[running()] or _PreparedAttributes
+			local prepared = _ThreadPreparedAttributes[running()]
 
 			-- Filter with the usage
-			if prepared and #prepared > 0 then
+			if #prepared > 0 then
 				local cls, usage
 				local noUseAttr = _AttributeCache4Dispose()
 				local usableAttr = _AttributeCache4Dispose()
@@ -5893,7 +5865,7 @@ do
 			local sconfig = GetSuperAttributes(target, targetType, owner, name)
 
 			if pconfig then
-				if prepared and #prepared > 0 then
+				if #prepared > 0 then
 					local noUseAttr = _AttributeCache4Dispose()
 
 					-- remove equal attributes
@@ -5931,25 +5903,21 @@ do
 					usage = GetAttributeUsage(getmetatable(sconfig))
 
 					if not usage or usage.Inherited then
-						prepared = prepared or {}
-
-						if ValidateAttributeUsable(prepared, sconfig) then tinsert(prepared, sconfig) end
+						if ValidateAttributeUsable(prepared, sconfig) then sconfig:Clone() end
 					end
 				else
 					for _, attr in ipairs(sconfig) do
 						usage = GetAttributeUsage(getmetatable(attr))
 
 						if not usage or usage.Inherited then
-							prepared = prepared or {}
-
-							if ValidateAttributeUsable(prepared, attr) then tinsert(prepared, attr) end
+							if ValidateAttributeUsable(prepared, attr) then attr:Clone() end
 						end
 					end
 				end
 			end
 
 			-- Save & apply the attributes for target
-			if prepared and #prepared > 0 then
+			if #prepared > 0 then
 				local start = 1
 				local config = nil
 
@@ -5987,21 +5955,25 @@ do
 
 			-- Save & apply the attributes for target
 			if sconfig then
-				local config = GetTargetAttributes(target, targetType) or {}
-				if getmetatable(config) then config = { config } end
-
-				local start = #config + 1
+				local config = GetTargetAttributes(target, targetType)
+				local hasAttr = false
 
 				-- Check existed attributes
 				if getmetatable(sconfig) then
-					if not ValidateAttributeUsable(config, sconfig) then return end
+					if config and not ValidateAttributeUsable(config, sconfig) then return end
 
-					tinsert(config, sconfig)
+					sconfig:Clone()
+					hasAttr = true
 				else
-					for i = 1, #sconfig do if ValidateAttributeUsable(config, sconfig[i]) then tinsert(config, sconfig[i]) end end
+					for i = 1, #sconfig do
+						if not config or ValidateAttributeUsable(config, sconfig[i]) then
+							sconfig[i]:Clone()
+							hasAttr = true
+						end
+					end
 				end
 
-				return ApplyAttributes(target, targetType, nil, nil, start, config, true)
+				return hasAttr and ConsumePreparedAttributes(target, targetType)
 			end
 		end
 	end
@@ -6311,6 +6283,25 @@ do
 
 		doc [[Remove self from the prepared attributes]]
 		RemoveSelf = RemoveAttributeToPrepared
+
+		doc [[Creates a copy of the attribute.]]
+		function Clone(self)
+			-- Defualt behavior
+			local cache = CACHE_TABLE()
+
+			for name, prop in pairs(_NSInfo[getmetatable(self)].Cache4Property) do
+				if (prop.Get or prop.GetMethod or prop.Field) and (prop.Set or prop.SetMethod or prop.Field) then
+					cache[name] = self[name]
+				end
+			end
+
+			-- Clone
+			local obj = getmetatable(self)(cache)
+
+			CACHE_TABLE(cache)
+
+			return obj
+		end
 
 		------------------------------------------------------
 		-- Constructor
