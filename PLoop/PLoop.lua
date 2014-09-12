@@ -5462,16 +5462,12 @@ do
 	-- Attribute Core
 	------------------------------------------------------
 	do
-		_PreparedAttributes = {}
-		_ThreadPreparedAttributes = setmetatable({}, {
+		_PreparedAttributes = setmetatable({}, {
 			__mode = "k",
+			__call = function (self) return self[running() or 0] end,
 			__index = function (self, key)
-				if key then
-					rawset(self, key, {})
-					return rawget(self, key)
-				else
-					return _PreparedAttributes
-				end
+				rawset(self, key, {})
+				return rawget(self, key)
 			end,
 		})
 
@@ -5799,7 +5795,7 @@ do
 
 		function SendAttributeToPrepared(self)
 			-- Send to prepared cache
-			local prepared = _ThreadPreparedAttributes[running()]
+			local prepared = _PreparedAttributes()
 
 			for i, v in ipairs(prepared) do if v == self then return end end
 
@@ -5807,13 +5803,13 @@ do
 		end
 
 		function RemoveAttributeToPrepared(self)-- Send to prepared cache
-			local prepared = _ThreadPreparedAttributes[running()]
+			local prepared = _PreparedAttributes()
 
 			for i, v in ipairs(prepared) do if v == self then return tremove(prepared, i) end end
 		end
 
 		function ClearPreparedAttributes(noDispose)
-			local prepared = _ThreadPreparedAttributes[running()]
+			local prepared = _PreparedAttributes()
 
 			if not noDispose then
 				for _, attr in ipairs(prepared) do attr:Dispose() end
@@ -5825,7 +5821,7 @@ do
 			owner = owner or target
 
 			-- Consume the prepared Attributes
-			local prepared = _ThreadPreparedAttributes[running()]
+			local prepared = _PreparedAttributes()
 
 			-- Filter with the usage
 			if #prepared > 0 then
@@ -5985,7 +5981,7 @@ do
 
 		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
 
-		function _IsDefined(target, targetType, owner, name, type)
+		local function _IsDefined(target, targetType, owner, name, type)
 			local config = GetTargetAttributes(target, targetType, owner, name)
 
 			if not config then
