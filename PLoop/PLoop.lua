@@ -2053,200 +2053,184 @@ do
 		if sub and pre ~= now then for cls in pairs(sub) do UpdateMeta4Child(meta, cls, pre, now) end end
 	end
 
-	function TrySetProperty(self, name, value) self[name] = value end
+	function Object_Index(self, key)
+		local oper
+		local info = _NSInfo[getmetatable(self)]
 
-	do
-		local DISPOSE_METHOD = DISPOSE_METHOD
-		local _NSInfo = _NSInfo
+		-- Dispose Method
+		if key == "Dispose" then return DisposeObject end
 
-		local getmetatable = getmetatable
-		local DisposeObject = DisposeObject
-		local type = type
-		local rawget = rawget
-		local rawset = rawset
-		local error = error
-		local tostring = tostring
-		local clone = CloneObj
+		-- Property Get
+		oper = info.Cache4Property[key]
+		if oper then
+			local value
 
-		function Object_Index(self, key)
-			local oper
-			local info = _NSInfo[getmetatable(self)]
-
-			-- Dispose Method
-			if key == DISPOSE_METHOD then return DisposeObject end
-
-			-- Property Get
-			oper = info.Cache4Property[key]
-			if oper then
-				local value
-
-				if oper.Get then
-					value = oper.Get(self)
-				elseif oper.GetMethod then
-					local func = rawget(self, oper.GetMethod)
-					if type(func) == "function" then
-						value = func(self)
-					else
-						value = info.Cache4Method[oper.GetMethod](self)
-					end
-				elseif oper.Field then
-					if oper.SetWeak then
-						value = rawget(self, "__WeakFields")
-						if type(value) == "table" then
-							value = value[oper.Field]
-						else
-							value = nil
-						end
-					else
-						value = rawget(self, oper.Field)
-					end
-				elseif oper.Default == nil then
-					error(("%s can't be read."):format(tostring(key)),2)
-				end
-
-				if value == nil then value = oper.Default end
-
-				if oper.GetClone then value = clone(value, oper.GetDeepClone) end
-
-				return value
-			end
-
-			-- Method Get
-			oper = info.Cache4Method[key]
-			if oper then
-				if info.AutoCache == true then
-					rawset(self, key, oper)
-					return oper
+			if oper.Get then
+				value = oper.Get(self)
+			elseif oper.GetMethod then
+				local func = rawget(self, oper.GetMethod)
+				if type(func) == "function" then
+					value = func(self)
 				else
-					return oper
+					value = info.Cache4Method[oper.GetMethod](self)
 				end
-			end
-
-			-- Events
-			if info.Cache4Event[key] then
-				oper = rawget(self, "__Events")
-				if type(oper) ~= "table" then
-					oper = {}
-					rawset(self, "__Events", oper)
-				end
-
-				-- No more check
-				if oper[key] then
-					return oper[key]
+			elseif oper.Field then
+				if oper.SetWeak then
+					value = rawget(self, "__WeakFields")
+					if type(value) == "table" then
+						value = value[oper.Field]
+					else
+						value = nil
+					end
 				else
-					oper[key] = EventHandler(info.Cache4Event[key], self)
-					return oper[key]
+					value = rawget(self, oper.Field)
 				end
+			elseif oper.Default == nil then
+				error(("%s can't be read."):format(key),2)
 			end
 
-			-- Custom index metametods
-			oper = info.MetaTable["___index"]
-			if oper then
-				if type(oper) == "function" or getmetatable(oper) == FixedMethod then
-					return oper(self, key)
-				elseif type(oper) == "table" then
-					return oper[key]
-				end
+			if value == nil then value = oper.Default end
+
+			if oper.GetClone then value = CloneObj(value, oper.GetDeepClone) end
+
+			return value
+		end
+
+		-- Method Get
+		oper = info.Cache4Method[key]
+		if oper then
+			if info.AutoCache == true then
+				rawset(self, key, oper)
+				return oper
+			else
+				return oper
 			end
 		end
 
-		function Object_NewIndex(self, key, value)
-			local oper
-			local info = _NSInfo[getmetatable(self)]
-
-			-- Property Set
-			oper = info.Cache4Property[key]
-			if oper then
-				if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
-				if oper.SetClone then value = clone(value, oper.SetDeepClone) end
-
-				if oper.Set then
-					return oper.Set(self, value)
-				elseif oper.SetMethod then
-					oper = oper.SetMethod
-					local func = rawget(self, oper)
-					if type(func) == "function" then
-						return func(self, value)
-					else
-						return info.Cache4Method[oper](self, value)
-					end
-				elseif oper.Field then
-					-- Check container
-					local container = self
-					if oper.SetWeak then
-						container = rawget(self, "__WeakFields")
-						if type(container) ~= "table" then
-							container = setmetatable({}, WEAK_VALUE)
-							rawset(self, "__WeakFields", container)
-						end
-					end
-
-					-- Check old value
-					local old = rawget(container, oper.Field)
-					if old == nil then old = oper.Default end
-					if old == value then return end -- ?should I compare it with fields?
-
-					-- Set the value
-					rawset(container, oper.Field, value)
-
-					-- Dispose old
-					if oper.SetRetain and old and old ~= oper.Default then
-						DisposeObject(old)
-						old = nil
-					end
-
-					-- Call handler
-					if oper.Handler then
-						local ok, err = pcall(oper.Handler, self, value, old, key)
-
-						if not ok then errorhandler(err) end
-					end
-
-					-- Fire event
-					if oper.Event then
-						-- Fire the event
-						local evt = rawget(self, "__Events")
-						evt = evt and rawget(evt, oper.Event)
-						if evt then return evt(self, value, old, key) end
-					end
-
-					return
-				else
-					error(("%s can't be written."):format(tostring(key)), 2)
-				end
+		-- Events
+		if info.Cache4Event[key] then
+			oper = rawget(self, "__Events")
+			if type(oper) ~= "table" then
+				oper = {}
+				rawset(self, "__Events", oper)
 			end
 
-			-- Events
-			if info.Cache4Event[key] then
-				oper = rawget(self, "__Events")
-				if type(oper) ~= "table" then
-					oper = {}
-					rawset(self, "__Events", oper)
-				end
-
-				if value == nil and not oper[key] then return end
-
-				if not oper[key] then oper[key] = EventHandler(info.Cache4Event[key], self) end
-				oper = oper[key]
-
-				if value == nil or type(value) == "function" then
-					oper.Handler = value
-					return
-				elseif type(value) == "table" and Reflector.ObjectIsClass(value, EventHandler) then
-					return oper:Copy(value)
-				else
-					error("Can't set this value to the event handler.", 2)
-				end
+			-- No more check
+			if oper[key] then
+				return oper[key]
+			else
+				oper[key] = info.Cache4Event[key](self)
+				return oper[key]
 			end
-
-			-- Custom newindex metametods
-			oper = info.MetaTable["___newindex"]
-			if oper and (type(oper) == "function" or getmetatable(oper) == FixedMethod) then
-				return oper(self, key, value)
-			end
-
-			rawset(self, key, value)			-- Other key can be set as usual
 		end
+
+		-- Custom index metametods
+		oper = info.MetaTable["___index"]
+		if oper then
+			if type(oper) == "function" then
+				return oper(self, key)
+			elseif type(oper) == "table" then
+				return oper[key]
+			end
+		end
+	end
+
+	function Object_NewIndex(self, key, value)
+		local oper
+		local info = _NSInfo[getmetatable(self)]
+
+		-- Property Set
+		oper = info.Cache4Property[key]
+		if oper then
+			if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
+			if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
+
+			if oper.Set then
+				return oper.Set(self, value)
+			elseif oper.SetMethod then
+				oper = oper.SetMethod
+				local func = rawget(self, oper)
+				if type(func) == "function" then
+					return func(self, value)
+				else
+					return info.Cache4Method[oper](self, value)
+				end
+			elseif oper.Field then
+				-- Check container
+				local container = self
+				if oper.SetWeak then
+					container = rawget(self, "__WeakFields")
+					if type(container) ~= "table" then
+						container = setmetatable({}, WEAK_VALUE)
+						rawset(self, "__WeakFields", container)
+					end
+				end
+
+				-- Check old value
+				local old = rawget(container, oper.Field)
+				if old == nil then old = oper.Default end
+				if old == value then return end -- ?should I compare it with fields?
+
+				-- Set the value
+				rawset(container, oper.Field, value)
+
+				-- Dispose old
+				if oper.SetRetain and old and old ~= oper.Default then
+					DisposeObject(old)
+					old = nil
+				end
+
+				-- Call handler
+				if oper.Handler then
+					local ok, err = pcall(oper.Handler, self, value, old, key)
+
+					if not ok then errorhandler(err) end
+				end
+
+				-- Fire event
+				if oper.Event then
+					-- Fire the event
+					local evt = rawget(self, "__Events")
+					evt = evt and rawget(evt, oper.Event)
+					if evt then return evt(self, value, old, key) end
+				end
+
+				return
+			else
+				error(("%s can't be written."):format(key), 2)
+			end
+		end
+
+		-- Events
+		if info.Cache4Event[key] then
+			oper = rawget(self, "__Events")
+			if type(oper) ~= "table" then
+				oper = {}
+				rawset(self, "__Events", oper)
+			end
+
+			if value == nil and not oper[key] then return end
+
+			if not oper[key] then oper[key] = info.Cache4Event[key](self) end
+			oper = oper[key]
+
+			if value == nil or type(value) == "function" then
+				oper.Handler = value
+				return
+			elseif type(value) == "table" then
+				return oper:Copy(value)
+			else
+				error("Can't set this value to the event handler.", 2)
+			end
+		end
+
+		-- Custom newindex metametods
+		oper = info.MetaTable["___newindex"]
+		if oper and type(oper) == "function" then
+			return oper(self, key, value)
+		end
+
+		rawset(self, key, value)			-- Other key can be set as usual
 	end
 
 	-- Init the object with class's constructor
@@ -2303,13 +2287,7 @@ do
 
 		-- No constructor or constructor with no arguments, so try init table
 		if initTable then
-			for name, value in pairs(initTable) do
-				local ok, msg = pcall(TrySetProperty, obj, name, value)
-
-				if not ok then
-					errorhandler(strtrim(msg:match(":%d+:%s*(.-)$") or msg))
-				end
-			end
+			for name, value in pairs(initTable) do obj[name] = value end
 		end
 	end
 
@@ -5011,6 +4989,8 @@ do
 		-- Meta-Method
 		------------------------------------------------------
 		function __tostring(self) return ("%s( %q )"):format(tostring(Event), self.Name) end
+
+		function __call(self, owner) return EventHandler(self, owner) end
 	endclass "Event"
 
 	class "EventHandler"
@@ -6836,13 +6816,7 @@ do
 
 		__Arguments__{ RawTable }
 		function InitWithTable(self, initTable)
-			for name, value in pairs(initTable) do
-				local ok, msg = pcall(TrySetProperty, self, name, value)
-
-				if not ok then
-					errorhandler(strtrim(msg:match(":%d+:%s*(.-)$") or msg))
-				end
-			end
+			for name, value in pairs(initTable) do self[name] = value end
 
 			return self
 		end
