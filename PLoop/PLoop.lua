@@ -779,7 +779,7 @@ do
 	_KeyWord4IFEnv = {}
 
 	do
-		local Verb2Adj = {
+		Verb2Adj = {
 			"(.+)(ed)$",
 			"(.+)(able)$",
 			"(.+)(ing)$",
@@ -791,7 +791,7 @@ do
 			"(.+)(ful)$",
 		}
 
-		local function ParseAdj(str, useIs)
+		function ParseAdj(str, useIs)
 			local noun, adj = str:match("^(.-)(%u%l+)$")
 
 			if noun and adj and #noun > 0 and #adj > 0 then
@@ -830,7 +830,7 @@ do
 			end
 		end
 
-		function RefreshCache(ns, env)
+		function RefreshCache(ns)
 			local info = _NSInfo[ns]
 
 			-- Cache4Interface
@@ -891,9 +891,9 @@ do
 			--- self method
 			CloneWithoutOverride4Method(info.Cache4Method, info.Method)
 			--- superclass method
-			if info.SuperClass then CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method) end
+			if info.SuperClass then CloneWithoutOverride(info.Cache4Method, _NSInfo[info.SuperClass].Cache4Method) end
 			--- extend method
-			for _, IF in ipairs(info.ExtendInterface) do CloneWithoutOverride4Method(info.Cache4Method, _NSInfo[IF].Cache4Method) end
+			for _, IF in ipairs(info.ExtendInterface) do CloneWithoutOverride(info.Cache4Method, _NSInfo[IF].Cache4Method) end
 
 			-- Cache4Property
 			wipe(info.Cache4Property)
@@ -1613,7 +1613,7 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaIFEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
-			RefreshCache(info.Owner, env)
+			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -2611,7 +2611,7 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaClsEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
-			RefreshCache(info.Owner, env)
+			RefreshCache(info.Owner)
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
