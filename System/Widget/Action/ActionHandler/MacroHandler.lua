@@ -8,7 +8,16 @@ if not IGAS:NewAddon("IGAS.Widget.Action.MacroHandler", version) then
 	return
 end
 
-_Enabled = false
+-- Event handler
+function OnEnable(self)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+	OnEnable = nil
+end
+
+function PLAYER_ENTERING_WORLD(self)
+	return handler:Refresh()
+end
 
 handler = ActionTypeHandler {
 	Name = "macro",
@@ -16,8 +25,6 @@ handler = ActionTypeHandler {
 	PickupSnippet = [[
 		return "clear", "macro", ...
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods
