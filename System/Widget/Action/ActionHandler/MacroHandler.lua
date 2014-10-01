@@ -11,11 +11,16 @@ end
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("UPDATE_MACROS")
 
 	OnEnable = nil
 end
 
 function PLAYER_ENTERING_WORLD(self)
+	return handler:Refresh()
+end
+
+function UPDATE_MACROS(self)
 	return handler:Refresh()
 end
 
