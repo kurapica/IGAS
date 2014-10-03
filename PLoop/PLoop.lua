@@ -32,8 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/09/11
--- Version			r104
+-- Last Update Date 2014/10/02
+-- Version			r105
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -252,7 +252,7 @@ do
 					if fixedMethod == value then return end
 
 					for i = 1, #fixedMethod do
-						if not Reflector.IsEqual(fixedMethod[i], value[i]) then
+						if not IsEqual(fixedMethod[i], value[i]) then
 							isEqual = false
 							break
 						end
@@ -291,6 +291,7 @@ do
 		end
 	end
 
+	-- Clone
 	local function deepCloneObj(obj, cache)
 		if type(obj) == "table" then
 			if cache[obj] ~= nil then
@@ -341,6 +342,84 @@ do
 
 	function SetLocal(flag) LOCAL_CACHE[running() or 0] = flag or nil end
 	function IsLocal() return LOCAL_CACHE[running() or 0] end
+
+	-- Public marker
+	PUBLIC_CACHE = setmetatable({}, WEAK_KEY)
+
+	function SetPublic() PUBLIC_CACHE[running() or 0] = true end
+	function IsPublic()
+		local key = running() or 0
+		local ret = PUBLIC_CACHE[key]
+		if ret then
+			PUBLIC_CACHE[key] = nil
+			return ret
+		end
+	end
+
+	-- Equal Check
+	local function checkEqual(obj1, obj2, cache)
+		if obj1 == obj2 then return true end
+		if type(obj1) ~= "table" then return false end
+		if type(obj2) ~= "table" then return false end
+
+		if cache[obj1] and cache[obj2] then
+			return true
+		elseif cache[obj1] or cache[obj2] then
+			return false
+		else
+			cache[obj1] = true
+			cache[obj2] = true
+		end
+
+		local cls = getmetatable(obj1)
+		if cls == TYPE_NAMESPACE then return false end
+
+		local info = cls and _NSInfo[cls]
+		if info then
+			if cls ~= getmetatable(obj2) then return false end
+			if info.MetaTable.__eq then return false end
+
+			-- Check properties
+			for name, prop in pairs(info.Cache) do
+				if type(prop) == "table" and not getmetatable(prop) and (prop.Get or prop.GetMethod or prop.Field) then
+					if not checkEqual(obj1[name], obj2[name], cache) then return false end
+				end
+			end
+
+			return true
+		end
+
+		-- Check fields
+		for k, v in pairs(obj1) do
+			if not checkEqual(v, obj2[k], cache) then return false end
+		end
+
+		for k, v in pairs(obj2) do
+			if obj1[k] == nil then return false end
+		end
+
+		return true
+	end
+
+	function IsEqual(obj1, obj2)
+		local cache = CACHE_TABLE()
+
+		local result = checkEqual(obj1, obj2, cache)
+
+		CACHE_TABLE(cache)
+
+		return result
+	end
+
+		-- Reduce cache table cost
+	local function keepArgsInner(...)
+		yield( running() )
+		return ...
+	end
+
+	function KeepArgs(...)
+		return CallThread(keepArgsInner, ...)
+	end
 end
 
 ------------------------------------------------------
@@ -353,8 +432,9 @@ do
 	_NSInfo = setmetatable({}, {
 		__index = function(self, key)
 			if not IsNameSpace(key) then return end
-			self[key] = { Owner = key }
-			return rawget(self, key)
+			local ret = { Owner = key }
+			self[key] = ret
+			return ret
 		end,
 		__mode = "k",
 	})
@@ -374,59 +454,70 @@ do
 				-- Create Struct
 				return Struct2Obj(self, ...)
 			elseif info.Type == TYPE_ENUM then
-				-- For short parse
-				return Reflector.ParseEnum(self, ...)
+				-- Parse Enum
+				local value = ...
+				if info.IsFlags and type(value) == "number" and value >= 0 and value <= info.MaxValue then
+					if value == 0 or info.Cache[value] then
+						return info.Cache[value]
+					else
+						local rCache = CACHE_TABLE()
+						local eCache = info.Cache
+						local ckv = 1
+
+						while ckv <= value do
+							local sub = value % (2 * ckv)
+							if (sub - sub % ckv) == ckv then
+								tinsert(rCache, eCache[ckv])
+							end
+
+							ckv = ckv * 2
+						end
+
+						local thread = KeepArgs(unpack(rCache))
+
+						CACHE_TABLE(rCache)
+
+						return select(2, resume(thread))
+					end
+				else
+					return info.Cache[value]
+				end
 			end
 
-			error(("%s can't be used as a constructor."):format(tostring(self)), 2)
+			error(GetFullName4NS(self) .. " is not callable.", 2)
 		end
 
 		_MetaNS.__index = function(self, key)
 			local info = _NSInfo[self]
 
-			if info.Type == TYPE_STRUCT then
-				if key == "Validate" then
-					if not info.Validate then BuildStructValidate(self) end
-					return info.Validate
-				elseif info.Method[key] then
-					return info.Method[key]
-				else
-					return info.SubNS and info.SubNS[key]
-				end
-			elseif info.Type == TYPE_CLASS then
-				if info.SubNS and info.SubNS[key] then
-					return info.SubNS[key]
-				elseif _KeyMeta[key] ~= nil then
-					if _KeyMeta[key] then return info.MetaTable[key] else return info.MetaTable["_"..key] end
-				else
-					local ret = info.Method[key] or info.Cache[key]
-					return type(ret) == "function" and ret or nil
-				end
-			elseif info.Type == TYPE_ENUM then
+			-- Sub-NS first
+			local ret = info.SubNS and info.SubNS[key]
+			if ret then return ret end
+
+			local iType = info.Type
+
+			if iType == TYPE_STRUCT then
+				ret = info.Method and info.Method[key]
+				if ret then return ret end
+			elseif iType == TYPE_CLASS or iType == TYPE_INTERFACE then
+				ret = info.Method[key] or info.Cache[key]
+				if type(ret) == "function" then return ret end
+			elseif iType == TYPE_ENUM then
 				return type(key) == "string" and info.Enum[strupper(key)] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
-			elseif info.Type == TYPE_INTERFACE then
-				if info.SubNS and info.SubNS[key] then
-					return info.SubNS[key]
-				else
-					local ret = info.Method[key] or info.Cache[key]
-					return type(ret) == "function" and ret or nil
-				end
-			else
-				return info.SubNS and info.SubNS[key]
+			end
+
+			-- Public last
+			ret = info.Public
+			if ret then
+				ret = ret and ret[key]
+				return ret and ret[key]
 			end
 		end
 
 		_MetaNS.__newindex = function(self, key, value)
 			local info = _NSInfo[self]
 
-			if info.Type == TYPE_CLASS and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
-				if not info.Cache[key] then
-					SaveFixedMethod(info.Method, key, value, info.Owner)
-					return RefreshCache(self)
-				else
-					error("Can't override the existed method.", 2)
-				end
-			elseif info.Type == TYPE_INTERFACE and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
+			if (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
 				if not info.Cache[key] then
 					SaveFixedMethod(info.Method, key, value, info.Owner)
 					return RefreshCache(self)
@@ -434,6 +525,7 @@ do
 					error("Can't override the existed method.", 2)
 				end
 			end
+
 			error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
 		end
 
@@ -470,8 +562,10 @@ do
 			return _type1
 		end
 
-		_MetaNS.__tostring = function(self) return GetFullName4NS(self) end
+		_MetaNS.__tostring = GetFullName4NS
 		_MetaNS.__metatable = TYPE_NAMESPACE
+
+		_MetaNS = nil
 	end
 
 	-- metatable for super alias
@@ -480,34 +574,43 @@ do
 		_MetaSA.__call = function(self, ...)
 			-- Init the class object
 			local cls = _SuperMap[self].Owner
-			local obj = select(1, ...)
 
-			if getmetatable(obj) and Reflector.ObjectIsClass(obj, cls) then return Class1Obj(cls, obj, select(2, ...)) end
+			if IsChildClass(cls, getmetatable(...)) then return Class1Obj(cls, ...) end
 		end
 
 		_MetaSA.__index = function(self, key)
 			local info = _SuperMap[self]
 
-			if info.SubNS and info.SubNS[key] then
-				return info.SubNS[key]
+			local ret = info.SubNS and info.SubNS[key]
+
+			if ret then
+				return ret
 			elseif _KeyMeta[key] ~= nil then
-				if _KeyMeta[key] then return info.MetaTable[key] else return info.MetaTable["_"..key] end
+				return _KeyMeta[key] and info.MetaTable[key] or info.MetaTable["_"..key]
 			else
-				local ret = info.Method[key] or info.Cache[key]
-				return type(ret) == "function" and ret or nil
+				ret = info.Method[key] or info.Cache[key]
+				if type(ret) == "function" then return ret end
+
+				ret = info.Public
+				if ret then
+					ret = ret and ret[key]
+					return ret and ret[key]
+				end
 			end
 		end
 
 		_MetaSA.__tostring = function(self) return GetFullName4NS(_SuperMap[self].Owner) end
 		_MetaSA.__metatable = TYPE_SUPERALIAS
+
+		_MetaSA = nil
 	end
 
 	-- IsNameSpace
-	function IsNameSpace(ns) return getmetatable(ns) == TYPE_NAMESPACE or false end
+	function IsNameSpace(ns) return getmetatable(ns) == TYPE_NAMESPACE end
 
 	-- BuildNameSpace
 	function BuildNameSpace(ns, namelist)
-		if type(namelist) ~= "string" or (ns ~= nil and not IsNameSpace(ns)) then return end
+		if type(namelist) ~= "string" or (ns and not IsNameSpace(ns)) then return end
 
 		local cls = ns
 		local info = _NSInfo[cls]
@@ -1343,6 +1446,7 @@ do
 
 		_MetaIFDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
+			local isPublic = IsPublic()
 
 			if _KeyWord4IFEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
 
@@ -1372,6 +1476,11 @@ do
 				else
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
 				end
+			end
+
+			if isPublic then
+				info.Public = info.Public or {}
+				info.Public[key] = self
 			end
 
 			rawset(self, key, value)
@@ -1939,6 +2048,7 @@ do
 
 		_MetaClsDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
+			local isPublic = IsPublic()
 
 			if _KeyWord4ClsEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
 
@@ -1979,6 +2089,11 @@ do
 				else
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
 				end
+			end
+
+			if isPublic then
+				info.Public = info.Public or {}
+				info.Public[key] = self
 			end
 
 			rawset(self, key, value)
@@ -2260,13 +2375,13 @@ do
 						noArgMethod = noArgMethod or fixedMethod
 					elseif fixedMethod:MatchArgs(obj, ...) then
 						if fixedMethod.Thread then
-							return fixedMethod.Method(select(2, resume(fixedMethod.Thread, false)))
+							return fixedMethod.Method(select(2, resume(fixedMethod.Thread)))
 						else
 							return fixedMethod.Method(obj, ...)
 						end
 					elseif fixedMethod.Thread then
 						-- Remove argument container
-						resume(fixedMethod.Thread, false)
+						resume(fixedMethod.Thread)
 						fixedMethod.Thread = nil
 					end
 
@@ -2902,6 +3017,7 @@ do
 
 		_MetaStrtDefEnv.__newindex = function(self, key, value)
 			local info = _NSInfo[self[OWNER_FIELD]]
+			local isPublic = IsPublic()
 
 			if _KeyWord4StrtEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
 
@@ -2955,6 +3071,11 @@ do
 						error(strtrim(ret:match(":%d+:%s*(.-)$") or ret), 2)
 					end
 				end
+			end
+
+			if isPublic then
+				info.Public = info.Public or {}
+				info.Public[key] = self
 			end
 
 			rawset(self, key, value)
@@ -3089,18 +3210,6 @@ do
 			if not ok then error(strtrim(value:match(":%d+:%s*(.-)$") or value):gsub("%%s", "[".. info.Name .."]"), 3) end
 
 			return value
-		end
-	end
-
-	function BuildStructValidate(strt)
-		local info = _NSInfo[strt]
-
-		info.Validate = function ( value )
-			local ok, ret = pcall(ValidateStruct, strt, value)
-
-			if not ok then error(strtrim(ret:match(":%d+:%s*(.-)$") or ret):gsub("%%s", "[".. info.Name .."]"), 2) end
-
-			return ret
 		end
 	end
 
@@ -3950,35 +4059,6 @@ do
 			end
 		end
 
-		doc "ParseEnum" [[
-			<desc>Get the enum key of the enum value</desc>
-			<param name="enum" type="enum">the enum type</param>
-			<param name="value">the value</param>
-			<return type="string">the key of the value</return>
-			<usage>System.Reflector.ParseEnum(System.SampleEnum, 1)</usage>
-		]]
-		function ParseEnum(ns, value)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-			local info = _NSInfo[ns]
-
-			if info and info.Type == TYPE_ENUM then
-				if info.IsFlags and type(value) == "number" then
-
-					if value == 0 then
-						return info.Cache[value]
-					else
-						local ret = {}
-
-						for n, v in pairs(info.Enum) do if ValidateFlags(v, value) then tinsert(ret, n) end end
-
-						return unpack(ret)
-					end
-				else
-					return info.Cache[value]
-				end
-			end
-		end
-
 		doc "ValidateFlags" [[
 			<desc>Whether the value is contains on the target value</desc>
 			<param name="checkValue" type="number">like 1, 2, 4, 8, ...</param>
@@ -4122,9 +4202,7 @@ do
 			<return type="class">the object's class</return>
 			<usage>System.Reflector.GetObjectClass(obj)</usage>
 		]]
-		function GetObjectClass(obj)
-			return type(obj) == "table" and getmetatable(obj)
-		end
+		GetObjectClass = getmetatable
 
 		doc "ObjectIsClass" [[
 			<desc>Check if this object is an instance of the class</desc>
@@ -4359,7 +4437,7 @@ do
 			if ns and _NSInfo[ns] then
 				if Reflector.IsEnum(ns) then
 					if _NSInfo[ns].IsFlags and type(data) == "number" then
-						local ret = {Reflector.ParseEnum(ns, data)}
+						local ret = {ns(data)}
 
 						local result = ""
 
@@ -4370,7 +4448,7 @@ do
 
 						return result
 					else
-						local str = Reflector.ParseEnum(ns, data)
+						local str = ns(data)
 
 						return str and (tostring(ns) .. "." .. str)
 					end
@@ -4464,59 +4542,7 @@ do
 			<param name="obj2">the object used to compare to</param>
 			<return type="boolean">true if the obj1 has same settings with the obj2</return>
 		]]
-		local function checkEqual(obj1, obj2, cache)
-			if obj1 == obj2 then return true end
-			if type(obj1) ~= "table" then return false end
-			if type(obj2) ~= "table" then return false end
-
-			if cache[obj1] and cache[obj2] then
-				return true
-			elseif cache[obj1] or cache[obj2] then
-				return false
-			else
-				cache[obj1] = true
-				cache[obj2] = true
-			end
-
-			local cls = getmetatable(obj1)
-			if cls == TYPE_NAMESPACE then return false end
-
-			local info = cls and _NSInfo[cls]
-			if info then
-				if cls ~= getmetatable(obj2) then return false end
-				if info.MetaTable.__eq then return false end
-
-				-- Check properties
-				for name, prop in pairs(info.Cache) do
-					if type(prop) == "table" and not getmetatable(prop) and (prop.Get or prop.GetMethod or prop.Field) then
-						if not checkEqual(obj1[name], obj2[name], cache) then return false end
-					end
-				end
-
-				return true
-			end
-
-			-- Check fields
-			for k, v in pairs(obj1) do
-				if not checkEqual(v, obj2[k], cache) then return false end
-			end
-
-			for k, v in pairs(obj2) do
-				if obj1[k] == nil then return false end
-			end
-
-			return true
-		end
-
-		function IsEqual(obj1, obj2)
-			local cache = CACHE_TABLE()
-
-			local result = checkEqual(obj1, obj2, cache)
-
-			CACHE_TABLE(cache)
-
-			return result
-		end
+		IsEqual = IsEqual
 
 		doc "Clone" [[
 			<desc>Clone the object if possible</desc>
@@ -4643,8 +4669,8 @@ do
 						if value then
 							if value >= 1 and value <= info.MaxValue then
 								return floor(value), ns
-							elseif value == 0 then
-								if info.Cache[value] then return value, ns end
+							elseif value == 0 and info.Cache[0] then
+								return value, ns
 							end
 						end
 					else
@@ -5122,15 +5148,6 @@ do
 	class "FixedMethod"
 		doc "FixedMethod" [[Used to control method with fixed arguments]]
 
-		-- Reduce cache table cost
-		local function keepArgs(...)
-			local flag = yield( running() )
-
-			while flag do flag = yield( ... ) end
-
-			return ...
-		end
-
 		-- Find the real next method in class | interface
 		local function getNextMethod(ns, name, noFunc, chkSelf)
 			local info = _NSInfo[ns]
@@ -5233,15 +5250,15 @@ do
 					count = #cache
 
 					if count == 1 then
-						self.Thread = CallThread(keepArgs, cache[1])
+						self.Thread = KeepArgs(cache[1])
 					elseif count == 2 then
-						self.Thread = CallThread(keepArgs, cache[1], cache[2])
+						self.Thread = KeepArgs(cache[1], cache[2])
 					elseif count == 3 then
-						self.Thread = CallThread(keepArgs, cache[1], cache[2], cache[3])
+						self.Thread = KeepArgs(cache[1], cache[2], cache[3])
 					elseif count == 4 then
-						self.Thread = CallThread(keepArgs, cache[1], cache[2], cache[3], cache[4])
+						self.Thread = KeepArgs(cache[1], cache[2], cache[3], cache[4])
 					else
-						self.Thread = CallThread(keepArgs, unpack(cache, 1, count))
+						self.Thread = KeepArgs(unpack(cache, 1, count))
 					end
 				end
 
@@ -5388,19 +5405,6 @@ do
 		-- Meta-methods
 		------------------------------------------------------
 		function __call(self, ...)
-			--[[ Validation self once, maybe no need to waste time
-			if self.HasSelf then
-				local value = select(1, ...)
-				local owner = self.Owner
-
-				if not value or
-					( Reflector.IsInterface(owner) and not Reflector.ObjectIsInterface(value, owner) ) or
-					( Reflector.IsClass(owner) and not Reflector.ObjectIsClass(value, owner)) or
-					( Reflector.IsStruct(owner) and not pcall(owner.Validate, value)) then
-
-					error(self.Usage, 2)
-				end
-			end--]]
 			local matchFunc = self
 
 			-- FixedMethod
@@ -5409,7 +5413,7 @@ do
 
 				if MatchArgs(matchFunc, ...) then
 					if matchFunc.Thread then
-						return matchFunc.Method( select(2, resume(matchFunc.Thread, false)) )
+						return matchFunc.Method( select(2, resume(matchFunc.Thread)) )
 					else
 						return matchFunc.Method( ... )
 					end
@@ -5417,7 +5421,7 @@ do
 
 				-- Remove argument container
 				if matchFunc.Thread then
-					resume(matchFunc.Thread, false)
+					resume(matchFunc.Thread)
 					matchFunc.Thread = nil
 				end
 
@@ -5646,7 +5650,7 @@ do
 
 		function ValidateAttributeUsable(config, attr, skipMulti)
 			if getmetatable(config) then
-				if Reflector.IsEqual(config, attr) then return false end
+				if IsEqual(config, attr) then return false end
 
 				if not skipMulti and getmetatable(config) == getmetatable(attr) then
 					local usage = GetAttributeUsage(getmetatable(config))
@@ -6097,12 +6101,6 @@ do
 			return false
 		end
 
-		-- Reduce cache table cost
-		local function keepArgs(...)
-			yield( running() )
-			return ...
-		end
-
 		local function _GetCustomAttribute(target, targetType, owner, name, type)
 			local config = GetTargetAttributes(target, targetType, owner, name)
 
@@ -6133,7 +6131,7 @@ do
 					CACHE_TABLE(cache)
 					return r1, r2, r3
 				else
-					local thread = CallThread(keepArgs, unpack(cache))
+					local thread = KeepArgs(unpack(cache))
 					CACHE_TABLE(cache)
 					return select(2, resume(thread))
 				end
@@ -7173,6 +7171,7 @@ do
 	endclass "__Doc__"
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Interface + AttributeTargets.Method, Inherited = false, RunOnce = true}
+	__Final__() __Unique__()
 	class "__Local__"
 		inherit "__Attribute__"
 
@@ -7188,6 +7187,16 @@ do
 		------------------------------------------------------
 		function __Local__(self) SetLocal(true) return Super(self) end
 	endclass "__Local__"
+
+	__Final__() __Unique__()
+	class "__Public__"
+		doc "__Public__" [[Used to mark the features as public.]]
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Public__ = SetPublic
+	endclass "__Public__"
 end
 
 ------------------------------------------------------

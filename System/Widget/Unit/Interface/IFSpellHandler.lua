@@ -956,7 +956,7 @@ interface "IFSpellHandler"
 					-- if not right, direct error out
 					key = ParseBindKey(key)
 
-					KeySet.Validate(setting)
+					KeySet(setting)
 
 					result[key] = {
 						HarmAction = setting.HarmAction,

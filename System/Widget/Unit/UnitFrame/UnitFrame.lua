@@ -351,7 +351,7 @@ class "UnitFrame"
 	-- __index
 	------------------------------------------------------
     function __index(self, key)
-    	local value = UIObject.__index(self, key)
+    	local value = Super.__index(self, key)
     	if value then
     		return value
     	end

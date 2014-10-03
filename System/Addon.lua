@@ -993,7 +993,7 @@ class "Addon"
 	------------------------------------------------------
 	-- __index for class instance
 	------------------------------------------------------
-	local oIndex = System.Module.__index
+	local oIndex = Super.__index
 
 	function __index(self, key)
 		local value = oIndex(self, key)
