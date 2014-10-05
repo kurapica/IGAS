@@ -28,6 +28,7 @@ function OnEnable(self)
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("UNIT_AURA")
 
 	OnEnable = nil
 	UpdateStanceMap()
@@ -81,6 +82,16 @@ end
 
 function PLAYER_ENTERING_WORLD(self)
 	return handler:Refresh()
+end
+
+function UNIT_AURA(self, unit)
+	if unit == "player" then
+		for _, btn in handler() do
+			if _StanceMap[btn.ActionTarget] then
+				handler:Refresh(btn)
+			end
+		end
+	end
 end
 
 function UpdateStanceMap()
