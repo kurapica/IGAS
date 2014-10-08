@@ -25,35 +25,41 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
 --
---	 Pure Lua Object-Oriented Program System
+-- Pure Lua Object-Oriented Program System
 --
+-- Config :
+--    PLOOP_DOCUMENT_ENABLED - Whether enable/disable document system, default true
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
 -- Last Update Date 2014/10/02
--- Version			r105
+-- Version			r106
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
 -- Object oriented program syntax system environment
 ------------------------------------------------------
 do
-	-- Local Environment
-	setfenv(1, setmetatable({}, {
+	local _G = _G
+	local rawset = rawset
+	local _PLoopEnv = setmetatable({}, {
 		__index = function(self,  key)
 			if type(key) == "string" and key ~= "_G" and key:find("^_") then return end
+			local value = _G[key]
+			if value ~= nil then rawset(self, key, value) return value end
+		end, __metatable = true,
+	})
 
-			if _G[key] then rawset(self, key, _G[key]) return rawget(self, key) end
-		end,
-		__metatable = true,
-	}))
+	-- Local Environment
+	if setfenv then setfenv(1, _PLoopEnv) else _ENV = _PLoopEnv end
+
+	WEAK_KEY = {__mode = "k"}
+	WEAK_VALUE = {__mode = "v"}
+	WEAK_ALL = {__mode = "kv"}
 
 	-- Common features
-	getfenv = getfenv
-	setfenv = setfenv
-
 	strlen = string.len
 	strformat = string.format
 	strfind = string.find
@@ -84,6 +90,7 @@ do
 	geterrorhandler = geterrorhandler or function() return print end
 	errorhandler = errorhandler or function(err) return pcall(geterrorhandler(), err) end
 
+	-- Check For lua 5.2
 	newproxy = newproxy or (function ()
 		local _METATABLE_MAP = setmetatable({}, {__mode = "k"})
 
@@ -101,6 +108,25 @@ do
 			end
 		end
 	end)()
+
+	if setfenv and getfenv then
+		getfenv = getfenv
+		setfenv = setfenv
+	else
+		local _FENV_Cache = setmetatable({}, {
+			__mode = "k",
+			__call = function (self, env)
+				if env then
+					self[running() or 0] = env
+				else
+					return self[running() or 0]
+				end
+			end,
+		})
+
+		getfenv = function (lvl) return _FENV_Cache() end
+		setfenv = function (lvl, env) _FENV_Cache(env) end
+	end
 end
 
 ------------------------------------------------------
@@ -108,7 +134,7 @@ end
 ------------------------------------------------------
 do
 	-- Used to enable/disable document system, not started with '_', so can be disabled outsider
-	DOCUMENT_ENABLED = DOCUMENT_ENABLED == nil and true or DOCUMENT_ENABLED
+	DOCUMENT_ENABLED = PLOOP_DOCUMENT_ENABLED == nil and true or PLOOP_DOCUMENT_ENABLED
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -140,21 +166,6 @@ end
 ------------------------------------------------------
 do
 	ATTRIBUTE_INSTALLED = false
-
-	WEAK_KEY = {__mode = "k"}
-	WEAK_VALUE = {__mode = "v"}
-	WEAK_ALL = {__mode = "kv"}
-
-	SYNTHESIZE_ENV = {
-		rawset = rawset,
-		rawget = rawget,
-		type = type,
-		setmetatable = setmetatable,
-		getmetatable = getmetatable,
-		pcall = pcall,
-		errorhandler = errorhandler,
-		WEAK_VALUE = WEAK_VALUE,
-	}
 
 	THREAD_POOL_SIZE = 100
 
@@ -335,8 +346,6 @@ do
 		end
 	end
 
-	SYNTHESIZE_ENV.clone = CloneObj
-
 	-- Local marker
 	LOCAL_CACHE = setmetatable({}, WEAK_KEY)
 
@@ -432,9 +441,7 @@ do
 	_NSInfo = setmetatable({}, {
 		__index = function(self, key)
 			if not IsNameSpace(key) then return end
-			local ret = { Owner = key }
-			self[key] = ret
-			return ret
+			local ret = { Owner = key } self[key] = ret return ret
 		end,
 		__mode = "k",
 	})
@@ -484,7 +491,7 @@ do
 				end
 			end
 
-			error(GetFullName4NS(self) .. " is not callable.", 2)
+			error(tostring(self) .. " is not callable.", 2)
 		end
 
 		_MetaNS.__index = function(self, key)
@@ -517,12 +524,34 @@ do
 		_MetaNS.__newindex = function(self, key, value)
 			local info = _NSInfo[self]
 
-			if (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and not info.NonExpandable and type(key) == "string" and type(value) == "function" then
+			if info.Type == TYPE_STRUCT and type(key) == "string" and type(value) == "function" then
+				info.Method = info.Method or {}
+
+				if not info.Method[key] then
+					return SaveFixedMethod(info.Method, key, value, info.Owner)
+				else
+					error("Can't override the existed feature.", 2)
+				end
+			elseif (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and not info.NonExpandable and type(key) == "string" then
 				if not info.Cache[key] then
-					SaveFixedMethod(info.Method, key, value, info.Owner)
+					if type(value) == "function" then
+						-- Method
+						SaveFixedMethod(info.Method, key, value, info.Owner)
+					elseif type(value) == "table" then
+						-- Property
+						SetPropertyWithSet(info, key, value)
+					elseif not tonumber(key) then
+						-- Event
+						info.Event[key] = info.Event[key] or Event(key)
+
+						if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Event[key], AttributeTargets.Event, info.Owner, key) end
+					else
+						error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
+					end
+
 					return RefreshCache(self)
 				else
-					error("Can't override the existed method.", 2)
+					error("Can't override the existed feature.", 2)
 				end
 			end
 
@@ -562,7 +591,22 @@ do
 			return _type1
 		end
 
-		_MetaNS.__tostring = GetFullName4NS
+		_MetaNS.__tostring = function(self)
+			local info = _NSInfo[self]
+
+			if info then
+				local name = info.Name
+
+				while info and info.NameSpace do
+					info = _NSInfo[info.NameSpace]
+
+					if info then name = info.Name.."."..name end
+				end
+
+				return name
+			end
+		end
+
 		_MetaNS.__metatable = TYPE_NAMESPACE
 
 		_MetaNS = nil
@@ -599,7 +643,7 @@ do
 			end
 		end
 
-		_MetaSA.__tostring = function(self) return GetFullName4NS(_SuperMap[self].Owner) end
+		_MetaSA.__tostring = function(self) return tostring(_SuperMap[self].Owner) end
 		_MetaSA.__metatable = TYPE_SUPERALIAS
 
 		_MetaSA = nil
@@ -622,6 +666,8 @@ do
 			elseif info.Type ~= TYPE_ENUM then
 				info.SubNS = info.SubNS or {}
 				info.SubNS[name] = info.SubNS[name] or newproxy(_NameSpace)
+
+				if cls == _NameSpace then _G[name] = _G[name] or info.SubNS[name] end
 
 				cls = info.SubNS[name]
 			else
@@ -675,23 +721,6 @@ do
 		if IsNameSpace(ns) then return ns end
 	end
 
-	-- GetFullName4NS
-	function GetFullName4NS(ns)
-		local info = _NSInfo[ns]
-
-		if info then
-			local name = info.Name
-
-			while info and info.NameSpace do
-				info = _NSInfo[info.NameSpace]
-
-				if info then name = info.Name.."."..name end
-			end
-
-			return name
-		end
-	end
-
 	------------------------------------
 	--- Set the default namespace for the current environment, the class defined in this environment will be stored in this namespace
 	-- @name namespace
@@ -699,10 +728,12 @@ do
 	-- <param name="name">the namespace's name list, using "." to split.</param>
 	-- <usage>namespace "Widget"</usage>
 	------------------------------------
-	function namespace(name)
+	function namespace(env, name)
+		name = name or env
 		if name ~= nil and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: namespace "namespace"]], 2) end
+		env = type(env) == "table" and env or getfenv(2) or _G
 
-		local ns = SetNameSpace4Env(getfenv(2), name)
+		local ns = SetNameSpace4Env(env, name)
 
 		return ns and ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(ns, AttributeTargets.NameSpace)
 	end
@@ -1112,8 +1143,8 @@ do
 
 					-- Validate the Setter
 					if prop.Setter then
-						prop.SetClone = Reflector.ValidateFlags(Setter.Clone, prop.Setter) or nil
 						prop.SetDeepClone = Reflector.ValidateFlags(Setter.DeepClone, prop.Setter) or nil
+						prop.SetClone = Reflector.ValidateFlags(Setter.Clone, prop.Setter) or prop.SetDeepClone
 
 						if prop.Set == nil and not prop.SetMethod then
 							if Reflector.ValidateFlags(Setter.Retain, prop.Setter) and prop.Type and #(prop.Type) > 0 then
@@ -1158,10 +1189,18 @@ do
 
 							-- Generate getMethod
 							local gbody = CACHE_TABLE()
-							if prop.Default ~= nil then
-								tinsert(gbody, [[local field, default = ...]])
+							if prop.GetClone then
+								if prop.Default ~= nil then
+									tinsert(gbody, [[local CloneObj, field, default = ...]])
+								else
+									tinsert(gbody, [[local CloneObj, field = ...]])
+								end
 							else
-								tinsert(gbody, [[local field = ...]])
+								if prop.Default ~= nil then
+									tinsert(gbody, [[local field, default = ...]])
+								else
+									tinsert(gbody, [[local field = ...]])
+								end
 							end
 							tinsert(gbody, [[return function (self)]])
 							tinsert(gbody, [[local value]])
@@ -1178,35 +1217,41 @@ do
 							if prop.Default ~= nil then tinsert(gbody, [[if value == nil then value = default end]]) end
 							if prop.GetClone then
 								if prop.GetDeepClone then
-									tinsert(gbody, [[value = clone(value, true)]])
+									tinsert(gbody, [[value = CloneObj(value, true)]])
 								else
-									tinsert(gbody, [[value = clone(value)]])
+									tinsert(gbody, [[value = CloneObj(value)]])
 								end
 							end
 							tinsert(gbody, [[return value]])
 							tinsert(gbody, [[end]])
 
-							info.Method[getName] = loadstring(tblconcat(gbody, "\n"))(field, prop.Default)
+							if prop.GetClone then
+								info.Method[getName] = loadstring(tblconcat(gbody, "\n"))(CloneObj, field, prop.Default)
+							else
+								info.Method[getName] = loadstring(tblconcat(gbody, "\n"))(field, prop.Default)
+							end
 
 							-- Generate setMethod
 							wipe(gbody)
-							if prop.Default ~= nil then
-								if prop.Handler then
-									tinsert(gbody, [[local field, default, handler = ...]])
-								else
-									tinsert(gbody, [[local field, default = ...]])
-								end
-							elseif prop.Handler then
-								tinsert(gbody, [[local field, handler = ...]])
-							else
-								tinsert(gbody, [[local field = ...]])
-							end
+							local upValues = CACHE_TABLE()
+
+							if prop.SetRetain then tinsert(upValues, DisposeObject) tinsert(gbody, "DisposeObject") end
+							if prop.SetClone then tinsert(upValues, CloneObj) tinsert(gbody, "CloneObj") end
+							if prop.SetWeak then tinsert(upValues, WEAK_VALUE) tinsert(gbody, "WEAK_VALUE") end
+							tinsert(upValues, field) tinsert(gbody, "field")
+							if prop.Default ~= nil then tinsert(upValues, prop.Default) tinsert(gbody, "default") end
+							if prop.Handler then tinsert(upValues, prop.Handler) tinsert(gbody, "handler") end
+
+							local gHeader = "local " .. tblconcat(gbody, ", ") .. " = ..."
+							wipe(gbody)
+							tinsert(gbody, gHeader)
+
 							tinsert(gbody, [[return function (self, value)]])
-							if prop.SetClone or prop.SetDeepClone then
+							if prop.SetClone then
 								if prop.SetDeepClone then
-									tinsert(gbody, [[value = clone(value, true)]])
+									tinsert(gbody, [[value = CloneObj(value, true)]])
 								else
-									tinsert(gbody, [[value = clone(value)]])
+									tinsert(gbody, [[value = CloneObj(value)]])
 								end
 							end
 							tinsert(gbody, [[local container = self]])
@@ -1222,32 +1267,27 @@ do
 							tinsert(gbody, [[if old == value then return end]])
 							tinsert(gbody, [[rawset(container, field, value)]])
 							if prop.SetRetain then
-								tinsert(gbody, [[if type(old) == "table" and getmetatable(old) and old ~= default then]])
+								if prop.Default ~= nil then
+									tinsert(gbody, [[if type(old) == "table" and getmetatable(old) and old ~= default then]])
+								else
+									tinsert(gbody, [[if type(old) == "table" and getmetatable(old) then]])
+								end
 								tinsert(gbody, [[DisposeObject(old)]])
 								tinsert(gbody, [[old = nil]])
 								tinsert(gbody, [[end]])
 							end
-							if prop.Handler then
-								tinsert(gbody, ([[local ok, err = pcall(handler, self, value, old, "%s")]]):format(name))
-								tinsert(gbody, [[if not ok then errorhandler(err) end]])
-							end
+							if prop.Handler then tinsert(gbody, ([[handler(self, value, old, "%s")]]):format(name)) end
 							if prop.Event then
 								tinsert(gbody, [[local evt = rawget(self, "__Events")]])
 								tinsert(gbody, ([[evt = evt and rawget(evt, "%s")]]):format(prop.Event))
 								tinsert(gbody, ([[if evt then return evt(self, value, old, "%s") end]]):format(name))
 							end
 							tinsert(gbody, [[end]])
-							if prop.Default ~= nil then
-								info.Method[setName] = loadstring(tblconcat(gbody, "\n"))(field, prop.Default, prop.Handler)
-							else
-								info.Method[setName] = loadstring(tblconcat(gbody, "\n"))(field, prop.Handler)
-							end
+
+							info.Method[setName] = loadstring(tblconcat(gbody, "\n"))(unpack(upValues))
 
 							CACHE_TABLE(gbody)
-
-							-- Keep in the definition environment
-							setfenv(info.Method[getName], SYNTHESIZE_ENV)
-							setfenv(info.Method[setName], SYNTHESIZE_ENV)
+							CACHE_TABLE(upValues)
 
 							iCache[getName] = info.Method[getName]
 							iCache[setName] = info.Method[setName]
@@ -1346,7 +1386,6 @@ do
 			-- Check namespace
 			if info.NameSpace then
 				if key == _NSInfo[info.NameSpace].Name then
-					value = info.NameSpace
 					rawset(self, key, value)
 					return value
 				elseif info.NameSpace[key] then
@@ -1841,8 +1880,6 @@ do
 			wipe(self)
 			rawset(self, "Disposed", true)
 		end
-
-		SYNTHESIZE_ENV.DisposeObject = DisposeObject
 	end
 
 	-- metatable for class's env
@@ -3575,7 +3612,7 @@ do
 		function GetNameSpaceFullName(ns)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
-			return GetFullName4NS(ns)
+			return tostring(ns)
 		end
 
 		doc "GetSuperClass" [[
@@ -4979,11 +5016,11 @@ do
 		function __tostring(self)
 			local ret = ""
 
-			for _, tns in ipairs(self) do ret = ret .. " + " .. GetFullName4NS(tns) end
+			for _, tns in ipairs(self) do ret = ret .. " + " .. tostring(tns) end
 
 			local index = -1
 			while self[index] do
-				ret = ret .. " - " .. GetFullName4NS(self[index])
+				ret = ret .. " - " .. tostring(self[index])
 				index = index - 1
 			end
 
@@ -7762,35 +7799,30 @@ do
 	-- Keep the root so can't be disposed
 	System = Reflector.GetNameSpaceForName("System")
 
-	function import_install(name, all)
-		local ns = Reflector.GetNameSpaceForName(name)
-		local env = getfenv(2)
-
-		if ns and env then
-			env[Reflector.GetNameSpaceName(ns)] = ns
-
-			if all then
-				for _, subNs in ipairs(Reflector.GetSubNamespace(ns)) do
-					env[subNs] = ns[subNs]
-				end
-			end
-		else
-			error("No such namespace.", 2)
-		end
-	end
-
 	function Install_OOP(env)
-		if type(env) == "table" then
-			env.interface = env.interface or interface
-			env.class = env.class or class
-			env.enum = env.enum or enum
-			env.namespace = env.namespace or namespace
-			env.struct = env.struct or struct
-			env.import = env.import or import_install
-			env.Module = env.Module or Module
+		env.interface = env.interface or interface
+		env.class = env.class or class
+		env.enum = env.enum or enum
+		env.namespace = env.namespace or namespace
+		env.struct = env.struct or struct
+		env.import = env.import or function(env, name)
+			local ns = Reflector.GetNameSpaceForName(name or env)
+			if not ns then error("No such namespace.", 2) end
+
+			env = type(env) == "table" and env or getfenv(2) or _G
+
+			name = _NSInfo[ns].Name
+			if env[name] == nil then env[name] = ns end
+			for _, subNs in ipairs(Reflector.GetSubNamespace(ns)) do
+				local sub = ns[subNs]
+				if _NSInfo[sub].Type and env[subNs] == nil then env[subNs] = sub end
+			end
 		end
+		env.Module = env.Module or Module
+		env.System = env.System or System
 	end
 
 	-- Install to the global environment
 	Install_OOP(_G)
+	Install_OOP = nil
 end
