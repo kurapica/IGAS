@@ -42,13 +42,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 -- Object oriented program syntax system environment
 ------------------------------------------------------
 do
-	local _G = _G
-	local rawset = rawset
+	local _G, rawset = _G, rawset
 	local _PLoopEnv = setmetatable({}, {
 		__index = function(self,  key)
-			if type(key) == "string" and key ~= "_G" and key:find("^_") then return end
-			local value = _G[key]
-			if value ~= nil then rawset(self, key, value) return value end
+			local value = _G[key] if value ~= nil then rawset(self, key, value) return value end
 		end, __metatable = true,
 	})
 
@@ -114,14 +111,13 @@ do
 		setfenv = setfenv
 	else
 		local _FENV_Cache = setmetatable({}, {
-			__mode = "k",
 			__call = function (self, env)
 				if env then
 					self[running() or 0] = env
 				else
 					return self[running() or 0]
 				end
-			end,
+			end, __mode = "k",
 		})
 
 		getfenv = function (lvl) return _FENV_Cache() end
@@ -549,7 +545,7 @@ do
 						error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
 					end
 
-					return RefreshCache(self)
+					return not info.BeginDefinition and RefreshCache(self)
 				else
 					error("Can't override the existed feature.", 2)
 				end
@@ -1524,6 +1520,17 @@ do
 
 			rawset(self, key, value)
 		end
+
+		_MetaIFDefEnv.__call = function(self, definition)
+			local ok, msg = pcall(ParseDefinition, self, definition)
+
+			setfenv(2, self[BASE_ENV_FIELD])
+
+			setmetatable(self, _MetaIFEnv)
+			RefreshCache(info.Owner)
+
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or info.Owner
+		end
 	end
 
 	function IsExtend(IF, cls)
@@ -1540,9 +1547,10 @@ do
 	------------------------------------
 	--- Create interface in currect environment's namespace or default namespace
 	------------------------------------
-	function interface(name)
+	function interface(env, name)
+		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], 2) end
-		local fenv = getfenv(2)
+		local fenv = type(env) == "table" and env or getfenv(2) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create interface or get it
@@ -1593,20 +1601,67 @@ do
 		-- Cache
 		info.Cache = info.Cache or {}
 
+		-- No super target for interface
+		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface) end
+
 		-- Set the environment to interface's environment
 		setfenv(2, interfaceEnv)
 
-		-- No super target for interface
-		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface)
+		return interfaceEnv
 	end
 
 	------------------------------------
 	--- Set the current interface' extended interface
-	-- @name extend
-	-- @class function
-	-- <param name="name">the namespace's name list, using "." to split.</param>
-	-- <usage>extend "System.IFSocket"</usage>
 	------------------------------------
+	function extend_Inner(info, IF)
+		local IFInfo = _NSInfo[IF]
+
+		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
+			error("Usage: extend (interface) : 'interface' - interface expected", 3)
+		elseif IFInfo.NonInheritable then
+			error(("%s is non-inheritable."):format(tostring(IF)), 3)
+		end
+
+		if info.Type = TYPE_CLASS and IFInfo.Requires and next(IFInfo.Requires) then
+			local pass = false
+
+			for prototype in pairs(IFInfo.Requires) do
+				if _NSInfo[prototype].Type == TYPE_INTERFACE then
+					if IsExtend(prototype, info.Owner) then
+						pass = true
+						break
+					end
+				elseif _NSInfo[prototype].Type == TYPE_CLASS then
+					if IsChildClass(prototype, info.Owner) then
+						pass = true
+						break
+					end
+				end
+			end
+
+			if not pass then
+				local desc
+
+				for prototype in pairs(IFInfo.Requires) do desc = desc and (desc .. "|" .. tostring(prototype)) or tostring(prototype) end
+
+				error(("Usage: extend (%s) : %s should be sub-class of %s."):format(tostring(IF), tostring(info.Owner), desc), 3)
+			end
+		elseif info.Type == TYPE_INTERFACE and IsExtend(info.Owner, IF) then
+			error(("%s is extended from %s, can't be used here."):format(tostring(IF), tostring(info.Owner)), 3)
+		end
+
+		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
+		IFInfo.ExtendClass[info.Owner] = true
+
+		info.ExtendInterface = info.ExtendInterface or {}
+
+		-- Check if IF is already extend by extend tree
+		for _, pIF in ipairs(info.ExtendInterface) do if IsExtend(IF, pIF) then return end end
+		for i = #(info.ExtendInterface), 1, -1 do if IsExtend(info.ExtendInterface[i], IF) then tremove(info.ExtendInterface, i) end end
+
+		tinsert(info.ExtendInterface, IF)
+	end
+
 	function extend_IF(name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: extend "namespace.interfacename"]], 2) end
 
@@ -1632,30 +1687,7 @@ do
 			IF = name
 		end
 
-		local IFInfo = _NSInfo[IF]
-
-		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
-			error("Usage: extend (interface) : 'interface' - interface expected", 2)
-		elseif IFInfo.NonInheritable then
-			error(("%s is non-inheritable."):format(tostring(IF)), 2)
-		end
-
-		if IsExtend(info.Owner, IF) then error(("%s is extended from %s, can't be used here."):format(tostring(IF), tostring(info.Owner)), 2) end
-
-		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
-		IFInfo.ExtendClass[info.Owner] = true
-
-		info.ExtendInterface = info.ExtendInterface or {}
-
-		-- Check if IF is already extend by extend tree
-		for _, pIF in ipairs(info.ExtendInterface) do if IsExtend(IF, pIF) then return extend_IF end end
-
-		-- Clear
-		for i = #(info.ExtendInterface), 1, -1 do
-			if IsExtend(info.ExtendInterface[i], IF) then tremove(info.ExtendInterface, i) end
-		end
-
-		tinsert(info.ExtendInterface, IF)
+		extend_Inner(info, IF)
 
 		return extend_IF
 	end
@@ -1783,6 +1815,68 @@ do
 		return require_IF
 	end
 
+	function ParseDefinition(self, definition)
+		local info = _NSInfo[self[OWNER_FIELD]]
+
+		if type(definition) == "table" then
+			for i = 0, #definition do
+				local v = definition[i]
+
+				if getmetatable(v) == TYPE_NAMESPACE then
+					local vType = _NSInfo[v].Type
+
+					if vType == TYPE_CLASS then
+						if info.Type == TYPE_CLASS then
+							inherit_Inner(info, v)
+						else
+							error(("%s can't have a super class"):format(info.Owner), 2)
+						end
+					elseif vType == TYPE_INTERFACE then
+						extend_Inner(info, v)
+					end
+				elseif type(v) == "string" and not tonumber(v) then
+					info.Event[v] = info.Event[v] or Event(v)
+				end
+			end
+
+			for k, v in pairs(definition) do
+				if type(k) == "string" and not tonumber(k) then
+					local vType = getmetatable(v)
+
+					if vType then
+						if vType == TYPE_NAMESPACE or vType == Type then
+							SetPropertyWithSet(info, k, { Type = v })
+						else
+							error("PLoop encounter unknow settings.", 2)
+						end
+					elseif type(v) == "table" then
+						SetPropertyWithSet(info, k, v)
+					elseif type(v) == "function" then
+						SaveFixedMethod(info.Method, k, v, info.Owner)
+					else
+						info.Event[k] = info.Event[k] or Event(k)
+					else
+				end
+			end
+		else
+			if type(definition) == "string" then
+				local errorMsg
+				definition, errorMsg = loadstring("return function(_ENV) " .. definition .. " end")
+				if definition then
+					definition = definition()
+				else
+					error(errorMsg, 2)
+				end
+			end
+
+			if type(definition) == "function" then
+				setfenv(definition, self)
+
+				return definition(self)
+			end
+		end
+	end
+
 	_KeyWord4IFEnv.extend = extend_IF
 	_KeyWord4IFEnv.import = import_IF
 	_KeyWord4IFEnv.event = event_IF
@@ -1818,7 +1912,7 @@ do
 		__index = false,	-- return a[b]
 		__newindex = false,	-- a[b] = v
 		__call = true,		-- a()
-		-- __gc = false,		-- dispose a
+		__gc = true,		-- dispose a
 		__tostring = true,	-- tostring(a)
 		__exist = true,		-- ClassName(...)	-- return object if existed
 	}
@@ -2134,6 +2228,17 @@ do
 			end
 
 			rawset(self, key, value)
+		end
+
+		_MetaClsDefEnv.__call = function(self, definition)
+			local ok, msg = pcall(ParseDefinition, self, definition)
+
+			setfenv(2, self[BASE_ENV_FIELD])
+
+			setmetatable(self, _MetaClsEnv)
+			RefreshCache(info.Owner)
+
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or info.Owner
 		end
 	end
 
@@ -2494,10 +2599,11 @@ do
 	------------------------------------
 	--- Create class in currect environment's namespace or default namespace
 	------------------------------------
-	function class(name)
+	function class(env, name)
+		name = name or  env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], 2) end
 
-		local fenv = getfenv(2)
+		local fenv = type(env) == "table" and env or getfenv(2) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -2556,37 +2662,14 @@ do
 
 		-- Set the environment to class's environment
 		setfenv(2, classEnv)
+
+		return classEnv
 	end
 
 	------------------------------------
 	--- Set the current class' super class
 	------------------------------------
-	function inherit_Cls(name)
-		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: inherit "namespace.classname"]], 2) end
-
-		local env = getfenv(2)
-		local info = _NSInfo[env[OWNER_FIELD]]
-
-		local superCls
-
-		if type(name) == "string" then
-			superCls = GetNameSpace(info.NameSpace, name) or env[name]
-
-			if not superCls then
-				for subname in name:gmatch("[_%w]+") do
-					if not superCls then
-						superCls = env[subname]
-					else
-						superCls = superCls[subname]
-					end
-
-					if not IsNameSpace(superCls) then error(("No class is found with the name : %s"):format(name), 2) end
-				end
-			end
-		else
-			superCls = name
-		end
-
+	function inherit_Inner(info, superCls)
 		local superInfo = _NSInfo[superCls]
 
 		if not superInfo or superInfo.Type ~= TYPE_CLASS then error("Usage: inherit (class) : 'class' - class expected", 2) end
@@ -2616,6 +2699,35 @@ do
 		return ATTRIBUTE_INSTALLED and InheritAttributes(superCls, info.Owner, AttributeTargets.Class)
 	end
 
+	function inherit_Cls(name)
+		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: inherit "namespace.classname"]], 2) end
+
+		local env = getfenv(2)
+		local info = _NSInfo[env[OWNER_FIELD]]
+
+		local superCls
+
+		if type(name) == "string" then
+			superCls = GetNameSpace(info.NameSpace, name) or env[name]
+
+			if not superCls then
+				for subname in name:gmatch("[_%w]+") do
+					if not superCls then
+						superCls = env[subname]
+					else
+						superCls = superCls[subname]
+					end
+
+					if not IsNameSpace(superCls) then error(("No class is found with the name : %s"):format(name), 2) end
+				end
+			end
+		else
+			superCls = name
+		end
+
+		return inherit_Inner(info, superCls)
+	end
+
 	------------------------------------
 	--- Set the current class' extended interface
 	------------------------------------
@@ -2641,50 +2753,7 @@ do
 			IF = name
 		end
 
-		local IFInfo = _NSInfo[IF]
-
-		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
-			error("Usage: extend (interface) : 'interface' - interface expected", 2)
-		elseif IFInfo.NonInheritable then
-			error(("%s is non-inheritable."):format(tostring(IF)), 2)
-		end
-
-		if IFInfo.Requires and next(IFInfo.Requires) then
-			local pass = false
-
-			for prototype in pairs(IFInfo.Requires) do
-				if _NSInfo[prototype].Type == TYPE_INTERFACE then
-					if IsExtend(prototype, info.Owner) then
-						pass = true
-						break
-					end
-				elseif _NSInfo[prototype].Type == TYPE_CLASS then
-					if IsChildClass(prototype, info.Owner) then
-						pass = true
-						break
-					end
-				end
-			end
-
-			if not pass then
-				local desc
-
-				for prototype in pairs(IFInfo.Requires) do desc = desc and (desc .. "|" .. tostring(prototype)) or tostring(prototype) end
-
-				error(("Usage: extend (%s) : %s should be sub-class of %s."):format(tostring(IF), tostring(info.Owner), desc), 2)
-			end
-		end
-
-		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
-		IFInfo.ExtendClass[info.Owner] = true
-
-		info.ExtendInterface = info.ExtendInterface or {}
-
-		-- Check if IF is already extend by extend tree
-		for _, pIF in ipairs(info.ExtendInterface) do if IsExtend(IF, pIF) then return extend_Cls end end
-		for i = #(info.ExtendInterface), 1, -1 do if IsExtend(info.ExtendInterface[i], IF) then tremove(info.ExtendInterface, i) end end
-
-		tinsert(info.ExtendInterface, IF)
+		extend_Inner(info, IF)
 
 		return extend_Cls
 	end
@@ -2877,7 +2946,8 @@ do
 	------------------------------------
 	--- create a enumeration
 	------------------------------------
-	function enum(name)
+	function enum(env, name)
+		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: enum "enumName" {
 				"enumValue1",
@@ -2885,7 +2955,7 @@ do
 			}]], 2)
 		end
 
-		local fenv = getfenv(2)
+		local fenv = type(env) == "table" and env or getfenv(2) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -3253,9 +3323,10 @@ do
 	------------------------------------
 	--- create a structure
 	------------------------------------
-	function struct(name)
+	function struct(env, name)
+		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], 2) end
-		local fenv = getfenv(2)
+		local fenv = type(env) == "table" and env or getfenv(2) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -3320,7 +3391,9 @@ do
 		-- Set the environment to class's environment
 		setfenv(2, info.StructEnv)
 
-		return ATTRIBUTE_INSTALLED and ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+
+		return info.StructEnv
 	end
 
 	------------------------------------
@@ -3613,6 +3686,40 @@ do
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
 			return tostring(ns)
+		end
+
+		doc "BeginDefinition" [[
+			<desc>Begin the definition of target namespace, stop cache refresh</desc>
+			<param name="namespace|string">the namespace</param>
+		]]
+		function BeginDefinition(ns)
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+
+			if ns then
+				local info = _NSInfo[ns]
+
+				if info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE then
+					info.BeginDefinition = true
+				end
+			end
+		end
+
+		doc "EndDefinition" [[
+			<desc>End the definition of target namespace, refresh the cache</desc>
+			<param name="namespace|string">the namespace</param>
+		]]
+		function EndDefinition(ns)
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+
+			if ns then
+				local info = _NSInfo[ns]
+
+				if info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE then
+					info.BeginDefinition = nil
+
+					return RefreshCache(ns)
+				end
+			end
 		end
 
 		doc "GetSuperClass" [[
@@ -5485,14 +5592,7 @@ do
 	-- Attribute Core
 	------------------------------------------------------
 	do
-		_PreparedAttributes = setmetatable({}, {
-			__mode = "k",
-			__call = function (self) return self[running() or 0] end,
-			__index = function (self, key)
-				rawset(self, key, {})
-				return rawget(self, key)
-			end,
-		})
+		_PreparedAttributes = {}
 
 		-- Recycle the cache for dispose attributes
 		_AttributeCache4Dispose = setmetatable({}, {
@@ -5820,7 +5920,7 @@ do
 
 		function SendAttributeToPrepared(self)
 			-- Send to prepared cache
-			local prepared = _PreparedAttributes()
+			local prepared = _PreparedAttributes
 
 			for i, v in ipairs(prepared) do if v == self then return end end
 
@@ -5828,13 +5928,13 @@ do
 		end
 
 		function RemoveAttributeToPrepared(self)-- Send to prepared cache
-			local prepared = _PreparedAttributes()
+			local prepared = _PreparedAttributes
 
 			for i, v in ipairs(prepared) do if v == self then return tremove(prepared, i) end end
 		end
 
 		function ClearPreparedAttributes(noDispose)
-			local prepared = _PreparedAttributes()
+			local prepared = _PreparedAttributes
 
 			if not noDispose then
 				for _, attr in ipairs(prepared) do attr:Dispose() end
@@ -5846,7 +5946,7 @@ do
 			owner = owner or target
 
 			-- Consume the prepared Attributes
-			local prepared = _PreparedAttributes()
+			local prepared = _PreparedAttributes
 
 			-- Filter with the usage
 			if #prepared > 0 then
