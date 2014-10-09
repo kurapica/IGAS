@@ -1585,7 +1585,8 @@ do
 	------------------------------------
 	--- Create interface in currect environment's namespace or default namespace
 	------------------------------------
-	function interface(env, name)
+	function interface(env, name, depth)
+		depth = tonumber(depth) or 1
 		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], 2) end
 		local fenv = type(env) == "table" and env or getfenv(2) or _G
@@ -1643,7 +1644,7 @@ do
 		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Interface) end
 
 		-- Set the environment to interface's environment
-		setfenv(2, interfaceEnv)
+		setfenv(depth + 1, interfaceEnv)
 
 		return interfaceEnv
 	end
@@ -2653,7 +2654,8 @@ do
 	------------------------------------
 	--- Create class in currect environment's namespace or default namespace
 	------------------------------------
-	function class(env, name)
+	function class(env, name, depth)
+		depth = tonumber(depth) or 1
 		name = name or  env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], 2) end
 
@@ -2712,7 +2714,7 @@ do
 
 		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Class) end
 
-		setfenv(2, classEnv)
+		setfenv(depth + 1, classEnv)
 
 		return classEnv
 	end
@@ -3360,7 +3362,8 @@ do
 	------------------------------------
 	--- create a structure
 	------------------------------------
-	function struct(env, name)
+	function struct(env, name, depth)
+		depth = tonumber(depth) or 1
 		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], 2) end
 		local fenv = type(env) == "table" and env or getfenv(2) or _G
@@ -3424,7 +3427,7 @@ do
 		-- Set namespace
 		SetNameSpace4Env(info.StructEnv, strt)
 
-		setfenv(2, info.StructEnv)
+		setfenv(depth + 1, info.StructEnv)
 
 		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct) end
 
@@ -7702,7 +7705,7 @@ do
 		_ModuleKeyAccessor = newproxy(true)
 		getmetatable(_ModuleKeyAccessor).__call = function (self, value)
 			self = _ModuleKeyCache[running() or 0]
-			return _ModuleKeyCache[self.Keyword](self.Module, value)
+			return _ModuleKeyCache[self.Keyword](self.Module, value, 2)
 		end
 		getmetatable(_ModuleKeyAccessor).__metatable = false
 
