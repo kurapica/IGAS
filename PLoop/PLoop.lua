@@ -763,10 +763,11 @@ do
 	-- <param name="name">the namespace's name list, using "." to split.</param>
 	-- <usage>namespace "Widget"</usage>
 	------------------------------------
-	function namespace(env, name)
+	function namespace(env, name, depth)
+		depth = tonumber(depth) or 1
 		name = name or env
-		if name ~= nil and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: namespace "namespace"]], 2) end
-		env = type(env) == "table" and env or getfenv(2) or _G
+		if name ~= nil and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: namespace "namespace"]], depth + 1) end
+		env = type(env) == "table" and env or getfenv(depth + 1) or _G
 
 		local ns = SetNameSpace4Env(env, name)
 
@@ -1588,8 +1589,8 @@ do
 	function interface(env, name, depth)
 		depth = tonumber(depth) or 1
 		name = name or env
-		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], 2) end
-		local fenv = type(env) == "table" and env or getfenv(2) or _G
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], depth + 1) end
+		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create interface or get it
@@ -1600,7 +1601,7 @@ do
 
 			if _NSInfo[IF] then
 				if _NSInfo[IF].Type and _NSInfo[IF].Type ~= TYPE_INTERFACE then
-					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), 2)
+					error(("%s is existed as %s, not interface."):format(name, tostring(_NSInfo[IF].Type)), depth + 1)
 				end
 			end
 		else
@@ -1611,13 +1612,13 @@ do
 			end
 		end
 
-		if not IF then error("No interface is created.", 2) end
+		if not IF then error("No interface is created.", depth + 1) end
 
 		-- Build interface
 		info = _NSInfo[IF]
 
 		-- Check if the class is final
-		if info.IsFinal then error("The interface is final, can't be re-defined.", 2) end
+		if info.IsFinal then error("The interface is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = ns
@@ -2657,9 +2658,9 @@ do
 	function class(env, name, depth)
 		depth = tonumber(depth) or 1
 		name = name or  env
-		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], 2) end
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], depth + 1) end
 
-		local fenv = type(env) == "table" and env or getfenv(2) or _G
+		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -2670,7 +2671,7 @@ do
 
 			if _NSInfo[cls] then
 				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_CLASS then
-					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), 2)
+					error(("%s is existed as %s, not class."):format(name, tostring(_NSInfo[cls].Type)), depth + 1)
 				end
 			end
 		else
@@ -2681,13 +2682,13 @@ do
 			end
 		end
 
-		if not cls then error("No class is created.", 2) end
+		if not cls then error("No class is created.", depth + 1) end
 
 		-- Build class
 		info = _NSInfo[cls]
 
 		-- Check if the class is final
-		if info.IsFinal then error("The class is final, can't be re-defined.", 2) end
+		if info.IsFinal then error("The class is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_CLASS
 		info.NameSpace = ns
@@ -3001,16 +3002,17 @@ do
 	------------------------------------
 	--- create a enumeration
 	------------------------------------
-	function enum(env, name)
+	function enum(env, name, depth)
+		depth = tonumber(depth) or 1
 		name = name or env
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: enum "enumName" {
 				"enumValue1",
 				"enumValue2",
-			}]], 2)
+			}]], depth + 1)
 		end
 
-		local fenv = type(env) == "table" and env or getfenv(2) or _G
+		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -3020,7 +3022,7 @@ do
 			enm = BuildNameSpace(ns, name)
 
 			if _NSInfo[cls] then
-				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_ENUM then error(("%s is existed as %s, not enumeration."):format(name, tostring(_NSInfo[cls].Type)), 2) end
+				if _NSInfo[cls].Type and _NSInfo[cls].Type ~= TYPE_ENUM then error(("%s is existed as %s, not enumeration."):format(name, tostring(_NSInfo[cls].Type)), depth + 1) end
 			end
 		else
 			enm = fenv[name]
@@ -3028,7 +3030,7 @@ do
 			if not(_NSInfo[enm] and _NSInfo[enm].Type == TYPE_ENUM) then enm = BuildNameSpace(nil, name) end
 		end
 
-		if not enm then error("No enumeration is created.", 2) end
+		if not enm then error("No enumeration is created.", depth + 1) end
 
 		-- save class to the environment
 		rawset(fenv, name, enm)
@@ -3037,7 +3039,7 @@ do
 		local info = _NSInfo[enm]
 
 		-- Check if the enum is final
-		if info.IsFinal then error("The enum is final, can't be re-defined.", 2) end
+		if info.IsFinal then error("The enum is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_ENUM
 		info.NameSpace = ns
@@ -3365,8 +3367,8 @@ do
 	function struct(env, name, depth)
 		depth = tonumber(depth) or 1
 		name = name or env
-		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], 2) end
-		local fenv = type(env) == "table" and env or getfenv(2) or _G
+		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], depth + 1) end
+		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
 		-- Create class or get it
@@ -3376,7 +3378,7 @@ do
 			strt = BuildNameSpace(ns, name)
 
 			if _NSInfo[strt] and _NSInfo[strt].Type and _NSInfo[strt].Type ~= TYPE_STRUCT then
-				error(("%s is existed as %s, not struct."):format(name, tostring(_NSInfo[strt].Type)), 2)
+				error(("%s is existed as %s, not struct."):format(name, tostring(_NSInfo[strt].Type)), depth + 1)
 			end
 		else
 			strt = fenv[name]
@@ -3386,7 +3388,7 @@ do
 			end
 		end
 
-		if not strt then error("No struct is created.", 2) end
+		if not strt then error("No struct is created.", depth + 1) end
 
 		-- save class to the environment
 		rawset(fenv, name, strt)
@@ -3395,7 +3397,7 @@ do
 		info = _NSInfo[strt]
 
 		-- Check if the struct is final
-		if info.IsFinal then error("The struct is final, can't be re-defined.", 2) end
+		if info.IsFinal then error("The struct is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_STRUCT
 		info.SubType = _STRUCT_TYPE_MEMBER
@@ -8039,14 +8041,16 @@ do
 		env.import = env.import or function(env, name)
 			local ns = Reflector.GetNameSpaceForName(name or env)
 			if not ns then error("No such namespace.", 2) end
-
 			env = type(env) == "table" and env or getfenv(2) or _G
 
 			name = _NSInfo[ns].Name
 			if env[name] == nil then env[name] = ns end
-			for _, subNs in ipairs(Reflector.GetSubNamespace(ns)) do
-				local sub = ns[subNs]
-				if _NSInfo[sub].Type and env[subNs] == nil then env[subNs] = sub end
+			local children = Reflector.GetSubNamespace(ns)
+			if children then
+				for _, subNs in ipairs(children) do
+					local sub = ns[subNs]
+					if _NSInfo[sub].Type and env[subNs] == nil then env[subNs] = sub end
+				end
 			end
 		end
 		env.Module = env.Module or Module
