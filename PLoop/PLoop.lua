@@ -34,8 +34,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/10/02
--- Version			r106
+-- Last Update Date 2014/10/09
+-- Version			r107
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -109,6 +109,30 @@ do
 	if setfenv and getfenv then
 		getfenv = getfenv
 		setfenv = setfenv
+	elseif debug and debug.getinfo and debug.getupvalue and debug.setupvalue then
+		local getinfo = debug.getinfo
+		local getupvalue = debug.getupvalue
+		local setupvalue = debug.setupvalue
+
+		setfenv = function(f, t)
+		    f = type(f) == 'function' and f or getinfo(f + 1, 'f').func
+		    local up, name = 0
+		    repeat
+		        up = up + 1
+		        name = getupvalue(f, up)
+		    until name == '_ENV' or name == nil
+		    if name then setupvalue(f, up, t) end
+		end
+
+		getfenv = function(f)
+		    f = type(f) == 'function' and f or getinfo(f + 1, 'f').func
+		    local up, name = 0
+		    repeat
+		        up = up + 1
+		        name, val = getupvalue(f, up)
+		    until name == '_ENV' or name == nil
+		    return val or _G
+		end
 	else
 		local _FENV_Cache = setmetatable({}, {
 			__call = function (self, env)
@@ -1363,7 +1387,7 @@ do
 	end
 
 	-- metatable for interface's env
-	_MetaIFEnv = {}
+	_MetaIFEnv = { __metatable = true }
 	_MetaIFDefEnv = {}
 	do
 		_MetaIFEnv.__index = function(self, key)
@@ -1525,11 +1549,10 @@ do
 			local ok, msg = pcall(ParseDefinition, self, definition)
 
 			setfenv(2, self[BASE_ENV_FIELD])
-
 			setmetatable(self, _MetaIFEnv)
-			RefreshCache(info.Owner)
+			RefreshCache(self[OWNER_FIELD])
 
-			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or info.Owner
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self[OWNER_FIELD]
 		end
 	end
 
@@ -1622,7 +1645,7 @@ do
 			error(("%s is non-inheritable."):format(tostring(IF)), 3)
 		end
 
-		if info.Type = TYPE_CLASS and IFInfo.Requires and next(IFInfo.Requires) then
+		if info.Type == TYPE_CLASS and IFInfo.Requires and next(IFInfo.Requires) then
 			local pass = false
 
 			for prototype in pairs(IFInfo.Requires) do
@@ -1773,6 +1796,7 @@ do
 			setmetatable(env, _MetaIFEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
+			return env[BASE_ENV_FIELD]
 		else
 			error(("%s is not closed."):format(info.Name), 2)
 		end
@@ -1852,10 +1876,27 @@ do
 					elseif type(v) == "table" then
 						SetPropertyWithSet(info, k, v)
 					elseif type(v) == "function" then
-						SaveFixedMethod(info.Method, k, v, info.Owner)
+						if k == info.Name then
+							if info.Type == TYPE_CLASS then
+								SaveFixedMethod(info, "Constructor", v, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
+							elseif info.Type == TYPE_INTERFACE then
+								info.Initializer = v
+							end
+						elseif k == DISPOSE_METHOD then
+							info[DISPOSE_METHOD] = v
+						elseif _KeyMeta[key] ~= nil and info.Type == TYPE_CLASS then
+							local rMeta = _KeyMeta[key] and key or "_"..key
+							local oldValue = info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta]
+
+							SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
+
+							UpdateMeta4Children(rMeta, info.ChildClass, oldValue, info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta])
+						else
+							SaveFixedMethod(info.Method, k, v, info.Owner)
+						end
 					else
 						info.Event[k] = info.Event[k] or Event(k)
-					else
+					end
 				end
 			end
 		else
@@ -1871,7 +1912,6 @@ do
 
 			if type(definition) == "function" then
 				setfenv(definition, self)
-
 				return definition(self)
 			end
 		end
@@ -1977,7 +2017,7 @@ do
 	end
 
 	-- metatable for class's env
-	_MetaClsEnv = {}
+	_MetaClsEnv = { __metatable = true }
 	_MetaClsDefEnv = {}
 	do
 		_MetaClsEnv.__index = function(self, key)
@@ -2234,11 +2274,10 @@ do
 			local ok, msg = pcall(ParseDefinition, self, definition)
 
 			setfenv(2, self[BASE_ENV_FIELD])
-
 			setmetatable(self, _MetaClsEnv)
-			RefreshCache(info.Owner)
+			RefreshCache(self[OWNER_FIELD])
 
-			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or info.Owner
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self[OWNER_FIELD]
 		end
 	end
 
@@ -2656,11 +2695,8 @@ do
 		-- MetaTable
 		info.MetaTable = info.MetaTable or GenerateMetatable(info)
 
-		if ATTRIBUTE_INSTALLED then
-			ConsumePreparedAttributes(info.Owner, AttributeTargets.Class)
-		end
+		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Class) end
 
-		-- Set the environment to class's environment
 		setfenv(2, classEnv)
 
 		return classEnv
@@ -2873,6 +2909,8 @@ do
 
 			if ret then error(ret, 2) end
 		end
+
+		return env[BASE_ENV_FIELD]
 	end
 
 	_KeyWord4ClsEnv.inherit = inherit_Cls
@@ -3008,7 +3046,7 @@ do
 	_STRUCT_TYPE_CUSTOM = "CUSTOM"
 
 	-- metatable for struct's env
-	_MetaStrtEnv = {}
+	_MetaStrtEnv = { __metatable = true }
 	_MetaStrtDefEnv = {}
 	do
 		_MetaStrtEnv.__index = function(self, key)
@@ -3149,34 +3187,8 @@ do
 						return SaveFixedMethod(info.Method, key, value, info.Owner)
 					end
 				elseif (value == nil or IsType(value) or IsNameSpace(value)) then
-					local ok, ret = pcall(BuildType, value)
-
-					if ok then
-						rawset(self, key, ret)
-
-						if info.SubType == _STRUCT_TYPE_MEMBER then
-							info.Members = info.Members or {}
-							tinsert(info.Members, key)
-							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, key) end
-
-							-- Auto generate Default
-							if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
-								local rinfo = _NSInfo[ret[1]]
-
-								if rinfo and (rinfo.Type == TYPE_STRUCT or rinfo.Type == TYPE_ENUM) and rinfo.Default ~= nil then
-									info.DefaultField = info.DefaultField or {}
-									info.DefaultField[key] = rinfo.Default
-								end
-							end
-						elseif info.SubType == _STRUCT_TYPE_ARRAY then
-							info.ArrayElement = ret
-							if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, key) end
-						end
-
-						return
-					else
-						error(strtrim(ret:match(":%d+:%s*(.-)$") or ret), 2)
-					end
+					SaveStructField(self, info, key, value)
+					return
 				end
 			end
 
@@ -3186,6 +3198,16 @@ do
 			end
 
 			rawset(self, key, value)
+		end
+
+		_MetaStrtDefEnv.__call = function(self, definition)
+			local ok, msg = pcall(ParseStructDefinition, self, definition)
+
+			setmetatable(self, _MetaStrtEnv)
+			setfenv(2, self[BASE_ENV_FIELD])
+			RefreshStruct(self[OWNER_FIELD])
+
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self[OWNER_FIELD]
 		end
 	end
 
@@ -3388,10 +3410,9 @@ do
 		-- Set namespace
 		SetNameSpace4Env(info.StructEnv, strt)
 
-		-- Set the environment to class's environment
 		setfenv(2, info.StructEnv)
 
-		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct)
+		if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Owner, AttributeTargets.Struct) end
 
 		return info.StructEnv
 	end
@@ -3435,26 +3456,102 @@ do
 		if info.Name == name then
 			setmetatable(env, _MetaStrtEnv)
 			setfenv(2, env[BASE_ENV_FIELD])
-
-			-- validate default value if existed
-			if info.Default ~= nil then
-				if info.SubType ~= _STRUCT_TYPE_CUSTOM then
-					info.Default = nil
-				elseif not pcall(ValidateStruct, info.Owner, info.Default) then
-					info.Default = nil
-				end
-			end
-
-			-- Make field type unique
-			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
-				for _, n in ipairs(info.Members) do
-					info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
-				end
-			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-				info.ArrayElement = GetUniqueType(info.ArrayElement)
-			end
+			RefreshStruct(info.Owner)
+			return env[BASE_ENV_FIELD]
 		else
 			error(("%s is not closed."):format(info.Name), 2)
+		end
+	end
+
+	function SaveStructField(self, info, key, value)
+		local ok, ret = pcall(BuildType, value)
+
+		if ok then
+			rawset(self, key, ret)
+
+			if info.SubType == _STRUCT_TYPE_MEMBER then
+				info.Members = info.Members or {}
+				tinsert(info.Members, key)
+				if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, key) end
+
+				-- Auto generate Default
+				if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
+					local rinfo = _NSInfo[ret[1]]
+
+					if rinfo and (rinfo.Type == TYPE_STRUCT or rinfo.Type == TYPE_ENUM) and rinfo.Default ~= nil then
+						info.DefaultField = info.DefaultField or {}
+						info.DefaultField[key] = rinfo.Default
+					end
+				end
+			elseif info.SubType == _STRUCT_TYPE_ARRAY then
+				info.ArrayElement = ret
+				if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, key) end
+			end
+		else
+			error(strtrim(ret:match(":%d+:%s*(.-)$") or ret), 3)
+		end
+	end
+
+	function RefreshStruct(strt)
+		local info = _NSInfo[strt]
+		-- validate default value if existed
+		if info.Default ~= nil then
+			if info.SubType ~= _STRUCT_TYPE_CUSTOM then
+				info.Default = nil
+			elseif not pcall(ValidateStruct, info.Owner, info.Default) then
+				info.Default = nil
+			end
+		end
+
+		-- Make field type unique
+		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+			for _, n in ipairs(info.Members) do
+				info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
+			end
+		elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+			info.ArrayElement = GetUniqueType(info.ArrayElement)
+		end
+	end
+
+	function ParseStructDefinition(self, definition)
+		local info = _NSInfo[self[OWNER_FIELD]]
+
+		if type(definition) == "table" then
+			for k, v in pairs(definition) do
+				if type(k) == "string" and not tonumber(k) then
+					local vType = getmetatable(v)
+
+					if vType then
+						if vType == TYPE_NAMESPACE or vType == Type then
+							SaveStructField(self, info, k, v)
+						else
+							error("PLoop encounter unknow settings.", 2)
+						end
+					elseif type(v) == "function" then
+						if k == info.Name then
+							info.Validator = v
+						else
+							info.Method = info.Method or {}
+							SaveFixedMethod(info.Method, k, v, info.Owner)
+						end
+					end
+				end
+			end
+		else
+			if type(definition) == "string" then
+				local errorMsg
+				definition, errorMsg = loadstring("return function(_ENV) " .. definition .. " end")
+				if definition then
+					definition = definition()
+				else
+					error(errorMsg, 2)
+				end
+			end
+
+			if type(definition) == "function" then
+				setfenv(definition, self)
+				return definition(self)
+			end
 		end
 	end
 
@@ -3628,7 +3725,7 @@ do
 			<return type="namespace">the namespace of the environment</return>
 		]]
 		function GetCurrentNameSpace(env, rawOnly)
-			env = type(env) == "table" and env or getfenv(2)
+			env = type(env) == "table" and env or getfenv(2) or _G
 
 			return GetNameSpace4Env(env, rawOnly)
 		end
@@ -3639,7 +3736,7 @@ do
 			<param name="env" type="table" optional="true">the environment, default the current environment</param>
 		]]
 		function SetCurrentNameSpace(ns, env)
-			env = type(env) == "table" and env or getfenv(2)
+			env = type(env) == "table" and env or getfenv(2) or _G
 
 			return SetNameSpace4Env(env, ns)
 		end
