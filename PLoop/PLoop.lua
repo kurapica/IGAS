@@ -106,46 +106,61 @@ do
 		end
 	end)()
 
+	FAKE_SETFENV = false
+
 	if setfenv and getfenv then
 		getfenv = getfenv
 		setfenv = setfenv
-	elseif debug and debug.getinfo and debug.getupvalue and debug.setupvalue then
-		local getinfo = debug.getinfo
-		local getupvalue = debug.getupvalue
-		local setupvalue = debug.setupvalue
-
-		setfenv = function(f, t)
-		    f = type(f) == 'function' and f or getinfo(f + 1, 'f').func
-		    local up, name = 0
-		    repeat
-		        up = up + 1
-		        name = getupvalue(f, up)
-		    until name == '_ENV' or name == nil
-		    if name then setupvalue(f, up, t) end
-		end
-
-		getfenv = function(f)
-		    f = type(f) == 'function' and f or getinfo(f + 1, 'f').func
-		    local up, name = 0
-		    repeat
-		        up = up + 1
-		        name, val = getupvalue(f, up)
-		    until name == '_ENV' or name == nil
-		    return val or _G
-		end
 	else
-		local _FENV_Cache = setmetatable({}, {
-			__call = function (self, env)
-				if env then
-					self[running() or 0] = env
-				else
-					return self[running() or 0]
-				end
-			end, __mode = "k",
-		})
+		if not debug and require then require "debug" end
+		if debug and debug.getinfo and debug.getupvalue and debug.upvaluejoin and debug.getlocal then
+			local getinfo = debug.getinfo
+			local getupvalue = debug.getupvalue
+			local upvaluejoin = debug.upvaluejoin
+			local getlocal = debug.getlocal
 
-		getfenv = function (lvl) return _FENV_Cache() end
-		setfenv = function (lvl, env) _FENV_Cache(env) end
+			setfenv = function(f, t)
+			    f = type(f) == 'function' and f or getinfo(f + 1, 'f').func
+			    local up, name = 0
+			    repeat
+			        up = up + 1
+			        name = getupvalue(f, up)
+			    until name == '_ENV' or name == nil
+			    if name then upvaluejoin(f, up, function() return t end, 1) end
+			end
+
+			getfenv = function(f)
+			    local cf, up, name, val = type(f) == 'function' and f or getinfo(f + 1, 'f').func, 0
+			    repeat
+			        up = up + 1
+			        name, val = getupvalue(cf, up)
+			    until name == '_ENV' or name == nil
+			    if val then return val end
+
+			    if type(f) == "number" then
+			    	f, up = f + 1, 0
+				    repeat
+				        up = up + 1
+				        name, val = getlocal(f, up)
+				    until name == '_ENV' or name == nil
+				    if val then return val end
+			    end
+			end
+		else
+			local _FENV_Cache = setmetatable({ [running() or 0] = _ENV }, {
+				__call = function (self, env)
+					if env then
+						self[running() or 0] = env
+					else
+						return self[running() or 0]
+					end
+				end, __mode = "k",
+			})
+
+			FAKE_SETFENV = true
+			getfenv = function (lvl) return _FENV_Cache() end
+			setfenv = function (lvl, env) _FENV_Cache(env) end
+		end
 	end
 end
 
@@ -3387,7 +3402,6 @@ do
 		info.DefaultField = nil
 		info.ArrayElement = nil
 		info.Validator = nil
-		info.Validate = nil
 		info.Method = nil
 		info.Import4Env = nil
 
@@ -3608,14 +3622,14 @@ end
 do
 	namespace "System"
 
-	struct "Boolean"
+	struct "Boolean" (function(_ENV)
 		structtype "CUSTOM"
 		default( false )
 
 		function Boolean(value) return value and true or false end
-	endstruct "Boolean"
+	end)
 
-	struct "String"
+	struct "String" (function(_ENV)
 		structtype "CUSTOM"
 		default( "" )
 
@@ -3623,9 +3637,9 @@ do
 			if type(value) ~= "string" then error(("%s must be a string, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "String"
+	end)
 
-	struct "Number"
+	struct "Number" (function(_ENV)
 		structtype "CUSTOM"
 		default( 0 )
 
@@ -3633,27 +3647,27 @@ do
 			if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "Number"
+	end)
 
-	struct "Function"
+	struct "Function" (function(_ENV)
 		structtype "CUSTOM"
 
 		function Function(value)
 			if type(value) ~= "function" then error(("%s must be a function, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "Function"
+	end)
 
-	struct "Table"
+	struct "Table" (function(_ENV)
 		structtype "CUSTOM"
 
 		function Table(value)
 			if type(value) ~= "table" then error(("%s must be a table, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "Table"
+	end)
 
-	struct "RawTable"
+	struct "RawTable" (function(_ENV)
 		structtype "CUSTOM"
 
 		function RawTable(value)
@@ -3664,27 +3678,27 @@ do
 			end
 			return value
 		end
-	endstruct "RawTable"
+	end)
 
-	struct "Userdata"
+	struct "Userdata" (function(_ENV)
 		structtype "CUSTOM"
 
 		function Userdata(value)
 			if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "Userdata"
+	end)
 
-	struct "Thread"
+	struct "Thread" (function(_ENV)
 		structtype "CUSTOM"
 
 		function Thread(value)
 			if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end
 			return value
 		end
-	endstruct "Thread"
+	end)
 
-	struct "Any"
+	struct "Any" (function(_ENV)
 		structtype "CUSTOM"
 
 		function Any(value)
@@ -3692,7 +3706,7 @@ do
 
 			return value
 		end
-	endstruct "Any"
+	end)
 
 	------------------------------------------------------
 	-- System.AttributeTargets
@@ -3714,7 +3728,7 @@ do
 	------------------------------------------------------
 	-- System.Reflector
 	------------------------------------------------------
-	interface "Reflector"
+	interface "Reflector" (function(_ENV)
 
 		doc "Reflector" [[This interface contains many apis used to get the running object-oriented system's informations.]]
 
@@ -4792,14 +4806,14 @@ do
 			<return type="object">the clone or the object itself</return>
 		]]
 		Clone = CloneObj
-	endinterface "Reflector"
+	end)
 end
 
 ------------------------------------------------------
 -- Local Namespace (Inner classes)
 ------------------------------------------------------
 do
-	class "Type"
+	class "Type" (function(_ENV)
 		doc "Type" [[The type object used to handle the value's validation]]
 
 		------------------------------------------------------
@@ -5234,11 +5248,11 @@ do
 
 			return ret
 		end
-	endclass "Type"
+	end)
 
 	namespace( nil )
 
-	class "Event"
+	class "Event" (function(_ENV)
 		doc "Event" [[The object event definition]]
 
 		doc "Name" [[The event's name]]
@@ -5260,9 +5274,9 @@ do
 		function __tostring(self) return ("%s( %q )"):format(tostring(Event), self.Name) end
 
 		function __call(self, owner) return EventHandler(self, owner) end
-	endclass "Event"
+	end)
 
-	class "EventHandler"
+	class "EventHandler" (function(_ENV)
 		doc "EventHandler" [[The object event handler]]
 
 		local function FireOnEventHandlerChanged(self) return Reflector.FireObjectEvent(self.Owner, "OnEventHandlerChanged", self.Event) end
@@ -5384,9 +5398,9 @@ do
 				end
 			end
 		end
-	endclass "EventHandler"
+	end)
 
-	class "FixedMethod"
+	class "FixedMethod" (function(_ENV)
 		doc "FixedMethod" [[Used to control method with fixed arguments]]
 
 		-- Find the real next method in class | interface
@@ -5676,7 +5690,7 @@ do
 		end
 
 		function __tostring(self) return self.Usage end
-	endclass "FixedMethod"
+	end)
 end
 
 ------------------------------------------------------
@@ -6199,7 +6213,7 @@ do
 	------------------------------------------------------
 	-- System.__Attribute__
 	------------------------------------------------------
-	class "__Attribute__"
+	class "__Attribute__" (function(_ENV)
 
 		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
 
@@ -6521,12 +6535,12 @@ do
 		-- Constructor
 		------------------------------------------------------
 		__Attribute__ = SendAttributeToPrepared
-	endclass "__Attribute__"
+	end)
 
 	-- Attribute system on
 	ATTRIBUTE_INSTALLED = true
 
-	class "__Unique__"
+	class "__Unique__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Unique__" [[Mark the class will only create one unique object, and can't be disposed, also the class can't be inherited]]
@@ -6537,9 +6551,9 @@ do
 				_NSInfo[target].UniqueObject = true
 			end
 		end
-	endclass "__Unique__"
+	end)
 
-	class "__Flags__"
+	class "__Flags__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Flags__" [[Indicates that an enumeration can be treated as a bit field; that is, a set of flags.]]
@@ -6600,9 +6614,9 @@ do
 				end
 			end
 		end
-	endclass "__Flags__"
+	end)
 
-	class "__AttributeUsage__"
+	class "__AttributeUsage__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__AttributeUsage__" [[Specifies the usage of another attribute class.]]
@@ -6621,9 +6635,9 @@ do
 
 		doc "RunOnce" [[Whether the property only apply once, when the Inherited is false, and the RunOnce is true, the attribute will be removed after apply operation]]
 		property "RunOnce" { Type = Boolean }
-	endclass "__AttributeUsage__"
+	end)
 
-	class "__Final__"
+	class "__Final__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Final__" [[Mark the class|interface|struct|enum to be final, and can't be re-defined again]]
@@ -6631,9 +6645,9 @@ do
 		function ApplyAttribute(self, target, targetType)
 			if _NSInfo[target] then _NSInfo[target].IsFinal = true end
 		end
-	endclass "__Final__"
+	end)
 
-	class "__NonInheritable__"
+	class "__NonInheritable__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__NonInheritable__" [[Mark the class can't be inherited]]
@@ -6641,9 +6655,9 @@ do
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) or Reflector.IsInterface(target) then _NSInfo[target].NonInheritable = true end
 		end
-	endclass "__NonInheritable__"
+	end)
 
-	struct "Argument"
+	struct "Argument" (function(_ENV)
 		Name = String + nil
 		Type = Any + nil
 		Default = Any + nil
@@ -6683,9 +6697,9 @@ do
 			-- Whether the value should be clone, argument match would change some value, Just for safe
 			value.CloneNeeded = isCloneNeeded(value.Type)
 		end
-	endstruct "Argument"
+	end)
 
-	class "__Arguments__"
+	class "__Arguments__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Arguments__" [[The argument definitions of the target method or class's constructor]]
@@ -6722,7 +6736,7 @@ do
 				end
 			end
 
-			if pcall( Argument.Validate, arg ) then
+			if pcall( Argument, arg ) then
 				-- Check ... args
 				if arg.IsList then
 					if i == #self then
@@ -6804,7 +6818,7 @@ do
 
 			return Super(self)
 		end
-	endclass "__Arguments__"
+	end)
 
 	-- Apply Attribute to the previous definitions, since I can't use them before definition
 	do
@@ -6900,7 +6914,7 @@ do
 	-- More usable attributes
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Delegate__"
+	class "__Delegate__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Delegate__" [[Wrap the method/event call in a delegate function]]
 
@@ -6943,11 +6957,11 @@ do
 			self.Delegate = value
 			return Super(self)
 		end
-	endclass "__Delegate__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Method + AttributeTargets.Interface, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Cache__"
+	class "__Cache__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Cache__" [[Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .]]
 
@@ -6962,7 +6976,7 @@ do
 				info.AutoCache[name] = true
 			end
 		end
-	endclass "__Cache__"
+	end)
 
 	-- Apply Attribute to Type class
 	do
@@ -6977,7 +6991,7 @@ do
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__StructType__"
+	class "__StructType__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__StructType__" [[Mark the struct's type, default 'Member']]
@@ -7028,11 +7042,11 @@ do
 
 			self.Type = StructType.Member
 		end
-	endclass "__StructType__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__NonExpandable__"
+	class "__NonExpandable__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__NonExpandable__" [[
 			<desc>Mark the class|interface can't receive functions as new methods like :</desc>
@@ -7043,11 +7057,11 @@ do
 		function ApplyAttribute(self, target, targetType)
 			if _NSInfo[target] then _NSInfo[target].NonExpandable = true end
 		end
-	endclass "__NonExpandable__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__InitTable__"
+	class "__InitTable__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__InitTable__" [[Used to mark the class can use init table like: obj = cls(name) { Age = 123 }]]
@@ -7064,11 +7078,11 @@ do
 				SaveFixedMethod(_NSInfo[target].MetaTable, "__call", __InitTable__["InitWithTable"], target)
 			end
 		end
-	endclass "__InitTable__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Require__"
+	class "__Require__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Require__" [[Whether the method or property of the interface is required to be override]]
@@ -7089,11 +7103,11 @@ do
 				end
 			end
 		end
-	endclass "__Require__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Optional__"
+	class "__Optional__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Optional__" [[Whether the method or property of the interface is optional to be override]]
@@ -7114,11 +7128,11 @@ do
 				end
 			end
 		end
-	endclass "__Optional__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Synthesize__"
+	class "__Synthesize__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Synthesize__" [[Used to generate property accessors automatically]]
@@ -7140,11 +7154,11 @@ do
 		function ApplyAttribute(self, target, targetType, owner, name)
 			target.Synthesize = self.NameCase
 		end
-	endclass "__Synthesize__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Event__"
+	class "__Event__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Event__" [[Used to bind an event to the property]]
@@ -7178,11 +7192,11 @@ do
 
 			return Super(self)
 		end
-	endclass "__Event__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Handler__"
+	class "__Handler__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Handler__" [[Used to bind an handler(method name or function) to the property]]
@@ -7217,11 +7231,11 @@ do
 
 			return Super(self)
 		end
-	endclass "__Handler__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property + AttributeTargets.Member, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Default__"
+	class "__Default__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Default__" [[Used to set a default value for custom struct or enum]]
@@ -7269,7 +7283,7 @@ do
 
 			return Super(self)
 		end
-	endclass "__Default__"
+	end)
 
 	__Default__( "Assign" )
 	__Flags__()
@@ -7292,7 +7306,7 @@ do
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Setter__"
+	class "__Setter__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Setter__" [[Used to set the assign mode of the property]]
@@ -7324,11 +7338,11 @@ do
 
 			return Super(self)
 		end
-	endclass "__Setter__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Getter__"
+	class "__Getter__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Getter__" [[Used to set the get mode of the property]]
@@ -7360,11 +7374,11 @@ do
 
 			return Super(self)
 		end
-	endclass "__Getter__"
+	end)
 
 	__AttributeUsage__{Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Doc__"
+	class "__Doc__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Doc__" [[Used to document the features like : class, struct, enum, interface, property, event and method]]
@@ -7402,11 +7416,11 @@ do
 
 			self.Doc = nil
 		end
-	endclass "__Doc__"
+	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Interface + AttributeTargets.Method, Inherited = false, RunOnce = true}
 	__Final__() __Unique__()
-	class "__Local__"
+	class "__Local__" (function(_ENV)
 		inherit "__Attribute__"
 
 		doc "__Local__" [[Used to mark the features like class, struct, interface, enum and method as local.]]
@@ -7420,17 +7434,17 @@ do
 		-- Constructor
 		------------------------------------------------------
 		function __Local__(self) SetLocal(true) return Super(self) end
-	endclass "__Local__"
+	end)
 
 	__Final__() __Unique__()
-	class "__Public__"
+	class "__Public__" (function(_ENV)
 		doc "__Public__" [[Used to mark the features as public.]]
 
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
 		__Public__ = SetPublic
-	endclass "__Public__"
+	end)
 end
 
 ------------------------------------------------------
@@ -7441,17 +7455,17 @@ do
 	-- System.ICloneable
 	------------------------------------------------------
 	__Doc__ [[Supports cloning, which creates a new instance of a class with the same value as an existing instance.]]
-	interface "ICloneable"
+	interface "ICloneable" (function(_ENV)
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
 		__Require__() __Doc__[[Creates a new object that is a copy of the current instance.]]
 		function Clone(self) end
-	endinterface "ICloneable"
+	end)
 
 	__Final__()
 	__Doc__[[The root class of other classes. Object class contains several methodes for common use.]]
-	class "Object"
+	class "Object" (function(_ENV)
 
 		------------------------------------------------------
 		-- Event
@@ -7534,45 +7548,15 @@ do
 
 			if type(method) == "function" then return CallThread(method, self, ...) end
 		end
-	endclass "Object"
+	end)
 
 	__Final__()
 	__Doc__[[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
-	class "Module"
+	class "Module" (function(_ENV)
 		inherit "Object"
 
 		_Module = {}
 		_ModuleInfo = setmetatable({}, WEAK_KEY)
-
-		_ModuleEnv = {}
-
-		_ModuleEnv.class = class
-		_ModuleEnv.enum = enum
-		_ModuleEnv.namespace = namespace
-		_ModuleEnv.struct = struct
-		_ModuleEnv.interface = interface
-		_ModuleEnv.import = function(name)
-			local ns = name
-
-			if type(name) == "string" then
-				ns = Reflector.GetNameSpaceForName(name)
-
-				if not ns then error(("no namespace is found with name : %s"):format(name), 2) end
-			end
-
-			if not Reflector.IsNameSpace(ns) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
-
-			local env = getfenv(2)
-			local info = _ModuleInfo[env]
-
-			if not info then error("can't use import here.", 2) end
-
-			info.Import = info.Import or {}
-
-			for _, v in ipairs(info.Import) do if v == ns then return end end
-
-			tinsert(info.Import, ns)
-		end
 
 		------------------------------------------------------
 		-- Event
@@ -7712,6 +7696,58 @@ do
 		__Doc__[[The module's version]]
 		property "_Version" { Get = function(self) return _ModuleInfo[self].Version end, }
 
+		------------------------
+		-- Special property to make sure leaving away env operation
+		------------------------
+		_ModuleKeyAccessor = newproxy(true)
+		getmetatable(_ModuleKeyAccessor).__call = function (self, value)
+			self = _ModuleKeyCache[running() or 0]
+			return _ModuleKeyCache[self.Keyword](self.Module, value)
+		end
+		getmetatable(_ModuleKeyAccessor).__metatable = false
+
+		_ModuleKeyCache = setmetatable({
+			namespace = namespace,
+			class = class,
+			interface = interface,
+			enum = enum,
+			struct = struct,
+			import = function (self, name)
+				local ns = name
+
+				if type(name) == "string" then
+					ns = Reflector.GetNameSpaceForName(name)
+					if not ns then error(("no namespace is found with name : %s"):format(name), 2) end
+				end
+
+				if not Reflector.IsNameSpace(ns) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
+
+				local info = _ModuleInfo[self]
+				if not info then error("can't use import here.", 2) end
+
+				info.Import = info.Import or {}
+
+				for _, v in ipairs(info.Import) do if v == ns then return end end
+
+				tinsert(info.Import, ns)
+			end,
+		}, {
+			__index = function (self, key) local ret = {} rawset(self, key, ret) return ret end,
+			__call = function (self, mdl, keyword)
+				local accessor = self[running() or 0]
+				accessor.Module, accessor.Keyword = mdl, keyword
+				return _ModuleKeyAccessor
+			end,
+			__mode = "k",
+		})
+
+		property "namespace" { Get = function(self) return _ModuleKeyCache(self, "namespace") end }
+		property "class" { Get = function(self) return _ModuleKeyCache(self, "class") end }
+		property "interface" { Get = function(self) return _ModuleKeyCache(self, "interface") end }
+		property "enum" { Get = function(self) return _ModuleKeyCache(self, "enum") end }
+		property "struct" { Get = function(self) return _ModuleKeyCache(self, "struct") end }
+		property "import" { Get = function(self) return _ModuleKeyCache(self, "import") end }
+
 		------------------------------------------------------
 		-- Dispose
 		------------------------------------------------------
@@ -7820,9 +7856,6 @@ do
 		end
 
 		function __index(self, key)
-			-- Check keywords
-			if _ModuleEnv[key] then return _ModuleEnv[key] end
-
 			-- Check self's namespace
 			local ns = Reflector.GetCurrentNameSpace(self, true)
 			local parent = _ModuleInfo[self].Parent
@@ -7880,15 +7913,7 @@ do
 			end
 		end
 
-		function __newindex(self, key, value)
-			if _ModuleEnv[key] then error(("%s is a keyword."):format(key), 2) end
-
-			rawset(self, key, value)
-		end
-
-		function __call(self, version, depth)
-			depth = type(depth) == "number" and depth > 0 and depth or 1
-
+		function __call(self, version)
 			local info = _ModuleInfo[self]
 
 			if not info then error("The module is disposed", 2) end
@@ -7902,7 +7927,11 @@ do
 				if version == "" then version = nil end
 			end
 
-			if type(version) == "string" then
+			if type(version) == "function" then
+				setfenv(version, self)
+				ClearPreparedAttributes()
+				return version(self)
+			elseif type(version) == "string" then
 				local number = version:match("^.-(%d+[%d%.]*).-$")
 
 				if number then
@@ -7965,9 +7994,11 @@ do
 				error("An available version is need for the module.", 2)
 			end
 
-			setfenv(depth + 1, self)
+			if not FAKE_SETFENV then setfenv(2, self) end
 
 			ClearPreparedAttributes()
+
+			return self
 		end
 
 		--[[
@@ -7978,7 +8009,7 @@ do
 				return tostring(Module) .. "( Anonymous ) "
 			end
 		end--]]
-	endclass "Module"
+	end)
 end
 
 ------------------------------------------------------
@@ -8022,4 +8053,5 @@ do
 	-- Install to the global environment
 	Install_OOP(_G)
 	Install_OOP = nil
+	collectgarbage()
 end
