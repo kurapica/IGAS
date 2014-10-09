@@ -7928,8 +7928,8 @@ do
 			end
 
 			if type(version) == "function" then
-				setfenv(version, self)
 				ClearPreparedAttributes()
+				if not FAKE_SETFENV then setfenv(version, self) return version() end
 				return version(self)
 			elseif type(version) == "string" then
 				local number = version:match("^.-(%d+[%d%.]*).-$")
