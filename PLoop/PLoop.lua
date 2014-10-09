@@ -7707,7 +7707,8 @@ do
 		_ModuleKeyAccessor = newproxy(true)
 		getmetatable(_ModuleKeyAccessor).__call = function (self, value)
 			self = _ModuleKeyCache[running() or 0]
-			return _ModuleKeyCache[self.Keyword](self.Module, value, 2)
+			local ret = _ModuleKeyCache[self.Keyword](self.Module, value, 2)
+			return ret
 		end
 		getmetatable(_ModuleKeyAccessor).__metatable = false
 
