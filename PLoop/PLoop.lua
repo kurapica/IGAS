@@ -1806,17 +1806,17 @@ do
 	function endinterface(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
-		if type(name) ~= "string" or name:find("%.") then error([[Usage: endinterface "interfacename"]], 2) end
+		if type(name) ~= "string" or name:find("%.") then error([[Usage: endinterface "interfacename"]], 3) end
 
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
 			setmetatable(env, _MetaIFEnv)
-			setfenv(2, env[BASE_ENV_FIELD])
+			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 			return env[BASE_ENV_FIELD]
 		else
-			error(("%s is not closed."):format(info.Name), 2)
+			error(("%s is not closed."):format(info.Name), 3)
 		end
 	end
 
@@ -2859,16 +2859,16 @@ do
 	function endclass(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
-		if type(name) ~= "string" or name:find("%.") then error([[Usage: endclass "classname"]], 2) end
+		if type(name) ~= "string" or name:find("%.") then error([[Usage: endclass "classname"]], 3) end
 
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
 			setmetatable(env, _MetaClsEnv)
-			setfenv(2, env[BASE_ENV_FIELD])
+			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
 		else
-			error(("%s is not closed."):format(info.Name), 2)
+			error(("%s is not closed."):format(info.Name), 3)
 		end
 
 		-- Validate the interface
@@ -2915,7 +2915,7 @@ do
 			CACHE_TABLE(cacheIF)
 			CACHE_TABLE(cache)
 
-			if ret then error(ret, 2) end
+			if ret then error(ret, 3) end
 		end
 
 		return env[BASE_ENV_FIELD]
@@ -3451,17 +3451,17 @@ do
 	function endstruct(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
-		if type(name) ~= "string" or name:find("%.") then error([[Usage: endstruct "structname"]], 2) end
+		if type(name) ~= "string" or name:find("%.") then error([[Usage: endstruct "structname"]], 3) end
 
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
 			setmetatable(env, _MetaStrtEnv)
-			setfenv(2, env[BASE_ENV_FIELD])
+			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshStruct(info.Owner)
 			return env[BASE_ENV_FIELD]
 		else
-			error(("%s is not closed."):format(info.Name), 2)
+			error(("%s is not closed."):format(info.Name), 3)
 		end
 	end
 
@@ -7873,7 +7873,8 @@ do
 			rawset(self, key, value)
 		end
 
-		function __call(self, version)
+		function __call(self, version, depth)
+			depth = tonumber(depth) or 1
 			local info = _ModuleInfo[self]
 
 			if not info then error("The module is disposed", 2) end
@@ -7889,7 +7890,7 @@ do
 
 			if type(version) == "function" then
 				ClearPreparedAttributes()
-				setfenv(version, self)
+				if not FAKE_SETFENV then setfenv(version, self) return version() end
 				return version(self)
 			elseif type(version) == "string" then
 				local number = version:match("^.-(%d+[%d%.]*).-$")
@@ -7954,7 +7955,7 @@ do
 				error("An available version is need for the module.", 2)
 			end
 
-			setfenv(2, self)
+			if not FAKE_SETFENV then setfenv(depth + 1, self) end
 
 			ClearPreparedAttributes()
 
