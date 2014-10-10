@@ -34,8 +34,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/10/09
--- Version			r107
+-- Last Update Date 2014/10/10
+-- Version			r108
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -52,9 +52,7 @@ do
 	-- Local Environment
 	if setfenv then setfenv(1, _PLoopEnv) else _ENV = _PLoopEnv end
 
-	WEAK_KEY = {__mode = "k"}
-	WEAK_VALUE = {__mode = "v"}
-	WEAK_ALL = {__mode = "kv"}
+	WEAK_KEY, WEAK_VALUE, WEAK_ALL = {__mode = "k"}, {__mode = "v"}, {__mode = "kv"}
 
 	-- Common features
 	strlen = string.len
@@ -107,10 +105,8 @@ do
 	end)()
 
 	FAKE_SETFENV = false
-
 	if setfenv and getfenv then
-		getfenv = getfenv
-		setfenv = setfenv
+		-- AUTO ADDED PASS
 	else
 		if not debug and require then require "debug" end
 		if debug and debug.getinfo and debug.getupvalue and debug.upvaluejoin and debug.getlocal then
@@ -156,7 +152,6 @@ do
 					end
 				end, __mode = "k",
 			})
-
 			FAKE_SETFENV = true
 			getfenv = function (lvl) return _FENV_Cache() end
 			setfenv = function (lvl, env) _FENV_Cache(env) end
@@ -429,40 +424,55 @@ do
 					if not checkEqual(obj1[name], obj2[name], cache) then return false end
 				end
 			end
-
 			return true
 		end
 
 		-- Check fields
-		for k, v in pairs(obj1) do
-			if not checkEqual(v, obj2[k], cache) then return false end
-		end
-
-		for k, v in pairs(obj2) do
-			if obj1[k] == nil then return false end
-		end
+		for k, v in pairs(obj1) do if not checkEqual(v, obj2[k], cache) then return false end end
+		for k, v in pairs(obj2) do if obj1[k] == nil then return false end end
 
 		return true
 	end
 
 	function IsEqual(obj1, obj2)
 		local cache = CACHE_TABLE()
-
 		local result = checkEqual(obj1, obj2, cache)
-
 		CACHE_TABLE(cache)
-
 		return result
 	end
 
-		-- Reduce cache table cost
-	local function keepArgsInner(...)
-		yield( running() )
-		return ...
-	end
+	-- Reduce cache table cost
+	local function keepArgsInner(...) yield( running() ) return ... end
+	function KeepArgs(...) return CallThread(keepArgsInner, ...) end
 
-	function KeepArgs(...)
-		return CallThread(keepArgsInner, ...)
+	-- Keyword access system
+	local _KeywordAccessorInfo = {
+		GetKeyword = function(self, owner, key)
+			if type(key) == "string" and key:match("^%l") and self[key] then
+				self.Owner, self.Keyword = owner, self[key]
+				return self.KeyAccessor
+			end
+		end,
+	}
+	local _KeyAccessor = newproxy(true)
+	getmetatable(_KeyAccessor).__call = function (self, value)
+		self = _KeywordAccessorInfo[self]
+		local keyword, owner = self.Keyword, self.Owner
+		self.Keyword, self.Owner = nil, nil
+		if keyword and owner then local ret = keyword(owner, value, 2) return ret end
+	end
+	getmetatable(_KeyAccessor).__metatable = false
+
+	function _KeywordAccessor(key, value)
+		if type(key) == "string" and type(value) == "function" then
+			-- Save keywords to all accessors
+			for _, info in pairs(_KeywordAccessorInfo) do if type(info) == "table" then info[key] = value end end
+		else
+			local keyAccessor = newproxy(_KeyAccessor)
+			local info = { GetKeyword = _KeywordAccessorInfo.GetKeyword, KeyAccessor = keyAccessor }
+			_KeywordAccessorInfo[keyAccessor] = info
+			return info
+		end
 	end
 end
 
@@ -938,9 +948,9 @@ do
 			end
 		end
 
-		function document(name)
+		function document(env, name)
 			_name = name
-			_owner = getfenv(2)[OWNER_FIELD]
+			_owner = env[OWNER_FIELD]
 
 			return parseDoc
 		end
@@ -951,7 +961,7 @@ end
 -- Interface
 ------------------------------------------------------
 do
-	_KeyWord4IFEnv = {}
+	_KeyWord4IFEnv = _KeywordAccessor()
 
 	do
 		Verb2Adj = {
@@ -1413,12 +1423,6 @@ do
 			-- Check owner
 			if key == info.Name then return info.Owner end
 
-			-- Check local
-			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
-
-			-- Check keywords
-			if _KeyWord4IFEnv[key] then return _KeyWord4IFEnv[key] end
-
 			-- Check namespace
 			if info.NameSpace then
 				if key == _NSInfo[info.NameSpace].Name then
@@ -1478,7 +1482,8 @@ do
 			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			-- Check keywords
-			if _KeyWord4IFEnv[key] then return _KeyWord4IFEnv[key] end
+			value = _KeyWord4IFEnv:GetKeyword(self, key)
+			if value then return value end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -1523,7 +1528,7 @@ do
 			local info = _NSInfo[self[OWNER_FIELD]]
 			local isPublic = IsPublic()
 
-			if _KeyWord4IFEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
+			if _KeyWord4IFEnv:GetKeyword(self, key) then error(("'%s' is a keyword."):format(key), 2) end
 
 			if key == info.Name then
 				-- No attribute for the initializer
@@ -1702,12 +1707,11 @@ do
 		tinsert(info.ExtendInterface, IF)
 	end
 
-	function extend_IF(name)
+	function extend_IF(env, name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: extend "namespace.interfacename"]], 2) end
 
 		if type(name) == "string" and name:find("%.%s*%.") then error("The namespace 's name can't have empty string between dots.", 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 		local IF
 
@@ -1735,12 +1739,11 @@ do
 	------------------------------------
 	--- import classes from the given name's namespace to the current environment
 	------------------------------------
-	function import_IF(name)
+	function import_IF(env, name)
 		if type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
 
 		if type(name) == "string" and name:find("%.%s*%.") then error("The namespace 's name can't have empty string between dots.", 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
@@ -1762,12 +1765,11 @@ do
 	------------------------------------
 	--- Add an event for current interface
 	------------------------------------
-	function event_IF(name)
+	function event_IF(env, name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then
 			error([[Usage: event "eventName"]], 2)
 		end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		info.Event[name] = info.Event[name] or Event(name)
@@ -1792,21 +1794,20 @@ do
 	------------------------------------
 	--- set a propert to the current interface
 	------------------------------------
-	function property_IF(name)
+	function property_IF(env, name)
 		if type(name) ~= "string" or strtrim(name:match("[_%w]+")) == "" then error([=[Usage: property "Name" { -- Property Definition }]=], 2) end
 
-		return function(set) return SetPropertyWithSet(_NSInfo[getfenv(2)[OWNER_FIELD]], name:match("[_%w]+"), set) end
+		return function(set) return SetPropertyWithSet(_NSInfo[env[OWNER_FIELD]], name:match("[_%w]+"), set) end
 	end
 
 	------------------------------------
 	--- End the interface's definition and restore the environment
 	------------------------------------
-	function endinterface(name)
+	function endinterface(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endinterface "interfacename"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
@@ -1819,12 +1820,11 @@ do
 		end
 	end
 
-	function require_IF(name)
+	function require_IF(env, name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: require "namespace.interfacename|classname"]], 2) end
 
 		if type(name) == "string" and name:find("%.%s*%.") then error("The namespace's name can't have empty string between dots.", 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 		local IF
 
@@ -1951,7 +1951,7 @@ do
 	_SuperIndex = "Super"
 	_ThisIndex = "This"
 
-	_KeyWord4ClsEnv = {}
+	_KeyWord4ClsEnv = _KeywordAccessor()
 
 	_KeyMeta = {
 		__add = true,		-- a + b
@@ -2044,9 +2044,6 @@ do
 			-- Check owner
 			if key == info.Name then return info.Owner end
 
-			-- Check local
-			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
-
 			if key == _SuperIndex then
 				if info.SuperClass then
 					local superInfo = _NSInfo[info.SuperClass]
@@ -2081,9 +2078,6 @@ do
 				rawset(self, _ThisIndex, value)
 				return value
 			end
-
-			-- Check keywords
-			if _KeyWord4ClsEnv[key] then return _KeyWord4ClsEnv[key] end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -2186,7 +2180,8 @@ do
 			end
 
 			-- Check keywords
-			if _KeyWord4ClsEnv[key] then return _KeyWord4ClsEnv[key] end
+			value = _KeyWord4ClsEnv:GetKeyword(self, key)
+			if value then return value end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -2238,7 +2233,7 @@ do
 			local info = _NSInfo[self[OWNER_FIELD]]
 			local isPublic = IsPublic()
 
-			if _KeyWord4ClsEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
+			if _KeyWord4ClsEnv:GetKeyword(self, key) then error(("'%s' is a keyword."):format(key), 2) end
 
 			if key == info.Name then
 				if type(value) == "function" then
@@ -2753,10 +2748,9 @@ do
 		return ATTRIBUTE_INSTALLED and InheritAttributes(superCls, info.Owner, AttributeTargets.Class)
 	end
 
-	function inherit_Cls(name)
+	function inherit_Cls(env, name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: inherit "namespace.classname"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		local superCls
@@ -2785,10 +2779,9 @@ do
 	------------------------------------
 	--- Set the current class' extended interface
 	------------------------------------
-	function extend_Cls(name)
+	function extend_Cls(env, name)
 		if name and type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: extend "namespace.interfacename"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		local IF
@@ -2815,10 +2808,9 @@ do
 	------------------------------------
 	--- import classes from the given name's namespace to the current environment
 	------------------------------------
-	function import_Cls(name)
+	function import_Cls(env, name)
 		if type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
@@ -2840,10 +2832,9 @@ do
 	------------------------------------
 	--- Add an event for current class
 	------------------------------------
-	function event_Cls(name)
+	function event_Cls(env, name)
 		if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: event "eventName"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if not info then error("can't use event here.", 2) end
@@ -2856,21 +2847,20 @@ do
 	------------------------------------
 	--- set a propert to the current class
 	------------------------------------
-	function property_Cls(name)
+	function property_Cls(env, name)
 		if type(name) ~= "string" or strtrim(name:match("[_%w]+")) == "" then error([=[Usage: property "Name" { -- Property Definition }]=], 2) end
 
-		return function(set) return SetPropertyWithSet(_NSInfo[getfenv(2)[OWNER_FIELD]], name:match("[_%w]+"), set) end
+		return function(set) return SetPropertyWithSet(_NSInfo[env[OWNER_FIELD]], name:match("[_%w]+"), set) end
 	end
 
 	------------------------------------
 	--- End the class's definition and restore the environment
 	------------------------------------
-	function endclass(name)
+	function endclass(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endclass "classname"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
@@ -3058,7 +3048,7 @@ end
 -- Struct
 ------------------------------------------------------
 do
-	_KeyWord4StrtEnv = {}
+	_KeyWord4StrtEnv = _KeywordAccessor()
 
 	_STRUCT_TYPE_MEMBER = "MEMBER"
 	_STRUCT_TYPE_ARRAY = "ARRAY"
@@ -3074,12 +3064,6 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
-
-			-- Check local
-			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
-
-			-- Check keywords
-			if _KeyWord4StrtEnv[key] then return _KeyWord4StrtEnv[key] end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -3139,7 +3123,8 @@ do
 			if key == LOCAL_ENV_FIELD then local ret = {} rawset(self, key, ret) return ret end
 
 			-- Check keywords
-			if _KeyWord4StrtEnv[key] then return _KeyWord4StrtEnv[key] end
+			value = _KeyWord4StrtEnv:GetKeyword(self, key)
+			if value then return value end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -3183,7 +3168,7 @@ do
 			local info = _NSInfo[self[OWNER_FIELD]]
 			local isPublic = IsPublic()
 
-			if _KeyWord4StrtEnv[key] then error(("'%s' is a keyword."):format(key), 2) end
+			if _KeyWord4StrtEnv:GetKeyword(self, key) then error(("'%s' is a keyword."):format(key), 2) end
 
 			if key == info.Name then
 				if type(value) == "function" then
@@ -3439,10 +3424,9 @@ do
 	------------------------------------
 	--- import classes from the given name's namespace to the current environment
 	------------------------------------
-	function import_STRT(name)
+	function import_STRT(env, name)
 		if type(name) ~= "string" and not IsNameSpace(name) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 		local ns
 
@@ -3464,12 +3448,11 @@ do
 	------------------------------------
 	--- End the class's definition and restore the environment
 	------------------------------------
-	function endstruct(name)
+	function endstruct(env, name)
 		if ATTRIBUTE_INSTALLED then ClearPreparedAttributes() end
 
 		if type(name) ~= "string" or name:find("%.") then error([[Usage: endstruct "structname"]], 2) end
 
-		local env = getfenv(2)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name then
@@ -3574,8 +3557,7 @@ do
 		end
 	end
 
-	function structtype(_type_)
-		local env = getfenv(2)
+	function structtype(env, _type_)
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		_type_ = strupper(_type_)
@@ -3599,7 +3581,7 @@ do
 
 	_KeyWord4StrtEnv.struct = struct
 	_KeyWord4StrtEnv.structtype = structtype
-	_KeyWord4StrtEnv.default = function (value) _NSInfo[getfenv(2)[OWNER_FIELD]].Default = value end
+	_KeyWord4StrtEnv.default = function (env, value) _NSInfo[env[OWNER_FIELD]].Default = value end
 	_KeyWord4StrtEnv.import = import_STRT
 	_KeyWord4StrtEnv.endstruct = endstruct
 end
@@ -3608,17 +3590,10 @@ end
 -- Definition Environment Update
 ------------------------------------------------------
 do
-	function Install_KeyWord(env)
-		env.interface = interface
-		env.class = class
-		env.enum = enum
-		env.struct = struct
-	end
-
-	Install_KeyWord(_KeyWord4IFEnv)
-	Install_KeyWord(_KeyWord4ClsEnv)
-	Install_KeyWord(_KeyWord4StrtEnv)
-	Install_KeyWord = nil
+	_KeywordAccessor("interface", interface)
+	_KeywordAccessor("class", class)
+	_KeywordAccessor("enum", enum)
+	_KeywordAccessor("struct", struct)
 end
 
 ------------------------------------------------------
@@ -7555,6 +7530,14 @@ do
 		end
 	end)
 
+	_ModuleKeyWord = _KeywordAccessor()
+
+	_ModuleKeyWord.namespace = namespace
+	_ModuleKeyWord.class = class
+	_ModuleKeyWord.interface = interface
+	_ModuleKeyWord.enum = enum
+	_ModuleKeyWord.struct = struct
+
 	__Final__()
 	__Doc__[[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
 	class "Module" (function(_ENV)
@@ -7562,6 +7545,26 @@ do
 
 		_Module = {}
 		_ModuleInfo = setmetatable({}, WEAK_KEY)
+
+		_ModuleKeyWord.import = function(self, name)
+			local ns = name
+
+			if type(name) == "string" then
+				ns = Reflector.GetNameSpaceForName(name)
+				if not ns then error(("no namespace is found with name : %s"):format(name), 2) end
+			end
+
+			if not Reflector.IsNameSpace(ns) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
+
+			local info = _ModuleInfo[self]
+			if not info then error("can't use import here.", 2) end
+
+			info.Import = info.Import or {}
+
+			for _, v in ipairs(info.Import) do if v == ns then return end end
+
+			tinsert(info.Import, ns)
+		end
 
 		------------------------------------------------------
 		-- Event
@@ -7701,59 +7704,6 @@ do
 		__Doc__[[The module's version]]
 		property "_Version" { Get = function(self) return _ModuleInfo[self].Version end, }
 
-		------------------------
-		-- Special property to make sure leaving away env operation
-		------------------------
-		_ModuleKeyAccessor = newproxy(true)
-		getmetatable(_ModuleKeyAccessor).__call = function (self, value)
-			self = _ModuleKeyCache[running() or 0]
-			local ret = _ModuleKeyCache[self.Keyword](self.Module, value, 2)
-			return ret
-		end
-		getmetatable(_ModuleKeyAccessor).__metatable = false
-
-		_ModuleKeyCache = setmetatable({
-			namespace = namespace,
-			class = class,
-			interface = interface,
-			enum = enum,
-			struct = struct,
-			import = function (self, name)
-				local ns = name
-
-				if type(name) == "string" then
-					ns = Reflector.GetNameSpaceForName(name)
-					if not ns then error(("no namespace is found with name : %s"):format(name), 2) end
-				end
-
-				if not Reflector.IsNameSpace(ns) then error([[Usage: import "namespaceA.namespaceB"]], 2) end
-
-				local info = _ModuleInfo[self]
-				if not info then error("can't use import here.", 2) end
-
-				info.Import = info.Import or {}
-
-				for _, v in ipairs(info.Import) do if v == ns then return end end
-
-				tinsert(info.Import, ns)
-			end,
-		}, {
-			__index = function (self, key) local ret = {} rawset(self, key, ret) return ret end,
-			__call = function (self, mdl, keyword)
-				local accessor = self[running() or 0]
-				accessor.Module, accessor.Keyword = mdl, keyword
-				return _ModuleKeyAccessor
-			end,
-			__mode = "k",
-		})
-
-		property "namespace" { Get = function(self) return _ModuleKeyCache(self, "namespace") end }
-		property "class" { Get = function(self) return _ModuleKeyCache(self, "class") end }
-		property "interface" { Get = function(self) return _ModuleKeyCache(self, "interface") end }
-		property "enum" { Get = function(self) return _ModuleKeyCache(self, "enum") end }
-		property "struct" { Get = function(self) return _ModuleKeyCache(self, "struct") end }
-		property "import" { Get = function(self) return _ModuleKeyCache(self, "import") end }
-
 		------------------------------------------------------
 		-- Dispose
 		------------------------------------------------------
@@ -7862,6 +7812,10 @@ do
 		end
 
 		function __index(self, key)
+			-- Check keywords
+			local value = _ModuleKeyWord:GetKeyword(self, key)
+			if value then return value end
+
 			-- Check self's namespace
 			local ns = Reflector.GetCurrentNameSpace(self, true)
 			local parent = _ModuleInfo[self].Parent
@@ -7903,20 +7857,20 @@ do
 			end
 
 			if info.Parent then
-				local value = info.Parent[key]
-
+				value = info.Parent[key]
 				if value ~= nil then rawset(self, key, value) end
-
 				return value
 			else
 				if key ~= "_G" and type(key) == "string" and key:find("^_") then return end
-
-				local value = _G[key]
-
+				value = _G[key]
 				if value ~= nil then rawset(self, key, value) end
-
 				return value
 			end
+		end
+
+		function __newindex(self, key, value)
+			if _ModuleKeyWord:GetKeyword(self, key) then error(("The %s is a keyword."):format(key)) end
+			rawset(self, key, value)
 		end
 
 		function __call(self, version)
@@ -7935,7 +7889,7 @@ do
 
 			if type(version) == "function" then
 				ClearPreparedAttributes()
-				if not FAKE_SETFENV then setfenv(version, self) return version() end
+				setfenv(version, self)
 				return version(self)
 			elseif type(version) == "string" then
 				local number = version:match("^.-(%d+[%d%.]*).-$")
@@ -8000,21 +7954,12 @@ do
 				error("An available version is need for the module.", 2)
 			end
 
-			if not FAKE_SETFENV then setfenv(2, self) end
+			setfenv(2, self)
 
 			ClearPreparedAttributes()
 
 			return self
 		end
-
-		--[[
-		function __tostring(self)
-			if _ModuleInfo[self].Name then
-				return tostring(Module) .. "( " .. _ModuleInfo[self].Name .. " ) " .. (_ModuleInfo[self].Version or "")
-			else
-				return tostring(Module) .. "( Anonymous ) "
-			end
-		end--]]
 	end)
 end
 
@@ -8029,6 +7974,8 @@ do
 	_KeyWord4ClsEnv.doc = nil
 	_KeyWord4StrtEnv.structtype = nil
 	_KeyWord4StrtEnv.default = nil
+
+	if FAKE_SETFENV then setfenv() end
 
 	-- Keep the root so can't be disposed
 	System = Reflector.GetNameSpaceForName("System")

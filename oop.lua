@@ -7,7 +7,7 @@ local function Load(...)
 	local f, err = loadfile(IGAS_PATH .. table.concat({...}, DIR_SEPT))
 
 	if not f then
-		error(err)
+		return print(err)
 	end
 
 	f()
