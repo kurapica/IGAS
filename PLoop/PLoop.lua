@@ -1733,7 +1733,7 @@ do
 
 		extend_Inner(info, IF)
 
-		return extend_IF
+		return _KeyWord4IFEnv:GetKeyword(env, "extend")
 	end
 
 	------------------------------------
@@ -2802,7 +2802,7 @@ do
 
 		extend_Inner(info, IF)
 
-		return extend_Cls
+		return _KeyWord4ClsEnv:GetKeyword(env, "extend")
 	end
 
 	------------------------------------
