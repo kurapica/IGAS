@@ -12,7 +12,7 @@
 --              2013/10/18 Fix the arrow key disabled
 
 -- Check Version
-local version = 23
+local version = 24
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -241,7 +241,7 @@ class "MultiLineTextBox"
 	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
 	_List.FrameStrata = "TOOLTIP"
 	_List.DisplayItemCount = 5
-	_List.Width = 150
+	_List.Width = 250
 	_List.Visible = false
 
 	_AutoCacheKeys = {}
@@ -256,6 +256,8 @@ class "MultiLineTextBox"
 	_List.Items = _AutoCacheItems
 
 	_BackAutoCache = {}
+
+	_CommonAutoCompleteList = {}
 
 	------------------------------------------------------
 	-- Short Key Block
@@ -1048,7 +1050,7 @@ class "MultiLineTextBox"
 		_List.Visible = false
 		_List:Clear()
 
-		if next(self.AutoCompleteList) then
+		if _CommonAutoCompleteList[1] or self.AutoCompleteList[1] then
 			-- Handle the auto complete
 			local startp, endp, word = GetWord(self.__Text.Text, self.CursorPosition, true)
 
@@ -1059,7 +1061,6 @@ class "MultiLineTextBox"
 			wipe(_AutoWordMap)
 			wipe(_AutoWordWeightCache)
 
-
 			if word and word:match("^[%w_]+$") then
 				_AutoCheckKey = word
 
@@ -1067,31 +1068,52 @@ class "MultiLineTextBox"
 
 				-- Match the auto complete list
 				local uword = "^" .. word:gsub("[%w_]", TransMatchWord) .. "$"
-				local lst = self.AutoCompleteList
 				local header = word:sub(1, 1)
 
 				if not header or #header == 0 then return end
 
+				local lst = self.AutoCompleteList
 				local sIdx = GetIndex(lst, header)
 
 				if sIdx == 0 then sIdx = 1 end
 
 				for i = sIdx, #lst do
-					if #(lst[i]) == 0 or Compare(header, lst[i]:sub(1, 1)) then break end
+					local value = lst[i]
+					if #value == 0 or Compare(header, value:sub(1, 1)) then break end
 
-					_AutoCheckWord = lst[i]
+					_AutoCheckWord = value
 
 					if _AutoCheckWord:match(uword) then
 						_AutoCheckWord:gsub(uword, ApplyColor)
 
 						tinsert(_AutoCacheKeys, _AutoCheckWord)
 					end
+				end
 
-					Array.Sort(_AutoCacheKeys, CompareWeight)
+				lst = _CommonAutoCompleteList
+				sIdx = GetIndex(lst, header)
 
-					for i, v in ipairs(_AutoCacheKeys) do
-						_AutoCacheItems[i] = _AutoWordMap[v]
+				if sIdx == 0 then sIdx = 1 end
+
+				for i = sIdx, #lst do
+					local value = lst[i]
+					if not _AutoWordMap[value] then
+						if #value == 0 or Compare(header, value:sub(1, 1)) then break end
+
+						_AutoCheckWord = value
+
+						if _AutoCheckWord:match(uword) then
+							_AutoCheckWord:gsub(uword, ApplyColor)
+
+							tinsert(_AutoCacheKeys, _AutoCheckWord)
+						end
 					end
+				end
+
+				Array.Sort(_AutoCacheKeys, CompareWeight)
+
+				for i, v in ipairs(_AutoCacheKeys) do
+					_AutoCacheItems[i] = _AutoWordMap[v]
 				end
 
 				if #_AutoCacheKeys == 1 and _AutoCacheKeys[1] == _AutoCheckKey then
@@ -2495,6 +2517,35 @@ class "MultiLineTextBox"
 		end
 	end
 
+	__Doc__[[
+		<desc>Append common auto complete list for all MultiLineTextBox</desc>
+		<param name="list" type="table">The common auto complete list</param>
+	]]
+	__Delegate__( Task.ThreadCall )
+	function _AppendCommonAutoCompleteList(list)
+		assert(type(list) == "table")
+		local lst = _CommonAutoCompleteList
+		local i = 0
+
+		for key, word in pairs(list) do
+			i = i + 1
+			-- Reduce cost
+			if i % 10 == 0 then Task.Continue() end
+			if type(word) ~= "string" then word = key end
+
+			if type(word) == "string" and strtrim(word) ~= "" then
+				word = strtrim(word)
+				word = RemoveColor(word)
+
+				local idx = GetIndex(lst, word)
+
+				if lst[idx] == word then return end
+
+				tinsert(lst, idx + 1, word)
+			end
+		end
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -2512,11 +2563,7 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[the Font object]]
-	property "FontObject" {
-		Get = "GetFontObject",
-		Set = "SetFontObject",
-		Type = Font + String + nil,
-	}
+	property "FontObject" { Type = Font + String + nil }
 
 	__Doc__[[the color of the font's text shadow]]
 	property "ShadowColor" {
@@ -2541,11 +2588,7 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[the fontstring's amount of spacing between lines]]
-	property "Spacing" {
-		Get = "GetSpacing",
-		Set = "SetSpacing",
-		Type = Number,
-	}
+	property "Spacing" { Type = Number }
 
 	__Doc__[[the fontstring's default text color]]
 	property "TextColor" {
@@ -2559,32 +2602,16 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[true if the edit box only accepts numeric input]]
-	property "Numeric" {
-		Set = "SetNumeric",
-		Get = "IsNumeric",
-		Type = Boolean,
-	}
+	property "Numeric" { Type = Boolean }
 
 	__Doc__[[true if the text entered in the edit box is masked]]
-	property "Password" {
-		Set = "SetPassword",
-		Get = "IsPassword",
-		Type = Boolean,
-	}
+	property "Password" { Type = Boolean }
 
 	__Doc__[[true if the edit box automatically acquires keyboard input focus]]
-	property "AutoFocus" {
-		Set = "SetAutoFocus",
-		Get = "IsAutoFocus",
-		Type = Boolean,
-	}
+	property "AutoFocus" { Type = Boolean }
 
 	__Doc__[[the maximum number of history lines stored by the edit box]]
-	property "HistoryLines" {
-		Set = "HistoryLines",
-		Get = "GetHistoryLines",
-		Type = Number,
-	}
+	property "HistoryLines" { Type = Number }
 
 	__Doc__[[true if the edit box is currently focused]]
 	property "Focused" {
@@ -2600,53 +2627,25 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[true if the arrow keys are ignored by the edit box unless the Alt key is held]]
-	property "AltArrowKeyMode" {
-		Set = "SetAltArrowKeyMode",
-		Get = "GetAltArrowKeyMode",
-		Type = Boolean,
-	}
+	property "AltArrowKeyMode" { Type = Boolean }
 
 	__Doc__[[the rate at which the text insertion blinks when the edit box is focused]]
-	property "BlinkSpeed" {
-		Set = "SetBlinkSpeed",
-		Get = "GetBlinkSpeed",
-		Type = Number,
-	}
+	property "BlinkSpeed" { Type = Number }
 
 	__Doc__[[the current cursor position inside edit box]]
-	property "CursorPosition" {
-		Set = "SetCursorPosition",
-		Get = "GetCursorPosition",
-		Type = Number,
-	}
+	property "CursorPosition" { Type = Number }
 
 	__Doc__[[the maximum number of bytes of text allowed in the edit box, default is 0(Infinite)]]
-	property "MaxBytes" {
-		Set = "SetMaxBytes",
-		Get = "GetMaxBytes",
-		Type = Number,
-	}
+	property "MaxBytes" { Type = Number }
 
 	__Doc__[[the maximum number of text characters allowed in the edit box]]
-	property "MaxLetters" {
-		Set = "SetMaxLetters",
-		Get = "GetMaxLetters",
-		Type = Number,
-	}
+	property "MaxLetters" { Type = Number }
 
 	__Doc__[[the contents of the edit box as a number]]
-	property "Number" {
-		Set = "SetNumber",
-		Get = "GetNumber",
-		Type = Number,
-	}
+	property "Number" { Type = Number }
 
 	__Doc__[[the edit box's text contents]]
-	property "Text" {
-		Set = "SetText",
-		Get = "GetText",
-		Type = String,
-	}
+	property "Text" { Type = String }
 
 	__Doc__[[the insets from the edit box's edges which determine its interactive text area]]
 	property "TextInsets" {
@@ -2698,23 +2697,11 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[The tab's width]]
-	property "TabWidth" {
-		Get = "GetTabWidth",
-		Set = "SetTabWidth",
-		Type = Number + nil,
-	}
+	property "TabWidth" { Type = Number + nil }
 
 	__Doc__[[The auto complete list like {"if", "then", "else"}]]
-	property "AutoCompleteList" {
-		Get = function(self)
-			self.__AutoCompleteList = self.__AutoCompleteList or {}
-			return self.__AutoCompleteList
-		end,
-		Set = function(self, value)
-			self.__AutoCompleteList = type(value) == "table" and value or {}
-		end,
-		Type = System.Table,
-	}
+	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
+	property "AutoCompleteList" { Type = System.Table }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -3686,6 +3673,8 @@ class "MultiLineTextBox"
 		texture.BlendMode = "ADD"
 
 		margin.FrameStrata = "FULLSCREEN"
+
+		self.AutoCompleteList = {}
 
 		self.__LineNum = lineNum
         self.__Text = editbox
