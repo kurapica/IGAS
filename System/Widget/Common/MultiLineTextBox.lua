@@ -341,8 +341,7 @@ class "MultiLineTextBox"
 				elseif byte == _Byte.r then
 					pos = pos + 1
 				else
-					pos = pos - 1
-					break
+					ret = ret .. strchar(_Byte.VERTICAL)
 				end
 
 				byte = strbyte(str, pos)
@@ -479,10 +478,10 @@ class "MultiLineTextBox"
 	end
 
 	local function Ajust4Font(self)
-		self.__LineNum:SetFontObject(self.__Text:GetFontObject())
+		self.__LineNum:SetFont(self.__Text:GetFont())
 		self.__LineNum:SetSpacing(self.__Text:GetSpacing())
 
-		_TestFontString:SetFontObject(self.__Text:GetFontObject())
+		_TestFontString:SetFont(self.__Text:GetFont())
 		_TestFontString.Text = "XXXX"
 
 		self.__LineNum.Width = _TestFontString:GetStringWidth() + 8
@@ -491,25 +490,13 @@ class "MultiLineTextBox"
 		local inset = self.__Text.TextInsets
 
 		if self.__LineNum.Visible then
-			if inset.left < self.__LineNum.Width then
-				inset.left = self.__LineNum.Width + inset.left
-			end
-
-			if inset.left < self.__LineNum.Width + 5 then
-				inset.left = self.__LineNum.Width + 5
-			end
+			inset.left = self.__LineNum.Width + 5
 
 			self.__Text.TextInsets = inset
 
 			self.__LineNum:SetPoint("TOP", self.__Text, "TOP", 0, - (inset.top))
 		else
-			if inset.left > self.__LineNum.Width then
-				inset.left = inset.left - self.__LineNum.Width
-			end
-
-			if inset.left < 5 then
-				inset.left = 5
-			end
+			inset.left = 5
 
 			self.__Text.TextInsets = inset
 
@@ -3001,7 +2988,13 @@ class "MultiLineTextBox"
 	end
 
     local function OnEnterPressed(self, ...)
-		self:Insert("\n")	-- Added for 3.3
+    	if not IsControlKeyDown() then
+			self:Insert("\n")
+		else
+			local _, endp = GetLines(self.Text, self.CursorPosition)
+			AdjustCursorPosition(self.__Container, endp)
+			self:Insert("\n")
+		end
 
 		self = self.__Container
 

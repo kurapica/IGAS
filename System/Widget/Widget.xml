@@ -13,7 +13,7 @@
 	<Script file="Base\Rotation.lua"/>
 	<Script file="Base\Scale.lua"/>
 	<Script file="Base\Alpha.lua"/>
-	<Script file="Base\Path.lua"/>
+	<!-- Script file="Base\Path.lua"/ -->
 
 	<!-- Interface -->
 	<Script file="Interface\IFFont.lua"/>

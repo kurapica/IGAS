@@ -65,13 +65,13 @@ class "ColorPicker"
 	local function Slider_OnValueChanged(self)
 		self.Text.Text = format("%.2f", 1 - self.Value)
 		if self.Visible and self.Enabled then
-			return self.Parent:Fire("OnColorPicked", self.Parent:GetColor())
+			return self.Parent:Fire("OnColorPicking", self.Parent:GetColor())
 		end
 	end
 
 	local function OnColorSelect(self)
 		self.ColorSwatch:SetTexture(self:GetColorRGB())
-		return self:Fire("OnColorPicked", self:GetColor())
+		return self:Fire("OnColorPicking", self:GetColor())
 	end
 
 	local function Okay_OnClick(self)
@@ -90,13 +90,22 @@ class "ColorPicker"
 	-- Event
 	------------------------------------------------------
 	__Doc__[[
-		<desc>Run when the color is selected</desc>
+		<desc>Run when the color is picked</desc>
 		<param name="r">number, [0-1] the red parent</param>
 		<param name="g">number, [0-1] the green parent</param>
 		<param name="b">number, [0-1] the blue parent</param>
 		<param name="a">number, [0-1] the alpha parent</param>
 	]]
 	event "OnColorPicked"
+
+	__Doc__[[
+		<desc>Run when the color is picking</desc>
+		<param name="r">number, [0-1] the red parent</param>
+		<param name="g">number, [0-1] the green parent</param>
+		<param name="b">number, [0-1] the blue parent</param>
+		<param name="a">number, [0-1] the alpha parent</param>
+	]]
+	event "OnColorPicking"
 
 	------------------------------------------------------
 	-- Method

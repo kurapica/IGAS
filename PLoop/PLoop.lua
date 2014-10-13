@@ -1575,7 +1575,7 @@ do
 			RefreshCache(owner)
 
 			local info = _NSInfo[owner]
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 
 			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
@@ -1829,7 +1829,7 @@ do
 			setmetatable(env, _MetaIFEnv)
 			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 			return env[BASE_ENV_FIELD]
 		else
 			error(("%s is not closed."):format(info.Name), 3)
@@ -2306,7 +2306,7 @@ do
 			setmetatable(self, _MetaClsEnv)
 			RefreshCache(owner)
 			local info = _NSInfo[owner]
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 
 			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
@@ -2896,7 +2896,7 @@ do
 			setmetatable(env, _MetaClsEnv)
 			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 		else
 			error(("%s is not closed."):format(info.Name), 3)
 		end
@@ -3258,7 +3258,7 @@ do
 			setfenv(2, self[BASE_ENV_FIELD])
 			RefreshStruct(owner)
 			local info = _NSInfo[owner]
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 
 			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
@@ -3518,7 +3518,7 @@ do
 			setmetatable(env, _MetaStrtEnv)
 			setfenv(3, env[BASE_ENV_FIELD])
 			RefreshStruct(info.Owner)
-			if info.ApplyAttributes then resume(info.ApplyAttributes) end
+			if info.ApplyAttributes then info.ApplyAttributes() end
 			return env[BASE_ENV_FIELD]
 		else
 			error(("%s is not closed."):format(info.Name), 3)
@@ -5956,7 +5956,7 @@ do
 			return true
 		end
 
-		function ApplyAttributes(target, targetType, owner, name, start, config, halt)
+		function ApplyAttributes(target, targetType, owner, name, start, config, halt, atLast)
 			-- Check config
 			config = config or GetTargetAttributes(target, targetType, owner, name)
 
@@ -5967,6 +5967,7 @@ do
 			if config then
 				local oldTarget = target
 				local ok, ret, arg1, arg2, arg3, arg4
+				local hasAfter = false
 
 				-- Some target can't be send to the attribute's ApplyAttribute directly
 				if targetType == AttributeTargets.Event then
@@ -5997,21 +5998,55 @@ do
 					arg2 = targetType
 				end
 
-				for time = 1, halt and 2 or 1 do
-					if getmetatable(config) then
-						local usage = GetAttributeUsage(getmetatable(config))
-						if not halt or time == 2 or (usage and usage.BeforeDefinition) then
-							ok, ret = pcall(config.ApplyAttribute, config, arg1, arg2, arg3, arg4)
+				if getmetatable(config) then
+					local usage = GetAttributeUsage(getmetatable(config))
+					if not halt or atLast or (usage and usage.BeforeDefinition) then
+						ok, ret = pcall(config.ApplyAttribute, config, arg1, arg2, arg3, arg4)
 
-							if not ok then
-								errorhandler(ret)
+						if not ok then
+							errorhandler(ret)
 
+							config:Dispose()
+							config = nil
+						else
+							if usage and not usage.Inherited and usage.RunOnce then
 								config:Dispose()
 								config = nil
+							end
+
+							if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
+								-- The method may be wrapped in the apply operation
+								if ret and ret ~= target and (type(ret) == "function" or getmetatable(ret) == FixedMethod) then
+									if getmetatable(target) then
+										if getmetatable(ret) then
+											target = ret
+										else
+											target.Method = ret
+										end
+									else
+										target = ret
+									end
+								end
+							end
+						end
+					else
+						hasAfter = true
+					end
+				else
+					start = start or 1
+
+					for i = #config, start, -1 do
+						local usage = GetAttributeUsage(getmetatable(config[i]))
+
+						if not halt or (not atLast and usage and usage.BeforeDefinition) or (atLast and (not usage or not usage.BeforeDefinition)) then
+							ok, ret = pcall(config[i].ApplyAttribute, config[i], arg1, arg2, arg3, arg4)
+
+							if not ok then
+								tremove(config, i):Dispose()
+								errorhandler(ret)
 							else
 								if usage and not usage.Inherited and usage.RunOnce then
-									config:Dispose()
-									config = nil
+									tremove(config, i):Dispose()
 								end
 
 								if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
@@ -6020,6 +6055,7 @@ do
 										if getmetatable(target) then
 											if getmetatable(ret) then
 												target = ret
+												arg1 = target.Method
 											else
 												target.Method = ret
 											end
@@ -6029,58 +6065,26 @@ do
 									end
 								end
 							end
-							break
-						end
-					else
-						start = start or 1
-
-						for i = #config, start, -1 do
-							local usage = GetAttributeUsage(getmetatable(config[i]))
-
-							if not halt or (time == 1 and usage and usage.BeforeDefinition) or (time == 2 and (not usage or not usage.BeforeDefinition)) then
-								ok, ret = pcall(config[i].ApplyAttribute, config[i], arg1, arg2, arg3, arg4)
-
-								if not ok then
-									tremove(config, i):Dispose()
-									errorhandler(ret)
-								else
-									if usage and not usage.Inherited and usage.RunOnce then
-										tremove(config, i):Dispose()
-									end
-
-									if targetType == AttributeTargets.Method or targetType == AttributeTargets.Constructor then
-										-- The method may be wrapped in the apply operation
-										if ret and ret ~= target and (type(ret) == "function" or getmetatable(ret) == FixedMethod) then
-											if getmetatable(target) then
-												if getmetatable(ret) then
-													target = ret
-													arg1 = target.Method
-												else
-													target.Method = ret
-												end
-											else
-												target = ret
-											end
-										end
-									end
-								end
-							end
+						else
+							hasAfter = true
 						end
 					end
 
-					local thread = running()
-					if halt and time == 1 and thread then
-						_NSInfo[target].ApplyAttributes = thread
-						yield()
-					end
+					if #config == 0 or #config == 1 then config = config[1] or nil end
 				end
 
-				if config and not getmetatable(config) and (#config == 0 or #config == 1) then config = config[1] or nil end
+				if halt then
+					if atLast then
+						_NSInfo[target].ApplyAttributes = nil
+					elseif hasAfter then
+						_NSInfo[target].ApplyAttributes = function()
+							return ApplyAttributes(target, targetType, owner, name, start, config, true, true)
+						end
+					end
+				end
 			end
 
 			SaveTargetAttributes(target, targetType, owner, name, config)
-
-			if halt then _NSInfo[target].ApplyAttributes = nil end
 
 			return target
 		end
@@ -6229,7 +6233,7 @@ do
 				wipe(prepared)
 
 				if targetType == AttributeTargets.Interface or targetType == AttributeTargets.Struct or targetType == AttributeTargets.Class then
-					CallThread(ApplyAttributes, target, targetType, owner, name, start, config, true)
+					ApplyAttributes(target, targetType, owner, name, start, config, true)
 				else
 					target = ApplyAttributes(target, targetType, owner, name, start, config) or target
 				end

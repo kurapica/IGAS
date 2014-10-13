@@ -1068,7 +1068,7 @@ class "CodeEditor"
 				chkLength = chkLength + nextPos - pos
 
 				if chkLength >= cursorPos then
-					if content[#content]:len() > 0 and strbyte(content[#content], 1) == _Byte.VERTICAL then
+					if content[#content]:len() > 0 and strbyte(content[#content], 1) == _Byte.VERTICAL and strbyte(content[#content], 2) ~= _Byte.VERTICAL then
 						if chkLength == cursorPos then
 							newCurPos = newCurPos + newPos + 12
 						else
@@ -1793,7 +1793,7 @@ class "CodeEditor"
 	end
 
 	local function RefreshText(self)
-		self:SetText(self.FullText)
+		self:SetText(self.Text)
 	end
 
 	------------------------------------------------------

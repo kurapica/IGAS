@@ -46,6 +46,13 @@ class "DropDownList"
 		end
 	end
 
+	function _DropDownColorPicker:OnColorPicking(red, green, blue, alpha)
+		if self._DropDownButton then
+			self._DropDownButton.ColorSwatch.NormalTexture:SetVertexColor(red, green, blue, alpha)
+			self._DropDownButton:Fire("OnColorPicking", red, green, blue, alpha)
+		end
+	end
+
 	function _DropDownColorPicker:OnShow()
 		if self._DropDownButton then
 			self.Color = self._DropDownButton.Color
@@ -251,6 +258,15 @@ class "DropDownList"
 			<param name="a">number, [0-1], the alpha part of the color</param>
 		]]
 		event "OnColorPicked"
+
+		__Doc__[[
+			<desc>Run when the color is picking</desc>
+			<param name="r">number, [0-1] the red parent</param>
+			<param name="g">number, [0-1] the green parent</param>
+			<param name="b">number, [0-1] the blue parent</param>
+			<param name="a">number, [0-1] the alpha parent</param>
+		]]
+		event "OnColorPicking"
 
 		------------------------------------------------------
 		-- Method
