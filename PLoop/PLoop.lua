@@ -34,8 +34,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica.igas@gmail.com
 -- Create Date		2011/02/01
--- Last Update Date 2014/10/13
--- Version			r108
+-- Last Update Date 2014/10/14
+-- Version			r110
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -570,9 +570,11 @@ do
 			local info = _NSInfo[self]
 
 			if info.Type == TYPE_STRUCT and type(key) == "string" and type(value) == "function" then
-				info.Method = info.Method or {}
-
-				if not info.Method[key] then
+				if key == info.Name and not info.Validator then
+					info.Validator = value
+					return
+				elseif not info.Method or not info.Method[key] then
+					info.Method = info.Method or {}
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
 				else
 					error("Can't override the existed feature.", 2)
@@ -1613,6 +1615,7 @@ do
 			end
 
 			name = info.Name
+			ns = nil
 		else
 			if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: interface "interfacename"]], depth + 1) end
 
@@ -1893,6 +1896,12 @@ do
 					end
 				elseif type(v) == "string" and not tonumber(v) then
 					info.Event[v] = info.Event[v] or Event(v)
+				elseif type(v) == "function" then
+					if info.Type == TYPE_CLASS then
+						SaveFixedMethod(info, "Constructor", v, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
+					elseif info.Type == TYPE_INTERFACE then
+						info.Initializer = v
+					end
 				end
 			end
 
@@ -1900,11 +1909,9 @@ do
 				if type(k) == "string" and not tonumber(k) then
 					local vType = getmetatable(v)
 
-					if vType then
+					if vType and type(v) ~= "string" then
 						if vType == TYPE_NAMESPACE or vType == Type then
 							SetPropertyWithSet(info, k, { Type = v })
-						else
-							error("PLoop encounter unknow settings.", 2)
 						end
 					elseif type(v) == "table" then
 						SetPropertyWithSet(info, k, v)
@@ -2687,6 +2694,7 @@ do
 			end
 
 			name = info.Name
+			ns = nil
 		else
 			if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: class "classname"]], depth + 1) end
 
@@ -3026,7 +3034,6 @@ do
 		depth = tonumber(depth) or 1
 		name = name or env
 
-
 		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
 		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
 
@@ -3040,6 +3047,9 @@ do
 			if info and info.Type and info.Type ~= TYPE_ENUM then
 				error(("%s is existed as %s, not enumeration."):format(name, tostring(info.Type)), depth + 1)
 			end
+
+			name = info.Name
+			ns = nil
 		else
 			if type(name) ~= "string" or not name:match("^[_%w]+$") then
 				error([[Usage: enum "enumName" {
@@ -3414,6 +3424,9 @@ do
 			if info and info.Type and info.Type ~= TYPE_STRUCT then
 				error(("%s is existed as %s, not struct."):format(name, tostring(info.Type)), depth + 1)
 			end
+
+			name = info.Name
+			ns = nil
 		else
 			if type(name) ~= "string" or not name:match("^[_%w]+$") then error([[Usage: struct "structname"]], depth + 1) end
 			if ns then
@@ -3556,6 +3569,12 @@ do
 
 	function RefreshStruct(strt)
 		local info = _NSInfo[strt]
+
+		if info.SubType == _STRUCT_TYPE_MEMBER and (not info.Members or #(info.Members) == 0) then
+			info.SubType = _STRUCT_TYPE_CUSTOM
+			info.Members = nil
+		end
+
 		-- validate default value if existed
 		if info.Default ~= nil then
 			if info.SubType ~= _STRUCT_TYPE_CUSTOM then
@@ -3567,8 +3586,30 @@ do
 
 		-- Make field type unique
 		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+			local chkNIL = false
+			local hasNIL = false
 			for _, n in ipairs(info.Members) do
 				info.StructEnv[n] = GetUniqueType(info.StructEnv[n])
+				if info.StructEnv[n] and not info.StructEnv[n].AllowNil then
+					if hasNIL then chkNIL = true end
+				else
+					hasNIL = true
+				end
+			end
+			while chkNIL do
+				chkNIL, hasNIL = false
+
+				for i, n in ipairs(info.Members) do
+					if info.StructEnv[n] and not info.StructEnv[n].AllowNil then
+						if hasNIL then
+							chkNIL = true
+							info.Members[i], info.Members[i-1] = info.Members[i-1], info.Members[i]
+							break
+						end
+					else
+						hasNIL = true
+					end
+				end
 			end
 		elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
 			info.ArrayElement = GetUniqueType(info.ArrayElement)
@@ -3580,23 +3621,21 @@ do
 
 		if type(definition) == "table" then
 			for k, v in pairs(definition) do
-				if type(k) == "string" and not tonumber(k) then
-					local vType = getmetatable(v)
+				local vType = getmetatable(v)
 
-					if vType then
-						if vType == TYPE_NAMESPACE or vType == Type then
-							SaveStructField(self, info, k, v)
-						else
-							error("PLoop encounter unknow settings.", 2)
-						end
-					elseif type(v) == "function" then
-						if k == info.Name then
-							info.Validator = v
-						else
-							info.Method = info.Method or {}
-							SaveFixedMethod(info.Method, k, v, info.Owner)
-						end
+				if vType and type(v) ~= "string" then
+					if (vType == TYPE_NAMESPACE or vType == Type) and type(k) == "string" and not tonumber(k) then
+						SaveStructField(self, info, k, v)
 					end
+				elseif type(v) == "function" then
+					if k == info.Name or type(k) == "number" then
+						info.Validator = v
+					else
+						info.Method = info.Method or {}
+						SaveFixedMethod(info.Method, k, v, info.Owner)
+					end
+				else
+					info.Default = v
 				end
 			end
 		else
@@ -3617,31 +3656,7 @@ do
 		end
 	end
 
-	function structtype(env, _type_)
-		local info = _NSInfo[env[OWNER_FIELD]]
-
-		_type_ = strupper(_type_)
-
-		if _type_ == _STRUCT_TYPE_MEMBER then
-			-- use member list, default type
-			info.SubType = _STRUCT_TYPE_MEMBER
-			info.ArrayElement = nil
-		elseif _type_ == _STRUCT_TYPE_ARRAY then
-			-- user array list
-			info.SubType = _STRUCT_TYPE_ARRAY
-			info.Members = nil
-		else
-			-- else all custom
-			info.SubType = _STRUCT_TYPE_CUSTOM
-			info.Members = nil
-			info.DefaultField = nil
-			info.ArrayElement = nil
-		end
-	end
-
 	_KeyWord4StrtEnv.struct = struct
-	_KeyWord4StrtEnv.structtype = structtype
-	_KeyWord4StrtEnv.default = function (env, value) _NSInfo[env[OWNER_FIELD]].Default = value end
 	_KeyWord4StrtEnv.import = import_STRT
 	_KeyWord4StrtEnv.endstruct = endstruct
 end
@@ -3662,91 +3677,64 @@ end
 do
 	namespace "System"
 
-	struct "Boolean" (function(_ENV)
-		structtype "CUSTOM"
-		default( false )
+	struct "Boolean" {
+		Default = false,
+		function (value) return value and true or false end
+	}
 
-		function Boolean(value) return value and true or false end
-	end)
-
-	struct "String" (function(_ENV)
-		structtype "CUSTOM"
-		default( "" )
-
-		function String(value)
+	struct "String" {
+		Default = "",
+		function (value)
 			if type(value) ~= "string" then error(("%s must be a string, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "Number" (function(_ENV)
-		structtype "CUSTOM"
-		default( 0 )
-
-		function Number(value)
+	struct "Number" {
+		Default = 0,
+		function (value)
 			if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "Function" (function(_ENV)
-		structtype "CUSTOM"
-
-		function Function(value)
+	struct "Function" {
+		function (value)
 			if type(value) ~= "function" then error(("%s must be a function, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "Table" (function(_ENV)
-		structtype "CUSTOM"
-
-		function Table(value)
+	struct "Table" {
+		function (value)
 			if type(value) ~= "table" then error(("%s must be a table, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "RawTable" (function(_ENV)
-		structtype "CUSTOM"
-
-		function RawTable(value)
+	struct "RawTable" {
+		function (value)
 			if type(value) ~= "table" then
 				error(("%s must be a table, got %s."):format("%s", type(value)))
 			elseif getmetatable(value) ~= nil then
 				error("%s must be a table without metatable.")
 			end
-			return value
 		end
-	end)
+	}
 
-	struct "Userdata" (function(_ENV)
-		structtype "CUSTOM"
-
-		function Userdata(value)
+	struct "Userdata" {
+		function (value)
 			if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "Thread" (function(_ENV)
-		structtype "CUSTOM"
-
-		function Thread(value)
+	struct "Thread" {
+		function (value)
 			if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end
-			return value
 		end
-	end)
+	}
 
-	struct "Any" (function(_ENV)
-		structtype "CUSTOM"
-
-		function Any(value)
+	struct "Any" {
+		function (value)
 			assert(value ~= nil, "%s can't be nil.")
-
-			return value
 		end
-	end)
+	}
 
 	------------------------------------------------------
 	-- System.AttributeTargets
@@ -4382,7 +4370,7 @@ do
 
 		doc "GetStructType" [[
 			<desc>Get the type of the struct type</desc>
-			<param name="struct" type="struct">the structtype</param>
+			<param name="struct" type="struct">the struct</param>
 			<return type="string">the type of the struct type</return>
 		]]
 		function GetStructType(ns)
@@ -7051,9 +7039,9 @@ do
 	end
 
 	enum "StructType" {
-		"Member",
-		"Array",
-		"Custom"
+		"MEMBER",
+		"ARRAY",
+		"CUSTOM"
 	}
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true, BeforeDefinition = true}
@@ -7109,6 +7097,49 @@ do
 
 			self.Type = StructType.Member
 		end
+	end)
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
+	__Final__()
+	class "__StructOrder__" (function(_ENV)
+		inherit "__Attribute__"
+
+		doc "__StructOrder__" [[Rearrange the struct member's order]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target, targetType)
+			local info = _NSInfo[target]
+
+			if info.SubType == StructType.Member and info.Members then
+				local cache = CACHE_TABLE()
+
+				for i, mem in ipairs(info.Members) do tinsert(cache, mem) cache[mem] = i end
+				wipe(info.Members)
+
+				for i, mem in ipairs(self) do if cache[mem] then tinsert(info.Members, mem) cache[mem] = nil end end
+				for i, mem in ipairs(cache) do if cache[mem] then tinsert(info.Members, mem) end end
+
+				CACHE_TABLE(cache)
+			end
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__ { String }
+	    function __StructOrder__(self, name)
+	    	Super(self)
+	    	tinsert(self, name)
+	    end
+
+	    function __call(self, name)
+	    	if type(name) == "string" then
+	    		tinsert(self, name)
+	    	end
+	    	return self
+	    end
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class, Inherited = false, RunOnce = true}
@@ -8060,8 +8091,6 @@ do
 	------------------------------------------------------
 	_KeyWord4IFEnv.doc = nil
 	_KeyWord4ClsEnv.doc = nil
-	_KeyWord4StrtEnv.structtype = nil
-	_KeyWord4StrtEnv.default = nil
 
 	if FAKE_SETFENV then setfenv() end
 

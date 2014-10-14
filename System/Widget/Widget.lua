@@ -358,8 +358,6 @@ struct "MinMax"
 
 	function MinMax(value)
 		assert(value.min <= value.max, "%s.min can't be greater than %s.max.")
-
-		return value
 	end
 endstruct "MinMax"
 
@@ -372,12 +370,10 @@ struct "Inset"
 endstruct "Inset"
 
 -- ColorFloat
-__StructType__(StructType.Custom)
 struct "ColorFloat"
 	function ColorFloat(value)
 		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
 		assert(value >= 0 and value <= 1, "%s must in [0-1].")
-		return value
 	end
 endstruct "ColorFloat"
 
@@ -392,8 +388,6 @@ struct "ColorType"
 	function ColorType(value)
 		value.a = value.a or 1	-- default
 		value.code = ("\124cff%.2x%.2x%.2x"):format(value.r * 255, value.g * 255, value.b * 255)
-
-		return value
 	end
 endstruct "ColorType"
 
@@ -424,8 +418,6 @@ endstruct "BackdropType"
 
 -- AnimOrderType
 struct "AnimOrderType"
-	local floor = math.floor
-
 	function AnimOrderType(value)
 		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
 		assert(value >=0 and value <= 100, "%s must be in [0-100], got %s.")
@@ -459,8 +451,6 @@ struct "LightType"
 
 	function LightType(value)
 		assert(value.omni == 0 or value.omni == 1, "%s.omni must be 0 or 1.")
-
-		return value
 	end
 endstruct "LightType"
 
@@ -473,8 +463,6 @@ struct "MiniMapPosition"
 	function MiniMapPosition(value)
 		assert(value.radius > 0, "The %s.radius must be greater than 0.")
 		assert(value.angel >= 0 and value.angel <= 360, "The %s.angel must in [0-360].")
-
-		return value
 	end
 endstruct "MiniMapPosition"
 
