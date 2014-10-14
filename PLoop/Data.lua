@@ -8,7 +8,7 @@ import "System"
 
 namespace "System.Data"
 
-math.randomseed(os.time())
+if math.randomseed then math.randomseed((time or os.time)()) end
 
 GUID_TEMPLTE = [[xx-x-x-x-xxx]]
 GUID_FORMAT = "^" .. GUID_TEMPLTE:gsub("x", "%%x%%x%%x%%x"):gsub("%-", "%%-") .. "$"
