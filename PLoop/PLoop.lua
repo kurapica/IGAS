@@ -570,9 +570,13 @@ do
 			local info = _NSInfo[self]
 
 			if info.Type == TYPE_STRUCT and type(key) == "string" and type(value) == "function" then
-				if key == info.Name and not info.Validator then
-					info.Validator = value
-					return
+				if key == info.Name then
+					if not info.Validator then
+						info.Validator = value
+						return
+					else
+						error("Can't override the existed validator.", 2)
+					end
 				elseif not info.Method or not info.Method[key] then
 					info.Method = info.Method or {}
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
@@ -1425,6 +1429,10 @@ do
 			-- Check owner
 			if key == info.Name then return info.Owner end
 
+			-- Check keywords
+			value = _KeyWord4IFEnv:GetKeyword(self, key)
+			if value then return value end
+
 			-- Check namespace
 			if info.NameSpace then
 				if key == _NSInfo[info.NameSpace].Name then
@@ -2101,6 +2109,10 @@ do
 				rawset(self, _ThisIndex, value)
 				return value
 			end
+
+			-- Check keywords
+			value = _KeyWord4ClsEnv:GetKeyword(self, key)
+			if value then return value end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -3120,6 +3132,10 @@ do
 
 			-- Check owner
 			if key == info.Name then return info.Owner end
+
+			-- Check keywords
+			value = _KeyWord4StrtEnv:GetKeyword(self, key)
+			if value then return value end
 
 			-- Check namespace
 			if info.NameSpace then
@@ -4834,6 +4850,33 @@ do
 			<return type="object">the clone or the object itself</return>
 		]]
 		Clone = CloneObj
+
+		doc "GetDefaultValue" [[
+			<desc>Get the default value of the target['s part]</desc>
+			<param name="ns">the target(class, interface, struct)</param>
+			<param name="part" optional="true">the target's part(property, member)</param>
+			<return type="object">the default value if existed</return>
+		]]
+		function GetDefaultValue(ns, part)
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+			local info = _NSInfo[ns]
+			if info then
+				if (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and part then
+					part = info.Cache[part]
+					if type(part) == "table" and not getmetatable(part) then
+						return part.Default
+					end
+				elseif info.Type == TYPE_ENUM then
+					return info.Default
+				elseif info.Type == TYPE_STRUCT then
+					if info.SubType == _STRUCT_TYPE_CUSTOM and not part then
+						return info.Default
+					elseif info.SubType == _STRUCT_TYPE_MEMBER and part then
+						return info.DefaultField and info.DefaultField[part]
+					end
+				end
+			end
+		end
 	end)
 end
 
@@ -5945,6 +5988,8 @@ do
 		end
 
 		function ApplyAttributes(target, targetType, owner, name, start, config, halt, atLast)
+			if halt and atLast then _NSInfo[target].ApplyAttributes = nil end
+
 			-- Check config
 			config = config or GetTargetAttributes(target, targetType, owner, name)
 
@@ -6061,13 +6106,9 @@ do
 					if #config == 0 or #config == 1 then config = config[1] or nil end
 				end
 
-				if halt then
-					if atLast then
-						_NSInfo[target].ApplyAttributes = nil
-					elseif hasAfter then
-						_NSInfo[target].ApplyAttributes = function()
-							return ApplyAttributes(target, targetType, owner, name, start, config, true, true)
-						end
+				if halt and hasAfter then
+					_NSInfo[target].ApplyAttributes = function()
+						return ApplyAttributes(target, targetType, owner, name, start, config, true, true)
 					end
 				end
 			end
@@ -6354,12 +6395,12 @@ do
 			<param name="type">the attribute class type</param>
 			<return type="boolean">true if the target contains attribute with the type</return>
 		]]
-		function _IsPropertyAttributeDefined(target, prop, type)
+		function _IsPropertyAttributeDefined(target, prop, ty)
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
 				local tar = info.Cache[prop]
-				return type(tar) == "function" and not getmetatable(tar) and _IsDefined(tar, AttributeTargets.Property, target, prop, type)
+				return type(tar) == "function" and not getmetatable(tar) and _IsDefined(tar, AttributeTargets.Property, target, prop, ty)
 			end
 			return false
 		end
@@ -6471,7 +6512,7 @@ do
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and getmetatable(info.Cache[event]) then
-				return _GetCustomAttribute(info.Cache[event],AttributeTargets.Event, target, event, type)
+				return _GetCustomAttribute(info.Cache[event], AttributeTargets.Event, target, event, type)
 			end
 		end
 
@@ -6496,7 +6537,7 @@ do
 		]]
 		function _GetMethodAttribute(target, method, ty)
 			if (Reflector.IsClass(target) or Reflector.IsInterface(target) or Reflector.IsStruct(target)) and type(method) == "string" then
-				return _GetMethodAttribute(nil, AttributeTargets.Method, target, method, ty)
+				return _GetCustomAttribute(nil, AttributeTargets.Method, target, method, ty)
 			end
 		end
 
@@ -6507,12 +6548,12 @@ do
 			<param name="type">the attribute class type</param>
 			<return>the attribute objects</return>
 		]]
-		function _GetPropertyAttribute(target, prop, type)
+		function _GetPropertyAttribute(target, prop, ty)
 			local info = _NSInfo[target]
 
 			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
 				local tar = info.Cache[prop]
-				return type(tar) == "function" and not getmetatable(tar) and _GetCustomAttribute(tar, AttributeTargets.Property, target, prop, type)
+				return type(tar) == "table" and not getmetatable(tar) and _GetCustomAttribute(tar, AttributeTargets.Property, target, prop, ty)
 			end
 		end
 

@@ -10,52 +10,135 @@ namespace "System.Data"
 
 if math.randomseed then math.randomseed((time or os.time)()) end
 
-GUID_TEMPLTE = [[xx-x-x-x-xxx]]
-GUID_FORMAT = "^" .. GUID_TEMPLTE:gsub("x", "%%x%%x%%x%%x"):gsub("%-", "%%-") .. "$"
+struct "GUID" (function(_ENV)
+	local GUID_TEMPLTE = [[xx-x-x-x-xxx]]
+	local GUID_FORMAT = "^" .. GUID_TEMPLTE:gsub("x", "%%x%%x%%x%%x"):gsub("%-", "%%-") .. "$"
+	local function GenerateGUIDPart(v) return ("%04X"):format(math.random(0xffff)) end
 
-function GenerateGUIDPart(v) return ("%04X"):format(math.random(0xffff)) end
+	function New() return (GUID_TEMPLTE:gsub("x", GenerateGUIDPart)) end
 
-struct "GUID" {
-	function (value)
+	function GUID(value)
 		if value == nil then
-			return GUID_TEMPLTE:gsub("x", GenerateGUIDPart)
+			return New()
 		elseif type(value) ~= "string" or #value ~= 36 or not value:match(GUID_FORMAT) then
 			error("%s require data with format like '" .. GUID_TEMPLTE:gsub("x", GenerateGUIDPart) .."'.")
 		end
 	end
-}
+end)
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.Struct }
+__Doc__[[The interface of data providers]]
+interface "IFDataProvider"
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Require__() function Save(self, obj) end
+	__Require__() function Load(self, obj) end
+endinterface "IFDataProvider"
+
+__Doc__[[The interface of the data table.]]
+interface "IFDataTable" (function(_ENV)
+
+	_IFDataTableInfo = setmetatable({}, {__mode="k"})
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	function Save(self, provider)
+    	provider = provider or _IFDataTableInfo[getmetatable(self)]
+    	return provider and provider:Save(self)
+	end
+
+	function Load(self, provider)
+    	provider = provider or _IFDataTableInfo[getmetatable(self)]
+    	return provider and provider:Load(self)
+	end
+
+	------------------------------------------------------
+	-- Initialize
+	------------------------------------------------------
+    function IFDataTable(self)
+		local cls = getmetatable(self)
+
+    	if _IFDataTableInfo[cls] == nil then
+    		for _, attr in ipairs{  __Attribute__._GetClassAttribute(cls) } do
+	    		if Reflector.ObjectIsInterface(attr, IFDataProvider) then
+	    			_IFDataTableInfo[cls] = attr
+	    			break
+	    		end
+	    	end
+	    	_IFDataTableInfo[cls] = _IFDataTableInfo[cls] or false
+    	end
+
+    	return self:Load()
+    end
+end)
+
+__AttributeUsage__{ AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct }
 class "__DataTable__" (function(_ENV)
 	inherit "__Attribute__"
+	extend "IFDataProvider"
 
-	local function GetMain(self, value)
-		local keys = self.MainKeys
+	local function CheckExisted(tbl, value)
+		for _, v in ipairs(tbl) do if v == value then return true end end
+	end
+
+	_INDEX_FORMAT = "[%s]%s"
+
+	local function GenerateKey(value, part)
+		local v = value[part]
+		if type(v) == "number" or (type(v) == "string" and strtrim(v) ~= "") then
+			return _INDEX_FORMAT:format(part, tostring(v))
+		end
+	end
+
+	local function GetKey(keys, value)
+		if not keys then return end
 		local cnt = #keys
 		if cnt == 1 then
-			return tostring(value[keys[1]])
+			return GenerateKey(value, keys[1])
 		elseif cnt == 2 then
-			return tostring(value[keys[1]]) .. "|" .. tostring(value[keys[2]])
+			local v1 = GenerateKey(value, keys[1])
+			local v2 = GenerateKey(value, keys[2])
+			return v1 and v2 and v1 .. "|" .. v2
 		else
 			local key = {}
-			for _, mem in ipairs(keys) do tinsert(key, tostring(value[mem])) end
+			for _, prop in ipairs(keys) do
+				local v = GenerateKey(value, prop)
+				if not v then return end
+				tinsert(key, v)
+			end
 			return tblconcat(key, "|")
 		end
 	end
 
-	local function GetIndex(self, value)
-		local keys = self.IndexKeys
-		if not keys then return nil end
-		local cnt = #keys
-		if cnt == 1 then
-			return tostring(value[keys[1]])
-		elseif cnt == 2 then
-			return tostring(value[keys[1]]) .. "|" .. tostring(value[keys[2]])
-		else
-			local key = {}
-			for _, mem in ipairs(keys) do tinsert(key, tostring(value[mem])) end
-			return tblconcat(key, "|")
+	local function GetData(self, value, create)
+		local key = GetKey(self.MainKeys, value)
+		local key2 = GetKey(self.IndexKeys, value)
+
+		local dt = key and self.Source[key] or key2 and self.Index[key2]
+
+		-- Scan for data
+		if not dt and key2 then
+			for k, v in pairs(self.Source) do
+				local isEqual = true
+				for _, index in ipairs(self.IndexKeys) do
+					if v[index] ~= value[index] then isEqual = false break end
+				end
+				if isEqual then
+					dt = v
+					self.Index[key2] = dt
+					break
+				end
+			end
 		end
+
+		if not dt and create then
+			dt = {}
+			if key then self.Source[key] = dt end
+			if key2 then self.Index[key2] = dt end
+		end
+
+		return dt
 	end
 
 	-------------------------------------------
@@ -67,102 +150,175 @@ class "__DataTable__" (function(_ENV)
 	__Doc__[[The database]]
 	property "Source" { Type = Table + nil }
 
-	__Doc__[[Whether all members will be used as data field]]
+	__Doc__[[Whether all properties will be used as data field]]
 	property "IncludeAll" { Type = Boolean, Default = true }
 
 	__Doc__[[The main keys of the data table]]
-	property "MainKeys" { Type = Table + nil }
+	property "MainKeys" { Type = Table + String + nil }
 
 	__Doc__[[The index keys of the data table]]
-	property "IndexKeys" { Type = Table + nil }
+	property "IndexKeys" { Type = Table + String + nil }
 
 	-------------------------------------------
 	-- Method
 	-------------------------------------------
 	function ApplyAttribute(self, target, targetType, owner, name)
-		if Reflector.GetStructType(target) ~= "MEMBER" then
-			error("Can't create datatable based on struct " .. tostring(target))
-		end
 		if not self.Name then self.Name = Reflector.GetNameSpaceName(target) end
-		if not self.Source then self.Source = {} end
+		if not self.Source then
+			self.Source = {}
+		else
+			self.Source[self.Name] = self.Source[self.Name] or {}
+			self.Source = self.Source[self.Name]
+		end
+		self.Index = {}
 
 		-- Scan fields
-		self.Fields = {}
-		self.Members = {}
+		self.FieldMap = {}
+		self.FieldDefault = {}
 		self.MainKeys = self.MainKeys or {}
+		if type(self.MainKeys) == "string" then self.MainKeys = { self.MainKeys } end
+		if type(self.IndexKeys) == "string" then self.IndexKeys = { self.IndexKeys } end
 
-		local chkMainKey = #(self.MainKeys) == 0
-		local members = Reflector.GetStructMembers(target)
-		for _, mem in ipairs(members) do
-			local field = __Attribute__._GetMemberAttribute(target, mem, __DataField__)
-			if field or self.IncludeAll then
-				tinsert(self.Fields, field and field.Name or mem)
-				tinsert(self.Members, mem)
-			end
-			if chkMainKey and field and field.IsMainKey then tinsert(self.MainKeys, mem) end
-		end
+		if targetType == AttributeTargets.Class then
+			-- Scan fields
+			local props = Reflector.GetProperties(target)
 
-		-- Validating the MainKeys
-		for i = #(self.MainKeys), 1, -1 do
-			local find = false
-			local key = self.MainKeys[i]
-			for _, v in ipairs(members) do if v == key then find = true break end end
-			if not find	then tremove(self.MainKeys, i) end
-		end
-
-		-- Using not-nil members as main key if no main keys
-		if #(self.MainKeys) == 0 then
-			for _, mem in ipairs(members) do
-				local ty = Reflector.GetStructMember(target, mem)
-				if ty and not ty.AllowNil then
-					tinsert(self.MainKeys, mem)
+			for _, prop in ipairs(props) do
+				local ty = Reflector.GetPropertyType(target, prop)
+				if ty and #ty == 1 and Reflector.GetStructType(ty[1]) == "CUSTOM" and Reflector.IsPropertyReadable(target, prop) and Reflector.IsPropertyWritable(target, prop) then
+					local field = __Attribute__._GetPropertyAttribute(target, prop, __DataField__)
+					if field or self.IncludeAll then
+						self.FieldMap[prop] = field and field.Name or prop
+						self.FieldDefault[prop] = Reflector.GetDefaultValue(target, prop)
+					end
+					if field then
+						if field.IsMainKey then
+							if not CheckExisted(self.MainKeys, prop) then tinsert(self.MainKeys, prop) end
+						elseif field.IsIndexKey then
+							self.IndexKeys = self.IndexKeys or {}
+							if not CheckExisted(self.MainKeys, prop) and not CheckExisted(self.IndexKeys, prop) then tinsert(self.IndexKeys, prop) end
+						end
+					end
 				end
 			end
-		end
 
-		-- Validating the IndexKeys
-		if self.IndexKeys then
-			for i = #(self.IndexKeys), 1, -1 do
-				local find = false
-				local key = self.IndexKeys[i]
-				for _, v in ipairs(members) do if v == key then find = true break end end
-				if not find	then tremove(self.IndexKeys, i) end
-			end
-		end
-
-		target.Save = function (value)
-			local index = GetMain(self, value)
-			local dt = self.Source[index] or {}
-			self.Source[index] = dt
-
-			for i, mem in ipairs(self.Members) do
-				dt[self.Fields[i]] = value[mem]
-			end
-
-			index = GetIndex(self, value)
-			if index then
-				self.Index = self.Index or {}
-				self.Index[index] = dt
-			end
-		end
-
-		target[Reflector.GetNameSpaceName(target)] = function (value)
-			local index = GetMain(self, value)
-			local dt = self.Source[index]
-
-			if not dt then
-				index = GetIndex(self, value)
-				if index and self.Index then
-					dt = self.Index[index]
+			-- Validate main keys
+			for i = #self.MainKeys, 1, -1 do
+				if not self.FieldMap[self.MainKeys[i]] then
+					tremove(self.MainKeys, i)
 				end
 			end
+			if self.IndexKeys then
+				for i = #self.IndexKeys, 1, -1 do
+					if not self.FieldMap[self.IndexKeys[i]] then
+						tremove(self.IndexKeys, i)
+					end
+				end
+			end
+
+			if #self.MainKeys == 0 then
+				if self.IndexKeys and #self.IndexKeys > 0 then
+					self.MainKeys = self.IndexKeys
+				else
+					for _, prop in ipairs(props) do
+						if self.FieldMap[prop] then
+							local ty = Reflector.GetPropertyType(target, prop)
+							if ty and not ty.AllowNil then
+								tinsert(self.MainKeys, prop)
+							end
+						end
+					end
+				end
+			end
+
+			-- Re-define
+			class (target) { IFDataTable }
+		elseif Reflector.GetStructType(target) == "MEMBER" then
+			local members = Reflector.GetStructMembers(target)
+
+			for _, member in ipairs(members) do
+				local ty = Reflector.GetStructMember(target, member)
+				if ty and #ty == 1 and Reflector.GetStructType(ty[1]) == "CUSTOM" then
+					local field = __Attribute__._GetMemberAttribute(target, member, __DataField__)
+					if field or self.IncludeAll then
+						self.FieldMap[member] = field and field.Name or member
+						self.FieldDefault[member] = Reflector.GetDefaultValue(target, member)
+					end
+					if field then
+						if field.IsMainKey then
+							if not CheckExisted(self.MainKeys, member) then tinsert(self.MainKeys, member) end
+						elseif field.IsIndexKey then
+							self.IndexKeys = self.IndexKeys or {}
+							if not CheckExisted(self.MainKeys, member) and not CheckExisted(self.IndexKeys, member) then tinsert(self.IndexKeys, member) end
+						end
+					end
+				end
+			end
+
+			-- Validate main keys
+			for i = #self.MainKeys, 1, -1 do
+				if not self.FieldMap[self.MainKeys[i]] then
+					tremove(self.MainKeys, i)
+				end
+			end
+			if self.IndexKeys then
+				for i = #self.IndexKeys, 1, -1 do
+					if not self.FieldMap[self.IndexKeys[i]] then
+						tremove(self.IndexKeys, i)
+					end
+				end
+			end
+
+			if #self.MainKeys == 0 then
+				if self.IndexKeys and #self.IndexKeys > 0 then
+					self.MainKeys = self.IndexKeys
+				else
+					for _, member in ipairs(members) do
+						if self.FieldMap[member] then
+							local ty = Reflector.GetStructMember(target, member)
+							if ty and not ty.AllowNil then
+								tinsert(self.MainKeys, member)
+							end
+						end
+					end
+				end
+			end
+
+			-- Re-define
+			target.Load = function (obj) return self:Load(obj) end
+			target.Save = function (obj) return self:Save(obj) end
+			target[Reflector.GetNameSpaceName(target)] = target.Load
+		end
+	end
+
+	function Save(self, obj)
+    	if self then
+    		local dt = GetData(self, obj, true)
+			if dt then
+				for prop, field in pairs(self.FieldMap) do
+					local value = obj[prop]
+					if value ~= self.FieldDefault[prop] then
+						dt[field] = value
+					else
+						dt[field] = nil
+					end
+				end
+			end
+    	end
+	end
+
+	function Load(self, obj)
+    	if self then
+    		local dt = GetData(self, obj)
 
 			if dt then
-				for i, mem in ipairs(self.Members) do
-					value[mem] = dt[self.Fields[i]]
+				for prop, field in pairs(self.FieldMap) do
+					local value = dt[field]
+					if value == nil then value = self.FieldDefault[prop] end
+					obj[prop] = value
 				end
 			end
-		end
+    	end
 	end
 
 	-------------------------------------------
@@ -182,13 +338,17 @@ class "__DataTable__" (function(_ENV)
 				self.MainKeys = value
 			end
 		elseif type(value) == "string" then
-			self.Name = value
+			if not self.MainKeys or #self.MainKeys == 0 then
+				self.MainKeys = value
+			elseif not self.IndexKeys or #self.IndexKeys == 0 then
+				self.IndexKeys = value
+			end
 		end
 		return self
 	end
 end)
 
-__AttributeUsage__{ AttributeTarget = AttributeTargets.Member }
+__AttributeUsage__{ AttributeTarget = AttributeTargets.Property + AttributeTargets.Member }
 class "__DataField__" (function(_ENV)
 	inherit "__Attribute__"
 
@@ -200,6 +360,9 @@ class "__DataField__" (function(_ENV)
 
 	__Doc__[[Whether the field is the main key]]
 	property "IsMainKey" { Type = Boolean }
+
+	__Doc__[[Whether the field is the index key]]
+	property "IsIndexKey" { Type = Boolean }
 
 	-------------------------------------------
 	-- Method
