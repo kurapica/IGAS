@@ -10,8 +10,6 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
-_Enabled = false
-
 _ToyFilter = {}
 _ToyFilterTemplate = "_ToyFilter[%d] = true"
 
@@ -36,36 +34,8 @@ end
 
 function PLAYER_ENTERING_WORLD(self)
 	if not next(_ToyFilter) then
-		local cache = {}
-
-		for i = 1, C_ToyBox.GetNumToys() do
-			local index = C_ToyBox.GetToyFromIndex(i)
-
-			if index > 0 then
-				local itemID = C_ToyBox.GetToyInfo(index)
-				if itemID and itemID > 0 then
-					_ToyFilter[itemID] = true
-					tinsert(cache, _ToyFilterTemplate:format(itemID))
-				end
-			end
-		end
-
-		if next(cache) then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-				handler:RunSnippet( tblconcat(cache, ";") )
-
-				for _, btn in handler() do
-					local target = btn.ActionTarget
-					if _ToyFilter[target] then
-						btn:SetAttribute("*item*", nil)
-						btn:SetAttribute("*type*", "toy")
-						btn:SetAttribute("*toy*", target)
-					end
-				end
-			end)
-		end
+		Task.ThreadCall(UpdateToys)
 	end
-	return handler:Refresh()
 end
 
 function SPELLS_CHANGED(self)
@@ -85,11 +55,7 @@ function UPDATE_SHAPESHIFT_FORM(self)
 end
 
 function TOYS_UPDATED(self, itemID, new)
-	for _, btn in handler() do
-		if _ToyFilter[btn.ActionTarget] then
-			handler:Refresh(btn)
-		end
-	end
+	Task.ThreadCall(UpdateToys)
 end
 
 function SPELL_UPDATE_COOLDOWN(self)
@@ -120,6 +86,55 @@ end
 
 function PLAYER_REGEN_DISABLED(self)
 	return handler:Refresh(RefreshUsable)
+end
+
+function UpdateToys()
+	local cache = {}
+	local found = false
+
+	while not found do
+		for i = 1, C_ToyBox.GetNumToys() do
+			local index = C_ToyBox.GetToyFromIndex(i)
+
+			if index > 0 then
+				local itemID = C_ToyBox.GetToyInfo(index)
+				if itemID and itemID > 0 then
+					found = true
+					_ToyFilter[itemID] = true
+					tinsert(cache, _ToyFilterTemplate:format(itemID))
+				end
+			end
+		end
+
+		if found then
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+				handler:RunSnippet( tblconcat(cache, ";") )
+
+				for _, btn in handler() do
+					local target = btn.ActionTarget
+					if _ToyFilter[target] then
+						btn:SetAttribute("*item*", nil)
+						btn:SetAttribute("*type*", "toy")
+						btn:SetAttribute("*toy*", target)
+
+						handler:Refresh(btn)
+					end
+				end
+			end)
+		elseif not IsAddOnLoaded("Blizzard_PetJournal") then
+			IFNoCombatTaskHandler._RegisterNoCombatTask(PetJournal_LoadUI)
+		else
+			local parent = _G.PetJournalParent
+			parent:Show()
+			parent:SetAlpha(0)
+
+			Task.Next()
+
+			parent:SetAlpha(1)
+			parent:Hide()
+		end
+		Task.Delay(0.1)
+	end
 end
 
 -- Item action type handler
@@ -153,8 +168,6 @@ handler = ActionTypeHandler {
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*toy*", nil)
 	]],
-
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
 -- Overwrite methods

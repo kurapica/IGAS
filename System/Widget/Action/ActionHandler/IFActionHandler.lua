@@ -1184,8 +1184,7 @@ do
 	end
 
 	function UpdateRange(self)
-		local inRange = _IFActionTypeHandler[self.ActionType].IsInRange(self)
-		self.InRange = inRange == 1 and true or inRange == 0 and false or inRange == nil and nil
+		self.InRange = _IFActionTypeHandler[self.ActionType].IsInRange(self)
 	end
 
 	function UpdateFlyout(self)
