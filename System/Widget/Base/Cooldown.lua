@@ -46,7 +46,7 @@ class "Cooldown"
 	-- Constructor
 	------------------------------------------------------
 	function Constructor(self, name, parent, ...)
-		return CreateFrame("Cooldown", nil, parent, ...)
+		return CreateFrame("Cooldown", nil, parent, "CooldownFrameTemplate")
 	end
 endclass "Cooldown"
 

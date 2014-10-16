@@ -12,6 +12,9 @@ import "System.Widget.Action.ActionRefreshMode"
 
 _Enabled = false
 
+_ToyFilter = {}
+_ToyFilterTemplate = "_ToyFilter[%d] = true"
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("BAG_UPDATE")
@@ -20,9 +23,81 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 	self:RegisterEvent("PLAYER_REGEN_DISABLED")
 
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("TOYS_UPDATED")
+	self:RegisterEvent("SPELLS_CHANGED")
+	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
+
 	OnEnable = nil
 
 	return handler:Refresh()
+end
+
+function PLAYER_ENTERING_WORLD(self)
+	if not next(_ToyFilter) then
+		local cache = {}
+
+		for i = 1, C_ToyBox.GetNumToys() do
+			local index = C_ToyBox.GetToyFromIndex(i)
+
+			if index > 0 then
+				local itemID = C_ToyBox.GetToyInfo(index)
+				if itemID and itemID > 0 then
+					_ToyFilter[itemID] = true
+					tinsert(cache, _ToyFilterTemplate:format(itemID))
+				end
+			end
+		end
+
+		if next(cache) then
+			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+				handler:RunSnippet( tblconcat(cache, ";") )
+
+				for _, btn in handler() do
+					local target = btn.ActionTarget
+					if _ToyFilter[target] then
+						btn:SetAttribute("*item*", nil)
+						btn:SetAttribute("*type*", "toy")
+						btn:SetAttribute("*toy*", target)
+					end
+				end
+			end)
+		end
+	end
+	return handler:Refresh()
+end
+
+function SPELLS_CHANGED(self)
+	for _, btn in handler() do
+		if _ToyFilter[btn.ActionTarget] then
+			handler:Refresh(btn)
+		end
+	end
+end
+
+function UPDATE_SHAPESHIFT_FORM(self)
+	for _, btn in handler() do
+		if _ToyFilter[btn.ActionTarget] then
+			handler:Refresh(btn)
+		end
+	end
+end
+
+function TOYS_UPDATED(self, itemID, new)
+	for _, btn in handler() do
+		if _ToyFilter[btn.ActionTarget] then
+			handler:Refresh(btn)
+		end
+	end
+end
+
+function SPELL_UPDATE_COOLDOWN(self)
+	for _, btn in handler() do
+		if _ToyFilter[btn.ActionTarget] then
+			handler:Refresh(btn, RefreshCooldown)
+		end
+	end
 end
 
 function BAG_UPDATE(self)
@@ -51,16 +126,32 @@ end
 handler = ActionTypeHandler {
 	Name = "item",
 
+	InitSnippet = [[
+		_ToyFilter = newtable()
+
+		_ToyCastTemplate = "/run UseToy(%d)"
+	]],
+
 	UpdateSnippet = [[
 		local target = ...
 
 		if tonumber(target) then
-			self:SetAttribute("*item*", "item:"..target)
+			if _ToyFilter[target] then
+				self:SetAttribute("*item*", nil)
+				self:SetAttribute("*type*", "toy")
+				self:SetAttribute("*toy*", target)
+			else
+				self:SetAttribute("*type*", nil)
+				self:SetAttribute("*toy*", nil)
+				self:SetAttribute("*item*", "item:"..target)
+			end
 		end
 	]],
 
 	ClearSnippet = [[
 		self:SetAttribute("*item*", nil)
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*toy*", nil)
 	]],
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
@@ -68,15 +159,25 @@ handler = ActionTypeHandler {
 
 -- Overwrite methods
 function handler:PickupAction(target)
-	return PickupItem(target)
+	if _ToyFilter(target) then
+		return  C_ToyBox.PickupToyBoxItem(target)
+	else
+		return PickupItem(target)
+	end
 end
 
 function handler:GetActionTexture()
-	return GetItemIcon(self.ActionTarget)
+	local target = self.ActionTarget
+	if _ToyFilter[target] then
+		return (select(3, C_ToyBox.GetToyInfo(target)))
+	else
+		return GetItemIcon(target)
+	end
 end
 
 function handler:GetActionCount()
-	return GetItemCount(self.ActionTarget)
+	local target = self.ActionTarget
+	return _ToyFilter[target] and 0 or GetItemCount(target)
 end
 
 function handler:GetActionCooldown()
@@ -84,7 +185,8 @@ function handler:GetActionCooldown()
 end
 
 function handler:IsEquippedItem()
-	return IsEquippedItem(self.ActionTarget)
+	local target = self.ActionTarget
+	return not _ToyFilter[target] and IsEquippedItem(target)
 end
 
 function handler:IsActivedAction()
@@ -93,12 +195,13 @@ function handler:IsActivedAction()
 end
 
 function handler:IsUsableAction()
-	return IsUsableItem(self.ActionTarget)
+	local target = self.ActionTarget
+	return _ToyFilter[target] or IsUsableItem(target)
 end
 
 function handler:IsConsumableAction()
 	local target = self.ActionTarget
-
+	if _ToyFilter[target] then return false end
 	-- return IsConsumableItem(target) blz sucks, wait until IsConsumableItem is fixed
 	local maxStack = select(8, GetItemInfo(target))
 
@@ -114,7 +217,12 @@ function handler:IsInRange()
 end
 
 function handler:SetTooltip(GameTooltip)
-	GameTooltip:SetHyperlink(select(2, GetItemInfo(self.ActionTarget)))
+	local target = self.ActionTarget
+	if _ToyFilter[target] then
+		GameTooltip:SetToyByItemID(target)
+	else
+		GameTooltip:SetHyperlink(select(2, GetItemInfo(self.ActionTarget)))
+	end
 end
 
 -- Part-interface definition
