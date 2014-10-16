@@ -170,6 +170,7 @@ class "__DataTable__" (function(_ENV)
 			self.Source[self.Name] = self.Source[self.Name] or {}
 			self.Source = self.Source[self.Name]
 		end
+		self.Owner = target
 		self.Index = {}
 
 		-- Scan fields
@@ -232,7 +233,7 @@ class "__DataTable__" (function(_ENV)
 			end
 
 			-- Re-define
-			class (target) { IFDataTable }
+			class (target) { IFDataTable, _FetchData = function (query) return self:FetchData(query) end }
 		elseif Reflector.GetStructType(target) == "MEMBER" then
 			local members = Reflector.GetStructMembers(target)
 
@@ -287,6 +288,7 @@ class "__DataTable__" (function(_ENV)
 			-- Re-define
 			target.Load = function (obj) return self:Load(obj) end
 			target.Save = function (obj) return self:Save(obj) end
+			target._FetchData = function (query) return self:FetchData(query) end
 			target[Reflector.GetNameSpaceName(target)] = target.Load
 		end
 	end
@@ -319,6 +321,35 @@ class "__DataTable__" (function(_ENV)
 				end
 			end
     	end
+	end
+
+	function FetchData(self, query)
+		local scanAll = true
+
+		if type(query) == "table" and next(query) then
+			for k in pairs(query) do
+				if self.FieldMap[k] then scanAll = false break end
+			end
+		end
+
+		local ret = {}
+		for _, data in pairs(self.Source) do
+			local match = true
+			if not scanAll then
+				for k, v in pairs(query) do
+					if data[k] ~= v then
+						match = false break
+					end
+				end
+			end
+
+			if match then
+				local new = {}
+				for _, k in ipairs(self.MainKeys) do new[k] = data[k] end
+				tinsert(ret, self.Owner(new))
+			end
+		end
+		return ret
 	end
 
 	-------------------------------------------

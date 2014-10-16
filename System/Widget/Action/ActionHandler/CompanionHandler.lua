@@ -11,7 +11,7 @@ end
 import "System.Widget.Action.ActionRefreshMode"
 
 _MountMapTemplate = "_MountMap[%d] = %d\n"
-_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
+_MountCastTemplate = "/run if not InCombatLockdown() then if select(4, MountJournal_GetMountInfo(%d)) then MountJournal_Dismiss() else MountJournal_Summon(%d) end end"
 
 _MountMap = {}
 
@@ -21,6 +21,7 @@ function OnEnable(self)
 	self:RegisterEvent("COMPANION_LEARNED")
 	self:RegisterEvent("COMPANION_UNLEARNED")
 	self:RegisterEvent("COMPANION_UPDATE")
+	self:RegisterEvent("MOUNT_JOURNAL_USABILITY_CHANGED")
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
 
 	OnEnable = nil
@@ -47,6 +48,11 @@ function COMPANION_UPDATE(self, type)
 	end
 end
 
+function MOUNT_JOURNAL_USABILITY_CHANGED(self)
+	UpdateMount()
+	handler:Refresh(RefreshButtonState)
+end
+
 function SPELL_UPDATE_USABLE(self)
 	return handler:Refresh(RefreshUsable)
 end
@@ -54,8 +60,8 @@ end
 function UpdateMount()
 	local str = ""
 
-	for i = 1, GetNumCompanions("MOUNT") do
-	    local _, spellId = select(2, GetCompanionInfo("MOUNT", i))
+	for i = 1, MountJournal_GetNumMounts() do
+	    local _, spellId = MountJournal_GetMountInfo(i)
 
 	    if spellId and _MountMap[spellId] ~= i then
 			str = str.._MountMapTemplate:format(spellId, i)
@@ -87,7 +93,7 @@ handler = ActionTypeHandler {
 	InitSnippet = [[
 		_MountMap = newtable()
 
-		_MountCastTemplate = "/run if not InCombatLockdown() then if select(5, GetCompanionInfo('MOUNT', %d)) then DismissCompanion('MOUNT') else CallCompanion('MOUNT', %d) end end"
+		_MountCastTemplate = "/run if not InCombatLockdown() then if select(4, MountJournal_GetMountInfo(%d)) then MountJournal_Dismiss() else MountJournal_Summon(%d) end end"
 	]],
 
 	PickupSnippet = [[
@@ -128,29 +134,31 @@ handler = ActionTypeHandler {
 function handler:PickupAction(target)
 	local target = _MountMap[self.ActionTarget]
 
-	return target and PickupCompanion('mount', target)
+	return target and MountJournal_Pickup(target)
 end
 
 function handler:GetActionTexture()
 	local target = _MountMap[self.ActionTarget]
 
-	return target and (select(4, GetCompanionInfo("MOUNT", target)))
+	return target and (select(3, MountJournal_GetMountInfo(target)))
 end
 
 function handler:IsActivedAction()
 	local target = _MountMap[self.ActionTarget]
 
-	return target and (select(5, GetCompanionInfo("MOUNT", target)))
+	return target and (select(4, MountJournal_GetMountInfo(target)))
 end
 
 function handler:IsUsableAction()
-	return IsUsableSpell(self.ActionTarget)
+	local target = _MountMap[self.ActionTarget]
+
+	return target and (select(5, MountJournal_GetMountInfo(target)))
 end
 
 function handler:SetTooltip(GameTooltip)
 	local target = _MountMap[self.ActionTarget]
 
-	return target and GameTooltip:SetSpellByID(select(3, GetCompanionInfo("MOUNT", target)))
+	return target and GameTooltip:SetMountBySpellID(select(2, MountJournal_GetMountInfo(target)))
 end
 
 -- Expand IFActionHandler
