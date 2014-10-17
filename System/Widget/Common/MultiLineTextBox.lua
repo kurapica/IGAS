@@ -12,7 +12,7 @@
 --              2013/10/18 Fix the arrow key disabled
 
 -- Check Version
-local version = 24
+local version = 25
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
@@ -2802,7 +2802,7 @@ class "MultiLineTextBox"
 			_List:Clear()
 		end
 
-		if _List.ItemCount > 0 then
+		if _List.ItemCount > 0 and self.Focused then
 			-- Handle the auto complete
 			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h + self.Value)
 			_List.Visible = true
