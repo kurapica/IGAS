@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Action.ItemHandler", version) then
 	return
 end
@@ -15,6 +15,18 @@ _ToyFilterTemplate = "_ToyFilter[%d] = true"
 
 -- Event handler
 function OnEnable(self)
+	IGAS_DB.ToyHandler_Data = IGAS_DB.ToyHandler_Data or {}
+
+	ToyData = IGAS_DB.ToyHandler_Data
+
+	-- Update for new ui version
+	if ToyData.Version ~= select(4, GetBuildInfo()) then
+		ToyData.Version = select(4, GetBuildInfo())
+	end
+
+	-- Load toy informations
+	C_ToyBox.FilterToys()
+
 	self:RegisterEvent("BAG_UPDATE")
 	self:RegisterEvent("BAG_UPDATE_COOLDOWN")
 	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
@@ -90,50 +102,46 @@ end
 
 function UpdateToys()
 	local cache = {}
-	local found = false
 
-	while not found do
-		for i = 1, C_ToyBox.GetNumToys() do
-			local index = C_ToyBox.GetToyFromIndex(i)
-
-			if index > 0 then
-				local itemID = C_ToyBox.GetToyInfo(index)
-				if itemID and itemID > 0 then
-					found = true
-					_ToyFilter[itemID] = true
-					tinsert(cache, _ToyFilterTemplate:format(itemID))
-				end
+	if not next(_ToyFilter) then
+		for _, item in ipairs(ToyData) do
+			if not _ToyFilter[item] then
+				_ToyFilter[item] = true
+				tinsert(cache, _ToyFilterTemplate:format(item))
 			end
 		end
+	end
 
-		if found then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
-				handler:RunSnippet( tblconcat(cache, ";") )
+	for i = 1, C_ToyBox.GetNumToys() do
+		if i % 20 == 0 then Task.Continue() end
 
-				for _, btn in handler() do
-					local target = btn.ActionTarget
-					if _ToyFilter[target] then
-						btn:SetAttribute("*item*", nil)
-						btn:SetAttribute("*type*", "toy")
-						btn:SetAttribute("*toy*", target)
+		local index = C_ToyBox.GetToyFromIndex(i)
 
-						handler:Refresh(btn)
-					end
-				end
-			end)
-		elseif not IsAddOnLoaded("Blizzard_PetJournal") then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(PetJournal_LoadUI)
-		else
-			local parent = _G.PetJournalParent
-			parent:Show()
-			parent:SetAlpha(0)
-
-			Task.Next()
-
-			parent:SetAlpha(1)
-			parent:Hide()
+		if index > 0 then
+			local item = C_ToyBox.GetToyInfo(index)
+			if item and item > 0 and not _ToyFilter[item] then
+				tinsert(ToyData, item)
+				_ToyFilter[item] = true
+				tinsert(cache, _ToyFilterTemplate:format(item))
+			end
 		end
-		Task.Delay(0.1)
+	end
+
+	if next(cache) then
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( tblconcat(cache, ";") )
+
+			for _, btn in handler() do
+				local target = btn.ActionTarget
+				if _ToyFilter[target] then
+					btn:SetAttribute("*item*", nil)
+					btn:SetAttribute("*type*", "toy")
+					btn:SetAttribute("*toy*", target)
+
+					handler:Refresh(btn)
+				end
+			end
+		end)
 	end
 end
 
@@ -143,8 +151,6 @@ handler = ActionTypeHandler {
 
 	InitSnippet = [[
 		_ToyFilter = newtable()
-
-		_ToyCastTemplate = "/run UseToy(%d)"
 	]],
 
 	UpdateSnippet = [[

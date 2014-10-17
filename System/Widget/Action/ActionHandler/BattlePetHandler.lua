@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.BattlePetHandler", version) then
 	return
 end
@@ -79,11 +79,11 @@ interface "IFActionHandler"
 	__Doc__[[The action button's content if its type is 'battlepet']]
 	property "BattlePet" {
 		Get = function(self)
-			return self:GetAttribute("actiontype") == "battlepet" and tonumber(self:GetAttribute("battlepet")) or nil
+			return self:GetAttribute("actiontype") == "battlepet" and self:GetAttribute("battlepet") or nil
 		end,
 		Set = function(self, value)
 			self:SetAction("battlepet", value)
 		end,
-		Type = System.Number + nil,
+		Type = System.String + nil,
 	}
 endinterface "IFActionHandler"
