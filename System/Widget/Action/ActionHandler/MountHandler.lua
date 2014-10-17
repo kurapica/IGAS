@@ -15,6 +15,8 @@ _MountMapTemplate = "_MountPick2Spell[%d] = %d;_MountSpell2Index[%d] = %d"
 _MountCastTemplate = "/run if not InCombatLockdown() then if select(4, C_MountJournal.GetMountInfo(%d)) then C_MountJournal.Dismiss() else C_MountJournal.Summon(%d) end end"
 
 _MountMap = {}
+Pick2Spell = {}
+Spell2Index = {}
 
 GetMountInfo = C_MountJournal.GetMountInfo
 

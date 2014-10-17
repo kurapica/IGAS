@@ -1,3 +1,6 @@
+2014/10/18: IGAS v60
+    1. Use a more smooth method to handle the mount and toy actions.
+
 2014/10/17: IGAS v58
     1. Fix mount action type, and toy action is added.
 
