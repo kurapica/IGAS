@@ -1,3 +1,6 @@
+2014/10/18: IGAS v61
+    1. The Mask will use the target's min & max resize to make sure not errors.
+
 2014/10/18: IGAS v60
     1. Use a more smooth method to handle the mount and toy actions.
 

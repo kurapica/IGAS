@@ -1,9 +1,10 @@
 -- Author      : Kurapica
 -- Created Date: 2012/11/17
 -- Change Log  :
+--               2014/10/18 Make the mask use target's min & max resize
 
 -- Check Version
-local version = 2
+local version = 3
 
 if not IGAS:NewAddon("IGAS.Widget.Mask", version) then
 	return
@@ -495,6 +496,8 @@ class "Mask"
 			self:SetPoint("BOTTOMLEFT")
 			self.Width = parent.Width
 			self.Height = parent.Height
+			self:SetMinResize(parent:GetMinResize())
+			self:SetMaxResize(parent:GetMaxResize())
 		else
 			self:ClearAllPoints()
 		end
