@@ -1,3 +1,6 @@
+2014/10/18: IGAS v62
+    1. Add support to summon random favorite mount spell
+
 2014/10/18: IGAS v61
     1. The Mask will use the target's min & max resize to make sure not errors.
 

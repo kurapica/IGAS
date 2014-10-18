@@ -19,6 +19,7 @@ Pick2Spell = {}
 Spell2Index = {}
 
 GetMountInfo = C_MountJournal.GetMountInfo
+SUMMON_RANDOM_FAVORITE_MOUNT_SPELL = 150544
 
 -- Event handler
 function OnEnable(self)
@@ -74,7 +75,7 @@ function MOUNT_JOURNAL_USABILITY_CHANGED(self, companionType)
 end
 
 function SPELL_UPDATE_USABLE(self)
-	return handler:Refresh(RefreshButtonState)
+	return handler:Refresh(RefreshUsable)
 end
 
 function UpdateMount(init)
@@ -86,6 +87,24 @@ function UpdateMount(init)
 			local index = Spell2Index[spell]
 			_MountMap[index] = true
 	    	tinsert(cache, _MountMapTemplate:format(pick, spell, spell, index))
+		end
+	end
+
+	if not _MountMap[0] then
+		local spell = SUMMON_RANDOM_FAVORITE_MOUNT_SPELL
+		C_MountJournal.Pickup(0)
+	    local ty, pick = GetCursorInfo()
+		ClearCursor()
+
+		spell = tonumber(spell)
+		pick = tonumber(pick)
+
+		if pick and spell then
+			Pick2Spell[pick] = spell
+			Spell2Index[spell] = 0
+
+			_MountMap[0] = true
+    		tinsert(cache, _MountMapTemplate:format(pick, spell, spell, 0))
 		end
 	end
 
@@ -173,19 +192,40 @@ function handler:PickupAction(target)
 end
 
 function handler:GetActionTexture()
-	return (select(3, GetMountInfo(Spell2Index[self.ActionTarget])))
+	local target = self.ActionTarget
+	if target == SUMMON_RANDOM_FAVORITE_MOUNT_SPELL then
+		return GetSpellTexture(target)
+	else
+		return (select(3, GetMountInfo(Spell2Index[target])))
+	end
 end
 
 function handler:IsActivedAction()
-	return (select(4, GetMountInfo(Spell2Index[self.ActionTarget])))
+	local target = self.ActionTarget
+	if target == SUMMON_RANDOM_FAVORITE_MOUNT_SPELL then
+		return IsCurrentSpell(target)
+	else
+		return (select(4, GetMountInfo(Spell2Index[target])))
+	end
 end
 
 function handler:IsUsableAction()
-	return (select(5, GetMountInfo(Spell2Index[self.ActionTarget])))
+	local target = self.ActionTarget
+	local canSummon = IsUsableSpell(SUMMON_RANDOM_FAVORITE_MOUNT_SPELL)
+	if target == SUMMON_RANDOM_FAVORITE_MOUNT_SPELL then
+		return canSummon
+	else
+		return canSummon and (select(5, GetMountInfo(Spell2Index[target])))
+	end
 end
 
 function handler:SetTooltip(GameTooltip)
-	return GameTooltip:SetMountBySpellID(self.ActionTarget)
+	local target = self.ActionTarget
+	if target == SUMMON_RANDOM_FAVORITE_MOUNT_SPELL then
+		return GameTooltip:SetSpellByID(target)
+	else
+		return GameTooltip:SetMountBySpellID(target)
+	end
 end
 
 -- Expand IFActionHandler
