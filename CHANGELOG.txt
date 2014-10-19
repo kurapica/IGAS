@@ -1,3 +1,6 @@
+2014/10/20: IGAS v64
+    1. Fix the flyout aciton not work well when reload.
+
 2014/10/19: IGAS v63
     1. The mount wouldn't be usable during combat.
 

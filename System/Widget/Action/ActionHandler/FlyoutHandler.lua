@@ -19,8 +19,6 @@ enum "FlyoutDirection" {
 	"RIGHT",
 }
 
-_FlyoutSlotTemplate = "_FlyoutSlot[%d] = %d\n"
-
 _FlyoutSlot = {}
 _FlyoutTexture = {}
 
@@ -58,7 +56,6 @@ function PLAYER_SPECIALIZATION_CHANGED(self, unit)
 end
 
 function UpdateFlyoutSlotMap()
-	local str = "for i in pairs(_FlyoutSlot) do _FlyoutSlot[i] = nil end\n"
 	local type, id
 	local name, texture, offset, numEntries, isGuild, offspecID
 
@@ -78,7 +75,6 @@ function UpdateFlyoutSlotMap()
 
 				if type == "FLYOUT" then
 					if not _FlyoutSlot[id] then
-						str = str.._FlyoutSlotTemplate:format(id, index)
 						_FlyoutSlot[id] = index
 						_FlyoutTexture[id] = GetSpellBookItemTexture(index, "spell")
 					end
@@ -87,7 +83,7 @@ function UpdateFlyoutSlotMap()
 		end
 	end
 
-	return handler:RunSnippet( str )
+	return handler:Refresh()
 end
 
 -- Flyout action type handler
@@ -96,9 +92,7 @@ handler = ActionTypeHandler {
 
 	Target = "spell",
 
-	InitSnippet = [[
-		_FlyoutSlot = newtable()
-	]],
+	PickupSnippet = "Custom",
 }
 
 -- Overwrite methods
