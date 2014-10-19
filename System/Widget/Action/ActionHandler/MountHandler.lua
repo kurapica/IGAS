@@ -211,7 +211,7 @@ end
 
 function handler:IsUsableAction()
 	local target = self.ActionTarget
-	local canSummon = IsUsableSpell(SUMMON_RANDOM_FAVORITE_MOUNT_SPELL)
+	local canSummon = not InCombatLockdown() and IsUsableSpell(SUMMON_RANDOM_FAVORITE_MOUNT_SPELL)
 	if target == SUMMON_RANDOM_FAVORITE_MOUNT_SPELL then
 		return canSummon
 	else
