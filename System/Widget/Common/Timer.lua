@@ -6,21 +6,24 @@
 --              2014/10/23 No need complex queue system
 
 -- Check Version
-local version = 13
+local version = 14
 
 if not IGAS:NewAddon("IGAS.Widget.Timer", version) then
 	return
 end
 
 import "System.Task"
+import "System.Data"
 
-function CallTimer(self, interval)
-	if self.Interval == interval and self.Enabled then self:Fire("OnTimer") end
-	return self.Interval == interval and self.Enabled and DelayCall(self.Interval, CallTimer, self, interval)
+function CallTimer(self, guid)
+	if self._GUID == guid and self.Interval > 0 and self.Enabled then self:Fire("OnTimer") end
+	return self._GUID == guid and self.Interval > 0 and self.Enabled and DelayCall(self.Interval, CallTimer, self, guid)
 end
 
 function RefreshTimer(self)
-	return self.Interval > 0 and self.Enabled and DelayCall(self.Interval, CallTimer, self, self.Interval)
+	local guid = GUID.New()
+	self._GUID = guid
+	return self.Interval > 0 and self.Enabled and DelayCall(self.Interval, CallTimer, self, guid)
 end
 
 __Doc__[[Timer is used to fire an event on a specified interval]]

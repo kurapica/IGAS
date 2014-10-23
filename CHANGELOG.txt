@@ -1,3 +1,6 @@
+2014/10/20: IGAS v67
+    1. Using GUID to mark the Timer, make sure older call would be stoped.
+
 2014/10/20: IGAS v66
     1. Remove the queue system from the Timer, it's too complex and the error can't be fixed, using the Task.DelayCall for the Timer.
 
