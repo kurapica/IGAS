@@ -3,9 +3,10 @@
 --              2010.01.13 Change the Timer's Parent to WorldFrame
 --              2011/03/13 Recode as class
 --              2014/07/08 Recode with System.Task
+--              2014/10/23 No need complex queue system
 
 -- Check Version
-local version = 12
+local version = 13
 
 if not IGAS:NewAddon("IGAS.Widget.Timer", version) then
 	return
@@ -13,96 +14,13 @@ end
 
 import "System.Task"
 
-r_Started = false
-r_TimerCount = 0
-r_PreviousTime = 0
-
-p_Start = nil
-p_Work = nil
-
-function Process()
-	local now = GetTime()
-	local percent = (now - r_PreviousTime) / 0.1
-	if percent > 1 then percent = 1 end
-
-	r_PreviousTime = now
-
-	if r_Started then
-		p_Work = p_Work or p_Start
-
-		if p_Work then
-			for i = 1, ceil( r_TimerCount * percent ) do
-				if p_Work._AwakeTime <= now then
-					p_Work._AwakeTime = GetTime() + p_Work.Interval
-
-					p_Work:Fire("OnTimer")
-				end
-				p_Work = p_Work._Next
-			end
-		end
-
-		return NextCall( Process )
-	end
-end
-
-function QueueRing(self)
-	if not self._Previous then
-		if p_Start == nil then
-			p_Start = self
-			self._Previous = self
-			self._Next = self
-		else
-			local tail = p_Start._Previous
-
-			self._Previous = tail
-			self._Next = p_Start
-
-			tail._Next = self
-
-			p_Start._Previous = self
-		end
-
-		r_TimerCount = r_TimerCount + 1
-
-		if r_TimerCount == 1 then
-			-- Start the process
-			r_Started = true
-			r_PreviousTime = GetTime()
-			return NextCall( Process )
-		end
-	end
-end
-
-function UnqueueRing(self)
-	if self._Previous then
-		local prev = self._Previous
-		local next = self._Next
-
-		prev._Next = next
-		next._Previous = prev
-
-		if self == p_Start then p_Start = next end
-		if self == p_Start then p_Start = nil end
-
-		if self == p_Work then p_Work = next end
-		if self == p_Work then p_Work = nil end
-
-		self._Next = nil
-		self._Previous = nil
-
-		r_TimerCount = r_TimerCount - 1
-
-		if r_TimerCount == 0 then r_Started = false end
-	end
+function CallTimer(self, interval)
+	if self.Interval == interval and self.Enabled then self:Fire("OnTimer") end
+	return self.Interval == interval and self.Enabled and DelayCall(self.Interval, CallTimer, self, interval)
 end
 
 function RefreshTimer(self)
-	if self.Interval > 0 and self.Enabled then
-		self._AwakeTime = GetTime() + self.Interval
-		return QueueRing(self)
-	elseif p_Start == self or self._Previous then
-		return UnqueueRing(self)
-	end
+	return self.Interval > 0 and self.Enabled and DelayCall(self.Interval, CallTimer, self, self.Interval)
 end
 
 __Doc__[[Timer is used to fire an event on a specified interval]]
@@ -142,7 +60,9 @@ class "Timer"
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
-	Dispose = UnqueueRing
+	function Dispose(self)
+		self.Interval = 0
+	end
 
 	------------------------------------------------------
 	-- Constructor

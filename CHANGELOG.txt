@@ -1,3 +1,6 @@
+2014/10/20: IGAS v66
+    1. Remove the queue system from the Timer, it's too complex and the error can't be fixed, using the Task.DelayCall for the Timer.
+
 2014/10/20: IGAS v65
     1. Fix a synatx error cause lua error when pick up item.
 
