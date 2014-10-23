@@ -1,3 +1,6 @@
+2014/10/20: IGAS v65
+    1. Fix a synatx error cause lua error when pick up item.
+
 2014/10/20: IGAS v64
     1. Fix the flyout aciton not work well when reload.
 

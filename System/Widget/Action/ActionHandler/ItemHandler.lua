@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Action.ItemHandler", version) then
 	return
 end
@@ -178,7 +178,7 @@ handler = ActionTypeHandler {
 
 -- Overwrite methods
 function handler:PickupAction(target)
-	if _ToyFilter(target) then
+	if _ToyFilter[target] then
 		return  C_ToyBox.PickupToyBoxItem(target)
 	else
 		return PickupItem(target)
