@@ -1,3 +1,6 @@
+2014/10/30: IGAS v68
+    1. Fix action button can't use hunter traps when Trap Launcher actived.
+
 2014/10/20: IGAS v67
     1. Using GUID to mark the Timer, make sure older call would be stoped.
 

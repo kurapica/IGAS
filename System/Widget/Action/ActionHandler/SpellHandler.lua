@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.SpellHandler", version) then
 	return
 end
@@ -11,9 +11,16 @@ end
 import "System.Widget.Action.ActionRefreshMode"
 
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
+_HunterTrapTemplate = "_HunterTrap[%d]=%q\n"
 
 _StanceMap = {}
 _Profession = {}
+
+_HunterTrap = {
+	[1499] = true,
+	[13809] = true,
+	[13813] = true,
+}
 
 -- Event handler
 function OnEnable(self)
@@ -32,6 +39,7 @@ function OnEnable(self)
 
 	OnEnable = nil
 	UpdateStanceMap()
+	if select(2, UnitClass('player')) == "HUNTER" then UpdateHunterTrap() end
 end
 
 function LEARNED_SPELL_IN_TAB(self)
@@ -123,6 +131,30 @@ function UpdateStanceMap()
 	end
 end
 
+function UpdateHunterTrap()
+	local str = ""
+	for spell in pairs(_HunterTrap) do
+		local name = GetSpellInfo(spell)
+		if name then
+			_HunterTrap[spell] = name
+			str = str .. _HunterTrapTemplate:format(spell, name)
+		end
+	end
+
+	if str ~= "" then
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( str )
+
+			for _, btn in handler() do
+				if _HunterTrap[btn.ActionTarget] then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", "/cast ".._HunterTrap[btn.ActionTarget])
+				end
+			end
+		end)
+	end
+end
+
 function UpdateProfession()
 	local lst = {GetProfessions()}
 	local offset, spell, name
@@ -153,6 +185,7 @@ handler = ActionTypeHandler {
 
 	InitSnippet = [[
 		_StanceMap = newtable()
+		_HunterTrap = newtable()
 	]],
 
 	UpdateSnippet = [[
@@ -161,6 +194,9 @@ handler = ActionTypeHandler {
 		if _StanceMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click StanceButton".. _StanceMap[target])
+		elseif _HunterTrap[target] then
+			self:SetAttribute("*type*", "macro")
+			self:SetAttribute("*macrotext*", "/cast ".. _HunterTrap[target])
 		end
 	]],
 
