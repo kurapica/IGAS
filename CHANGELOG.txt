@@ -1,3 +1,6 @@
+2014/11/16: IGAS v69
+    1. Trap Launcher spell now works like stance spell.
+
 2014/10/30: IGAS v68
     1. Fix action button can't use hunter traps when Trap Launcher actived.
 

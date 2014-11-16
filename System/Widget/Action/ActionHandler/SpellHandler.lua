@@ -1,9 +1,10 @@
 -- Author      : Kurapica
 -- Create Date : 2013/11/25
 -- Change Log  :
+--               2014/11/16 Add support to trap launcher, works like stance spell
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Action.SpellHandler", version) then
 	return
 end
@@ -11,15 +12,22 @@ end
 import "System.Widget.Action.ActionRefreshMode"
 
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
-_HunterTrapTemplate = "_HunterTrap[%d]=%q\n"
+_MacroMapTemplate = "_MacroMap[%d]=%q\n"
+_FakeStanceMapTemplate = "_FakeStanceMap[%d]=%q\n"
+
+_StanceOnTexturePath = [[Interface\Icons\Spell_Nature_WispSplode]]
 
 _StanceMap = {}
 _Profession = {}
 
-_HunterTrap = {
-	[1499] = true,
-	[13809] = true,
-	[13813] = true,
+_MacroMap = {
+	[1499] = true,	-- Freezing Trap
+	[13809] = true,	-- Ice Trap
+	[13813] = true,	-- Explosive Trap
+}
+
+_FakeStanceMap = {
+	[77769] = true,	-- Trap Launcher
 }
 
 -- Event handler
@@ -39,7 +47,8 @@ function OnEnable(self)
 
 	OnEnable = nil
 	UpdateStanceMap()
-	if select(2, UnitClass('player')) == "HUNTER" then UpdateHunterTrap() end
+	UpdateMacroMap()
+	UpdateFakeStanceMap()
 end
 
 function LEARNED_SPELL_IN_TAB(self)
@@ -95,9 +104,9 @@ end
 function UNIT_AURA(self, unit)
 	if unit == "player" then
 		for _, btn in handler() do
-			if _StanceMap[btn.ActionTarget] then
-				handler:Refresh(btn)
-			end
+			local target = btn.ActionTarget
+
+			if _StanceMap[target] or _FakeStanceMap[target] then handler:Refresh(btn) end
 		end
 	end
 end
@@ -131,13 +140,13 @@ function UpdateStanceMap()
 	end
 end
 
-function UpdateHunterTrap()
+function UpdateMacroMap()
 	local str = ""
-	for spell in pairs(_HunterTrap) do
+	for spell in pairs(_MacroMap) do
 		local name = GetSpellInfo(spell)
 		if name then
-			_HunterTrap[spell] = name
-			str = str .. _HunterTrapTemplate:format(spell, name)
+			_MacroMap[spell] = name
+			str = str .. _MacroMapTemplate:format(spell, name)
 		end
 	end
 
@@ -146,9 +155,33 @@ function UpdateHunterTrap()
 			handler:RunSnippet( str )
 
 			for _, btn in handler() do
-				if _HunterTrap[btn.ActionTarget] then
+				if _MacroMap[btn.ActionTarget] then
 					btn:SetAttribute("*type*", "macro")
-					btn:SetAttribute("*macrotext*", "/cast ".._HunterTrap[btn.ActionTarget])
+					btn:SetAttribute("*macrotext*", "/cast ".._MacroMap[btn.ActionTarget])
+				end
+			end
+		end)
+	end
+end
+
+function UpdateFakeStanceMap()
+	local str = ""
+	for spell in pairs(_FakeStanceMap) do
+		local name = GetSpellInfo(spell)
+		if name then
+			_FakeStanceMap[spell] = name
+			str = str .. _FakeStanceMapTemplate:format(spell, name)
+		end
+	end
+
+	if str ~= "" then
+		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+			handler:RunSnippet( str )
+
+			for _, btn in handler() do
+				if _FakeStanceMap[btn.ActionTarget] then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", "/cancelaura ".._FakeStanceMap[btn.ActionTarget].."\n/cast ".._FakeStanceMap[btn.ActionTarget])
 				end
 			end
 		end)
@@ -185,7 +218,8 @@ handler = ActionTypeHandler {
 
 	InitSnippet = [[
 		_StanceMap = newtable()
-		_HunterTrap = newtable()
+		_MacroMap = newtable()
+		_FakeStanceMap = newtable()
 	]],
 
 	UpdateSnippet = [[
@@ -194,9 +228,12 @@ handler = ActionTypeHandler {
 		if _StanceMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click StanceButton".. _StanceMap[target])
-		elseif _HunterTrap[target] then
+		elseif _MacroMap[target] then
 			self:SetAttribute("*type*", "macro")
-			self:SetAttribute("*macrotext*", "/cast ".. _HunterTrap[target])
+			self:SetAttribute("*macrotext*", "/cast ".. _MacroMap[target])
+		elseif _FakeStanceMap[target] then
+			self:SetAttribute("*type*", "macro")
+			self:SetAttribute("*macrotext*", "/cancelaura ".. _FakeStanceMap[target] .. "\n/cast ".. _FakeStanceMap[target])
 		end
 	]],
 
@@ -223,6 +260,8 @@ function handler:GetActionTexture()
 
 	if _StanceMap[target] then
 		return (GetShapeshiftFormInfo(_StanceMap[target]))
+	elseif _FakeStanceMap[target] and _FakeStanceMap[target] ~= true and UnitAura("player", _FakeStanceMap[target]) then
+		return _StanceOnTexturePath
 	else
 		return GetSpellTexture(target)
 	end
