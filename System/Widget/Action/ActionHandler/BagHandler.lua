@@ -13,6 +13,10 @@ _Enabled = false
 handler = ActionTypeHandler {
 	Name = "bag",
 
+	DragStyle = "Keep",
+
+	ReceiveStyle = "Keep",
+
 	InitSnippet = [[
 	]],
 

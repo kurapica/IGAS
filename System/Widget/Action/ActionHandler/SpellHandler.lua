@@ -127,7 +127,7 @@ function UpdateStanceMap()
 	end
 
 	if str ~= "" then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		Task.NoCombatCall(function ()
 			handler:RunSnippet( str )
 
 			for _, btn in handler() do
@@ -151,7 +151,7 @@ function UpdateMacroMap()
 	end
 
 	if str ~= "" then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		Task.NoCombatCall(function ()
 			handler:RunSnippet( str )
 
 			for _, btn in handler() do
@@ -175,7 +175,7 @@ function UpdateFakeStanceMap()
 	end
 
 	if str ~= "" then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		Task.NoCombatCall(function ()
 			handler:RunSnippet( str )
 
 			for _, btn in handler() do
@@ -200,7 +200,7 @@ function UpdateProfession()
 
 	        if _Profession[name] ~= spell then
 	        	_Profession[name] = spell
-	        	IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+	        	Task.NoCombatCall(function ()
 	        		for _, btn in handler() do
 	        			if GetSpellInfo(btn.ActionTarget) == name then
 	        				btn:SetAction("spell", spell)

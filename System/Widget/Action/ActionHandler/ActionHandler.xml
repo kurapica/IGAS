@@ -1,9 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
     <Script file="Action.lua"/>
 
-    <!-- Iterface -->
-	<Script file="IFActionHandler.lua"/>
-
 	<!-- Action Type handler -->
 	<Script file="ActionHandler.lua"/>
 	<Script file="PetActionHandler.lua"/>
@@ -19,7 +16,7 @@
 	<Script file="EmptyHandler.lua"/>
 	<Script file="CustomHandler.lua"/>
 
-	<!--Script file="InventoryHandler.lua"/>
 	<Script file="BagHandler.lua"/>
+	<!--Script file="InventoryHandler.lua"/>
 	<Script file="BagSlotHandler.lua"/ -->
 </Ui>

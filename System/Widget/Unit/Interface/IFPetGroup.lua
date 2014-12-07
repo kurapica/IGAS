@@ -20,7 +20,7 @@ do
 	end
 
 	function GROUP_ROSTER_UPDATE(self)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(Update4Raid)
+		Task.NoCombatCall(Update4Raid)
 	end
 
 	function Update4Raid()
@@ -64,7 +64,7 @@ interface "IFPetGroup"
 		if not self.Activated then
 			self.__GroupHeaderActivated = true
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
+			Task.NoCombatCall(UpdateGroupHeader, self)
 		end
 	end
 
@@ -73,7 +73,7 @@ interface "IFPetGroup"
 		if self.Activated then
 			self.__GroupHeaderActivated = false
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
+			Task.NoCombatCall(UpdateGroupHeader, self)
 		end
 	end
 
@@ -101,7 +101,7 @@ interface "IFPetGroup"
 			return self.GroupHeader:GetAttribute("filterOnPet") or false
 		end,
 		Set = function(self, value)
-			IFNoCombatTaskHandler._RegisterNoCombatTask(self.GroupHeader.SetAttribute, self.GroupHeader, "filterOnPet", value)
+			Task.NoCombatCall(self.GroupHeader.SetAttribute, self.GroupHeader, "filterOnPet", value)
 		end,
 		Type = System.Boolean,
 	}
@@ -121,7 +121,7 @@ interface "IFPetGroup"
 					_IFPetGroup_DeactivateInRaid[self] = nil
 				end
 
-				IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateGroupHeader, self)
+				Task.NoCombatCall(UpdateGroupHeader, self)
 			end
 		end,
 		Type = System.Boolean,

@@ -213,7 +213,7 @@ interface "IFMovable"
 		<desc>Start moving registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOn(group)
+	__Static__() function _ModeOn(group)
 		return _MaskOn(IFMovable, group)
 	end
 
@@ -221,7 +221,7 @@ interface "IFMovable"
 		<desc>Stop moving registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOff(group)
+	__Static__() function _ModeOff(group)
 		return _MaskOff(IFMovable, group)
 	end
 
@@ -230,7 +230,7 @@ interface "IFMovable"
 		<param name="group">string, group name</param>
 		<return type="boolean">true if the mode is turn on for the group</return>
 	]]
-	function _IsModeOn(group)
+	__Static__() function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFMovable_ModeOn[group]
 	end
@@ -239,7 +239,7 @@ interface "IFMovable"
 		<desc>Toggle the mode</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _Toggle(group)
+	__Static__() function _Toggle(group)
 		_MaskToggle(IFMovable, group)
 	end
 
@@ -247,7 +247,7 @@ interface "IFMovable"
 		<desc>Get all group name</desc>
 		<return type="table">a list contains all groups</return>
 	]]
-	function _GetGroupList()
+	__Static__() function _GetGroupList()
 		local ret = {}
 
 		for grp in pairs(_GroupListMovable) do
@@ -307,7 +307,7 @@ interface "IFResizable"
 		<desc>Start resizing registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOn(group)
+	__Static__() function _ModeOn(group)
 		return _MaskOn(IFResizable, group)
 	end
 
@@ -315,7 +315,7 @@ interface "IFResizable"
 		<desc>Stop resizing registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOff(group)
+	__Static__() function _ModeOff(group)
 		return _MaskOff(IFResizable, group)
 	end
 
@@ -324,7 +324,7 @@ interface "IFResizable"
 		<param name="group">string, group name</param>
 		<return type="boolean">true if the mode is turn on for the group</return>
 	]]
-	function _IsModeOn(group)
+	__Static__() function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFResizable_ModeOn[group]
 	end
@@ -333,7 +333,7 @@ interface "IFResizable"
 		<desc>Toggle the mode</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _Toggle(group)
+	__Static__() function _Toggle(group)
 		_MaskToggle(IFResizable, group)
 	end
 
@@ -341,7 +341,7 @@ interface "IFResizable"
 		<desc>Get all group name</desc>
 		<return type="table">a list contains all groups</return>
 	]]
-	function _GetGroupList()
+	__Static__() function _GetGroupList()
 		local ret = {}
 
 		for grp in pairs(_GroupListResizable) do
@@ -401,7 +401,7 @@ interface "IFToggleable"
 		<desc>Start toggling registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOn(group)
+	__Static__() function _ModeOn(group)
 		return _MaskOn(IFToggleable, group)
 	end
 
@@ -409,7 +409,7 @@ interface "IFToggleable"
 		<desc>Stop toggling registered Object</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _ModeOff(group)
+	__Static__() function _ModeOff(group)
 		return _MaskOff(IFToggleable, group)
 	end
 
@@ -418,7 +418,7 @@ interface "IFToggleable"
 		<param name="group">string, group name</param>
 		<return type="boolean">true if the mode is turn on for the group</return>
 	]]
-	function _IsModeOn(group)
+	__Static__() function _IsModeOn(group)
 		group = tostring(group or _Global):upper()
 		return _IFToggleable_ModeOn[group]
 	end
@@ -427,7 +427,7 @@ interface "IFToggleable"
 		<desc>Toggle the mode</desc>
 		<param name="group">string, group name</param>
 	]]
-	function _Toggle(group)
+	__Static__() function _Toggle(group)
 		_MaskToggle(IFToggleable, group)
 	end
 
@@ -435,7 +435,7 @@ interface "IFToggleable"
 		<desc>Get all group name</desc>
 		<return type="table">a list contains all groups</return>
 	]]
-	function _GetGroupList()
+	__Static__() function _GetGroupList()
 		local ret = {}
 
 		for grp in pairs(_GroupListToggleable) do

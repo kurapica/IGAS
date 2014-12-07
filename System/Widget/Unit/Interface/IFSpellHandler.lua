@@ -38,7 +38,7 @@ do
 
 	function OnEnable(self)
 		for grp in pairs(_DBChar) do
-			IFNoCombatTaskHandler._RegisterNoCombatTask(SetupGroup, grp)
+			Task.NoCombatCall(SetupGroup, grp)
 		end
 	end
 
@@ -442,7 +442,7 @@ do
 	_IFSpellHandler_ManagerFrame = _IFSpellHandler_ManagerFrame or SecureFrame("IGAS_IFSpellHandler_Manager")
 
 	-- Init manger frame's enviroment
-	IFNoCombatTaskHandler._RegisterNoCombatTask(
+	Task.NoCombatCall(
 		function ()
 			_IFSpellHandler_ManagerFrame:Execute[[
 				_HoverOnUnitFrame = nil
@@ -1008,7 +1008,7 @@ interface "IFSpellHandler"
 		-- Event Handler
 		------------------------------------------------------
 		local function OnSettingUpdate(self)
-			IFNoCombatTaskHandler._RegisterNoCombatTask(SetupGroup, self.Group)
+			Task.NoCombatCall(SetupGroup, self.Group)
 		end
 
 		------------------------------------------------------
@@ -1064,7 +1064,7 @@ interface "IFSpellHandler"
 		<param name="group">string, the group's name</param>
 		<return type="System.Widget.Unit.IFSpellHandler.SpellHandlerGroup"></return>
 	]]
-	function _Group(group)
+	__Static__() function _Group(group)
 		if group and type(group) ~= "string" then
 			return nil
 		end
@@ -1075,7 +1075,7 @@ interface "IFSpellHandler"
 		<desc>Get the all groups's name</desc>
 		<return type="table">the name list</return>
 	]]
-	function _GetGroupList(tbl)
+	__Static__() function _GetGroupList(tbl)
 		local ret = type(tbl) == "table" and tbl or {}
 
 		wipe(ret)
@@ -1102,7 +1102,7 @@ interface "IFSpellHandler"
 	------------------------------------------------------
 	function Dispose(self)
 		-- Use real frame table to dispose, because the igas part frame table is already disposed.
-		IFNoCombatTaskHandler._RegisterNoCombatTask(RemoveUnitFrame, IGAS:GetUI(self), GetGroup(self.IFSpellHandlerGroup))
+		Task.NoCombatCall(RemoveUnitFrame, IGAS:GetUI(self), GetGroup(self.IFSpellHandlerGroup))
 	end
 
 	------------------------------------------------------
@@ -1114,6 +1114,6 @@ interface "IFSpellHandler"
 			return
 		end
 
-		IFNoCombatTaskHandler._RegisterNoCombatTask(InitUnitFrame, self)
+		Task.NoCombatCall(InitUnitFrame, self)
     end
 endinterface "IFSpellHandler"

@@ -128,7 +128,7 @@ function UpdateToys()
 	end
 
 	if next(cache) then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		Task.NoCombatCall(function ()
 			handler:RunSnippet( tblconcat(cache, ";") )
 
 			for _, btn in handler() do

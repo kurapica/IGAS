@@ -373,7 +373,7 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
 	]]
-	function DirectCall(callable, ...)
+	__Static__() function DirectCall(callable, ...)
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
@@ -390,7 +390,7 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
 	]]
-	function NextCall(callable, ...)
+	__Static__() function NextCall(callable, ...)
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
@@ -408,7 +408,7 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
 	]]
-	function DelayCall(delay, callable, ...)
+	__Static__() function DelayCall(delay, callable, ...)
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
@@ -426,7 +426,7 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<return>true if the event is existed and task is registered</return>
 	]]
-	function EventCall(event, callable)
+	__Static__() function EventCall(event, callable)
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = 0
@@ -436,12 +436,30 @@ interface "Task"
 	end
 
 	__Doc__[[
+		<desc>Call methdo when not at combat</desc>
+		<param name="func">function, the task function</param>
+		<param name="...">the function's parameters</param>
+	]]
+	__Static__() function NoCombatCall(func, ...)
+		if not InCombatLockdown() then return func(...) end
+
+		local task = tremove(c_Task) or {}
+
+		task.NArgs = select('#', ...)
+		for i = 1, task.NArgs do task[i] = select(i, ...) end
+
+		task.Method = callable
+
+		return QueueEventTask("PLAYER_REGEN_ENABLED", task)
+	end
+
+	__Doc__[[
 		<desc>Call method with thread mode</desc>
 		<format>callable[, ...]</format>
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<param name="...">method parameter</param>
 	]]
-	function ThreadCall(...)
+	__Static__() function ThreadCall(...)
 		local task = tremove(c_Task) or {}
 
 		task.NArgs = select('#', ...)
@@ -460,7 +478,7 @@ interface "Task"
 		<param name="callable">Callable object, function, thread, table with __call</param>
 		<return>true if the task is registered</return>
 	]]
-	function WaitCall(...)
+	__Static__() function WaitCall(...)
 		local nargs = select('#', ...)
 		local callable = select(nargs, ...)
 
@@ -519,7 +537,7 @@ interface "Task"
 	-- Thread Task API
 	------------------------------------------------------
 	__Doc__[[Check if the current thread should keep running or wait for next time slice]]
-	function Continue()
+	__Static__() function Continue()
 		local thread = running()
 		if not thread then error("Task.Continue() can only be used in a thread.", 2) end
 
@@ -533,7 +551,7 @@ interface "Task"
 	end
 
 	__Doc__[[Make the current thread wait for next phase]]
-	function Next()
+	__Static__() function Next()
 		local thread = running()
 		if not thread then error("Task.Next() can only be used in a thread.", 2) end
 
@@ -550,7 +568,7 @@ interface "Task"
 		<desc>Delay the current thread for several second</desc>
 		<param name="delay">the time to delay</param>
 	]]
-	function Delay(delay)
+	__Static__() function Delay(delay)
 		local thread = running()
 		if not thread then error("Task.Delay(delay) can only be used in a thread.", 2) end
 
@@ -569,7 +587,7 @@ interface "Task"
 		<param name="event">the system event name</param>
 		<return>true if the event is existed and task is registered</return>
 	]]
-	function Event(event)
+	__Static__() function Event(event)
 		local thread = running()
 		if not thread then error("Task.Event(event) can only be used in a thread.", 2) end
 
@@ -592,7 +610,7 @@ interface "Task"
 		<param name="event">the system event name</param>
 		<return>true if the task is registered</return>
 	]]
-	function Wait(...)
+	__Static__() function Wait(...)
 		local thread = running()
 		if not thread then error("Task.Wait(delay, event, ...) can only be used in a thread.", 2) end
 

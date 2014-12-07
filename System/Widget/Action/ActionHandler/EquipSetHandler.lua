@@ -48,7 +48,7 @@ function UpdateEquipmentSet()
 	end
 
 	if str ~= "" then
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function ()
+		Task.NoCombatCall(function ()
 			handler:RunSnippet( str )
 
 			return handler:Refresh()

@@ -345,7 +345,7 @@ interface "IFKeyBinding"
 		<desc>Export key binding settings</desc>
 		<return type="table">the key binding settings</return>
 	]]
-	function _Export()
+	__Static__() function _Export()
 		local exp = {}
 
 		for name, key in pairs(_DBChar) do
@@ -359,7 +359,7 @@ interface "IFKeyBinding"
 		<desc>Import key binding settings</desc>
 		<param name="settings">table, contains the key bindings</param>
 		]]
-	function _Import(setting)
+	__Static__() function _Import(setting)
 		_Clear()
 
 		if type(setting) == "table" then
@@ -374,14 +374,14 @@ interface "IFKeyBinding"
 	end
 
 	__Doc__[[Clear all key bindings]]
-	function _Clear()
+	__Static__() function _Clear()
 		wipe(_DBChar)
 		wipe(_IFKeyBinding_KeyMap)
 		_IFKeyBinding_ButtonList:Each(ClearBindingKey)
 	end
 
 	__Doc__[[Turn binding mode on]]
-	function _ModeOn()
+	__Static__() function _ModeOn()
 		if not _IFKeyBinding_MsgBox.Visible and not InCombatLockdown() then
 			_M._IFKeyBinding_InBindingMode = true
 			_IFKeyBinding_MsgBox.Visible = true
@@ -389,7 +389,7 @@ interface "IFKeyBinding"
 	end
 
 	__Doc__[[Turn binding mode off]]
-	function _ModeOff()
+	__Static__() function _ModeOff()
 		_IFKeyBinding_MsgBox.Visible = false
 	end
 
@@ -397,12 +397,12 @@ interface "IFKeyBinding"
 		<desc>Whether if key binding mode is on</desc>
 		<return type="boolean">true if the key binding mode is on</return>
 	]]
-	function _IsModeOn()
+	__Static__() function _IsModeOn()
 		return _M._IFKeyBinding_InBindingMode
 	end
 
 	__Doc__[[Toggle the key binding mode]]
-	function _Toggle()
+	__Static__() function _Toggle()
 		if _M._IFKeyBinding_InBindingMode then
 			_ModeOff()
 		else
@@ -510,7 +510,7 @@ interface "IFKeyBinding"
 			self.OnEnter = self.OnEnter + OnEnter
 
 			if _IFKeyBinding_Loaded then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(UpdateBindingKey, self)
+				Task.NoCombatCall(UpdateBindingKey, self)
 			end
 		end
     end

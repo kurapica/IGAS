@@ -302,18 +302,18 @@ interface "IFSecurePanel"
 	function EachK(self, key, oper, ...)
 		IFIterator.EachK(self, key, oper, ...)
 
-		IFNoCombatTaskHandler._RegisterNoCombatTask(AdjustPanel, self)
+		Task.NoCombatCall(AdjustPanel, self)
 	end
 
 	function Each(self, oper, ...)
 		IFIterator.Each(self, oper, ...)
 
-		IFNoCombatTaskHandler._RegisterNoCombatTask(AdjustPanel, self)
+		Task.NoCombatCall(AdjustPanel, self)
 	end
 
 	__Doc__[[Update the panel size manually]]
 	function UpdatePanelSize(self)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(SecureUpdatePanelSize, self)
+		Task.NoCombatCall(SecureUpdatePanelSize, self)
 	end
 
 	------------------------------------------------------
@@ -332,7 +332,7 @@ interface "IFSecurePanel"
 			end
 
 			if cnt ~= self.ColumnCount then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self:SetAttribute("IFSecurePanel_ColumnCount", cnt)
 
 					Reduce(self)
@@ -356,7 +356,7 @@ interface "IFSecurePanel"
 			end
 
 			if cnt ~= self.RowCount then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self:SetAttribute("IFSecurePanel_RowCount", cnt)
 
 					Reduce(self)
@@ -387,7 +387,7 @@ interface "IFSecurePanel"
 			end
 
 			if cnt ~= self.ElementWidth then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self:SetAttribute("IFSecurePanel_Width", cnt)
 
 					self:Each(AdjustElement, self)
@@ -410,7 +410,7 @@ interface "IFSecurePanel"
 			end
 
 			if cnt ~= self.ElementHeight then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self:SetAttribute("IFSecurePanel_Height", cnt)
 
 					self:Each(AdjustElement, self)
@@ -436,12 +436,12 @@ interface "IFSecurePanel"
 
 			if cnt > self.Count then
 				if self.ElementType then
-					IFNoCombatTaskHandler._RegisterNoCombatTask(Generate, self, cnt)
+					Task.NoCombatCall(Generate, self, cnt)
 				else
 					error("ElementType not set.", 2)
 				end
 			elseif cnt < self.Count then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(Reduce, self, cnt)
+				Task.NoCombatCall(Reduce, self, cnt)
 			end
 		end,
 		Type = Number,
@@ -455,7 +455,7 @@ interface "IFSecurePanel"
 		Set = function(self, orientation)
 			if orientation == self.Orientation then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_Orientation", orientation)
 
 				self:Each(AdjustElement, self)
@@ -485,7 +485,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_HSpacing") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_HSpacing", spacing > 0 and floor(spacing) or 0)
 
 				self:Each(AdjustElement, self)
@@ -502,7 +502,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_VSpacing") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_VSpacing", spacing > 0 and floor(spacing) or 0)
 
 				self:Each(AdjustElement, self)
@@ -519,7 +519,7 @@ interface "IFSecurePanel"
 		Set = function(self, flag)
 			if flag == self.AutoSize then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_AutoSize", flag)
 
 				SecureUpdatePanelSize(self)
@@ -536,7 +536,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_MarginTop") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_MarginTop", spacing > 0 and floor(spacing) or 0)
 
 				self:Each(AdjustElement, self)
@@ -553,7 +553,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_MarginBottom") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_MarginBottom", spacing > 0 and floor(spacing) or 0)
 
 				AdjustPanel(self)
@@ -570,7 +570,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_MarginLeft") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_MarginLeft", spacing > 0 and floor(spacing) or 0)
 
 				self:Each(AdjustElement, self)
@@ -587,7 +587,7 @@ interface "IFSecurePanel"
 		Set = function(self, spacing)
 			if self:GetAttribute("IFSecurePanel_MarginRight") == spacing then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_MarginRight", spacing > 0 and floor(spacing) or 0)
 
 				AdjustPanel(self)
@@ -624,7 +624,7 @@ interface "IFSecurePanel"
 		Set = function(self, value)
 			if value == self.KeepMaxSize then return end
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+			Task.NoCombatCall(function()
 				self:SetAttribute("IFSecurePanel_KeepMaxSize", value)
 
 				AdjustPanel(self)
@@ -637,11 +637,11 @@ interface "IFSecurePanel"
 	-- Event Handler
 	------------------------------------------------------
 	local function OnElementAdd(self, element)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(RegisterFrame, self, element)
+		Task.NoCombatCall(RegisterFrame, self, element)
 	end
 
 	local function OnElementRemove(self, element)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterFrame, self, IGAS:GetUI(element))
+		Task.NoCombatCall(UnregisterFrame, self, IGAS:GetUI(element))
 	end
 
 	------------------------------------------------------
@@ -652,10 +652,10 @@ interface "IFSecurePanel"
 		self.OnElementRemove = self.OnElementRemove - OnElementRemove
 
 		for i = 1, self.Count do
-			IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterFrame, IGAS:GetUI(self), IGAS:GetUI(self.Element[i]))
+			Task.NoCombatCall(UnregisterFrame, IGAS:GetUI(self), IGAS:GetUI(self.Element[i]))
 		end
 
-		IFNoCombatTaskHandler._RegisterNoCombatTask(UnregisterPanel, IGAS:GetUI(self))
+		Task.NoCombatCall(UnregisterPanel, IGAS:GetUI(self))
 	end
 
 	------------------------------------------------------

@@ -1,6 +1,7 @@
 -- Author      : Kurapica
 -- Create Date : 2014/09/11
 -- ChangeLog   :
+
 _ENV = Module "System.Helper" "0.1.0"
 
 namespace "System"

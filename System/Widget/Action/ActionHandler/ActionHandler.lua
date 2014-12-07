@@ -279,7 +279,7 @@ interface "IFActionHandler"
 		if self.ID == nil then page = nil end
 
 		if GetActionPage(self) ~= page then
-			IFNoCombatTaskHandler._RegisterNoCombatTask(
+			Task.NoCombatCall(
 				function (self, page)
 					self:SetAttribute("actionpage", page)
 					if page then
@@ -311,7 +311,7 @@ interface "IFActionHandler"
 			self.__IFActionHandler_IsMainPage = isMain
 
 			if isMain then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(
+				Task.NoCombatCall(
 					function (self)
 						handler.Manager:SetFrameRef("MainPageButton", self)
 						handler.Manager:Execute([[
@@ -325,7 +325,7 @@ interface "IFActionHandler"
 					end, self
 				)
 			else
-				IFNoCombatTaskHandler._RegisterNoCombatTask(
+				Task.NoCombatCall(
 					function (self)
 						handler.Manager:SetFrameRef("MainPageButton", self)
 						handler.Manager:Execute([[

@@ -2509,7 +2509,7 @@ class "MultiLineTextBox"
 		<param name="list" type="table">The common auto complete list</param>
 	]]
 	__Delegate__( Task.ThreadCall )
-	function _AppendCommonAutoCompleteList(list)
+	__Static__() function _AppendCommonAutoCompleteList(list)
 		assert(type(list) == "table")
 		local lst = _CommonAutoCompleteList
 		local i = 0
@@ -2966,7 +2966,7 @@ class "MultiLineTextBox"
 		_KeyScan.FocusEditor = self
 		_KeyScan.Visible = true
 
-		IFNoCombatTaskHandler._RegisterNoCombatTask(BlockShortKey)
+		Task.NoCombatCall(BlockShortKey)
 
 		return self:Fire("OnEditFocusGained", ...)
 	end
@@ -2981,7 +2981,7 @@ class "MultiLineTextBox"
 			_List.Visible = false
 			_List:Clear()
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(UnblockShortKey)
+			Task.NoCombatCall(UnblockShortKey)
 		end
 
 		return self:Fire("OnEditFocusLost", ...)

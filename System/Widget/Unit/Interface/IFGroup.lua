@@ -319,12 +319,12 @@ interface "IFGroup"
 		local function TGenerateUnitFrames(self, count)
 			Threading.Sleep(0.1) -- Wait the SecureGroupHeader finished the init
 
-			IFNoCombatTaskHandler._RegisterNoCombatTask(GenerateUnitFrames, self, count)
+			Task.NoCombatCall(GenerateUnitFrames, self, count)
 		end
 
 		local function UpdateUnitCount(self, count)
 			if InCombatLockdown() then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(GenerateUnitFrames, self, count)
+				Task.NoCombatCall(GenerateUnitFrames, self, count)
 			else
 				IGAS:GetWrapper(self):ThreadCall(TGenerateUnitFrames, count)
 			end
@@ -355,7 +355,7 @@ interface "IFGroup"
 		__Doc__[[Activate the unit panel]]
 		function Activate(self)
 			if not self.Visible then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self.Visible = true
 				end)
 			end
@@ -364,7 +364,7 @@ interface "IFGroup"
 		__Doc__[[Deactivate the unit panel]]
 		function Deactivate(self)
 			if self.Visible then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self.Visible = false
 				end)
 			end
@@ -378,7 +378,7 @@ interface "IFGroup"
 			flag = flag and true or false
 
 			if flag ~= self.ShowDeadOnly then
-				IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+				Task.NoCombatCall(function()
 					self:SetAttribute("showDeadOnly", flag)
 
 					self:Execute(_ToggleShowOnlyPlayer)
@@ -450,7 +450,7 @@ interface "IFGroup"
 	_Cache = {}
 
 	local function SecureSetAttribute(self, attr, value)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(self.SetAttribute, self, attr, value)
+		Task.NoCombatCall(self.SetAttribute, self, attr, value)
 	end
 
 	local function SetupGroupFilter(self)
@@ -532,7 +532,7 @@ interface "IFGroup"
 		<param name="count">number, the units count</param>
 		]]
 	function InitWithCount(self, count)
-		IFNoCombatTaskHandler._RegisterNoCombatTask(function()
+		Task.NoCombatCall(function()
 			self.Count = count
 		end)
 	end
