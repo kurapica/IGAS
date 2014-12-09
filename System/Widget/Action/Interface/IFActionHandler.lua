@@ -19,6 +19,10 @@ end
 --		GetGroup(group) : True Group name
 ------------------------------------------------------
 do
+	-- Manager Frame
+	_IFActionHandler_ManagerFrame = SecureFrame("IGAS_IFActionHandler_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
+	_IFActionHandler_ManagerFrame.Visible = false
+
 	_FlashInterval = 0.4
 	_UpdateRangeInterval = 0.2
 
@@ -559,10 +563,6 @@ do
 
 	-- Object Array
 	_IFActionHandler_Buttons = ActionList()
-
-	-- Manager Frame
-	_IFActionHandler_ManagerFrame = SecureFrame("IGAS_IFActionHandler_Manager", IGAS.UIParent, "SecureHandlerStateTemplate")
-	_IFActionHandler_ManagerFrame.Visible = false
 
 	-- Custom pick up handler
 	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target, detail)
