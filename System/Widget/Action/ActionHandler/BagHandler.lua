@@ -20,14 +20,12 @@ handler = ActionTypeHandler {
 	InitSnippet = [[
 	]],
 
-	PickupSnippet = [[
-	]],
+	PickupSnippet = "Custom",
 
 	UpdateSnippet = [[
 	]],
 
-	ReceiveSnippet = [[
-	]],
+	ReceiveSnippet = "Custom",
 
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }

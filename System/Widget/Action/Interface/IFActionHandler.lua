@@ -130,8 +130,16 @@ interface "IFActionTypeHandler"
 		<desc>Custom pick up action</desc>
 		<param name="target"></param>
 		<param name="detail"></param>
-		]]
+	]]
 	function PickupAction(self, target, detail)
+	end
+
+	__Doc__[[
+		<desc>Custom receive action</desc>
+		<param name="target"></param>
+		<param name="detail"></param>
+	]]
+	function ReceiveAction(self, target, detail)
 	end
 
 	__Doc__[[
@@ -566,22 +574,19 @@ do
 
 	-- Custom pick up handler
 	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnPickUp = function (self, kind, target, detail)
-		if not InCombatLockdown() then
-			return PickupAny("clear", kind, target, detail)
-		end
+		return not InCombatLockdown() and PickupAny("clear", kind, target, detail)
+	end
+
+	IGAS:GetUI(_IFActionHandler_ManagerFrame).OnReceive = function (self, kind, target, detail)
+		return not InCombatLockdown() and _IFActionTypeHandler[kind] and _IFActionTypeHandler[kind]:ReceiveAction(target, detail)
 	end
 
 	-- Spell activation alert recycle manager
 	_RecycleAlert = Recycle(SpellActivationAlert, "SpellActivationAlert%d", _IFActionHandler_ManagerFrame)
 
 	-- Timer
-	_IFActionHandler_UpdateRangeTimer = Timer("RangeTimer", _IFActionHandler_ManagerFrame)
-	_IFActionHandler_UpdateRangeTimer.Enabled = false
-	_IFActionHandler_UpdateRangeTimer.Interval = _UpdateRangeInterval
-
-	_IFActionHandler_FlashingTimer = Timer("FlashingTimer", _IFActionHandler_ManagerFrame)
-	_IFActionHandler_FlashingTimer.Enabled = false
-	_IFActionHandler_FlashingTimer.Interval = _FlashInterval
+	_IFActionHandler_UpdateRangeTimer = Timer("RangeTimer", _IFActionHandler_ManagerFrame) { Enabled = false, Interval = _UpdateRangeInterval }
+	_IFActionHandler_FlashingTimer = Timer("FlashingTimer", _IFActionHandler_ManagerFrame) { Enabled = false, Interval = _FlashInterval }
 
 	_IFActionHandler_FlashingList = setmetatable({}, getmetatable(_AutoAttackButtons))
 
@@ -771,18 +776,40 @@ do
 							end
 						end
 					end
-				end
 
-				Manager:RunFor(self, UpdateAction)
+					Manager:RunFor(self, UpdateAction)
 
-				-- Pickup the target
-				if _PickupSnippet[oldName] == "Custom" then
-					Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
-					return false
-				elseif _PickupSnippet[oldName] then
-					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
-				else
-					return "clear", _PickupMap[oldName], oldTarget, oldDetail
+					-- Pickup the target
+					if _PickupSnippet[oldName] == "Custom" then
+						Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
+						return false
+					elseif _PickupSnippet[oldName] then
+						return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
+					else
+						return "clear", _PickupMap[oldName], oldTarget, oldDetail
+					end
+				elseif _ReceiveStyle[oldName] == "Keep" then
+					local arg1, arg2, arg3, arg4
+
+					-- Pickup the target
+					if _PickupSnippet[oldName] == "Custom" then
+						Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
+						arg1 = false
+					elseif _PickupSnippet[oldName] then
+						arg1, arg2, arg3, arg4 = Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
+					else
+						arg1, arg2, arg3, arg4 = "clear", _PickupMap[oldName], oldTarget, oldDetail
+					end
+
+					if _ReceiveSnippet[oldName] == "Custom" then
+						Manager:CallMethod("OnReceive", value, extra, extra2)
+					elseif _ReceiveSnippet[oldName] then
+						Manager:RunFor(self, _ReceiveSnippet[oldName], value, extra, extra2)
+					end
+
+					Manager:RunFor(self, UpdateAction)
+
+					return arg1, arg2, arg3, arg4
 				end
 			]=]
 
