@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "2.0.0"
+Module "System.Task" "2.0.1"
 
 namespace "System"
 
@@ -177,7 +177,7 @@ do
 					else
 						ok = true
 					end
-				else
+				elseif method then
 					if nargs == 0 then
 						ok, msg = pcall(method)
 					elseif nargs == 1 then
@@ -191,6 +191,8 @@ do
 					else
 						ok, msg = pcall(method, unpack(args, 1, nargs))
 					end
+				else
+					ok = true
 				end
 
 				if not ok then pcall(geterrorhandler(), msg) end

@@ -1,3 +1,6 @@
+2014/12/13: IGAS v70
+    1. Fix Task System empty task warning.
+
 2014/11/16: IGAS v69
     1. Trap Launcher spell now works like stance spell.
 
