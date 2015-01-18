@@ -30,6 +30,26 @@ class "Alpha"
 		<param name="change">number, Amount by which the region's alpha value should change over the animation's duration (between -1 and 1)</param>
 	]]
 
+	__Doc__"GetFromAlpha" [[
+		<desc>Returns the animation's amount of alpha (opacity) start from.</desc>
+		<return type="number">Amount by which the region's alpha value start from over the animation's duration (between -1 and 1)</return>
+	]]
+
+	__Doc__"SetFromAlpha" [[
+		<desc>Sets the animation's amount of alpha (opacity) start from.</desc>
+		<param name="change">number, Amount by which the region's alpha value should start from (between -1 and 1)</param>
+	]]
+
+	__Doc__"GetToAlpha" [[
+		<desc>Returns the animation's amount of alpha (opacity) end to.</desc>
+		<return type="number">Amount by which the region's alpha value end to over the animation's duration (between -1 and 1)</return>
+	]]
+
+	__Doc__"SetToAlpha" [[
+		<desc>Sets the animation's amount of alpha (opacity) end to.</desc>
+		<param name="change">number, Amount by which the region's alpha value should end to (between -1 and 1)</param>
+	]]
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -58,4 +78,9 @@ class "Alpha"
 	__Doc__[[the animation's amount of alpha (opacity) change]]
 	property "Change" { Type = Number }
 
+	__Doc__[[the animation's amount of alpha (opacity) start from]]
+	property "FromAlpha" { Type = Number }
+
+	__Doc__[[the animation's amount of alpha (opacity) end to]]
+	property "ToAlpha" { Type = Number }
 endclass "Alpha"

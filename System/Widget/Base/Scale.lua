@@ -42,6 +42,26 @@ class "Scale"
 		<param name="yFactor">number, Vertical scaling factor</param>
 	]]
 
+	__Doc__"GetFromScale" [[
+		<desc>Gets the animation's scale amount that start from.</desc>
+		<return>the animation's scale amount that start from</return>
+	]]
+
+	__Doc__"SetFromScale" [[
+		<desc>Sets the animation's scale amount that start from.</desc>
+		<param name="fromscale">the animation's scale amount that start from</param name="fromscale">
+	]]
+
+	__Doc__"GetToScale" [[
+		<desc>Gets the animation's scale amount that end to.</desc>
+		<return>the animation's scale amount that end to</return>
+	]]
+
+	__Doc__"SetToScale" [[
+		<desc>Sets the animation's scale amount that end to.</desc>
+		<param name="fromscale">the animation's scale amount that end to</param name="fromscale">
+	]]
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
@@ -83,6 +103,28 @@ class "Scale"
 			self:SetOrigin(origin.point, origin.x, origin.y)
 		end,
 		Type = AnimOriginType,
+	}
+
+	__Doc__[[the animation's scale amount that start from]]
+	property "FromScale" {
+		Get = function(self)
+			return Dimension(self:GetFromScale())
+		end,
+		Set = function(self, offset)
+			self:SetFromScale(offset.x, offset.y)
+		end,
+		Type = Dimension,
+	}
+
+	__Doc__[[the animation's scale amount that end to]]
+	property "ToScale" {
+		Get = function(self)
+			return Dimension(self:GetToScale())
+		end,
+		Set = function(self, offset)
+			self:SetToScale(offset.x, offset.y)
+		end,
+		Type = Dimension,
 	}
 
 endclass "Scale"

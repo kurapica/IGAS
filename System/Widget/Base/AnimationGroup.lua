@@ -150,6 +150,9 @@ class "AnimationGroup"
 
 	__Doc__"Stop" [[Stops animation of the group. Unlike with AnimationGroup:Pause(), the animation is reset to the initial state (e.g. in a fade-out-fade-in animation, the element will be instantly returned to full opacity) instead of paused at its current progress state.]]
 
+	__Doc__"GetIgnoreFramerateThrottle" [[Gets the ignored framerate throttle]]
+	__Doc__"SetIgnoreFramerateThrottle" [[Sets the ignored framerate throttle]]
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -244,5 +247,11 @@ class "AnimationGroup"
 
 	__Doc__[[duration of all child animations (in seconds)]]
 	property "Duration" { }
+
+	__Doc__[[Ignored framerate throttle]]
+	property "IgnoreFramerateThrottle" { }
+
+	__Doc__[[Whether to final alpha is set]]
+	property "ToFinalAlpha" { Type = Boolean }
 
 endclass "AnimationGroup"
