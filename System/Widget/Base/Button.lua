@@ -170,11 +170,8 @@ class "Button"
 		<param name="locked">boolean</param>
 	]]
 	function SetButtonState(self, state, locked)
-		if locked ~= nil then
-			self.__Locked = locked
-		end
-
-		self.__UI:SetButtonState(state, self.__Locked)
+		self.ButtonState = state
+		if locked ~= nil then self.Locked = locked end
 	end
 
 	__Doc__"SetDisabledFontObject" [[
@@ -286,24 +283,17 @@ class "Button"
 
 	__Doc__[[the button's current state: NORMAL, PUSHED]]
 	property "ButtonState" {
-		Get = "GetButtonState",
 		Set = function(self, state)
-			self:SetButtonState(state, self.__Locked)
+			self.__UI:SetButtonState(state, self.Locked)
 		end,
 		Type = ButtonStateType,
 	}
 
 	__Doc__[[true if the button is locked]]
-	property "Locked" {
-		Get = function(self)
-			return (self.__Locked and true) or false
-		end,
-		Set = function(self, enabled)
-			self.__Locked = enabled
-			self:SetButtonState(self.__UI:GetButtonState(), enabled)
-		end,
-		Type = Boolean,
-	}
+	__Handler__(function (self, value)
+		self.__UI:SetButtonState(self.ButtonState, value)
+	end)
+	property "Locked" { Type = Boolean }
 
 	__Doc__[[the font object used for the button's disabled state]]
 	property "DisabledFontObject" { Type = Font + String + nil }
@@ -380,20 +370,13 @@ class "Button"
 	property "Text" { Type = LocaleString }
 
 	__Doc__[[true if the button's highlight state is locked]]
-	property "HighlightLocked" {
-		Get = function(self)
-			return (self.__HighlightLocked and true) or false
-		end,
-		Set = function(self, locked)
-			if locked then
-				self.__UI:LockHighlight()
-				self.__HighlightLocked = true
-			else
-				self.__UI:UnlockHighlight()
-				self.__HighlightLocked = false
-			end
-		end,
-		Type = Boolean,
-	}
+	__Handler__( function (self, value)
+		if value then
+			self:LockHighlight()
+		else
+			self:UnlockHighlight()
+		end
+	end )
+	property "HighlightLocked" { Field = "__HighlightLocked", Type = Boolean }
 
 endclass "Button"

@@ -216,6 +216,12 @@ class "ActionButton"
 	end )
 	property "EquippedItemIndicator" { Type = Boolean }
 
+	__Doc__[[Whether the action button's icon is locked]]
+	__Handler__( function (self, value)
+		self:GetChild("Icon"):SetDesaturated(value)
+	end )
+	property "IconLocked" { Type = Boolean }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------

@@ -19,8 +19,6 @@ _BagSlotMap = {
 }
 
 function OnEnable(self)
-	self:RegisterEvent("MERCHANT_UPDATE")
-	self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	self:RegisterEvent("ITEM_LOCK_CHANGED")
 	self:RegisterEvent("CURSOR_UPDATE")
 
@@ -33,6 +31,39 @@ function OnEnable(self)
 	end
 
 	OnEnable = nil
+end
+
+function ITEM_LOCK_CHANGED(self, bag, slot)
+	if not slot then
+		for i, map in pairs(_BagSlotMap) do
+			if map.id == bag then
+				local flag = IsInventoryItemLocked(bag)
+				for _, btn in handler() do
+					if btn.ActionTarget == i then btn.IconLocked = flag end
+				end
+				break
+			end
+		end
+	end
+end
+
+function CURSOR_UPDATE(self)
+	for _, btn in handler() do
+		local target = _BagSlotMap[self.ActionTarget]
+		if target then
+			btn.HighlightLocked = CursorCanGoInSlot(target.id)
+		end
+	end
+end
+
+function BAG_UPDATE_DELAYED(self)
+	handler:Refresh()
+end
+
+function INVENTORY_SEARCH_UPDATE(self)
+	for _, btn in handler() do
+		btn.ShowSearchOverlay = IsContainerFiltered(self.ActionTarget)
+	end
 end
 
 handler = ActionTypeHandler {
@@ -112,4 +143,7 @@ interface "IFActionHandler"
 		end,
 		Type = BagSlot,
 	}
+
+	__Doc__[[Whether the search overlay will be shown]]
+	__Optional__() property "ShowSearchOverlay" { Type = Boolean }
 endinterface "IFActionHandler"

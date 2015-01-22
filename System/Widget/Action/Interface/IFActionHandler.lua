@@ -1713,6 +1713,8 @@ interface "IFActionHandler"
 	__Doc__[[Whether an indicator should be shown for equipped item]]
 	__Optional__() property "EquippedItemIndicator" { Type = Boolean }
 
+	__Doc__[[Whether the action button's icon is locked]]
+	__Optional__() property "IconLocked" { Type = Boolean }
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
