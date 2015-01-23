@@ -377,6 +377,6 @@ class "Button"
 			self:UnlockHighlight()
 		end
 	end )
-	property "HighlightLocked" { Field = "__HighlightLocked", Type = Boolean }
+	property "HighlightLocked" { Field = true, Type = Boolean }
 
 endclass "Button"

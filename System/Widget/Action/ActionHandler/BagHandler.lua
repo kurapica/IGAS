@@ -57,7 +57,13 @@ function CURSOR_UPDATE(self)
 end
 
 function BAG_UPDATE_DELAYED(self)
-	handler:Refresh()
+	for _, btn in handler() do
+		handler:Refresh(btn)
+		local target = _BagSlotMap[btn.ActionTarget]
+		if target then
+			btn.IconLocked = IsInventoryItemLocked(target.id)
+		end
+	end
 end
 
 function INVENTORY_SEARCH_UPDATE(self)
@@ -89,10 +95,13 @@ function handler:HasAction()
 end
 
 function handler:GetActionTexture()
-	local target = self.ActionTarget
-	if _BagSlotMap[target] then
-		return GetInventoryItemTexture("player", _BagSlotMap[target].id) or _BagSlotMap[target].texture
-	end
+	local target = _BagSlotMap[self.ActionTarget]
+	return target and GetInventoryItemTexture("player", target.id) or target.texture
+end
+
+function handler:GetActionCount()
+	local target = _BagSlotMap[self.ActionTarget]
+	return target and GetInventoryItemCount("player", target.id)
 end
 
 function handler:SetTooltip(GameTooltip)
