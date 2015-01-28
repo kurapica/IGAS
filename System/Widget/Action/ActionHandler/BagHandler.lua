@@ -11,11 +11,11 @@ end
 _Enabled = false
 
 _BagSlotMap = {
-	0 = "BackSlot",
-	1 = "Bag0Slot",
-	2 = "Bag1Slot",
-	3 = "Bag2Slot",
-	4 = "Bag3Slot",
+	[0] = "BackSlot",
+	"Bag0Slot",
+	"Bag1Slot",
+	"Bag2Slot",
+	"Bag3Slot",
 }
 
 function OnEnable(self)

@@ -29,11 +29,11 @@ interface "IFPushItemAnim"
 	class "PushItemAnim"
 		inherit "Frame"
 
-		local flyin_OnPlay(self)
+		local function flyin_OnPlay(self)
 			self.Parent.Visible = true
 		end
 
-		local flyin_OnFinished(self)
+		local function flyin_OnFinished(self)
 			self.Parent.Visible = false
 		end
 
@@ -86,7 +86,7 @@ interface "IFPushItemAnim"
 	    end
 	endclass "PushItemAnim"
 
-	rycPushItemAnim = Recyle(PushItemAnim, "IGAS_PushItemAnim%d")
+	rycPushItemAnim = Recycle(PushItemAnim, "IGAS_PushItemAnim%d")
 
 	_BagMap = {}
 
