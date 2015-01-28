@@ -23,31 +23,32 @@ do
 
 	_M:ActiveThread("OnLoad")
 
-	_IFKeyBinding_MsgBox = PopupDialog("IGAS_Action_IFKeyBinding_MSGBOX")
-	_IFKeyBinding_MsgBox.Style = "LIGHT"
-	_IFKeyBinding_MsgBox.OkayButtonText = L"Okay"
-	_IFKeyBinding_MsgBox.NoButtonText = L"No"
-	_IFKeyBinding_MsgBox.CancelButtonText = L"Cancel"
-	_IFKeyBinding_MsgBox.Message = L"Move cursor over the button to binding key."
-	_IFKeyBinding_MsgBox.ShowNoButton = false
-	_IFKeyBinding_MsgBox.ShowCancelButton = false
-	_IFKeyBinding_MsgBox.ShowInputBox = false
-
-	_IFKeyBinding_MaskFrame = Button("IGAS_IFKeyBinding_Mask")
-	_IFKeyBinding_MaskFrame.Visible = false
-	_IFKeyBinding_MaskFrame.TopLevel = true
-	_IFKeyBinding_MaskFrame.FrameStrata = "TOOLTIP"
-	_IFKeyBinding_MaskFrame.MouseWheelEnabled = true
-	_IFKeyBinding_MaskFrame.KeyboardEnabled = true
-	_IFKeyBinding_MaskFrame:RegisterForClicks("anyUp")
-
-	_IFKeyBinding_MaskFrame.Backdrop = {
-		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = true, tileSize = 16, edgeSize = 8,
-		insets = { left = 3, right = 3, top = 3, bottom = 3 }
+	_IFKeyBinding_MsgBox = PopupDialog "IGAS_Action_IFKeyBinding_MSGBOX" {
+		Style = "LIGHT",
+		OkayButtonText = L"Okay",
+		NoButtonText = L"No",
+		CancelButtonText = L"Cancel",
+		Message = L"Move cursor over the button to binding key.",
+		ShowNoButton = false,
+		ShowCancelButton = false,
+		ShowInputBox = false,
 	}
-	_IFKeyBinding_MaskFrame.BackdropColor = ColorType(0, 1, 0, 0.4)
+
+	_IFKeyBinding_MaskFrame = Button "IGAS_IFKeyBinding_Mask" {
+		Visible = false,
+		TopLevel = true,
+		FrameStrata = "TOOLTIP",
+		MouseWheelEnabled = true,
+		KeyboardEnabled = true,
+		Backdrop = {
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true, tileSize = 16, edgeSize = 8,
+			insets = { left = 3, right = 3, top = 3, bottom = 3 }
+		},
+		BackdropColor = ColorType(0, 1, 0, 0.4),
+	}
+	_IFKeyBinding_MaskFrame:RegisterForClicks("anyUp")
 	_IFKeyBinding_MaskFrame:ActiveThread("OnShow")
 
 	_IFKeyBinding_KeyFilter = setmetatable(
@@ -61,13 +62,7 @@ do
 			["RALT"] = false,
 			["RCTRL"] = false,
 			["UNKNOWN"] = false,
-		},{
-			__index = function (self, key)
-				if type(key) == "string" then
-					return true
-				end
-			end
-		}
+		},{ __index = function (self, key) return type(key) == "string" or nil end }
 	)
 
 	GameTooltip = _G.GameTooltip
@@ -120,9 +115,7 @@ do
 		IGAS_DB_Char.Action_IFKeyBinding_DB = IGAS_DB_Char.Action_IFKeyBinding_DB or {}
 		_DBChar = IGAS_DB_Char.Action_IFKeyBinding_DB
 
-		if InCombatLockdown() then
-			System.Threading.WaitEvent "PLAYER_REGEN_ENABLED"
-		end
+		if InCombatLockdown() then Task.Event "PLAYER_REGEN_ENABLED" end
 
 		for _, frm in ipairs(_IFKeyBinding_ButtonList) do
 			frm:UpdateBindingKey()
@@ -130,9 +123,9 @@ do
 
 		_IFKeyBinding_Loaded = true
 
-		self:RegisterEvent"PLAYER_REGEN_DISABLED"
-		self:RegisterEvent"PET_BATTLE_OPENING_START"
-		self:RegisterEvent"PET_BATTLE_CLOSE"
+		self:RegisterEvent "PLAYER_REGEN_DISABLED"
+		self:RegisterEvent "PET_BATTLE_OPENING_START"
+		self:RegisterEvent "PET_BATTLE_CLOSE"
 		self.OnLoad = nil
 	end
 
@@ -197,7 +190,7 @@ do
 	end
 
 	function _IFKeyBinding_MaskFrame:OnShow()
-		Threading.Sleep(0.1)	-- Can't show GameTooltip when first show, so we just wait.
+		Task.Delay(0.1)	-- Can't show GameTooltip when first show, so we just wait.
 		if self.BindingButton then
 			local text = self.BindingButton:GetBindingKey()
 			if text and text ~= "" then
@@ -403,11 +396,7 @@ interface "IFKeyBinding"
 
 	__Doc__[[Toggle the key binding mode]]
 	__Static__() function _Toggle()
-		if _M._IFKeyBinding_InBindingMode then
-			_ModeOff()
-		else
-			_ModeOn()
-		end
+		return _M._IFKeyBinding_InBindingMode and _ModeOff() or _ModeOn()
 	end
 
 	------------------------------------------------------
@@ -478,7 +467,7 @@ interface "IFKeyBinding"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the hotkey property, need override]]
-	property "HotKey" { Type = System.String + nil }
+	__Optional__() property "HotKey" { Type = System.String + nil }
 
 	------------------------------------------------------
 	-- Event Handler
