@@ -239,7 +239,267 @@ class "SimpleHTML"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[the format string used for displaying hyperlinks in the frame]]
+	property "HyperlinkFormat" { Type = String }
+
 	__Doc__[[Whether hyperlinks in the frame's text are interactive]]
 	property "HyperlinksEnabled" { Type = Boolean }
+
+	__Doc__[[whether long lines of text are indented when wrapping]]
+	property "IndentedWordWrap" { Type = Boolean }
+
+	__Doc__[[The content of the html viewer]]
+	property "Text" { Type = String + nil }
+
+	__Doc__[[the font's defined table, contains font path, height and flags' settings]]
+	property "Font" {
+		Get = function(self)
+			local font = {}
+			local flags
+
+			font.path, font.height, flags = self:GetFont()
+			flags = (flags or ""):upper()
+			if flags:find("THICKOUTLINE") then
+				font.outline = "THICK"
+			elseif flags:find("OUTLINE") then
+				font.outline = "NORMAL"
+			else
+				font.outline = "NONE"
+			end
+			if flags:find("MONOCHROME") then
+				font.monochrome = true
+			end
+
+			return font
+		end,
+		Set = function(self, font)
+			local flags = ""
+			if font.outline then
+				if font.outline == "NORMAL" then
+					flags = flags.."OUTLINE"
+				elseif font.outline == "THICK" then
+					flags = flags.."THICKOUTLINE"
+				end
+			end
+			if font.monochrome then
+				if flags ~= "" then
+					flags = flags..","
+				end
+				flags = flags.."MONOCHROME"
+			end
+
+			self:SetFont(font.path, font.height, flags)
+		end,
+		Type = FontType,
+	}
+
+	__Doc__[[the Font object]]
+	property "FontObject" { Type = Font + String + nil }
+
+	__Doc__[[the fontstring's horizontal text alignment style]]
+	property "JustifyH" { Type = JustifyHType }
+
+	__Doc__[[the fontstring's vertical text alignment style]]
+	property "JustifyV" { Type = JustifyVType }
+
+	__Doc__[[the color of the font's text shadow]]
+	property "ShadowColor" {
+		Get = function(self)
+			return ColorType(self:GetShadowColor())
+		end,
+		Set = function(self, color)
+			self:SetShadowColor(color.r, color.g, color.b, color.a)
+		end,
+		Type = ColorType,
+	}
+
+	__Doc__[[the offset of the fontstring's text shadow from its text]]
+	property "ShadowOffset" {
+		Get = function(self)
+			return Dimension(self:GetShadowOffset())
+		end,
+		Set = function(self, offset)
+			self:SetShadowOffset(offset.x, offset.y)
+		end,
+		Type = Dimension,
+	}
+
+	__Doc__[[the fontstring's amount of spacing between lines]]
+	property "Spacing" { Type = Number }
+
+	__Doc__[[the fontstring's default text color]]
+	property "TextColor" {
+		Get = function(self)
+			return ColorType(self:GetTextColor())
+		end,
+		Set = function(self, color)
+			self:SetTextColor(color.r, color.g, color.b, color.a)
+		end,
+		Type = ColorType,
+	}
+
+	class "Element"
+		--------------------------------------------------
+		-- Property
+		--------------------------------------------------
+		__Doc__[[The owner of the element]]
+		property "Owner" { Type = HTMLViewer }
+
+		__Doc__[[The target element in the html like 'h2']]
+		property "Element" { Type = String }
+
+		__Doc__[[whether long lines of text are indented when wrapping]]
+		property "IndentedWordWrap" {
+			Get = function (self)
+				return self.Owner:GetIndentedWordWrap(self.Element)
+			end,
+			Set = function (self, value)
+				self.Owner:SetIndentedWordWrap(self.Element, value)
+			end,
+			Type = Boolean,
+		}
+
+		__Doc__[[the font's defined table, contains font path, height and flags' settings]]
+		property "Font" {
+			Get = function(self)
+				local font = {}
+				local flags
+
+				font.path, font.height, flags = self.Owner:GetFont(self.Element)
+				flags = (flags or ""):upper()
+				if flags:find("THICKOUTLINE") then
+					font.outline = "THICK"
+				elseif flags:find("OUTLINE") then
+					font.outline = "NORMAL"
+				else
+					font.outline = "NONE"
+				end
+				if flags:find("MONOCHROME") then
+					font.monochrome = true
+				end
+
+				return font
+			end,
+			Set = function(self, font)
+				local flags = ""
+				if font.outline then
+					if font.outline == "NORMAL" then
+						flags = flags.."OUTLINE"
+					elseif font.outline == "THICK" then
+						flags = flags.."THICKOUTLINE"
+					end
+				end
+				if font.monochrome then
+					if flags ~= "" then
+						flags = flags..","
+					end
+					flags = flags.."MONOCHROME"
+				end
+
+				self.Owner:SetFont(self.Element, font.path, font.height, flags)
+			end,
+			Type = FontType,
+		}
+
+		__Doc__[[the Font object]]
+		property "FontObject" {
+			Get = function (self)
+				return self.Owner:GetFontObject(self.Element)
+			end,
+			Set = function (self, obj)
+				self.Owner:SetFontObject(self.Element, obj)
+			end,
+			Type = Font + String + nil,
+		}
+
+		__Doc__[[the fontstring's horizontal text alignment style]]
+		property "JustifyH" {
+			Get = function (self)
+				return self.Owner:GetJustifyH(self.Element)
+			end,
+			Set = function (self, value)
+				self.Owner:SetJustifyH(self.Element, value)
+			end,
+			Type = JustifyHType,
+		}
+
+		__Doc__[[the fontstring's vertical text alignment style]]
+		property "JustifyV" {
+			Get = function (self)
+				return self.Owner:GetJustifyV(self.Element)
+			end,
+			Set = function (self, value)
+				self.Owner:SetJustifyV(self.Element, value)
+			end,
+			Type = JustifyVType,
+		}
+
+		__Doc__[[the color of the font's text shadow]]
+		property "ShadowColor" {
+			Get = function(self)
+				return ColorType(self.Owner:GetShadowColor(self.Element))
+			end,
+			Set = function(self, color)
+				self.Owner:SetShadowColor(self.Element, color.r, color.g, color.b, color.a)
+			end,
+			Type = ColorType,
+		}
+
+		__Doc__[[the offset of the fontstring's text shadow from its text]]
+		property "ShadowOffset" {
+			Get = function(self)
+				return Dimension(self.Owner:GetShadowOffset(self.Element))
+			end,
+			Set = function(self, offset)
+				self.Owner:SetShadowOffset(self.Element, offset.x, offset.y)
+			end,
+			Type = Dimension,
+		}
+
+		__Doc__[[the fontstring's amount of spacing between lines]]
+		property "Spacing" {
+			Get = function (self)
+				return self.Owner:GetSpacing(self.Element)
+			end,
+			Set = function (self, value)
+				self.Owner:SetSpacing(self.Element, value)
+			end,
+			Type = Number,
+		}
+
+		__Doc__[[the fontstring's default text color]]
+		property "TextColor" {
+			Get = function(self)
+				return ColorType(self.Owner:GetTextColor(self.Element))
+			end,
+			Set = function(self, color)
+				self.Owner:SetTextColor(self.Element, color.r, color.g, color.b, color.a)
+			end,
+			Type = ColorType,
+		}
+
+		--------------------------------------------------
+		-- Meta-method
+		--------------------------------------------------
+		function __index(self, key)
+			self.Element = key
+			return self
+		end
+
+		__call = __index
+	endclass "Element"
+
+	__Doc__[[The element accessor]]
+	property "Element" {
+		Get = function (self)
+			local ele = self.__Element
+			if not ele then
+				ele = Element { Owner = self }
+				self.__Element = ele
+			end
+			return ele
+		end,
+		Type = Element
+	}
 
 endclass "SimpleHTML"

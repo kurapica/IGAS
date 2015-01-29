@@ -45,7 +45,7 @@ enum "Reaction" {
 	["8"] = "Exalted",
 }
 
-enum "Sex" {
+enum "Gender" {
 	["1"] = "Neuter",
 	["2"] = "Male",
 	["3"] = "Female",
