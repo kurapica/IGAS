@@ -54,16 +54,9 @@ function _IFResurrectUnitList:ParseEvent(event)
 	self:Each(checkUnitForResurrect)
 end
 
-__Doc__[[
-	<desc>IFResurrect is used to handle the unit resurrection state's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resurrection indicator should be shown</optional>
-]]
+__Doc__[[IFResurrect is used to handle the unit resurrection state's updating]]
 interface "IFResurrect"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -75,6 +68,8 @@ interface "IFResurrect"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the result that whether the resurrection indicator should be shown]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -91,7 +86,7 @@ interface "IFResurrect"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFResurrect(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

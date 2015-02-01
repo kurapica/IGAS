@@ -140,17 +140,9 @@ function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFMyHealPrediction is used to handle the unit's prediction health by the player</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
-]]
+__Doc__[[IFMyHealPrediction is used to handle the unit's prediction health by the player]]
 interface "IFMyHealPrediction"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -170,6 +162,11 @@ interface "IFMyHealPrediction"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the incoming heal of mine]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -190,7 +187,7 @@ interface "IFMyHealPrediction"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFMyHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
@@ -205,17 +202,9 @@ interface "IFMyHealPrediction"
 	end
 endinterface "IFMyHealPrediction"
 
-__Doc__[[
-	<desc>IFOtherHealPrediction is used to handle the unit's prediction health by other players</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
-]]
+__Doc__[[IFOtherHealPrediction is used to handle the unit's prediction health by other players]]
 interface "IFOtherHealPrediction"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -235,6 +224,11 @@ interface "IFOtherHealPrediction"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the incoming heal of others]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -255,7 +249,7 @@ interface "IFOtherHealPrediction"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFOtherHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
@@ -270,17 +264,9 @@ interface "IFOtherHealPrediction"
 	end
 endinterface "IFOtherHealPrediction"
 
-__Doc__[[
-	<desc>IFAllHealPrediction is used to handle the unit's prediction health by all player</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the prediction health's value</optional>
-]]
+__Doc__[[IFAllHealPrediction is used to handle the unit's prediction health by all player]]
 interface "IFAllHealPrediction"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -300,6 +286,11 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the incoming heal of all]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -320,7 +311,7 @@ interface "IFAllHealPrediction"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFAllHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
@@ -335,18 +326,9 @@ interface "IFAllHealPrediction"
 	end
 endinterface "IFAllHealPrediction"
 
-__Doc__[[
-	<desc>IFAbsorb is used to handle the unit's total absorb value</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the total absorb value</optional>
-	<optional name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</optional>
-]]
+__Doc__[[IFAbsorb is used to handle the unit's total absorb value]]
 interface "IFAbsorb"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -368,6 +350,14 @@ interface "IFAbsorb"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the value of the absorb]]
+	__Optional__() property "Value" { Type = Number }
+
+	__Doc__[[used to receive the result whether the unit's absorb effect is overdose]]
+	__Optional__() property "OverAbsorb" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -388,7 +378,7 @@ interface "IFAbsorb"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFAbsorb(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
@@ -402,18 +392,9 @@ interface "IFAbsorb"
 	end
 endinterface "IFAbsorb"
 
-__Doc__[[
-	<desc>IFHealAbsorb is used to handle the unit's total absorb value</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the unit's health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the total absorb value</optional>
-	<optional name="OverAbsorb" type="Property" valuetype="boolean">used to receive the result whether the unit's absorb effect is overdose</optional>
-]]
+__Doc__[[IFHealAbsorb is used to handle the unit's total absorb value]]
 interface "IFHealAbsorb"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -439,6 +420,14 @@ interface "IFHealAbsorb"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the value of the health absorb]]
+	__Optional__() property "Value" { Type = Number }
+
+	__Doc__[[used to receive the result whether the unit's health absorb effect is overdose]]
+	__Optional__() property "OverAbsorb" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -459,7 +448,7 @@ interface "IFHealAbsorb"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFHealAbsorb(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

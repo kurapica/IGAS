@@ -21,16 +21,9 @@ function _IFTargetUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
-__Doc__[[
-	<desc>IFTarget is used to check whether the unit is the target</desc>
-	<optional name="IsTarget" type="property" valuetype="boolean">which used to receive the check result</optional>
-]]
+__Doc__[[IFTarget is used to check whether the unit is the target]]
 interface "IFTarget"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -42,10 +35,8 @@ interface "IFTarget"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[which used to receive the check result]]
+	__Optional__() property "IsTarget" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -55,7 +46,7 @@ interface "IFTarget"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFTarget(self)
 		_IFTargetUnitList[self] = _All

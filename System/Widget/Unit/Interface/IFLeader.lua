@@ -22,16 +22,9 @@ function _IFLeaderUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
-__Doc__[[
-	<desc>IFLeader is used to handle the unit leader state's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the leader indicator should be shown</optional>
-]]
+__Doc__[[IFLeader is used to handle the unit leader state's updating]]
 interface "IFLeader"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -44,10 +37,8 @@ interface "IFLeader"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[used to receive the result that whether the leader indicator should be shown]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -57,7 +48,7 @@ interface "IFLeader"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFLeader(self)
 		_IFLeaderUnitList[self] = _All

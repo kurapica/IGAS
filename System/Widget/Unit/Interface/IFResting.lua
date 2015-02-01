@@ -22,14 +22,10 @@ end
 
 __Doc__[[
 	<desc>IFResting is used to handle the unit resting state's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the resting indicator should be shown</optional>
+	<optional name="Visible" type="property" valuetype="boolean"></optional>
 ]]
 interface "IFResting"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -41,6 +37,8 @@ interface "IFResting"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the result that whether the resting indicator should be shown]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -62,7 +60,7 @@ interface "IFResting"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFResting(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

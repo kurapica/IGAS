@@ -59,20 +59,9 @@ function UpdateCondition(self)
 	end
 end
 
-__Doc__[[
-	<desc>IFStagger is used to handle the unit's stagger</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the stagger's value</optional>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result whether should show the stagger value</optional>
-]]
+__Doc__[[IFStagger is used to handle the unit's stagger]]
 interface "IFStagger"
 	extend "IFUnitElement"
-
-	SPEC_MONK_BREWMASTER = SPEC_MONK_BREWMASTER
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -92,6 +81,14 @@ interface "IFStagger"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the stagger's value]]
+	__Optional__() property "Value" { Type = Number }
+
+	__Doc__[[used to receive the result whether should show the stagger value]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -112,7 +109,7 @@ interface "IFStagger"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFStagger(self)
 		if select(2, UnitClass("player")) == "MONK" then

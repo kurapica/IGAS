@@ -51,17 +51,9 @@ function CheckVisible()
 	end
 end
 
-__Doc__[[
-	<desc>IFComboPoint is used to handle the unit's combo points</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the check result for whether the combo points should be shown(only for rogue and cat)</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the unit's combo points's count</optional>
-]]
+__Doc__[[IFComboPoint is used to handle the unit's combo points]]
 interface "IFComboPoint"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -75,10 +67,11 @@ interface "IFComboPoint"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the check result for whether the combo points should be shown(only for rogue and cat)]]
+	__Optional__() property "Visible" { Type = Boolean }
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[used to receive the unit's combo points's count]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Dispose
@@ -88,7 +81,7 @@ interface "IFComboPoint"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFComboPoint(self)
 		if select(2, UnitClass("player")) == "ROGUE" or select(2, UnitClass("player")) == "DRUID" then

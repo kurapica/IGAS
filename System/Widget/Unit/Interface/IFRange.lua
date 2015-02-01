@@ -40,16 +40,9 @@ function _IFRangeTimer:OnTimer()
 	end
 end
 
-__Doc__[[
-	<desc>IFRange is used to check whether the unit is in the spell range of the player</desc>
-	<optional name="InRange" type="property" valuetype="boolean">used to receive the result, whether the unit is in the spell range of the player</optional>
-]]
+__Doc__[[IFRange is used to check whether the unit is in the spell range of the player]]
 interface "IFRange"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -61,6 +54,8 @@ interface "IFRange"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the result, whether the unit is in the spell range of the player]]
+	__Optional__() property "InRange" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -77,7 +72,7 @@ interface "IFRange"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFRange(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

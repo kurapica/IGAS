@@ -62,11 +62,7 @@ function _IFPowerFrequentUnitList:ParseEvent(event, unit, type)
 	end
 end
 
-__Doc__[[
-	<desc>IFPowerFrequent is used to handle the unit frequent power updating</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the power</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the power's value</optional>
-]]
+__Doc__[[IFPowerFrequent is used to handle the unit frequent power updating]]
 interface "IFPowerFrequent"
 	extend "IFUnitElement"
 
@@ -155,6 +151,12 @@ interface "IFPowerFrequent"
 
 	__Doc__[[The delay time for smoothing value changes]]
 	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
+
+	__Doc__[[used to receive the min and max value of the power]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the power's value]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler

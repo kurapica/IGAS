@@ -59,11 +59,7 @@ function _IFHealthFrequentUnitList:ParseEvent(event, unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFHealthFrequent is used to handle the unit frequent health updating</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the health</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the health's value</optional>
-]]
+__Doc__[[IFHealthFrequent is used to handle the unit frequent health updating]]
 interface "IFHealthFrequent"
 	extend "IFUnitElement"
 
@@ -121,6 +117,12 @@ interface "IFHealthFrequent"
 	__Doc__[[The delay time for smoothing value changes]]
 	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
 
+	__Doc__[[used to receive the min and max value of the health]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the health's value]]
+	__Optional__() property "Value" { Type = Number }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -155,7 +157,7 @@ interface "IFHealthFrequent"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFHealthFrequent(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

@@ -46,14 +46,7 @@ function RefreshCheck(self, event)
 	end
 end
 
-__Doc__[[
-	<desc>IFReadyCheck is used to handle the unit ready check state's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the ready check indicator should be shown</optional>
-	<optional name="Alpha" type="property" valuetype="number">used to receive the ready check indicator's opacity</optional>
-	<optional name="Start" type="method">be called when the unit's ready check is started</optional>
-	<optional name="Confirm" type="method">be called when the unit's ready check is confirmed</optional>
-	<optional name="Finish" type="method">be called when the unit's ready check is finished</optional>
-]]
+__Doc__[[IFReadyCheck is used to handle the unit ready check state's updating]]
 interface "IFReadyCheck"
 	extend "IFUnitElement"
 
@@ -66,14 +59,10 @@ interface "IFReadyCheck"
 	READY_CHECK_AFK_TEXTURE = _G.READY_CHECK_AFK_TEXTURE
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
 	__Doc__[[Start the ready check, overridable]]
-	function Start(self)
+	__Optional__() function Start(self)
 		if self:IsClass(Texture) then
 			self.TexturePath = READY_CHECK_WAITING_TEXTURE
 			self.Alpha = 1
@@ -86,7 +75,7 @@ interface "IFReadyCheck"
 		<desc>Confirm the ready check, overridable</desc>
 		<param name="ready">boolean</param>
 	]]
-	function Confirm(self, ready)
+	__Optional__() function Confirm(self, ready)
 		if self:IsClass(Texture) then
 			if ready then
 				self.TexturePath = READY_CHECK_READY_TEXTURE
@@ -101,7 +90,7 @@ interface "IFReadyCheck"
 	end
 
 	__Doc__[[Finish the ready check, overridable]]
-	function Finish(self)
+	__Optional__() function Finish(self)
 		if self:IsClass(Texture) then
 			if self.ReadyCheckStatus == "waiting" then
 				self.TexturePath = READY_CHECK_AFK_TEXTURE
@@ -131,14 +120,6 @@ interface "IFReadyCheck"
 	end
 
 	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
@@ -146,7 +127,7 @@ interface "IFReadyCheck"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFReadyCheck(self)
 		_IFReadyCheckUnitList[self] = _All

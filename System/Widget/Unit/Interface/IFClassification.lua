@@ -16,16 +16,9 @@ function _IFClassificationUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
-__Doc__[[
-	<desc>IFClassification is used to check whether the unit's classification, the default refresh method is used to check if the unit is a quest boss</desc>
-	<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
-]]
+__Doc__[[IFClassification is used to check whether the unit's classification, the default refresh method is used to check if the unit is a quest boss]]
 interface "IFClassification"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -38,6 +31,8 @@ interface "IFClassification"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[which used to receive the check result]]
+	property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -54,7 +49,7 @@ interface "IFClassification"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFClassification(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

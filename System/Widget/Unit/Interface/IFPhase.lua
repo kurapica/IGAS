@@ -21,16 +21,9 @@ function _IFPhaseUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
-__Doc__[[
-	<desc>IFPhase is used to check whether the unit is in the same phase with the player</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the unit is in the same phase with the player</optional>
-]]
+__Doc__[[IFPhase is used to check whether the unit is in the same phase with the player]]
 interface "IFPhase"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -42,10 +35,8 @@ interface "IFPhase"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[used to receive the result that whether the unit is in the same phase with the player]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -55,7 +46,7 @@ interface "IFPhase"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFPhase(self)
 		_IFPhaseUnitList[self] = _All

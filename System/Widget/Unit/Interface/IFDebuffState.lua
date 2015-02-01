@@ -84,13 +84,7 @@ function UpdateAuraState(unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFDebuffState is used to handle the unit debuff's update</desc>
-	<optional name="HasMagic" type="property" valuetype="boolean">used to receive the result for whether the unit has a magic debuff</optional>
-	<optional name="HasCurse" type="property" valuetype="boolean">used to receive the result for whether the unit has a curse debuff</optional>
-	<optional name="HasDisease" type="property" valuetype="boolean">used to receive the result for whether the unit has a disease debuff</optional>
-	<optional name="HasPoison" type="property" valuetype="boolean">used to receive the result for whether the unit has a poison debuff</optional>
-]]
+__Doc__[[IFDebuffState is used to handle the unit debuff's update]]
 interface "IFDebuffState"
 	extend "IFUnitElement"
 
@@ -111,6 +105,17 @@ interface "IFDebuffState"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the result for whether the unit has a magic debuff]]
+	__Optional__() property "HasMagic" { Type = Boolean }
+
+	__Doc__[[used to receive the result for whether the unit has a curse debuff]]
+	__Optional__() property "HasCurse" { Type = Boolean }
+
+	__Doc__[[used to receive the result for whether the unit has a disease debuff]]
+	__Optional__() property "HasDisease" { Type = Boolean }
+
+	__Doc__[[used to receive the result for whether the unit has a poison debuff]]
+	__Optional__() property "HasPoison" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -127,7 +132,7 @@ interface "IFDebuffState"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFDebuffState(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

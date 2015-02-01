@@ -43,10 +43,7 @@ function UpdateConnectState(unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFConnect is used to check whether the unit is connected</desc>
-	<optional name="Connected" type="property" valuetype="boolean">which used to receive the check result for whether the unit is connected</optional>
-]]
+__Doc__[[IFConnect is used to check whether the unit is connected]]
 interface "IFConnect"
 	extend "IFUnitElement"
 
@@ -69,6 +66,8 @@ interface "IFConnect"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[which used to receive the check result for whether the unit is connected]]
+	__Optional__() property "Connected" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -85,7 +84,7 @@ interface "IFConnect"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFConnect(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

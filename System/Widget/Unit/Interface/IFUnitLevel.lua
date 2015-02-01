@@ -23,16 +23,9 @@ function _IFUnitLevelUnitList:ParseEvent(event, level)
 	self:EachK(_All, "Refresh", event == "PLAYER_LEVEL_UP" and level or nil)
 end
 
-__Doc__[[
-	<desc>IFUnitLevel is used to handle the unit level's update</desc>
-	<optional name="Value" type="property" valuetype="number">which used to receive the unit's level</optional>
-]]
+__Doc__[[IFUnitLevel is used to handle the unit level's update]]
 interface "IFUnitLevel"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -54,10 +47,8 @@ interface "IFUnitLevel"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[which used to receive the unit's level]]
+	__Optional__() property "Value" { Type = Number + nil }
 
 	------------------------------------------------------
 	-- Dispose
@@ -67,7 +58,7 @@ interface "IFUnitLevel"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFUnitLevel(self)
 		_IFUnitLevelUnitList[self] = _All

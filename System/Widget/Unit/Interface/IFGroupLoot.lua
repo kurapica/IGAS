@@ -22,16 +22,9 @@ function _IFGroupLootUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
-__Doc__[[
-	<desc>IFGroupLoot is used to handle the root master indicator's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the result that whether the root master indicator should be shown</optional>
-]]
+__Doc__[[IFGroupLoot is used to handle the root master indicator's updating]]
 interface "IFGroupLoot"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -65,10 +58,8 @@ interface "IFGroupLoot"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[used to receive the result that whether the root master indicator should be shown]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -78,7 +69,7 @@ interface "IFGroupLoot"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFGroupLoot(self)
 		_IFGroupLootUnitList[self] = _All

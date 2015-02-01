@@ -22,16 +22,9 @@ function _IFThreatUnitList:ParseEvent(event, unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFThreat is used to handle the unit threat level's update</desc>
-	<optional name="ThreatLevel" type="property" type="number">which used to receive the unit's threat level</optional>
-]]
+__Doc__[[IFThreat is used to handle the unit threat level's update]]
 interface "IFThreat"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -44,7 +37,7 @@ interface "IFThreat"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The unit's threat level]]
-	property "ThreatLevel" {
+	__Optional__() property "ThreatLevel" {
 		Set = function(self, value)
 			if self:IsClass(LayeredRegion) then
 				if value > 0 then
@@ -73,7 +66,7 @@ interface "IFThreat"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFThreat(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

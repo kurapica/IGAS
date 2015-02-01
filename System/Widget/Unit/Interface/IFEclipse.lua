@@ -121,20 +121,9 @@ function GetEclipseActive()
 	return hasLunarEclipse, hasSolarEclipse
 end
 
-__Doc__[[
-	<desc>IFEclipse is used to handle the updating for the player's eclipse power</desc>
-	<optional name="EclipseDirection" type="property" valuetype="System.Widget.Unit.EclipseDirection">used to receive the eclipse's Direction</optional>
-	<optional name="SunActivated" type="property" valuetype="boolean">used to receive whether the sun is activated</optional>
-	<optional name="MoonActivated" type="property" valuetype="boolean">used to receive whether the moon is activated</optional>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the eclipse power's value</optional>
-]]
+__Doc__[[IFEclipse is used to handle the updating for the player's eclipse power]]
 interface "IFEclipse"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -151,6 +140,20 @@ interface "IFEclipse"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[used to receive the eclipse's Direction]]
+	__Optional__() property "EclipseDirection" { Type = EclipseDirection }
+
+	__Doc__[[used to receive whether the sun is activated]]
+	__Optional__() property "SunActivated" { Type = Boolean }
+
+	__Doc__[[used to receive whether the moon is activated]]
+	__Optional__() property "MoonActivated" { Type = Boolean }
+
+	__Doc__[[used to receive the min and max value]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the eclipse power's value]]
+	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -172,7 +175,7 @@ interface "IFEclipse"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFEclipse(self)
 		if select(2, UnitClass("player")) == "DRUID" then

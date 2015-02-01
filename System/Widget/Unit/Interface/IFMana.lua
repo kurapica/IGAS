@@ -58,11 +58,7 @@ function _IFManaUnitList:ParseEvent(event, unit, type)
 	end
 end
 
-__Doc__[[
-	<desc>IFMana is used to handle the unit mana updating</desc>
-	<optional name="MinMaxValue" type="property" valuetype="System.Widget.MinMax">used to receive the min and max value of the mana</optional>
-	<optional name="Value" type="property" valuetype="number">used to receive the mana's value</optional>
-]]
+__Doc__[[IFMana is used to handle the unit mana updating]]
 interface "IFMana"
 	extend "IFUnitElement"
 
@@ -92,10 +88,6 @@ interface "IFMana"
 			_IFManaUnitList[self] = self.Unit
 		end
 	end
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -131,6 +123,12 @@ interface "IFMana"
 	__Doc__[[The delay time for smoothing value changes]]
 	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
 
+	__Doc__[[used to receive the min and max value of the mana]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[used to receive the mana's value]]
+	__Optional__() property "Value" { Type = Number }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -165,7 +163,7 @@ interface "IFMana"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFMana(self)
 		if _M._UseHiddenMana then

@@ -29,16 +29,9 @@ function _IFUnitNameUnitList:ParseEvent(event, unit)
 	end
 end
 
-__Doc__[[
-	<desc>IFUnitName is used to handle the unit name's update</desc>
-	<optional name="Text" type="property" valuetype="string">which used to receive the unit's name</optional>
-]]
+__Doc__[[IFUnitName is used to handle the unit name's update]]
 interface "IFUnitName"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -57,6 +50,9 @@ interface "IFUnitName"
 	__Doc__[[Whether show the server name]]
 	__Handler__(Refresh)
 	property "WithServerName" { Type = System.Boolean }
+
+	__Doc__[[Which used to receive the unit's name]]
+	__Optional__() property "Text" { Type = String }
 
 	------------------------------------------------------
 	-- Event Handler

@@ -21,16 +21,9 @@ function _IFCombatUnitList:ParseEvent(event, unit)
 	self:EachK("player", "Refresh")
 end
 
-	__Doc__[[
-		<desc>IFCombat is used to check whether the player is in the combat</desc>
-		<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
-	]]
+__Doc__[[IFCombat is used to check whether the player is in the combat]]
 interface "IFCombat"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -43,6 +36,8 @@ interface "IFCombat"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[which used to receive the check result]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -60,7 +55,7 @@ interface "IFCombat"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFCombat(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

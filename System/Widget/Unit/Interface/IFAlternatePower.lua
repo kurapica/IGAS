@@ -46,19 +46,9 @@ function UpdateBar(self)
 	end
 end
 
-__Doc__[[
-	<desc>IFAlternatePower is used to handle the unit alternate power's update</desc>
-	<optional name="BarType" type="property" valuetype="string">the alternate power bar's type</optional>
-	<optional name="MinMaxValue" type="property" valuetype="MinMax">the min and max power value</optional>
-	<optional name="Value" type="property" valuetype="number">the alternate power's value</optional>
-	<optional name="Visible" type="property" valuetype="boolean">the alternate power bar's visible</optional>
-]]
+__Doc__[[IFAlternatePower is used to handle the unit alternate power's update]]
 interface "IFAlternatePower"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -71,6 +61,17 @@ interface "IFAlternatePower"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
+	__Doc__[[the alternate power bar's type]]
+	__Optional__() property "BarType" { Type = String }
+
+	__Doc__[[the min and max power value]]
+	__Optional__() property "MinMaxValue" { Type = MinMax }
+
+	__Doc__[[the alternate power's value]]
+	__Optional__() property "Value" { Type = Number }
+
+	__Doc__[[the alternate power bar's visible]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -87,7 +88,7 @@ interface "IFAlternatePower"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFAlternatePower(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

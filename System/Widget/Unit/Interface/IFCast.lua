@@ -42,30 +42,13 @@ function _IFCastUnitList:ParseEvent(event, unit, ...)
 	self:EachK(unit, _IFCast_EVENT_HANDLER[event], ...)
 end
 
-__Doc__[[
-	<desc>IFCast is used to handle the unit's spell casting</desc>
-	<optional name="Start" type="method">be called when unit begins casting a spell</optional>
-	<optional name="Fail" type="method">be called when unit's spell casting failed</optional>
-	<optional name="Stop" type="method">be called when the unit stop or cancel the spell casting</optional>
-	<optional name="Interrupt" type="method">be called when the unit's spell casting is interrupted</optional>
-	<optional name="Interruptible" type="method">be called when the unit's spell casting becomes interruptible</optional>
-	<optional name="UnInterruptible" type="method">be called when the unit's spell casting become uninterruptible</optional>
-	<optional name="Delay" type="method">be called when the unit's spell casting is delayed</optional>
-	<optional name="ChannelStart" type="method">be called when the unit start channeling a spell</optional>
-	<optional name="ChannelUpdate" type="method">be called when the unit's channeling spell is interrupted or delayed</optional>
-	<optional name="ChannelStop" type="method">be called when the unit stop or cancel the channeling spell</optional>
-]]
+__Doc__[[IFCast is used to handle the unit's spell casting]]
 interface "IFCast"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
 	function Refresh(self)
 		if self.Unit then
 			if UnitCastingInfo(self.Unit) then
@@ -88,8 +71,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function Start(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function Start(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Start][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -99,8 +82,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function Fail(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function Fail(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Fail][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -110,8 +93,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function Stop(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function Stop(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Stop][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -121,18 +104,18 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function Interrupt(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function Interrupt(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Interrupt][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
 	__Doc__[[Be called when the unit's spell casting becomes interruptible]]
-	function Interruptible(self)
+	__Optional__() function Interruptible(self)
 		Log(1, "[%s][Interruptible]", tostring(self:GetClass()))
 	end
 
 	__Doc__[[Be called when the unit's spell casting become uninterruptible]]
-	function UnInterruptible(self)
+	__Optional__() function UnInterruptible(self)
 		Log(1, "[%s][UnInterruptible]", tostring(self:GetClass()))
 	end
 
@@ -142,8 +125,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function Delay(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function Delay(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][Delay][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -153,8 +136,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function ChannelStart(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function ChannelStart(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelStart][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -164,8 +147,8 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function ChannelUpdate(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function ChannelUpdate(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelUpdate][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
 
@@ -175,14 +158,10 @@ interface "IFCast"
 		<param name="rank">string, the rank of the spell that's being casted</param>
 		<param name="lineID">number, spell lineID counter</param>
 		<param name="spellID">number, the id of the spell that's being casted</param>
-		]]
-	function ChannelStop(self, spell, rank, lineID, spellID)
+	]]
+	__Optional__() function ChannelStop(self, spell, rank, lineID, spellID)
 		Log(1, "[%s][ChannelStop][%s][%s][%d][%d]", tostring(self:GetClass()), spell, rank, lineID, spellID)
 	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Event Handler
@@ -199,7 +178,7 @@ interface "IFCast"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFCast(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged

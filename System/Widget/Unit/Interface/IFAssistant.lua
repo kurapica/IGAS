@@ -21,16 +21,9 @@ function _IFAssistantUnitList:ParseEvent(event)
 	self:EachK(_All, "Refresh")
 end
 
-__Doc__[[
-	<desc>IFAssistant is used to check whether the unit is the assistant in the group</desc>
-	<optional name="Visible" type="property" valuetype="boolean">which used to receive the check result</optional>
-]]
+__Doc__[[IFAssistant is used to check whether the unit is the assistant in the group]]
 interface "IFAssistant"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -44,10 +37,8 @@ interface "IFAssistant"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Doc__[[which used to receive the check result]]
+	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -57,7 +48,7 @@ interface "IFAssistant"
 	end
 
 	------------------------------------------------------
-	-- Constructor
+	-- Initializer
 	------------------------------------------------------
 	function IFAssistant(self)
 		_IFAssistantUnitList[self] = _All
