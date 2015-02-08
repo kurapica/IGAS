@@ -8,25 +8,12 @@ if not IGAS:NewAddon("IGAS.Widget.Action.IFPushItemAnim", version) then
 	return
 end
 
-function OnLoad(self)
-	self:RegisterEvent("ITEM_PUSH")
-end
-
-function ITEM_PUSH(self, bagid, icon)
-	if self[bagid+1] then
-		self:ClearAllPoints()
-		self:SetAllPoints(self[bagid+1])
-
-		self.AnimIcon.TexturePath = icon
-		self:Play(true)
-	end
-end
+_BagMap = {}
 
 __Doc__[[IFPushItemAnim is used to provide the animation that push item into a bag.]]
 interface "IFPushItemAnim"
 
-	__Local__() __Cache__()
-	class "PushItemAnim"
+	__Cache__()	class "PushItemAnim"
 		inherit "Frame"
 
 		local function flyin_OnPlay(self)
@@ -34,7 +21,12 @@ interface "IFPushItemAnim"
 		end
 
 		local function flyin_OnFinished(self)
-			self.Parent.Visible = false
+			local parent = self.Parent
+			parent.Visible = false
+
+			parent.Parent = UIParent
+			parent:ClearAllPoints()
+			rycPushItemAnim:Push(parent)
 		end
 
 		------------------------------------------------------
@@ -43,6 +35,12 @@ interface "IFPushItemAnim"
 		function Play(self)
 			self.AnimIcon.Flyin:Play(true)
 		end
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		__Doc__[[The Item's icon]]
+		property "Icon" { Set = function (self, icon) self.AnimIcon.TexturePath = icon end }
 
 		------------------------------------------------------
 		-- Constructor
@@ -86,22 +84,17 @@ interface "IFPushItemAnim"
 	    end
 	endclass "PushItemAnim"
 
-	rycPushItemAnim = Recycle(PushItemAnim, "IGAS_PushItemAnim%d")
-
-	_BagMap = {}
-
 	__Doc__[[
 		<desc>Attach bag with id</desc>
 		<param name="bag">the region used for the bag</param>
 		<param name="id" optional="true">the bag slot index</param>
 	]]
-	__Static__() __Arguments__{ Region + nil, Number + Boolean + nil }
+	__Static__() __Arguments__{ Region, Number + Boolean + nil }
 	function AttachBag(bag, id)
-		if bag then
-			id = id and id >=0 and id or bag.ID
-			self[id+1] = bag
-		elseif id and id >= 0 then
-			self[id+1] = nil
+		if id == false then
+			_BagMap[bag] = nil
+		else
+			_BagMap[bag] = id == nil and true or id
 		end
 	end
 
@@ -115,3 +108,22 @@ interface "IFPushItemAnim"
 	------------------------------------------------------
     function IFPushItemAnim(self) AttachBag(self) end
 endinterface "IFPushItemAnim"
+
+rycPushItemAnim = Recycle(IFPushItemAnim.PushItemAnim, "IGAS_PushItemAnim%d")
+
+function ITEM_PUSH(self, bagid, icon)
+	for bag, id in pairs(_BagMap) do
+		if id == true then id = bag.ID end
+		if id == bagid then
+			local anim = rycPushItemAnim()
+			anim.Parent = bag
+			anim:SetAllPoints(bag)
+
+			anim.Icon = icon
+			anim:Play()
+		end
+	end
+end
+
+-- Start Listening
+_M:RegisterEvent("ITEM_PUSH")

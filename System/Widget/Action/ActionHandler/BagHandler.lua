@@ -78,6 +78,21 @@ handler = ActionTypeHandler {
 	ReceiveStyle = "Keep",
 	PickupSnippet = "Custom",
 	ReceiveSnippet = "Custom",
+	UpdateSnippet = [[
+		local target = ...
+		target = tonumber(target)
+
+		self:SetAttribute("*type*", "macro")
+		if target == 0 then
+			self:SetAttribute("*macrotext*", "/click MainMenuBarBackpackButton")
+		elseif target and target <= 4 then
+			self:SetAttribute("*macrotext*", "/click CharacterBag".. tostring(target-1) .."Slot")
+		end
+	]],
+	ClearSnippet = [[
+		self:SetAttribute("*type*", nil)
+		self:SetAttribute("*macrotext*", nil)
+	]],
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 
