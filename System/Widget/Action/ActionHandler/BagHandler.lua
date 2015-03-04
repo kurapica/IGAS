@@ -10,6 +10,8 @@ end
 
 _Enabled = false
 
+_BagSlotMapTemplate = "_BagSlotMap[%d] = %d"
+
 _BagSlotMap = {
 	[0] = "BackSlot",
 	"Bag0Slot",
@@ -25,9 +27,19 @@ function OnEnable(self)
 	self:RegisterEvent("BAG_UPDATE_DELAYED")
 	self:RegisterEvent("INVENTORY_SEARCH_UPDATE")
 
+	local cache = {}
 	for i, slot in pairs(_BagSlotMap) do
 		local id, texture = GetInventorySlotInfo(slot)
 		_BagSlotMap[i] = { id = id, texture = texture, slot = slot }
+		tinsert(cache, _BagSlotMapTemplate:format(i, id))
+	end
+
+	if next(cache) then
+		Task.NoCombatCall(function ()
+			handler:RunSnippet( tblconcat(cache, ";") )
+
+			handler:Refresh()
+		end)
 	end
 
 	OnEnable = nil
@@ -76,7 +88,11 @@ handler = ActionTypeHandler {
 	Name = "bag",
 	DragStyle = "Keep",
 	ReceiveStyle = "Keep",
-	PickupSnippet = "Custom",
+	InitSnippet = [[ _BagSlotMap = newtable() ]],
+	PickupSnippet = [[
+		local target = ...
+		return "clear", "bag", _BagSlotMap[target]
+	]],
 	ReceiveSnippet = "Custom",
 	UpdateSnippet = [[
 		local target = ...

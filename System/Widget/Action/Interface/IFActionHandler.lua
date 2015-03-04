@@ -116,7 +116,7 @@ interface "IFActionTypeHandler"
 	-- Overridable Method
 	------------------------------------------------------
 	__Doc__[[
-		<desc>Get the actions's kind, target &nbsp; detail</desc>
+		<desc>Get the actions's kind, target, detail</desc>
 		<return type="kind"></return>
 		<return type="target"></return>
 		<return type="detail"></return>
@@ -431,7 +431,8 @@ class "ActionList"
 		if type(kind) ~= "table" then
 			return data[kind], data[kind]
 		else
-			return kind.__ActionList_Next, kind.__ActionList_Next
+			local nxt = kind.__ActionList_Next
+			return nxt, nxt
 		end
 	end
 
@@ -440,33 +441,23 @@ class "ActionList"
 	------------------------------------------------------
 	------------------------------------
 	--- Insert action button to the list
-	-- -- -- <param name="frame"></param>
 	------------------------------------
-	function Insert(self, frame)
-		tinsert(self, frame)
-	end
+	Insert = tinsert
 
 	------------------------------------
 	--- Remove action button from the list
-	-- -- -- <param name="frame"></param>
 	------------------------------------
 	function Remove(self, frame)
 		for i, v in ipairs(self) do
 			if v == frame then
-				self[v] = nil
-				tremove(self, i)
-				break
+				self[v] = nil -- remove it in __newindex
+				return tremove(self, i)
 			end
 		end
 	end
 
 	------------------------------------
-	--- Get the next element, Overridable
-	-- -- @class function
-	-- <param name="kind"></param>
-	-- <return type="nextFunc"></return>
-	-- <return type="self"></return>
-	-- <return type="firstKey"></return>
+	--- Get the next element
 	------------------------------------
 	function Next(self, kind)
 		if type(kind) == "string" then
@@ -477,64 +468,45 @@ class "ActionList"
 	end
 
 	------------------------------------------------------
-	-- Constructor
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- MetaMethod
 	------------------------------------------------------
 	function __index(self, kind)
-		if type(kind) == "string" then
-			return rawget(self, kind:lower())
-		end
+		return type(kind) == "string" and rawget(self, kind:lower()) or nil
 	end
 
 	function __newindex(self, frame, kind)
 		if type(frame) == "string" and type(kind) == "function" then
-			rawset(self, frame, kind)
-			return
+			return rawset(self, frame, kind)
 		end
 
-		if type(frame) ~= "table" then
-			error("key must be a table.", 2)
-		end
+		if type(frame) ~= "table" then error("key must be a table.", 2) end
+		if kind ~= nil and not _IFActionTypeHandler[kind] then error("value not supported.", 2) end
 
-		if kind ~= nil and not _IFActionTypeHandler[kind] then
-			error("value not supported.", 2)
-		end
-
-		local preKey = "__ActionList_Prev"
-		local nxtKey = "__ActionList_Next"
-
-		local prev = frame[preKey]
-		local next = frame[nxtKey]
+		local prev = frame.__ActionList_Prev
+		local next = frame.__ActionList_Next
 		local header = prev
 
-		while type(header) == "table" do
-			header = header[preKey]
-		end
+		while type(header) == "table" do header = header.__ActionList_Prev end
 
 		-- no change
-		if header == kind then
-			return
-		end
+		if header == kind then return end
 
 		-- Remove link
 		if header then
 			if prev == header then
 				rawset(self, header, next)
 				if next then
-					next[preKey] = prev
+					next.__ActionList_Prev = prev
 				else
 					_IFActionTypeHandler[kind].Enabled = false
 				end
 			else
-				prev[nxtKey] = next
-				if next then next[preKey] = prev end
+				prev.__ActionList_Next = next
+				if next then next.__ActionList_Prev = prev end
 			end
 
-			frame[preKey] = nil
-			frame[nxtKey] = nil
+			frame.__ActionList_Prev = nil
+			frame.__ActionList_Next = nil
 		end
 
 		-- Add link
@@ -542,24 +514,18 @@ class "ActionList"
 			local tail = self[kind]
 
 			rawset(self, kind, frame)
-			frame[preKey] = kind
+			frame.__ActionList_Prev = kind
 
 			if tail then
-				tail[preKey] = frame
-				frame[nxtKey] = tail
+				tail.__ActionList_Prev = frame
+				frame.__ActionList_Next = tail
 			end
 
 			_IFActionTypeHandler[kind].Enabled = true
 		end
 	end
 
-	function __call(self, kind)
-		if type(kind) == "string" then
-			return nextLink, self, type(kind) == "string" and kind:lower()
-		else
-			return ipairs(self)
-		end
-	end
+	__call = Next
 endclass "ActionList"
 
 ------------------------------------------------------
