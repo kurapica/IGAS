@@ -175,10 +175,7 @@ handler = ActionTypeHandler {
 		end
 	]],
 
-	ReceiveSnippet = [[
-		local value = ...
-		return _MountPick2Spell[value]
-	]],
+	ReceiveSnippet = [[ return _MountPick2Spell[...] ]],
 
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)

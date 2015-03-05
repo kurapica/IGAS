@@ -96,11 +96,7 @@ interface "IFActionTypeHandler"
 		if type(button) ~= "table" then
 			return _IFActionHandler_Buttons:EachK(self.Name, button or UpdateActionButton)
 		else
-			if mode then
-				return mode(button)
-			else
-				return UpdateActionButton(button)
-			end
+			return (mode or UpdateActionButton)(button)
 		end
 	end
 
@@ -721,14 +717,13 @@ do
 				if _ReceiveStyle[oldName] == "Clear" then
 					Manager:RunFor(self, ClearAction)
 
-					local name = _ReceiveMap[kind]
-					local target, detail
+					local name, target, detail = _ReceiveMap[kind]
 
 					if name then
-						if _ReceiveSnippet[name] then
+						if _ReceiveSnippet[name] and _ReceiveSnippet[name] ~= "Custom" then
 							target, detail = Manager:RunFor(self, _ReceiveSnippet[name], value, extra, extra2)
 						else
-							target, detail = value, detail
+							target, detail = value, extra
 						end
 
 						if target then
@@ -744,38 +739,21 @@ do
 					end
 
 					Manager:RunFor(self, UpdateAction)
+				end
 
-					-- Pickup the target
-					if _PickupSnippet[oldName] == "Custom" then
-						Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
-						return false
-					elseif _PickupSnippet[oldName] then
-						return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
-					else
-						return "clear", _PickupMap[oldName], oldTarget, oldDetail
-					end
-				elseif _ReceiveStyle[oldName] == "Keep" then
-					local arg1, arg2, arg3, arg4
+				if _ReceiveStyle[oldName] == "Keep" and _ReceiveSnippet[oldName] == "Custom" then
+					Manager:CallMethod("OnReceive", oldName, oldTarget, oldDetail)
+					return Manager:RunFor(self, UpdateAction) or false
+				end
 
-					-- Pickup the target
-					if _PickupSnippet[oldName] == "Custom" then
-						Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
-						arg1 = false
-					elseif _PickupSnippet[oldName] then
-						arg1, arg2, arg3, arg4 = Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
-					else
-						arg1, arg2, arg3, arg4 = "clear", _PickupMap[oldName], oldTarget, oldDetail
-					end
-
-					if _ReceiveSnippet[oldName] == "Custom" then
-						Manager:CallMethod("OnReceive", value, extra, extra2)
-					elseif _ReceiveSnippet[oldName] then
-						Manager:RunFor(self, _ReceiveSnippet[oldName], value, extra, extra2)
-					end
-
-					Manager:RunFor(self, UpdateAction)
-
-					return arg1, arg2, arg3, arg4
+				-- Pickup the target
+				if _PickupSnippet[oldName] == "Custom" then
+					Manager:CallMethod("OnPickUp", oldName, oldTarget, oldDetail)
+					return false
+				elseif _PickupSnippet[oldName] then
+					return Manager:RunFor(self, _PickupSnippet[oldName], oldTarget, oldDetail)
+				else
+					return "clear", _PickupMap[oldName], oldTarget, oldDetail
 				end
 			]=]
 

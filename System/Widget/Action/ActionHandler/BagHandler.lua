@@ -38,6 +38,21 @@ function OnEnable(self)
 		Task.NoCombatCall(function ()
 			handler:RunSnippet( tblconcat(cache, ";") )
 
+			for _, btn in handler() do
+				local target = tonumber(btn.ActionTarget)
+
+				if target == 0 then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", "/click MainMenuBarBackpackButton")
+				elseif target and target <= 4 then
+					btn:SetAttribute("*type*", "macro")
+					btn:SetAttribute("*macrotext*", "/click CharacterBag".. tostring(target-1) .."Slot")
+				else
+					btn:SetAttribute("*type*", nil)
+					btn:SetAttribute("*macrotext*", nil)
+				end
+			end
+
 			handler:Refresh()
 		end)
 	end
@@ -90,19 +105,22 @@ handler = ActionTypeHandler {
 	ReceiveStyle = "Keep",
 	InitSnippet = [[ _BagSlotMap = newtable() ]],
 	PickupSnippet = [[
-		local target = ...
-		return "clear", "bag", _BagSlotMap[target]
+		return "clear", "bag", _BagSlotMap[...]
 	]],
 	ReceiveSnippet = "Custom",
 	UpdateSnippet = [[
 		local target = ...
 		target = tonumber(target)
 
-		self:SetAttribute("*type*", "macro")
 		if target == 0 then
+			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click MainMenuBarBackpackButton")
 		elseif target and target <= 4 then
+			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click CharacterBag".. tostring(target-1) .."Slot")
+		else
+			self:SetAttribute("*type*", nil)
+			self:SetAttribute("*macrotext*", nil)
 		end
 	]],
 	ClearSnippet = [[
@@ -113,12 +131,12 @@ handler = ActionTypeHandler {
 }
 
 -- Overwrite methods
-function handler:PickupAction(target)
-	return PickupBagFromSlot(_BagSlotMap[target].id)
-end
-
 function handler:ReceiveAction(target, detail)
-	return PutItemInBackpack()
+	if target == 0 then
+		return PutItemInBackpack()
+	elseif target and target <= 4 then
+		return PutItemInBag(target)
+	end
 end
 
 function handler:HasAction()
@@ -130,9 +148,28 @@ function handler:GetActionTexture()
 	return target and GetInventoryItemTexture("player", target.id) or target.texture
 end
 
+function handler:IsConsumableAction()
+	return true
+end
+
 function handler:GetActionCount()
 	local target = _BagSlotMap[self.ActionTarget]
-	return target and GetInventoryItemCount("player", target.id)
+	if self.ShowEmptySpace then
+		return target and GetInventoryItemCount("player", target.id)
+	else
+		return target and (GetContainerNumSlots(self.ActionTarget) - GetInventoryItemCount("player", target.id))
+	end
+end
+
+function handler:IsActivedAction()
+	-- Simple solution, need a better plan if support custom containers
+	local translatedID = self.ActionTarget
+	for i=1, NUM_CONTAINER_FRAMES do
+		local frame = _G["ContainerFrame"..i]
+		if frame:GetID() == translatedID then
+			return frame:IsShown()
+		end
+	end
 end
 
 function handler:SetTooltip(GameTooltip)
@@ -185,5 +222,8 @@ interface "IFActionHandler"
 	}
 
 	__Doc__[[Whether the search overlay will be shown]]
-	__Optional__() property "ShowSearchOverlay" { Type = Boolean }
+	property "ShowSearchOverlay" { Type = Boolean }
+
+	__Doc__[[Whether only show the empty space]]
+	property "ShowEmptySpace" { Type = Boolean }
 endinterface "IFActionHandler"

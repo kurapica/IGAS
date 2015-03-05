@@ -13,15 +13,15 @@ _BagMap = {}
 __Doc__[[IFPushItemAnim is used to provide the animation that push item into a bag.]]
 interface "IFPushItemAnim"
 
-	__Cache__()	class "PushItemAnim"
+	class "PushItemAnim"
 		inherit "Frame"
 
 		local function flyin_OnPlay(self)
-			self.Parent.Visible = true
+			self.Parent.Parent.Visible = true
 		end
 
 		local function flyin_OnFinished(self)
-			local parent = self.Parent
+			local parent = self.Parent.Parent
 			parent.Visible = false
 
 			parent.Parent = UIParent
@@ -33,14 +33,18 @@ interface "IFPushItemAnim"
 		-- Method
 		------------------------------------------------------
 		function Play(self)
-			self.AnimIcon.Flyin:Play(true)
+			return self.AnimIcon.Flyin:Play(true)
 		end
 
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
 		__Doc__[[The Item's icon]]
-		property "Icon" { Set = function (self, icon) self.AnimIcon.TexturePath = icon end }
+		property "Icon" {
+			Set = function (self, icon)
+				self.AnimIcon.TexturePath = icon
+			end
+		}
 
 		------------------------------------------------------
 		-- Constructor
@@ -89,12 +93,12 @@ interface "IFPushItemAnim"
 		<param name="bag">the region used for the bag</param>
 		<param name="id" optional="true">the bag slot index</param>
 	]]
-	__Static__() __Arguments__{ Region, Number + Boolean + nil }
+	__Static__() __Arguments__{ Region, Argument{ Type = Number + Boolean + nil, Default = true } }
 	function AttachBag(bag, id)
 		if id == false then
 			_BagMap[bag] = nil
 		else
-			_BagMap[bag] = id == nil and true or id
+			_BagMap[bag] = id
 		end
 	end
 

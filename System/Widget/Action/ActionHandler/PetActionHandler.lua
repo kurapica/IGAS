@@ -108,9 +108,7 @@ handler = ActionTypeHandler {
 
 	IsPetAction = true,
 
-	PickupSnippet = [[
-		return "petaction", ...
-	]],
+	PickupSnippet = [[ return "petaction", ... ]],
 
 	UpdateSnippet = [[
 		local target = ...
