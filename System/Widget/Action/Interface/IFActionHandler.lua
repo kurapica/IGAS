@@ -543,6 +543,30 @@ do
 		return not InCombatLockdown() and _IFActionTypeHandler[kind] and _IFActionTypeHandler[kind]:ReceiveAction(target, detail)
 	end
 
+	IGAS:GetUI(_IFActionHandler_ManagerFrame).UpdateActionButton = function (self, btnName)
+		self = IGAS:GetWrapper(_G[btnName])
+
+		local name = self:GetAttribute("actiontype")
+		local target, detail = _IFActionTypeHandler[name].GetActionDetail(self)
+
+		-- Some problem with battlepet
+		-- target = tonumber(target) or target
+		-- detail = tonumber(detail) or detail
+
+		if self.__IFActionHandler_Kind ~= name
+			or self.__IFActionHandler_Target ~= target
+			or self.__IFActionHandler_Detail ~= detail then
+
+			self.__IFActionHandler_Kind = name
+			self.__IFActionHandler_Target = target
+			self.__IFActionHandler_Detail = detail
+
+			_IFActionHandler_Buttons[self] = name 	-- keep button in kind's link list
+
+			return UpdateActionButton(self)
+		end
+	end
+
 	-- Spell activation alert recycle manager
 	_RecycleAlert = Recycle(SpellActivationAlert, "SpellActivationAlert%d", _IFActionHandler_ManagerFrame)
 
@@ -590,7 +614,7 @@ do
 					)
 				end
 
-				self:CallMethod("IFActionHandler_UpdateAction")
+				return Manager:CallMethod("UpdateActionButton", self:GetName())
 			]=]
 
 			ClearAction = [=[
@@ -979,30 +1003,6 @@ do
 
     	_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnDragStart")
 		_IFActionHandler_ManagerFrame:UnwrapScript(self, "OnReceiveDrag")
-	end
-
-	function UI_UpdateActionButton(self)
-		self = IGAS:GetWrapper(self)
-
-		local name = self:GetAttribute("actiontype")
-		local target, detail = _IFActionTypeHandler[name].GetActionDetail(self)
-
-		-- Some problem with battlepet
-		-- target = tonumber(target) or target
-		-- detail = tonumber(detail) or detail
-
-		if self.__IFActionHandler_Kind ~= name
-			or self.__IFActionHandler_Target ~= target
-			or self.__IFActionHandler_Detail ~= detail then
-
-			self.__IFActionHandler_Kind = name
-			self.__IFActionHandler_Target = target
-			self.__IFActionHandler_Detail = detail
-
-			_IFActionHandler_Buttons[self] = name 	-- keep button in kind's link list
-
-			return UpdateActionButton(self)
-		end
 	end
 
 	function SaveAction(self, kind, target, detail)
@@ -1618,6 +1618,9 @@ interface "IFActionHandler"
 	__Handler__( UpdateFlyout )
 	property "ShowFlyOut" { Type = Boolean }
 
+	__Doc__[[The action button's flyout direction, used to refresh the action count as a trigger]]
+	property "FlyoutDirection" { Type = FlyoutDirection }
+
 	__Doc__[[Whether the action is usable, used to refresh the action button as a trigger]]
 	__Optional__() property "Usable" { Type = Boolean }
 
@@ -1642,9 +1645,6 @@ interface "IFActionHandler"
 	__Doc__[[Whether the action is in range, used to refresh the action count as a trigger]]
 	__Optional__() property "InRange" { Type = Boolean+nil }
 
-	__Doc__[[The action button's flyout direction, used to refresh the action count as a trigger]]
-	property "FlyoutDirection" { Type = FlyoutDirection }
-
 	__Doc__[[Whether the action is auto-castable, used to refresh the action count as a trigger]]
 	__Optional__() property "AutoCastable" { Type = Boolean }
 
@@ -1659,10 +1659,12 @@ interface "IFActionHandler"
 
 	__Doc__[[Whether the action button's icon is locked]]
 	__Optional__() property "IconLocked" { Type = Boolean }
+
 	------------------------------------------------------
 	-- Dispose
 	------------------------------------------------------
 	function Dispose(self)
+		self:SetAction(nil)
 		_IFActionHandler_Buttons:Remove(self)
 		if #_IFActionHandler_Buttons == 0 then
 			_IFActionHandler_UpdateRangeTimer.Enabled = false
@@ -1678,7 +1680,7 @@ interface "IFActionHandler"
     	_IFActionHandler_UpdateRangeTimer.Enabled = true
     	InitEventHandler()
 
-    	-- Don't know how authors would treat the property, so make sure all done here.
+    	-- Don't know what the authors would do with the property, so make sure all done here.
     	local group = GetGroup(self.IFActionHandlerGroup)
 
     	self:SetAttribute("IFActionHandlerGroup", group)
@@ -1693,8 +1695,6 @@ interface "IFActionHandler"
 
 		_IFActionHandler_Buttons[self] = self.ActionType
 
-		-- Since secure code can only call method in the UI part
-		IGAS:GetUI(self).IFActionHandler_UpdateAction = UI_UpdateActionButton
-		Task.NoCombatCall(SetupActionButton, self)
+		return Task.NoCombatCall(SetupActionButton, self)
 	end
 endinterface "IFActionHandler"

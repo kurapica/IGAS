@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.BagHandler", version) then
 	return
 end
 
+import "System.Widget.Action.ActionRefreshMode"
+
 _Enabled = false
 
 _BagSlotMapTemplate = "_BagSlotMap[%d] = %d"
@@ -19,6 +21,8 @@ _BagSlotMap = {
 	"Bag2Slot",
 	"Bag3Slot",
 }
+
+_ContainerMap = {}
 
 function OnEnable(self)
 	self:RegisterEvent("ITEM_LOCK_CHANGED")
@@ -51,6 +55,8 @@ function OnEnable(self)
 					btn:SetAttribute("*type*", nil)
 					btn:SetAttribute("*macrotext*", nil)
 				end
+				local id = target and _BagSlotMap[target] and _BagSlotMap[target].id or false
+				IFPushItemAnim.AttachBag(btn, id)
 			end
 
 			handler:Refresh()
@@ -122,13 +128,23 @@ handler = ActionTypeHandler {
 			self:SetAttribute("*type*", nil)
 			self:SetAttribute("*macrotext*", nil)
 		end
+
+		Manager:CallMethod("UpdateForPushItemAnim", self:GetName(), target)
 	]],
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
+
+		Manager:CallMethod("UpdateForPushItemAnim", self:GetName(), false)
 	]],
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
+
+-- Use Manager to control the IFPushItemAnim
+IGAS:GetUI(handler.Manager).UpdateForPushItemAnim = function (self, name, target)
+	local id = target and _BagSlotMap[target] and _BagSlotMap[target].id or false
+	return IFPushItemAnim.AttachBag(IGAS:GetWrapper(_G[name]), id)
+end
 
 -- Overwrite methods
 function handler:ReceiveAction(target, detail)
@@ -162,14 +178,9 @@ function handler:GetActionCount()
 end
 
 function handler:IsActivedAction()
-	-- Simple solution, need a better plan if support custom containers
-	local translatedID = self.ActionTarget
-	for i=1, NUM_CONTAINER_FRAMES do
-		local frame = _G["ContainerFrame"..i]
-		if frame:GetID() == translatedID then
-			return frame:IsShown()
-		end
-	end
+	local containers = _ContainerMap[self.ActionTarget]
+
+	return containers and containers[1] and containers[1].Visible
 end
 
 function handler:SetTooltip(GameTooltip)
@@ -207,6 +218,42 @@ interface "IFActionHandler"
 		end
 	}
 
+	local function OnShowOrHide(self)
+		return handler:Refresh(RefreshButtonState)
+	end
+
+	------------------------------------------------------
+	-- Static Method
+	------------------------------------------------------
+	__Doc__[[
+		<desc>Register container to control the bag slot button's button state</desc>
+		<param name="container">the container frame</param>
+		<param name="id" optional="true">the container index, un-register if false, use container's id if true</param>
+	]]
+	__Static__()  __Arguments__{ Region, Argument{ Type = Number + Boolean + nil, Default = true } }
+	function RegisterContainer(container, id)
+		container.OnShow = container.OnShow - OnShowOrHide
+		container.OnHide = container.OnHide - OnShowOrHide
+		for k, v in pairs(_ContainerMap) do
+			for i, c in ipairs(v) do
+				if c == container then
+					tremove(c, i)
+					break
+				end
+			end
+		end
+		if id ~= false then
+			id = type(id) == "number" and id or container.ID
+			if type(id) == "number" then
+				_ContainerMap[id] = _ContainerMap[id] or {}
+				tinsert(_ContainerMap[id], 1, container)
+
+				container.OnShow = container.OnShow + OnShowOrHide
+				container.OnHide = container.OnHide + OnShowOrHide
+			end
+		end
+	end
+
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -227,3 +274,6 @@ interface "IFActionHandler"
 	__Doc__[[Whether only show the empty space]]
 	property "ShowEmptySpace" { Type = Boolean }
 endinterface "IFActionHandler"
+
+-- Init the _ContainerMap
+for i=1, NUM_CONTAINER_FRAMES do IFActionHandler.RegisterContainer(IGAS["ContainerFrame"..i]) end
