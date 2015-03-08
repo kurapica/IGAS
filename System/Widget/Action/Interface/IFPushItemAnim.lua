@@ -118,7 +118,7 @@ rycPushItemAnim = Recycle(IFPushItemAnim.PushItemAnim, "IGAS_PushItemAnim%d")
 function ITEM_PUSH(self, bagid, icon)
 	for bag, id in pairs(_BagMap) do
 		if id == true then id = bag.ID end
-		if id == bagid then
+		if id == bagid and bag.Visible then
 			local anim = rycPushItemAnim()
 			anim.Parent = bag
 			anim:SetAllPoints(bag)

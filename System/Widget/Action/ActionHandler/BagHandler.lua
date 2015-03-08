@@ -244,6 +244,7 @@ interface "IFActionHandler"
 		end
 		if id ~= false then
 			id = type(id) == "number" and id or container.ID
+
 			if type(id) == "number" then
 				_ContainerMap[id] = _ContainerMap[id] or {}
 				tinsert(_ContainerMap[id], 1, container)
