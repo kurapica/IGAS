@@ -55,7 +55,7 @@ function OnEnable(self)
 					btn:SetAttribute("*type*", nil)
 					btn:SetAttribute("*macrotext*", nil)
 				end
-				local id = target and _BagSlotMap[target] and _BagSlotMap[target].id or false
+				local id = target ~= 0 and _BagSlotMap[target] and _BagSlotMap[target].id or target or false
 				IFPushItemAnim.AttachBag(btn, id)
 			end
 
@@ -142,7 +142,7 @@ handler = ActionTypeHandler {
 
 -- Use Manager to control the IFPushItemAnim
 IGAS:GetUI(handler.Manager).UpdateForPushItemAnim = function (self, name, target)
-	local id = target and _BagSlotMap[target] and _BagSlotMap[target].id or false
+	local id = target ~= 0 and _BagSlotMap[target] and _BagSlotMap[target].id or target or false
 	return IFPushItemAnim.AttachBag(IGAS:GetWrapper(_G[name]), id)
 end
 
@@ -151,7 +151,7 @@ function handler:ReceiveAction(target, detail)
 	if target == 0 then
 		return PutItemInBackpack()
 	elseif target and target <= 4 then
-		return PutItemInBag(target)
+		return PutItemInBag(_BagSlotMap[target].id)
 	end
 end
 
@@ -160,6 +160,7 @@ function handler:HasAction()
 end
 
 function handler:GetActionTexture()
+	if self.ActionTarget == 0 then return MainMenuBarBackpackButtonIconTexture:GetTexture() end
 	local target = _BagSlotMap[self.ActionTarget]
 	return target and GetInventoryItemTexture("player", target.id) or target.texture
 end
@@ -169,18 +170,25 @@ function handler:IsConsumableAction()
 end
 
 function handler:GetActionCount()
-	local target = _BagSlotMap[self.ActionTarget]
 	if self.ShowEmptySpace then
-		return target and GetInventoryItemCount("player", target.id)
+		return GetContainerNumFreeSlots(self.ActionTarget)
 	else
-		return target and (GetContainerNumSlots(self.ActionTarget) - GetInventoryItemCount("player", target.id))
+		return GetContainerNumSlots(self.ActionTarget)
 	end
 end
 
 function handler:IsActivedAction()
-	local containers = _ContainerMap[self.ActionTarget]
-
-	return containers and containers[1] and containers[1].Visible
+	local id = self.ActionTarget
+	local containers = _ContainerMap[id]
+	local flag = containers and containers[1] and containers[1].Visible
+	if not flag and _ContainerMap[100] then
+		for _, container in ipairs(_ContainerMap[100]) do
+			if container.ID == id and container.Visible then
+				return true
+			end
+		end
+	end
+	return flag
 end
 
 function handler:SetTooltip(GameTooltip)
@@ -243,15 +251,17 @@ interface "IFActionHandler"
 			end
 		end
 		if id ~= false then
-			id = type(id) == "number" and id or container.ID
+			id = type(id) == "number" and id or 100
 
-			if type(id) == "number" then
-				_ContainerMap[id] = _ContainerMap[id] or {}
+			_ContainerMap[id] = _ContainerMap[id] or {}
+			if id == 100 then
+				tinsert(_ContainerMap[id], container)
+			else
 				tinsert(_ContainerMap[id], 1, container)
-
-				container.OnShow = container.OnShow + OnShowOrHide
-				container.OnHide = container.OnHide + OnShowOrHide
 			end
+
+			container.OnShow = container.OnShow + OnShowOrHide
+			container.OnHide = container.OnHide + OnShowOrHide
 		end
 	end
 

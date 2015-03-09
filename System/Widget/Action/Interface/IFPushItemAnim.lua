@@ -24,7 +24,7 @@ interface "IFPushItemAnim"
 			local parent = self.Parent.Parent
 			parent.Visible = false
 
-			parent.Parent = UIParent
+			parent.Parent = IGAS.UIParent
 			parent:ClearAllPoints()
 			rycPushItemAnim:Push(parent)
 		end
