@@ -1055,13 +1055,13 @@ do
 			if count > self.MaxDisplayCount then
 				self.Count = "*"
 			else
-				self.Count = tostring(count)
+				self.Count = self.CountFormat:format(tostring(count))
 			end
 		else
 			local charges, maxCharges = _IFActionTypeHandler[kind].GetActionCharges(self)
 
 			if maxCharges and maxCharges > 1 then
-				self.Count = tostring(charges)
+				self.Count = self.CountFormat:format(tostring(charges), tostring(maxCharges))
 			else
 				self.Count = ""
 			end
@@ -1500,6 +1500,9 @@ interface "IFActionHandler"
 		return self:GetAttribute("flyoutDirection") or FlyoutDirection.UP
 	end
 
+	__Doc__[[Refresh the button manually]]
+	Refresh = UpdateActionButton
+
 	------------------------------------------------------
 	-- Interface Method
 	------------------------------------------------------
@@ -1626,6 +1629,10 @@ interface "IFActionHandler"
 
 	__Doc__[[The action's count, used to refresh the action count as a trigger]]
 	__Optional__() property "Count" { Type = String }
+
+	__Doc__[[The format of the count string]]
+	__Handler__(UpdateCount)
+	property "CountFormat" { Type = String, Default = "%s" }
 
 	__Doc__[[Whether need flash the action, used to refresh the action count as a trigger]]
 	__Optional__() property "Flashing" { Type = Boolean }

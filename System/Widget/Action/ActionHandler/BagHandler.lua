@@ -10,6 +10,14 @@ end
 
 import "System.Widget.Action.ActionRefreshMode"
 
+enum "BagSlotCountStyle" {
+	"Hidden",
+	"Empty",
+	"Total",
+	"AllEmpty",
+	"All",
+}
+
 _Enabled = false
 
 _BagSlotMapTemplate = "_BagSlotMap[%d] = %d"
@@ -165,15 +173,34 @@ function handler:GetActionTexture()
 	return target and GetInventoryItemTexture("player", target.id) or target.texture
 end
 
-function handler:IsConsumableAction()
-	return true
-end
-
-function handler:GetActionCount()
-	if self.ShowEmptySpace then
-		return GetContainerNumFreeSlots(self.ActionTarget)
-	else
-		return GetContainerNumSlots(self.ActionTarget)
+function handler:GetActionCharges()
+	local style = self.BagSlotCountStyle
+	if style == "Hidden" then
+		return nil
+	elseif style == "Empty" or style == "Total" then
+		local free, total = GetContainerNumFreeSlots(self.ActionTarget), GetContainerNumSlots(self.ActionTarget)
+		if style == "Empty" then
+			return free, total
+		else
+			return total, total
+		end
+	elseif style == "AllEmpty" or style == "All" then
+		local sFree, sTotal, free, total, bagFamily = 0, 0
+		local _, tarFamily = GetContainerNumFreeSlots(self.ActionTarget)
+		if not tarFamily then return nil end
+		for i = BACKPACK_CONTAINER, NUM_BAG_SLOTS do
+			free, bagFamily = GetContainerNumFreeSlots(i)
+			total = GetContainerNumSlots(i)
+			if bagFamily == tarFamily then
+				sFree = sFree + free
+				sTotal = sTotal + total
+			end
+		end
+		if style == "AllEmpty" then
+			return sFree, sTotal
+		else
+			return sTotal, sTotal
+		end
 	end
 end
 
@@ -282,8 +309,9 @@ interface "IFActionHandler"
 	__Doc__[[Whether the search overlay will be shown]]
 	property "ShowSearchOverlay" { Type = Boolean }
 
-	__Doc__[[Whether only show the empty space]]
-	property "ShowEmptySpace" { Type = Boolean }
+	__Doc__[[What to be shown as the count]]
+	__Handler__(RefreshCount)
+	property "BagSlotCountStyle" { Type = BagSlotCountStyle, Default = "Hidden" }
 endinterface "IFActionHandler"
 
 -- Init the _ContainerMap
