@@ -1,3 +1,7 @@
+2015/03/12: IGAS v71
+    1. BagHandler is added to support bag slot buttons.
+    2. Update toc.
+
 2014/12/13: IGAS v70
     1. Fix Task System empty task warning.
 

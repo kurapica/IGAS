@@ -48,7 +48,7 @@ function OnEnable(self)
 
 	if next(cache) then
 		Task.NoCombatCall(function ()
-			handler:RunSnippet( tblconcat(cache, ";") )
+			handler:RunSnippet( tblconcat(cache, "") )
 
 			for _, btn in handler() do
 				local target = tonumber(btn.ActionTarget)
@@ -90,7 +90,7 @@ end
 
 function CURSOR_UPDATE(self)
 	for _, btn in handler() do
-		local target = _BagSlotMap[self.ActionTarget]
+		local target = _BagSlotMap[btn.ActionTarget]
 		if target then
 			btn.HighlightLocked = CursorCanGoInSlot(target.id)
 		end
@@ -109,7 +109,7 @@ end
 
 function INVENTORY_SEARCH_UPDATE(self)
 	for _, btn in handler() do
-		btn.ShowSearchOverlay = IsContainerFiltered(self.ActionTarget)
+		btn.ShowSearchOverlay = IsContainerFiltered(btn.ActionTarget)
 	end
 end
 
@@ -196,6 +196,9 @@ function handler:GetActionCharges()
 				sTotal = sTotal + total
 			end
 		end
+		if self.ActionTarget == 0 then
+			self.__BagHandler_FreeSlots = sFree
+		end
 		if style == "AllEmpty" then
 			return sFree, sTotal
 		else
@@ -220,12 +223,21 @@ end
 
 function handler:SetTooltip(GameTooltip)
 	local target = self.ActionTarget
-	if _BagSlotMap[target] then
+	if target == 0 then
+		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		GameTooltip:SetText(BACKPACK_TOOLTIP, 1.0, 1.0, 1.0)
+		local keyBinding = GetBindingKey("TOGGLEBACKPACK")
+		if ( keyBinding ) then
+			GameTooltip:AppendText(" "..NORMAL_FONT_COLOR_CODE.."("..keyBinding..")"..FONT_COLOR_CODE_CLOSE)
+		end
+		GameTooltip:AddLine(string.format(NUM_FREE_SLOTS, (self.__BagHandler_FreeSlots or 0)))
+		GameTooltip:Show()
+	elseif _BagSlotMap[target] then
 		local id = _BagSlotMap[target].id
 		if ( GameTooltip:SetInventoryItem("player", id) ) then
 			local bindingKey = GetBindingKey("TOGGLEBAG"..(5 -  target))
 			if ( bindingKey ) then
-				GameTooltip:AppendText(" "..NORMAL_FONT_COLOR_CODE.."("..bindingKey..")"..FONT_COLOR_CODE_CLOSE);
+				GameTooltip:AppendText(" "..NORMAL_FONT_COLOR_CODE.."("..bindingKey..")"..FONT_COLOR_CODE_CLOSE)
 			end
 			if (not IsInventoryItemProfessionBag("player", ContainerIDToInventoryID(target))) then
 				for i = LE_BAG_FILTER_FLAG_EQUIPMENT, NUM_LE_BAG_FILTER_FLAGS do
@@ -307,6 +319,20 @@ interface "IFActionHandler"
 	}
 
 	__Doc__[[Whether the search overlay will be shown]]
+	__Handler__(function (self, value)
+		-- Create it when needed
+		local overlay =self:GetChild("SearchOverlay")
+		if value then
+			if not overlay then
+				overlay = Texture("SearchOverlay", self, "OVERLAY", nil, 2)
+				overlay:SetAllPoints(self)
+				overlay:SetTexture(0, 0, 0, 0.8)
+			end
+			overlay.Visible = true
+		elseif overlay then
+			overlay.Visible = false
+		end
+	end)
 	property "ShowSearchOverlay" { Type = Boolean }
 
 	__Doc__[[What to be shown as the count]]
