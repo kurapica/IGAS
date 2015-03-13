@@ -48,7 +48,7 @@ function OnEnable(self)
 
 	if next(cache) then
 		Task.NoCombatCall(function ()
-			handler:RunSnippet( tblconcat(cache, "") )
+			handler:RunSnippet( tblconcat(cache, ";") )
 
 			for _, btn in handler() do
 				local target = tonumber(btn.ActionTarget)
@@ -321,7 +321,7 @@ interface "IFActionHandler"
 	__Doc__[[Whether the search overlay will be shown]]
 	__Handler__(function (self, value)
 		-- Create it when needed
-		local overlay =self:GetChild("SearchOverlay")
+		local overlay = self:GetChild("SearchOverlay")
 		if value then
 			if not overlay then
 				overlay = Texture("SearchOverlay", self, "OVERLAY", nil, 2)
