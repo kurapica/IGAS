@@ -7,7 +7,7 @@
 --               2013/10/19 Support unit panel only contains dead people
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFGroup", version) then
 	return
 end
@@ -52,20 +52,11 @@ interface "IFGroup"
 		"DRUID",
 	}
 
-	__StructType__(StructType.Array)
-	struct "GroupFilter"
-		element = System.Number
-	endstruct "GroupFilter"
+	struct "GroupFilter" { System.Number }
 
-	__StructType__(StructType.Array)
-	struct "ClassFilter"
-		element = PlayerClass
-	endstruct "ClassFilter"
+	struct "ClassFilter" { PlayerClass }
 
-	__StructType__(StructType.Array)
-	struct "RoleFilter"
-		element = RoleType
-	endstruct "RoleFilter"
+	struct "RoleFilter" { RoleType }
 
 	DEFAULT_CLASS_SORT_ORDER = {
 		"WARRIOR",
@@ -316,17 +307,12 @@ interface "IFGroup"
 			end
 		end
 
-		local function TGenerateUnitFrames(self, count)
-			Threading.Sleep(0.1) -- Wait the SecureGroupHeader finished the init
-
-			Task.NoCombatCall(GenerateUnitFrames, self, count)
-		end
-
 		local function UpdateUnitCount(self, count)
 			if InCombatLockdown() then
-				Task.NoCombatCall(GenerateUnitFrames, self, count)
+				return Task.NoCombatCall(GenerateUnitFrames, self, count)
 			else
-				IGAS:GetWrapper(self):ThreadCall(TGenerateUnitFrames, count)
+				-- Wait the SecureGroupHeader finished the init
+				return Task.DelayCall(0.1, Task.NoCombatCall, GenerateUnitFrames, self, count)
 			end
 		end
 
@@ -450,7 +436,7 @@ interface "IFGroup"
 	_Cache = {}
 
 	local function SecureSetAttribute(self, attr, value)
-		Task.NoCombatCall(self.SetAttribute, self, attr, value)
+		return Task.NoCombatCall(self.SetAttribute, self, attr, value)
 	end
 
 	local function SetupGroupFilter(self)
@@ -530,11 +516,10 @@ interface "IFGroup"
 	__Doc__[[
 		<desc>Init the unit panel with a unit count</desc>
 		<param name="count">number, the units count</param>
-		]]
+	]]
+	__Delegate__(Task.NoCombatCall)
 	function InitWithCount(self, count)
-		Task.NoCombatCall(function()
-			self.Count = count
-		end)
+		self.Count = count
 	end
 
 	__Doc__[[Activate the unit panel]]
@@ -568,7 +553,7 @@ interface "IFGroup"
 	__Doc__[[Whether the panel should be shown while in a raid]]
 	property "ShowRaid" {
 		Get = function(self)
-			return self.GroupHeader:GetAttribute("showRaid") or false
+			return self.GroupHeader:GetAttribute("showRaid")
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showRaid", value)
@@ -579,7 +564,7 @@ interface "IFGroup"
 	__Doc__[[Whether the panel should be shown while in a party and not in a raid]]
 	property "ShowParty" {
 		Get = function(self)
-			return self.GroupHeader:GetAttribute("showParty") or false
+			return self.GroupHeader:GetAttribute("showParty")
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showParty", value)
@@ -590,7 +575,7 @@ interface "IFGroup"
 	__Doc__[[Whether the panel should show the player while not in a raid]]
 	property "ShowPlayer" {
 		Get = function(self)
-			return self.GroupHeader:GetAttribute("showPlayer") or false
+			return self.GroupHeader:GetAttribute("showPlayer")
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showPlayer", value)
@@ -601,7 +586,7 @@ interface "IFGroup"
 	__Doc__[[Whether the panel should be shown while not in a group]]
 	property "ShowSolo" {
 		Get = function(self)
-			return self.GroupHeader:GetAttribute("showSolo") or false
+			return self.GroupHeader:GetAttribute("showSolo")
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showSolo", value)
@@ -610,88 +595,48 @@ interface "IFGroup"
 	}
 
 	__Doc__[[A list of raid group numbers, used as the filter settings and order settings(if GroupBy is "GROUP")]]
-	property "GroupFilter" {
-		Get = function(self)
-			return self.__GroupFilter
-		end,
-		Set = function(self, value)
-			if value and not next(value) then value = nil end
-
-			self.__GroupFilter = value
-
-			SetupGroupFilter(self)
-
-			if self.GroupBy == "GROUP" then
-				SetupGroupingOrder(self)
-			end
-		end,
-		Type = GroupFilter + nil,
-	}
+	__Handler__(function (self, value)
+		if value and not next(value) then self.GroupFilter = nil return end
+		SetupGroupFilter(self)
+		if self.GroupBy == "GROUP" then SetupGroupingOrder(self) end
+	end)
+	property "GroupFilter" { Type = GroupFilter + nil }
 
 	__Doc__[[A list of uppercase class names, used as the filter settings and order settings(if GroupBy is "CLASS")]]
-	property "ClassFilter" {
-		Get = function(self)
-			return self.__ClassFilter
-		end,
-		Set = function(self, value)
-			if value and not next(value) then value = nil end
-
-			self.__ClassFilter = value
-
-			SetupGroupFilter(self)
-
-			if self.GroupBy == "CLASS" then
-				SetupGroupingOrder(self)
-			end
-		end,
-		Type = ClassFilter + nil,
-	}
+	__Handler__(function (self, value)
+		if value and not next(value) then self.ClassFilter = nil return end
+		SetupGroupFilter(self)
+		if self.GroupBy == "CLASS" then SetupGroupingOrder(self) end
+	end)
+	property "ClassFilter" { Type = ClassFilter + nil }
 
 	__Doc__[[A list of uppercase role names, used as the filter settings and order settings(if GroupBy is "ROLE")]]
-	property "RoleFilter" {
-		Get = function(self)
-			return self.__RoleFilter
-		end,
-		Set = function(self, value)
-			if value and not next(value) then value = nil end
-
-			self.__RoleFilter = value
-
-			SetupRoleFilter(self)
-
-			if self.GroupBy == "ROLE" or self.GroupBy == "ASSIGNEDROLE" then
-				SetupGroupingOrder(self)
-			end
-		end,
-		Type = RoleFilter + nil,
-	}
+	__Handler__(function (self, value)
+		if value and not next(value) then self.RoleFilter = nil return end
+		SetupRoleFilter(self)
+		if self.GroupBy == "ROLE" or self.GroupBy == "ASSIGNEDROLE" then
+			SetupGroupingOrder(self)
+		end
+	end)
+	property "RoleFilter" { Type = RoleFilter + nil }
 
 	__Doc__[[Specifies a "grouping" type to apply before regular sorting (Default: nil)]]
-	property "GroupBy" {
-		Get = function(self)
-			return self.__GroupBy or "NONE"
-		end,
-		Set = function(self, value)
-			self.__GroupBy = value
-
-			if value == "NONE" then value = nil end
-
-			SecureSetAttribute(self.GroupHeader, "groupBy", value)
-
-			SetupGroupingOrder(self)
-		end,
-		Type = GroupType,
-	}
+	__Handler__(function (self, value)
+		if value == "NONE" then value = nil end
+		SecureSetAttribute(self.GroupHeader, "groupBy", value)
+		SetupGroupingOrder(self)
+	end)
+	property "GroupBy" { Type = GroupType, Default = "NONE" }
 
 	__Doc__[[Defines how the group is sorted (Default: "INDEX")]]
 	property "SortBy" {
 		Get = function(self)
-			return self.GroupHeader:GetAttribute("sortMethod") or "INDEX"
+			return self.GroupHeader:GetAttribute("sortMethod")
 		end,
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "sortMethod", value)
 		end,
-		Type = SortType,
+		Type = SortType, Default = "INDEX"
 	}
 
 	__Doc__[[The group header based on the blizzard's SecureGroupHeader]]

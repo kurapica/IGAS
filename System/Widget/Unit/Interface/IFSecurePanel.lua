@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.IFSecurePanel", version) then
 	return
 end
@@ -44,8 +44,8 @@ do
 					local column
 					local columnCount = panel:GetAttribute("IFSecurePanel_ColumnCount") or 99
 					local rowCount = panel:GetAttribute("IFSecurePanel_RowCount") or 99
-					local elementWidth = panel:GetAttribute("IFSecurePanel_Width") or 16
-					local elementHeight = panel:GetAttribute("IFSecurePanel_Height") or 16
+					local elementWidth = panel:GetAttribute("IFSecurePanel_ElementWidth") or 16
+					local elementHeight = panel:GetAttribute("IFSecurePanel_ElementHeight") or 16
 					local hSpacing = panel:GetAttribute("IFSecurePanel_HSpacing") or 0
 					local vSpacing = panel:GetAttribute("IFSecurePanel_VSpacing") or 0
 					local marginTop = panel:GetAttribute("IFSecurePanel_MarginTop") or 0
@@ -245,6 +245,45 @@ interface "IFSecurePanel"
 		end
 	end
 
+	_OperationMap = {
+		-- 0 - AdjustPanel(self)
+		KeepMaxSize = 0,
+		MarginRight = 0,
+		MarginBottom = 0,
+
+		-- 1 - self:Each(AdjustElement, self)
+		MarginLeft = 1,
+		MarginTop = 1,
+		VSpacing = 1,
+		HSpacing = 1,
+		Orientation = 1,
+		ElementHeight = 1,
+		ElementWidth = 1,
+
+		-- 2 - SecureUpdatePanelSize(self)
+		AutoSize = 2,
+
+		-- 3 - Reduce + AdjustElement
+		RowCount = 3,
+		ColumnCount = 3,
+	}
+
+	local function OnPropertyChanged(self, value, old, prop)
+		return Task.NoCombatCall(function()
+			self:SetAttribute("IFSecurePanel_" .. prop, value)
+
+			local oper = _OperationMap[prop]
+			if oper == 1 or oper == 3 then
+				if oper == 3 then Reduce(self) end
+				return self:Each(AdjustElement, self)
+			elseif oper == 2 then
+				return SecureUpdatePanelSize(self)
+			end
+
+			return AdjustPanel(self)
+		end)
+	end
+
 	class "Element"
 		__Doc__[[Element is an accessor to the IFSecurePanel's elements, used like object.Element[i].Prop = value]]
 
@@ -320,117 +359,31 @@ interface "IFSecurePanel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The columns's count]]
-	property "ColumnCount" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_ColumnCount") or 99
-		end,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("IFSecurePanel.ColumnCount must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ColumnCount then
-				Task.NoCombatCall(function()
-					self:SetAttribute("IFSecurePanel_ColumnCount", cnt)
-
-					Reduce(self)
-					self:Each(AdjustElement, self)
-				end)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "ColumnCount" { Type = PositiveNumber, Default = 99 }
 
 	__Doc__[[The row's count]]
-	property "RowCount" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_RowCount") or 99
-		end,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("IFSecurePanel.RowCount must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.RowCount then
-				Task.NoCombatCall(function()
-					self:SetAttribute("IFSecurePanel_RowCount", cnt)
-
-					Reduce(self)
-					self:Each(AdjustElement, self)
-				end)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "RowCount" { Type = PositiveNumber, Default = 99 }
 
 	__Doc__[[The elements's max count]]
-	property "MaxCount" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_ColumnCount") * self:GetAttribute("IFSecurePanel_RowCount")
-		end,
-	}
+	property "MaxCount" { Get = function(self) return self.ColumnCount * self.RowCount end }
 
 	__Doc__[[The element's width]]
-	property "ElementWidth" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_Width") or 16
-		end,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("IFSecurePanel.ElementWidth must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ElementWidth then
-				Task.NoCombatCall(function()
-					self:SetAttribute("IFSecurePanel_Width", cnt)
-
-					self:Each(AdjustElement, self)
-				end)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "ElementWidth" { Type = PositiveNumber, Default = 16 }
 
 	__Doc__[[The element's height]]
-	property "ElementHeight" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_Height") or 16
-		end,
-		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 1 then
-				error("IFSecurePanel.ElementHeight must be greater than 0.", 2)
-			end
-
-			if cnt ~= self.ElementHeight then
-				Task.NoCombatCall(function()
-					self:SetAttribute("IFSecurePanel_Height", cnt)
-
-					self:Each(AdjustElement, self)
-				end)
-			end
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "ElementHeight" { Type = PositiveNumber, Default = 16 }
 
 	__Doc__[[The element's count]]
 	property "Count" {
 		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_Count") or 0
+			return self:GetAttribute("IFSecurePanel_Count")
 		end,
 		Set = function(self, cnt)
-			cnt = floor(cnt)
-
-			if cnt < 0 then
-				error("Count can't be negative.", 2)
-			elseif cnt > self.RowCount * self.ColumnCount then
+			if cnt > self.RowCount * self.ColumnCount then
 				error("Count can't be more than "..self.RowCount * self.ColumnCount, 2)
 			end
 
@@ -444,157 +397,43 @@ interface "IFSecurePanel"
 				Task.NoCombatCall(Reduce, self, cnt)
 			end
 		end,
-		Type = Number,
+		Type = NaturalNumber,
 	}
 
 	__Doc__[[The orientation for elements]]
-	property "Orientation" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_Orientation") or Orientation.HORIZONTAL
-		end,
-		Set = function(self, orientation)
-			if orientation == self.Orientation then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_Orientation", orientation)
-
-				self:Each(AdjustElement, self)
-			end)
-		end,
-		Type = Orientation,
-	}
+	__Handler__( OnPropertyChanged )
+	property "Orientation" { Type = Orientation, Default = Orientation.HORIZONTAL }
 
 	__Doc__[[The element's type]]
-	property "ElementType" {
-		Get = function(self)
-			return self.__IFSecurePanel_Type
-		end,
-		Set = function(self, elementType)
-			if elementType ~= self.__IFSecurePanel_Type then
-				self.__IFSecurePanel_Type = elementType
-			end
-		end,
-		Type = -IFSecureHandler,
-	}
+	property "ElementType" { Type = -IFSecureHandler }
 
 	__Doc__[[The horizontal spacing]]
-	property "HSpacing" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_HSpacing") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_HSpacing") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_HSpacing", spacing > 0 and floor(spacing) or 0)
-
-				self:Each(AdjustElement, self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "HSpacing" { Type = NaturalNumber }
 
 	__Doc__[[The vertical spacing]]
-	property "VSpacing" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_VSpacing") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_VSpacing") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_VSpacing", spacing > 0 and floor(spacing) or 0)
-
-				self:Each(AdjustElement, self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "VSpacing" { Type = NaturalNumber }
 
 	__Doc__[[Whether the elementPanel is autosize]]
-	property "AutoSize" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_AutoSize") and true or false
-		end,
-		Set = function(self, flag)
-			if flag == self.AutoSize then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_AutoSize", flag)
-
-				SecureUpdatePanelSize(self)
-			end)
-		end,
-		Type = Boolean,
-	}
+	__Handler__( OnPropertyChanged )
+	property "AutoSize" { Type = Boolean }
 
 	__Doc__[[The top margin]]
-	property "MarginTop" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_MarginTop") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_MarginTop") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_MarginTop", spacing > 0 and floor(spacing) or 0)
-
-				self:Each(AdjustElement, self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "MarginTop" { Type = NaturalNumber }
 
 	__Doc__[[The bottom margin]]
-	property "MarginBottom" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_MarginBottom") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_MarginBottom") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_MarginBottom", spacing > 0 and floor(spacing) or 0)
-
-				AdjustPanel(self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "MarginBottom" { Type = NaturalNumber }
 
 	__Doc__[[The left margin]]
-	property "MarginLeft" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_MarginLeft") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_MarginLeft") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_MarginLeft", spacing > 0 and floor(spacing) or 0)
-
-				self:Each(AdjustElement, self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "MarginLeft" { Type = NaturalNumber }
 
 	__Doc__[[The right margin]]
-	property "MarginRight" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_MarginRight") or 0
-		end,
-		Set = function(self, spacing)
-			if self:GetAttribute("IFSecurePanel_MarginRight") == spacing then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_MarginRight", spacing > 0 and floor(spacing) or 0)
-
-				AdjustPanel(self)
-			end)
-		end,
-		Type = Number,
-	}
+	__Handler__( OnPropertyChanged )
+	property "MarginRight" { Type = NaturalNumber }
 
 	__Doc__[[The Element accessor, used like obj.Element[i].]]
 	property "Element" {
@@ -602,36 +441,14 @@ interface "IFSecurePanel"
 			self.__IFSecurePanel_Element = self.__IFSecurePanel_Element or Element(self)
 			return self.__IFSecurePanel_Element
 		end,
-		Type = Element,
 	}
 
 	__Doc__[[The prefix for the element's name]]
-	property "ElementPrefix" {
-		Get = function(self)
-			return self.__ElementPrefix or "Element"
-		end,
-		Set = function(self, value)
-			self.__ElementPrefix = value
-		end,
-		Type = System.String + nil,
-	}
+	property "ElementPrefix" { Type = System.String + nil, Default = "Element" }
 
 	__Doc__[[Whether the elementPanel should keep it's max size]]
-	property "KeepMaxSize" {
-		Get = function(self)
-			return self:GetAttribute("IFSecurePanel_KeepMaxSize") or false
-		end,
-		Set = function(self, value)
-			if value == self.KeepMaxSize then return end
-
-			Task.NoCombatCall(function()
-				self:SetAttribute("IFSecurePanel_KeepMaxSize", value)
-
-				AdjustPanel(self)
-			end)
-		end,
-		Type = System.Boolean,
-	}
+	__Handler__( OnPropertyChanged )
+	property "KeepMaxSize" { Type = System.Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
