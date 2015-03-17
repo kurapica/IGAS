@@ -2855,10 +2855,10 @@ class "MultiLineTextBox"
 			end
 		end
 
+		self:Fire("OnCursorChanged", x, y, w, h)
+
 		-- Cusotm part
 		if self.__InCharComposition then return end
-
-		self:Fire("OnCursorChanged", x, y, w, h)
 
 		local cursorPos = self.CursorPosition
 

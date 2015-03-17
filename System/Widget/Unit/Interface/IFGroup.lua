@@ -78,11 +78,10 @@ interface "IFGroup"
 	-- Shadow SecureGroupHeader
 	-- A shadow refresh system based on the SecureGroupHeaderTemplate
 	-------------------------------------
+	__Doc__[[Used to handle the refresh in shadow]]
 	class "ShadowGroupHeader"
 		inherit "Frame"
 		extend "IFSecureHandler"
-
-		__Doc__[[Used to handle the refresh in shadow]]
 
 		_InitHeader = [=[
 			Manager = self
