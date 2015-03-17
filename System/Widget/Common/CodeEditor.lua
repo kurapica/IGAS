@@ -321,45 +321,6 @@ do
 		return "(["..w:lower()..w:upper().."])([%w_]-)"
 	end
 
-	function RemoveColor4AC(str)
-		local byte
-		local pos = 1
-		local ret = ""
-
-		if not str or #str == 0 then return "" end
-
-		byte = strbyte(str, pos)
-
-		while true do
-			if byte == _Byte.VERTICAL then
-				-- handle the color code
-				pos = pos + 1
-				byte = strbyte(str, pos)
-
-				if byte == _Byte.c then
-					pos = pos + 9
-				elseif byte == _Byte.r then
-					pos = pos + 1
-				else
-					ret = ret .. strchar(_Byte.VERTICAL)
-				end
-
-				byte = strbyte(str, pos)
-			else
-				if not byte then
-					break
-				end
-
-				ret = ret .. strchar(byte)
-
-				pos = pos + 1
-				byte = strbyte(str, pos)
-			end
-		end
-
-		return ret
-	end
-
 	function ApplyColor(...)
 		local ret = ""
 		local word = ""
@@ -402,7 +363,7 @@ do
 			-- Handle the auto complete
 			local startp, endp, word = GetWord(self.FullText, self.CursorPosition, true)
 
-			word = RemoveColor4AC(word)
+			word = RemoveColor(word)
 
 			wipe(_AutoCacheKeys)
 			wipe(_AutoCacheItems)
@@ -410,6 +371,7 @@ do
 			wipe(_AutoWordWeightCache)
 
 			if word and word:match("^[%w_]+$") then
+				word = word:sub(1, 16)
 				_AutoCheckKey = word
 
 				word = word:lower()
@@ -962,6 +924,8 @@ do
 	function nextToken(str, pos, cursorPos, needTrueWord)
 		pos = pos or 1
 		cursorPos = cursorPos or 0
+
+		if not str then return nil, pos end
 
 		local byte = strbyte(str, pos)
 		local start
@@ -1983,35 +1947,6 @@ do
 		return tblconcat(content)
 	end
 
-	function GetIndex(list, name, sIdx, eIdx)
-		if not sIdx then
-			if not next(list) then
-				return nil
-			end
-			sIdx = 1
-			eIdx = #list
-		end
-		if sIdx == eIdx then
-			if sIdx > 1 then
-				return sIdx - 1
-			else
-				return nil
-			end
-		end
-		local f = floor((sIdx + eIdx) / 2)
-		if compare(list[f], name) then
-			if not compare(list[f + 1], name) then
-				return f
-			else
-				return GetIndex(list, name, f + 1, eIdx)
-			end
-		elseif strupper(list[f]) == strupper(name) then
-			return GetIndex(list, name, f, f)
-		else
-			return GetIndex(list, name, sIdx, f)
-		end
-	end
-
 	function GetWord(str, cursorPos, noTail)
 		local startp, endp = GetLines(str, cursorPos)
 
@@ -2275,7 +2210,7 @@ class "CodeEditor"
 	function InsertAutoCompleteWord(self, word)
 		if type(word) == "string" and strtrim(word) ~= "" then
 			word = strtrim(word)
-			word = RemoveColor4AC(word)
+			word = RemoveColor(word)
 
 			local lst = self.AutoCompleteList
 			local idx = GetIndex(lst, word)
@@ -2495,6 +2430,8 @@ class "CodeEditor"
 		local cursorPos = self.CursorPosition
 
 		if _List.Visible then
+			local text = self.FullText
+
 			wipe(_BackAutoCache)
 
 			startp, endp, str = GetWord(text, self.CursorPosition, true)
@@ -2508,11 +2445,11 @@ class "CodeEditor"
 
 				_BackAutoCache[0] = _List.SelectedIndex
 
-				self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+				self.FullText = ReplaceBlock(text, startp, endp, str)
 
 				AdjustCursorPosition(self, startp + str:len() - 1)
 
-				self:Fire("OnPasting", startp, startp + str:len() - 1)
+				FormatColor4Line(self, startp, startp + str:len() - 1)
 
 				args.Handled = true
 			else
@@ -2520,6 +2457,8 @@ class "CodeEditor"
 				_List:Clear()
 			end
 		elseif #_BackAutoCache > 0 then
+			local text = self.FullText
+
 			startp, endp, str = GetWord(text, self.CursorPosition, true)
 
 			str = RemoveColor(str)
@@ -2534,11 +2473,11 @@ class "CodeEditor"
 				str = _BackAutoCache[_BackAutoCache[0]]
 
 				if str then
-					self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+					self.FullText = ReplaceBlock(text, startp, endp, str)
 
 					AdjustCursorPosition(self, startp + str:len() - 1)
 
-					self:Fire("OnPasting", startp, startp + str:len() - 1)
+					FormatColor4Line(self, startp, startp + str:len() - 1)
 
 					args.Handled = true
 				else
@@ -2550,7 +2489,7 @@ class "CodeEditor"
 
 	local function OnDirectionKey(self, args)
 		local key = args.Key
-		if _List.Visible and key == "UP" or key == "DOWN" then
+		if _List.Visible and (key == "UP" or key == "DOWN") then
 			self.AltArrowKeyMode = true
 
 			if key == "UP" then
@@ -2587,6 +2526,7 @@ class "CodeEditor"
 		self.OnEscapePressed = self.OnEscapePressed + OnEscapePressed
 		self.OnEditFocusLost = self.OnEditFocusLost + OnEditFocusLost
 		self.OnDirectionKey = self.OnDirectionKey + OnDirectionKey
+		self.OnTabPressed = self.OnTabPressed + OnTabPressed
 
 		-- Enviroment
 		InitDefinition(self)

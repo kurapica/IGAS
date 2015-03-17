@@ -2858,6 +2858,8 @@ class "MultiLineTextBox"
 		-- Cusotm part
 		if self.__InCharComposition then return end
 
+		self:Fire("OnCursorChanged", x, y, w, h)
+
 		local cursorPos = self.CursorPosition
 
 		if cursorPos == self.__OldCursorPosition and self.__OperationOnLine ~= _Operation.CUT then
@@ -2937,7 +2939,7 @@ class "MultiLineTextBox"
 			SaveOperation(self)
 		end
 
-		return self:Fire("OnCursorChanged", x, y, w, h)
+		return
     end
 
 	local function OnMouseDown(self, ...)
