@@ -10,25 +10,20 @@
 --              2013/05/19 Auto pairs function added
 --              2013/06/16 Fix undo/redo for tab and shift-tab
 --              2013/10/18 Fix the arrow key disabled
+--              2015/03/17 Move the auto complate ability to CodeEditor
 
 -- Check Version
-local version = 25
+local version = 26
 
 if not IGAS:NewAddon("IGAS.Widget.MultiLineTextBox", version) then
 	return
 end
 
-_GetCursorPosition = _G.GetCursorPosition
+import "System.Threading"
 
-__Doc__[[MultiLineTextBox is used as a multi-line text editor.]]
-class "MultiLineTextBox"
-	inherit "ScrollForm"
+do
+	_GetCursorPosition = _G.GetCursorPosition
 
-	import "System.Threading"
-
-	------------------------------------------------------
-	-- Local Settings
-	------------------------------------------------------
 	_DBL_CLK_CHK = 0.3
 	_FIRST_WAITTIME = 0.3
 	_CONTINUE_WAITTIME = 0.03
@@ -202,9 +197,9 @@ class "MultiLineTextBox"
 	_AutoPairs = {
 		[_Byte.LEFTBRACKET] = _Byte.RIGHTBRACKET, -- []
 		[_Byte.LEFTPAREN] = _Byte.RIGHTPAREN, -- ()
-		[_Byte.LEFTWING] = _Byte.RIGHTWING, --()
+		[_Byte.LEFTWING] = _Byte.RIGHTWING, --{}
 		[_Byte.SINGLE_QUOTE] = true, -- ''
-		[_Byte.DOUBLE_QUOTE] = true, -- ''
+		[_Byte.DOUBLE_QUOTE] = true, -- ""
 		[_Byte.RIGHTBRACKET] = false,
 		[_Byte.RIGHTPAREN] = false,
 		[_Byte.RIGHTWING] = false,
@@ -236,30 +231,6 @@ class "MultiLineTextBox"
 	_Thread = System.Threading.Thread()
 
 	------------------------------------------------------
-	-- Code smart helper
-	------------------------------------------------------
-	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
-	_List.FrameStrata = "TOOLTIP"
-	_List.DisplayItemCount = 5
-	_List.Width = 250
-	_List.Visible = false
-
-	_AutoCacheKeys = {}
-	_AutoCacheItems = {}
-	_AutoWordWeightCache = {}
-	_AutoWordMap = {}
-
-	_AutoCheckKey = ""
-	_AutoCheckWord = ""
-
-	_List.Keys = _AutoCacheKeys
-	_List.Items = _AutoCacheItems
-
-	_BackAutoCache = {}
-
-	_CommonAutoCompleteList = {}
-
-	------------------------------------------------------
 	-- Short Key Block
 	------------------------------------------------------
 	_BtnBlockUp = SecureButton("IGAS_MultiLineTextBox_UpBlock", IGAS.WorldFrame)
@@ -270,58 +241,7 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Local functions
 	------------------------------------------------------
-	local function Compare(t1, t2)
-		t1 = t1 or ""
-		t2 = t2 or ""
-
-		local ut1 = strupper(t1)
-		local ut2 = strupper(t2)
-
-		if ut1 == ut2 then
-			return t1 < t2
-		else
-			return ut1 < ut2
-		end
-	end
-
-	local function CompareWeight(t1, t2)
-		return (_AutoWordWeightCache[t1] or 0) < (_AutoWordWeightCache[t2] or 0)
-	end
-
-	local function GetIndex(list, name, sIdx, eIdx)
-		if not sIdx then
-			if not next(list) then
-				return 0
-			end
-			sIdx = 1
-			eIdx = #list
-
-			-- Border check
-			if Compare(name, list[sIdx]) then
-				return 0
-			elseif Compare(list[eIdx], name) then
-				return eIdx
-			end
-		end
-
-		if sIdx == eIdx then
-			return sIdx
-		end
-
-		local f = floor((sIdx + eIdx) / 2)
-
-		if Compare(name, list[f+1]) then
-			return GetIndex(list, name, sIdx, f)
-		else
-			return GetIndex(list, name, f+1, eIdx)
-		end
-	end
-
-	local function TransMatchWord(w)
-		return "(["..w:lower()..w:upper().."])([%w_]-)"
-	end
-
-	local function RemoveColor(str)
+	function RemoveColor(str)
 		local byte
 		local pos = 1
 		local ret = ""
@@ -360,55 +280,17 @@ class "MultiLineTextBox"
 		return ret
 	end
 
-	local function ApplyColor(...)
-		local ret = ""
-		local word = ""
-		local pos = 0
-
-		local weight = 0
-		local n = select('#', ...)
-
-		for i = 1, n do
-			word = select(i, ...)
-
-			if i % 2 == 1 then
-				pos = floor((i+1)/2)
-				ret = ret .. FontColor.WHITE .. word .. FontColor.CLOSE
-
-				if word ~= _AutoCheckKey:sub(pos, pos) then
-					weight = weight + 1
-				end
-			else
-				ret = ret .. FontColor.GRAY .. word .. FontColor.CLOSE
-
-				if i < n then
-					weight = weight + word:len()
-				end
-			end
-		end
-
-		_AutoWordWeightCache[_AutoCheckWord] = weight
-
-		_AutoWordMap[_AutoCheckWord] = ret
-
-		return ret
-	end
-
-	local function ReplaceBlock(str, startp, endp, replace)
+	function ReplaceBlock(str, startp, endp, replace)
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
 
-	__Doc__[[
-		<desc>Set the cursor position without change the operation list</desc>
-		<param name="pos">number, the position of the cursor inside the MultiLineTextBox</param>
-	]]
 	function AdjustCursorPosition(self, pos)
 		self.__OldCursorPosition = pos
 		self.__Text:SetCursorPosition(pos)
 		return self:HighlightText(pos, pos)
 	end
 
-	local function UpdateLineNum(self)
+	function UpdateLineNum(self)
 		if self.__LineNum.Visible then
 			local inset = self.__Text.TextInsets
 			local lineWidth = self.__Text.Width - inset.left - inset.right
@@ -477,7 +359,7 @@ class "MultiLineTextBox"
 		end
 	end
 
-	local function Ajust4Font(self)
+	function Ajust4Font(self)
 		self.__LineNum:SetFont(self.__Text:GetFont())
 		self.__LineNum:SetSpacing(self.__Text:GetSpacing())
 
@@ -508,7 +390,7 @@ class "MultiLineTextBox"
 		UpdateLineNum(self)
 	end
 
-	local function GetLines4Line(self, line)
+	function GetLines4Line(self, line)
 		if not _ConcatReturn then
 			return 0, self.__Text.Text:len()
 		end
@@ -532,7 +414,7 @@ class "MultiLineTextBox"
 		return startp, endp
 	end
 
-	local function GetLines(str, startp, endp)
+	function GetLines(str, startp, endp)
 		local byte
 
 		endp = (endp and (endp + 1)) or startp + 1
@@ -567,7 +449,7 @@ class "MultiLineTextBox"
 		return startp, endp, str:sub(startp, endp)
 	end
 
-	local function GetLinesByReturn(str, startp, returnCnt)
+	function GetLinesByReturn(str, startp, returnCnt)
 		local byte
 		local handledReturn = 0
 		local endp = startp + 1
@@ -612,7 +494,7 @@ class "MultiLineTextBox"
 		return startp, endp, str:sub(startp, endp), handledReturn
 	end
 
-	local function GetPrevLinesByReturn(str, startp, returnCnt)
+	function GetPrevLinesByReturn(str, startp, returnCnt)
 		local byte
 		local handledReturn = 0
 		local endp = startp + 1
@@ -663,7 +545,7 @@ class "MultiLineTextBox"
 		return startp, endp, str:sub(startp, endp), handledReturn
 	end
 
-	local function GetOffsetByCursorPos(str, startp, cursorPos)
+	function GetOffsetByCursorPos(str, startp, cursorPos)
 		if not cursorPos or cursorPos < 0 then
 			return 0
 		end
@@ -712,7 +594,7 @@ class "MultiLineTextBox"
 		return byteCnt
 	end
 
-	local function GetCursorPosByOffset(str, startp, offset)
+	function GetCursorPosByOffset(str, startp, offset)
 		startp = startp or 1
 		offset = offset or 0
 
@@ -754,7 +636,7 @@ class "MultiLineTextBox"
 		return startp
 	end
 
-	local function GetWord(str, cursorPos, noTail)
+	function GetWord(str, cursorPos, noTail)
 		local startp, endp = GetLines(str, cursorPos)
 
 		if startp > endp then return end
@@ -926,7 +808,7 @@ class "MultiLineTextBox"
 		end
 	end
 
-	local function SaveOperation(self)
+	function SaveOperation(self)
 		if not self.__OperationOnLine then
 			return
 		end
@@ -1009,7 +891,7 @@ class "MultiLineTextBox"
 		return self:Fire("OnOperationListChanged")
 	end
 
-	local function NewOperation(self, oper)
+	function NewOperation(self, oper)
 		if self.__OperationOnLine == oper then
 			return
 		end
@@ -1024,7 +906,7 @@ class "MultiLineTextBox"
 		self.__OperationEndOnLine = self.__HighlightTextEnd
 	end
 
-	local function EndPrevKey(self)
+	function EndPrevKey(self)
 		if self.__SKIPCURCHGARROW then
 			self.__SKIPCURCHG = nil
 			self.__SKIPCURCHGARROW = nil
@@ -1033,90 +915,12 @@ class "MultiLineTextBox"
 		self.__InPasting = nil
 	end
 
-	local function ApplyAutoComplete(self)
-		_List.Visible = false
-		_List:Clear()
-
-		if _CommonAutoCompleteList[1] or self.AutoCompleteList[1] then
-			-- Handle the auto complete
-			local startp, endp, word = GetWord(self.__Text.Text, self.CursorPosition, true)
-
-			word = RemoveColor(word)
-
-			wipe(_AutoCacheKeys)
-			wipe(_AutoCacheItems)
-			wipe(_AutoWordMap)
-			wipe(_AutoWordWeightCache)
-
-			if word and word:match("^[%w_]+$") then
-				_AutoCheckKey = word
-
-				word = word:lower()
-
-				-- Match the auto complete list
-				local uword = "^" .. word:gsub("[%w_]", TransMatchWord) .. "$"
-				local header = word:sub(1, 1)
-
-				if not header or #header == 0 then return end
-
-				local lst = self.AutoCompleteList
-				local sIdx = GetIndex(lst, header)
-
-				if sIdx == 0 then sIdx = 1 end
-
-				for i = sIdx, #lst do
-					local value = lst[i]
-					if #value == 0 or Compare(header, value:sub(1, 1)) then break end
-
-					_AutoCheckWord = value
-
-					if _AutoCheckWord:match(uword) then
-						_AutoCheckWord:gsub(uword, ApplyColor)
-
-						tinsert(_AutoCacheKeys, _AutoCheckWord)
-					end
-				end
-
-				lst = _CommonAutoCompleteList
-				sIdx = GetIndex(lst, header)
-
-				if sIdx == 0 then sIdx = 1 end
-
-				for i = sIdx, #lst do
-					local value = lst[i]
-					if not _AutoWordMap[value] then
-						if #value == 0 or Compare(header, value:sub(1, 1)) then break end
-
-						_AutoCheckWord = value
-
-						if _AutoCheckWord:match(uword) then
-							_AutoCheckWord:gsub(uword, ApplyColor)
-
-							tinsert(_AutoCacheKeys, _AutoCheckWord)
-						end
-					end
-				end
-
-				Array.Sort(_AutoCacheKeys, CompareWeight)
-
-				for i, v in ipairs(_AutoCacheKeys) do
-					_AutoCacheItems[i] = _AutoWordMap[v]
-				end
-
-				if #_AutoCacheKeys == 1 and _AutoCacheKeys[1] == _AutoCheckKey then
-					wipe(_AutoCacheKeys)
-					wipe(_AutoCacheItems)
-				end
-			end
-		end
-	end
-
-	local function BlockShortKey()
+	function BlockShortKey()
 		SetOverrideBindingClick(IGAS:GetUI(_BtnBlockDown), false, "DOWN", _BtnBlockDown.Name, "LeftButton")
 		SetOverrideBindingClick(IGAS:GetUI(_BtnBlockUp), false, "UP", _BtnBlockUp.Name, "LeftButton")
 	end
 
-	local function UnblockShortKey()
+	function UnblockShortKey()
 		ClearOverrideBindings(IGAS:GetUI(_BtnBlockDown))
 		ClearOverrideBindings(IGAS:GetUI(_BtnBlockUp))
 	end
@@ -1169,7 +973,7 @@ class "MultiLineTextBox"
 		wipe(_ShiftIndentFunc)
 	end
 
-	local function Search2Next(self)
+	function Search2Next(self)
 		if not self.__InSearch then
 			return
 		end
@@ -1200,7 +1004,7 @@ class "MultiLineTextBox"
 		end
 	end
 
-	local function GoLineByNo(self, no)
+	function GoLineByNo(self, no)
 		local text = self.__Text.Text
 		local lineBreak
 
@@ -1237,7 +1041,7 @@ class "MultiLineTextBox"
 		return AdjustCursorPosition(self, pos)
 	end
 
-	local function Thread_FindText(self)
+	function Thread_FindText(self)
 		local searchText = IGAS:MsgBox(L"Please input the search content", "ic")
 
 		self:SetFocus()
@@ -1252,7 +1056,7 @@ class "MultiLineTextBox"
 		end
 	end
 
-	local function Thread_GoLine(self)
+	function Thread_GoLine(self)
 		local goLine = IGAS:MsgBox(L"Please input the line number", "ic")
 
 		self:SetFocus()
@@ -1264,7 +1068,7 @@ class "MultiLineTextBox"
 		end
 	end
 
-	local function Thread_GoLastLine4Enter(self, value, h)
+	function Thread_GoLastLine4Enter(self, value, h)
 		local count = 10
 
 		while count > 0 and self:GetVerticalScrollRange() + h < value do
@@ -1275,7 +1079,7 @@ class "MultiLineTextBox"
 		self.Value = value
 	end
 
-	local function Thread_DELETE(self)
+	function Thread_DELETE(self)
 		local first = true
 		local str = self.__Text.Text
 		local pos = self.CursorPosition + 1
@@ -1392,7 +1196,7 @@ class "MultiLineTextBox"
 		self:Fire("OnDeleteFinished")
 	end
 
-	local function Thread_BACKSPACE(self)
+	function Thread_BACKSPACE(self)
 		local first = true
 		local str = self.__Text.Text
 		local pos = self.CursorPosition
@@ -1654,10 +1458,308 @@ class "MultiLineTextBox"
 			end
 		end
 
-		ApplyAutoComplete(self)
-
 		self:Fire("OnBackspaceFinished")
 	end
+
+	_DirectionKeyEventArgs = EventArgs()
+
+	function _KeyScan:OnKeyDown(key)
+		if _SkipKey[key] then return end
+
+		if self.FocusEditor and key then
+			local editor = self.FocusEditor
+			local cursorPos = editor.CursorPosition
+
+			local oper = _KEY_OPER[key]
+
+			if oper then
+				if oper == _Operation.CHANGE_CURSOR then
+
+					_DirectionKeyEventArgs.Handled = false
+					_DirectionKeyEventArgs.Cancel = false
+					_DirectionKeyEventArgs.Key = key
+
+					editor:Fire("OnDirectionKey", _DirectionKeyEventArgs)
+
+					if _DirectionKeyEventArgs.Handled or _DirectionKeyEventArgs.Cancel then return end
+
+					if key == "PAGEUP" then
+						local text = editor.__Text.Text
+						local skipLine = floor(editor.Height / editor.ValueStep)
+						local startp, endp, _, line = GetPrevLinesByReturn(text, cursorPos, skipLine)
+
+						if line == 0 then
+							return
+						end
+
+                        EndPrevKey(editor)
+
+						SaveOperation(editor)
+
+						if editor.Value > editor.Height then
+							editor.Value = editor.Value - editor.Height
+						else
+							editor.Value = 0
+						end
+
+						if IsShiftKeyDown() then
+							editor.__SKIPCURCHG = cursorPos
+						end
+
+						editor.CursorPosition = GetCursorPosByOffset(text, startp, GetOffsetByCursorPos(text, nil, cursorPos))
+
+						return
+					end
+
+					if key == "PAGEDOWN" then
+						local text = editor.__Text.Text
+						local skipLine = floor(editor.Height / editor.ValueStep)
+						local startp, endp, _, line = GetLinesByReturn(text, cursorPos, skipLine)
+
+						if line == 0 then
+							return
+                        end
+
+                        EndPrevKey(editor)
+
+						SaveOperation(editor)
+
+						local maxValue = editor.Container.Height - editor.Height
+
+						if editor.Value + editor.Height < maxValue then
+							editor.Value = editor.Value + editor.Height
+						else
+							editor.Value = maxValue
+						end
+
+						if IsShiftKeyDown() then
+							editor.__SKIPCURCHG = cursorPos
+						end
+
+						editor.CursorPosition = GetCursorPosByOffset(text, endp, GetOffsetByCursorPos(text, nil, cursorPos))
+
+						return
+					end
+
+					if key == "HOME" then
+						local text = editor.__Text.Text
+						local startp, endp = GetLines(text, cursorPos)
+						local byte
+
+						if startp - 1 == cursorPos then
+							return
+						end
+
+                        EndPrevKey(editor)
+
+						SaveOperation(editor)
+
+						if IsShiftKeyDown() then
+							editor.__SKIPCURCHG = cursorPos
+						end
+
+						return
+					end
+
+					if key == "END" then
+						local startp, endp = GetLines(editor.__Text.Text, cursorPos)
+
+						if endp == cursorPos then
+							return
+						end
+
+                        EndPrevKey(editor)
+
+						SaveOperation(editor)
+
+						if IsShiftKeyDown() then
+							editor.__SKIPCURCHG = cursorPos
+						end
+
+						return
+					end
+
+					if key == "UP" then
+						local _, _, _, line = GetPrevLinesByReturn(editor.__Text.Text, cursorPos, 1)
+
+						if line > 0 then
+                            EndPrevKey(editor)
+
+							SaveOperation(editor)
+
+							if IsShiftKeyDown() then
+								editor.__SKIPCURCHG = cursorPos
+								editor.__SKIPCURCHGARROW = true
+							end
+						end
+
+						return
+					end
+
+					if key == "DOWN" then
+						local _, _, _, line = GetLinesByReturn(editor.__Text.Text, cursorPos, 1)
+
+						if line > 0 then
+                            EndPrevKey(editor)
+
+							SaveOperation(editor)
+
+							if IsShiftKeyDown()  then
+								editor.__SKIPCURCHG = cursorPos
+								editor.__SKIPCURCHGARROW = true
+							end
+						end
+
+						return
+					end
+
+					if key == "RIGHT" then
+						if cursorPos < editor.__Text.Text:len() then
+                            EndPrevKey(editor)
+
+							SaveOperation(editor)
+
+							if IsShiftKeyDown() then
+								editor.__SKIPCURCHG = cursorPos
+								editor.__SKIPCURCHGARROW = true
+							end
+						end
+
+						return
+					end
+
+					if key == "LEFT" then
+						if cursorPos > 0 then
+                            EndPrevKey(editor)
+
+							SaveOperation(editor)
+
+							if IsShiftKeyDown() then
+								editor.__SKIPCURCHG = cursorPos
+								editor.__SKIPCURCHGARROW = true
+							end
+						end
+
+						return
+					end
+				end
+
+				if key == "TAB" then
+                    EndPrevKey(editor)
+					return NewOperation(editor, _Operation.INPUTTAB)
+				end
+
+				if key == "DELETE" then
+					if not editor.__DELETE and not IsShiftKeyDown() and (editor.__HighlightTextStart ~= editor.__HighlightTextEnd or cursorPos < editor.__Text.Text:len()) then
+                        EndPrevKey(editor)
+						editor.__DELETE = true
+						NewOperation(editor, _Operation.DELETE)
+						self:SetPropagateKeyboardInput(false)
+
+						_Thread.Thread = Thread_DELETE
+						return _Thread(editor)
+					end
+					return
+				end
+
+				if key == "BACKSPACE" then
+					if not editor.__BACKSPACE and cursorPos > 0 then
+                        EndPrevKey(editor)
+						editor.__BACKSPACE = cursorPos
+						NewOperation(editor, _Operation.BACKSPACE)
+						self:SetPropagateKeyboardInput(false)
+
+						_Thread.Thread = Thread_BACKSPACE
+						return _Thread(editor)
+					end
+					return
+				end
+
+				if key == "ENTER" then
+                    EndPrevKey(editor)
+					-- editor.__SKIPCURCHG = true
+					return NewOperation(editor, _Operation.ENTER)
+				end
+			end
+
+            EndPrevKey(editor)
+
+			if key:find("^F%d+") == 1 then
+				if key == "F3" and editor.__InSearch then
+					-- Continue Search
+					Search2Next(editor)
+
+					return
+				end
+
+				return editor:Fire("OnFunctionKey", key)
+			end
+
+			-- Don't consider multi-modified keys
+			if IsShiftKeyDown() then
+				-- shift+
+			elseif IsAltKeyDown() then
+				-- alt+
+				return
+			elseif IsControlKeyDown() then
+				if key == "A" then
+					editor:HighlightText()
+					return
+				elseif key == "V" then
+					editor.__InPasting = true
+					return NewOperation(editor, _Operation.PASTE)
+				elseif key == "C" then
+					-- do nothing
+					return
+				elseif key == "Z" then
+					return editor:Undo()
+				elseif key == "Y" then
+					return editor:Redo()
+				elseif key == "X" then
+					if editor.__HighlightTextStart ~= editor.__HighlightTextEnd then
+						NewOperation(editor, _Operation.CUT)
+					end
+					return
+				elseif key == "F" then
+					_Thread.Thread = Thread_FindText
+					return _Thread(editor)
+				elseif key == "G" then
+					_Thread.Thread = Thread_GoLine
+					return _Thread(editor)
+				elseif editor.__RegisterControl and editor.__RegisterControl[key] then
+					return editor:Fire("OnControlKey", key)
+				else
+					return
+				end
+			end
+
+			return NewOperation(editor, _Operation.INPUTCHAR)
+		end
+	end
+
+	function _KeyScan:OnKeyUp(key)
+		self:SetPropagateKeyboardInput(true)
+
+		if self.FocusEditor then
+			if key == "DELETE" then
+				self.FocusEditor.__DELETE = nil
+			end
+			if key == "BACKSPACE" then
+				self.FocusEditor.__BACKSPACE = nil
+			end
+		end
+
+		if _Thread:IsSuspended() then
+			_Thread:Resume()
+		end
+	end
+end
+
+__Doc__[[MultiLineTextBox is used as a multi-line text editor.]]
+class "MultiLineTextBox"
+	inherit "ScrollForm"
+
+	enum "Operation" (_Operation)
 
 	------------------------------------------------------
 	-- Event
@@ -1728,6 +1830,9 @@ class "MultiLineTextBox"
 	]]
 	event "OnControlKey"
 
+	__Doc__[[Fired when the direction key is used, such like PAGEDOWN, LEFT, HOME]]
+	event "OnDirectionKey"
+
 	__Doc__[[
 		<desc>Run when the edit box's operation list is changed</desc>
 		<param name="startp">number, the start position</param>
@@ -1759,6 +1864,12 @@ class "MultiLineTextBox"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+	__Doc__[[
+		<desc>Set the cursor position without change the operation list</desc>
+		<param name="pos">number, the position of the cursor inside the MultiLineTextBox</param>
+	]]
+	AdjustCursorPosition = AdjustCursorPosition
+
 	__Doc__[[
 		<desc>Returns the font instance's basic font properties</desc>
 		<return type="filename">string, path to a font file (string)</return>
@@ -2479,60 +2590,6 @@ class "MultiLineTextBox"
 		return self.__TabWidth or _TabWidth
 	end
 
-	__Doc__[[Clear the auto complete list]]
-	function ClearAutoCompleteList(self)
-		wipe(self.AutoCompleteList)
-	end
-
-	__Doc__[[
-		<desc>Insert word to the auto complete list</desc>
-		<param name="word">string, the world that need for auto complete</param>
-	]]
-	function InsertAutoCompleteWord(self, word)
-		if type(word) == "string" and strtrim(word) ~= "" then
-			word = strtrim(word)
-			word = RemoveColor(word)
-
-			local lst = self.AutoCompleteList
-			local idx = GetIndex(lst, word)
-
-			if lst[idx] == word then
-				return
-			end
-
-			tinsert(lst, idx + 1, word)
-		end
-	end
-
-	__Doc__[[
-		<desc>Append common auto complete list for all MultiLineTextBox</desc>
-		<param name="list" type="table">The common auto complete list</param>
-	]]
-	__Delegate__( Task.ThreadCall )
-	__Static__() function _AppendCommonAutoCompleteList(list)
-		assert(type(list) == "table")
-		local lst = _CommonAutoCompleteList
-		local i = 0
-
-		for key, word in pairs(list) do
-			i = i + 1
-			-- Reduce cost
-			if i % 10 == 0 then Task.Continue() end
-			if type(word) ~= "string" then word = key end
-
-			if type(word) == "string" and strtrim(word) ~= "" then
-				word = strtrim(word)
-				word = RemoveColor(word)
-
-				local idx = GetIndex(lst, word)
-
-				if lst[idx] == word then return end
-
-				tinsert(lst, idx + 1, word)
-			end
-		end
-	end
-
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
@@ -2683,12 +2740,19 @@ class "MultiLineTextBox"
 		Type = Boolean,
 	}
 
+	__Doc__[[Return the x-margin whether the ShowLineNumber is set]]
+	property "MarginX" { Get = function (self)
+		return self.__Margin.Visible and self.__Margin.Width or 0
+	end }
+
 	__Doc__[[The tab's width]]
 	property "TabWidth" { Type = Number + nil }
 
-	__Doc__[[The auto complete list like {"if", "then", "else"}]]
-	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
-	property "AutoCompleteList" { Type = System.Table }
+	__Doc__[[The current operation]]
+	property "CurrentOperation" {
+		Get = function (self) return self.__OperationOnLine end,
+		Type = Operation,
+	}
 
 	------------------------------------------------------
 	-- Event Handler
@@ -2795,21 +2859,6 @@ class "MultiLineTextBox"
 		if self.__InCharComposition then return end
 
 		local cursorPos = self.CursorPosition
-
-		if self.__OperationOnLine == _Operation.INPUTCHAR then
-			ApplyAutoComplete(self)
-		elseif self.__OperationOnLine ~= _Operation.BACKSPACE then
-			_List:Clear()
-		end
-
-		if _List.ItemCount > 0 and self.Focused then
-			-- Handle the auto complete
-			_List:SetPoint("TOPLEFT", self, x + (self.__Margin.Visible and self.__Margin.Width or 0), - y - h + self.Value)
-			_List.Visible = true
-			_List.SelectedIndex = 1
-		else
-			_List.Visible = false
-		end
 
 		if cursorPos == self.__OldCursorPosition and self.__OperationOnLine ~= _Operation.CUT then
 			return
@@ -2933,15 +2982,12 @@ class "MultiLineTextBox"
 	end
 
     local function OnEscapePressed(self, ...)
-    	if _List.Visible then
-    		_List.Visible = false
-    		_List:Clear()
-    		return true
-    	end
+    	local args = EventArgs()
+    	self.__Container:Fire("OnEscapePressed", args)
+
+    	if args.Handled or args.Cancel then return end
 
         self:ClearFocus()
-		self = self.__Container
-		return self:Fire("OnEscapePressed", ...)
     end
 
     local function OnTextChanged(self, ...)
@@ -2978,8 +3024,6 @@ class "MultiLineTextBox"
 			EndPrevKey(self)
 			_KeyScan.FocusEditor = nil
 			_KeyScan.Visible = false
-			_List.Visible = false
-			_List:Clear()
 
 			Task.NoCombatCall(UnblockShortKey)
 		end
@@ -3022,58 +3066,13 @@ class "MultiLineTextBox"
 			return AdjustCursorPosition(self, 0)
 		end
 
+		local args = EventArgs()
+		self:Fire("OnTabPressed", args)
+		if args.Handled or args.Cancel then return end
+
 		local startp, endp, str, lineBreak
 		local shiftDown = IsShiftKeyDown()
 		local cursorPos = self.CursorPosition
-
-		if _List.Visible then
-			wipe(_BackAutoCache)
-
-			startp, endp, str = GetWord(text, self.CursorPosition, true)
-
-			str = _List:GetSelectedItemValue()
-
-			if str then
-				for _, v in ipairs(_List.Keys) do
-					tinsert(_BackAutoCache, v)
-				end
-
-				_BackAutoCache[0] = _List.SelectedIndex
-
-				self.__Text.Text = ReplaceBlock(text, startp, endp, str)
-
-				AdjustCursorPosition(self, startp + str:len() - 1)
-
-				return self:Fire("OnPasting", startp, startp + str:len() - 1)
-			else
-				_List.Visible = false
-				_List:Clear()
-			end
-		elseif #_BackAutoCache > 0 then
-			startp, endp, str = GetWord(text, self.CursorPosition, true)
-
-			str = RemoveColor(str)
-
-			if str == _BackAutoCache[_BackAutoCache[0]] then
-				_BackAutoCache[0] = _BackAutoCache[0] + 1
-
-				if _BackAutoCache[0] > #_BackAutoCache then
-					_BackAutoCache[0] = 1
-				end
-
-				str = _BackAutoCache[_BackAutoCache[0]]
-
-				if str then
-					self.__Text.Text = ReplaceBlock(text, startp, endp, str)
-
-					AdjustCursorPosition(self, startp + str:len() - 1)
-
-					return self:Fire("OnPasting", startp, startp + str:len() - 1)
-				else
-					wipe(_BackAutoCache)
-				end
-			end
-		end
 
 		if self.__HighlightTextStart and self.__HighlightTextEnd and self.__HighlightTextEnd > self.__HighlightTextStart then
 			startp, endp, str = GetLines(text, self.__HighlightTextStart, self.__HighlightTextEnd)
@@ -3156,8 +3155,6 @@ class "MultiLineTextBox"
 				end
 			end
 		end
-
-		return self:Fire("OnTabPressed", ...)
 	end
 
     local function OnTextSet(self, ...)
@@ -3278,355 +3275,6 @@ class "MultiLineTextBox"
 		return self:Fire("OnCharComposition", ...)
 	end
 
-	function _KeyScan:OnKeyDown(key)
-		if _SkipKey[key] then return end
-
-		if self.FocusEditor and key then
-			local editor = self.FocusEditor
-			local cursorPos = editor.CursorPosition
-
-			local oper = _KEY_OPER[key]
-
-			if oper then
-				if oper == _Operation.CHANGE_CURSOR then
-
-					if key == "PAGEUP" then
-						local text = editor.__Text.Text
-						local skipLine = floor(editor.Height / editor.ValueStep)
-						local startp, endp, _, line = GetPrevLinesByReturn(text, cursorPos, skipLine)
-
-						if line == 0 then
-							return
-						end
-
-                        EndPrevKey(editor)
-
-						SaveOperation(editor)
-
-						if editor.Value > editor.Height then
-							editor.Value = editor.Value - editor.Height
-						else
-							editor.Value = 0
-						end
-
-						if IsShiftKeyDown() then
-							editor.__SKIPCURCHG = cursorPos
-						end
-
-						editor.CursorPosition = GetCursorPosByOffset(text, startp, GetOffsetByCursorPos(text, nil, cursorPos))
-
-						return
-					end
-
-					if key == "PAGEDOWN" then
-						local text = editor.__Text.Text
-						local skipLine = floor(editor.Height / editor.ValueStep)
-						local startp, endp, _, line = GetLinesByReturn(text, cursorPos, skipLine)
-
-						if line == 0 then
-							return
-                        end
-
-                        EndPrevKey(editor)
-
-						SaveOperation(editor)
-
-						local maxValue = editor.Container.Height - editor.Height
-
-						if editor.Value + editor.Height < maxValue then
-							editor.Value = editor.Value + editor.Height
-						else
-							editor.Value = maxValue
-						end
-
-						if IsShiftKeyDown() then
-							editor.__SKIPCURCHG = cursorPos
-						end
-
-						editor.CursorPosition = GetCursorPosByOffset(text, endp, GetOffsetByCursorPos(text, nil, cursorPos))
-
-						return
-					end
-
-					if key == "HOME" then
-						local text = editor.__Text.Text
-						local startp, endp = GetLines(text, cursorPos)
-						local byte
-
-						if startp - 1 == cursorPos then
-							return
-						end
-
-                        EndPrevKey(editor)
-
-						SaveOperation(editor)
-
-						if IsShiftKeyDown() then
-							editor.__SKIPCURCHG = cursorPos
-						end
-
-						return
-					end
-
-					if key == "END" then
-						local startp, endp = GetLines(editor.__Text.Text, cursorPos)
-
-						if endp == cursorPos then
-							return
-						end
-
-                        EndPrevKey(editor)
-
-						SaveOperation(editor)
-
-						if IsShiftKeyDown() then
-							editor.__SKIPCURCHG = cursorPos
-						end
-
-						return
-					end
-
-					if key == "UP" then
-						if _List.Visible then
-							editor.AltArrowKeyMode = true
-
-							if _List.SelectedIndex > 1 then
-								_List.SelectedIndex = _List.SelectedIndex - 1
-							end
-
-							return
-						else
-							editor.AltArrowKeyMode = false
-						end
-
-						local _, _, _, line = GetPrevLinesByReturn(editor.__Text.Text, cursorPos, 1)
-
-						if line > 0 then
-                            EndPrevKey(editor)
-
-							SaveOperation(editor)
-
-							if IsShiftKeyDown() then
-								editor.__SKIPCURCHG = cursorPos
-								editor.__SKIPCURCHGARROW = true
-							end
-						end
-
-						return
-					end
-
-					if key == "DOWN" then
-						if _List.Visible then
-							editor.AltArrowKeyMode = true
-
-							if _List.SelectedIndex < _List.ItemCount then
-								_List.SelectedIndex = _List.SelectedIndex + 1
-							end
-
-							return
-						else
-							editor.AltArrowKeyMode = false
-						end
-
-						local _, _, _, line = GetLinesByReturn(editor.__Text.Text, cursorPos, 1)
-
-						if line > 0 then
-                            EndPrevKey(editor)
-
-							SaveOperation(editor)
-
-							if IsShiftKeyDown()  then
-								editor.__SKIPCURCHG = cursorPos
-								editor.__SKIPCURCHGARROW = true
-							end
-						end
-
-						return
-					end
-
-					if key == "RIGHT" then
-						if editor.AltArrowKeyMode then
-							editor.AltArrowKeyMode = false
-						end
-
-						if cursorPos < editor.__Text.Text:len() then
-                            EndPrevKey(editor)
-
-							SaveOperation(editor)
-
-							if IsShiftKeyDown() then
-								editor.__SKIPCURCHG = cursorPos
-								editor.__SKIPCURCHGARROW = true
-							end
-						end
-
-						return
-					end
-
-					if key == "LEFT" then
-						if editor.AltArrowKeyMode then
-							editor.AltArrowKeyMode = false
-						end
-
-						if cursorPos > 0 then
-                            EndPrevKey(editor)
-
-							SaveOperation(editor)
-
-							if IsShiftKeyDown() then
-								editor.__SKIPCURCHG = cursorPos
-								editor.__SKIPCURCHGARROW = true
-							end
-						end
-
-						return
-					end
-				end
-
-				if key == "TAB" then
-                    EndPrevKey(editor)
-					return NewOperation(editor, _Operation.INPUTTAB)
-				end
-
-				if key == "DELETE" then
-					if not editor.__DELETE and not IsShiftKeyDown() and (editor.__HighlightTextStart ~= editor.__HighlightTextEnd or cursorPos < editor.__Text.Text:len()) then
-                        EndPrevKey(editor)
-						editor.__DELETE = true
-						NewOperation(editor, _Operation.DELETE)
-						self:SetPropagateKeyboardInput(false)
-
-						_Thread.Thread = Thread_DELETE
-						return _Thread(editor)
-					end
-					return
-				end
-
-				if key == "BACKSPACE" then
-					if not editor.__BACKSPACE and cursorPos > 0 then
-                        EndPrevKey(editor)
-						editor.__BACKSPACE = cursorPos
-						NewOperation(editor, _Operation.BACKSPACE)
-						self:SetPropagateKeyboardInput(false)
-
-						_Thread.Thread = Thread_BACKSPACE
-						return _Thread(editor)
-					end
-					return
-				end
-
-				if key == "ENTER" then
-                    EndPrevKey(editor)
-					-- editor.__SKIPCURCHG = true
-					return NewOperation(editor, _Operation.ENTER)
-				end
-			end
-
-            EndPrevKey(editor)
-
-			if key:find("^F%d+") == 1 then
-				if key == "F3" and editor.__InSearch then
-					-- Continue Search
-					Search2Next(editor)
-
-					return
-				end
-
-				return editor:Fire("OnFunctionKey", key)
-			end
-
-			-- Don't consider multi-modified keys
-			if IsShiftKeyDown() then
-				-- shift+
-			elseif IsAltKeyDown() then
-				-- alt+
-				return
-			elseif IsControlKeyDown() then
-				if key == "A" then
-					editor:HighlightText()
-					return
-				elseif key == "V" then
-					editor.__InPasting = true
-					return NewOperation(editor, _Operation.PASTE)
-				elseif key == "C" then
-					-- do nothing
-					return
-				elseif key == "Z" then
-					return editor:Undo()
-				elseif key == "Y" then
-					return editor:Redo()
-				elseif key == "X" then
-					if editor.__HighlightTextStart ~= editor.__HighlightTextEnd then
-						NewOperation(editor, _Operation.CUT)
-					end
-					return
-				elseif key == "F" then
-					_Thread.Thread = Thread_FindText
-					return _Thread(editor)
-				elseif key == "G" then
-					_Thread.Thread = Thread_GoLine
-					return _Thread(editor)
-				elseif editor.__RegisterControl and editor.__RegisterControl[key] then
-					return editor:Fire("OnControlKey", key)
-				else
-					return
-				end
-			end
-
-			return NewOperation(editor, _Operation.INPUTCHAR)
-		end
-	end
-
-	function _KeyScan:OnKeyUp(key)
-		self:SetPropagateKeyboardInput(true)
-
-		if self.FocusEditor then
-			if key == "DELETE" then
-				self.FocusEditor.__DELETE = nil
-			end
-			if key == "BACKSPACE" then
-				self.FocusEditor.__BACKSPACE = nil
-			end
-		end
-
-		if _Thread:IsSuspended() then
-			_Thread:Resume()
-		end
-	end
-
-	function _List:OnItemChoosed(key, text)
-		local editor = _KeyScan.FocusEditor
-		if not editor then
-			_List.Visible = false
-			_List:Clear()
-			return
-		end
-
-		local ct = editor.__Text.Text
-		local startp, endp = GetWord(ct, editor.CursorPosition, true)
-
-		wipe(_BackAutoCache)
-
-		if key then
-			for _, v in ipairs(_List.Keys) do
-				tinsert(_BackAutoCache, v)
-			end
-
-			_BackAutoCache[0] = _List.SelectedIndex
-
-			_List.Visible = false
-			_List:Clear()
-
-			editor.__Text.Text = ReplaceBlock(ct, startp, endp, key)
-
-			AdjustCursorPosition(editor, startp + key:len() - 1)
-
-			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
-		else
-			_List.Visible = false
-			_List:Clear()
-		end
-	end
-
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
@@ -3667,8 +3315,6 @@ class "MultiLineTextBox"
 
 		margin.FrameStrata = "FULLSCREEN"
 
-		self.AutoCompleteList = {}
-
 		self.__LineNum = lineNum
         self.__Text = editbox
 		self.__Margin = margin
@@ -3697,8 +3343,6 @@ class "MultiLineTextBox"
 		margin:ActiveThread("OnMouseUp", "OnMouseDown")
 		margin.OnMouseDown = Margin_OnMouseDown
 		margin.OnMouseUp = Margin_OnMouseUp
-
-		editbox:ActiveThread("OnTabPressed")
 
 		editbox.OnEscapePressed = editbox.OnEscapePressed + OnEscapePressed
 		editbox.OnTextChanged = editbox.OnTextChanged + OnTextChanged

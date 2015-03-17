@@ -3,15 +3,18 @@
 --               2012.05.14 Fix cursor position after format color
 
 -- Check Version
-local version = 10
+local version = 11
 
 if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
 end
 
-__Doc__[[CodeEditor object is used as a lua code editor]]
-class "CodeEditor"
-	inherit "MultiLineTextBox"
+do
+	_INPUTCHAR = MultiLineTextBox.Operation.INPUTCHAR
+	_BACKSPACE = MultiLineTextBox.Operation.BACKSPACE
+
+	_UTF8_Three_Char = 224
+	_UTF8_Two_Char = 192
 
 	_IndentNone = 0
 	_IndentRight = 1
@@ -242,17 +245,277 @@ class "CodeEditor"
 		[_Byte.VERTICAL] = -1,
 	}
 
-    -- Help functions
-	local function ReplaceBlock(str, startp, endp, replace)
+	------------------------------------------------------
+	-- Code smart helper
+	------------------------------------------------------
+	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
+	_List.FrameStrata = "TOOLTIP"
+	_List.DisplayItemCount = 5
+	_List.Width = 250
+	_List.Visible = false
+
+	_AutoCacheKeys = {}
+	_AutoCacheItems = {}
+	_AutoWordWeightCache = {}
+	_AutoWordMap = {}
+
+	_AutoCheckKey = ""
+	_AutoCheckWord = ""
+
+	_List.Keys = _AutoCacheKeys
+	_List.Items = _AutoCacheItems
+
+	_BackSpaceList = {}
+	_BackAutoCache = {}
+
+	_CommonAutoCompleteList = {}
+
+	function Compare(t1, t2)
+		t1 = t1 or ""
+		t2 = t2 or ""
+
+		local ut1 = strupper(t1)
+		local ut2 = strupper(t2)
+
+		if ut1 == ut2 then
+			return t1 < t2
+		else
+			return ut1 < ut2
+		end
+	end
+
+	function CompareWeight(t1, t2)
+		return (_AutoWordWeightCache[t1] or 0) < (_AutoWordWeightCache[t2] or 0)
+	end
+
+	function GetIndex(list, name, sIdx, eIdx)
+		if not sIdx then
+			if not next(list) then
+				return 0
+			end
+			sIdx = 1
+			eIdx = #list
+
+			-- Border check
+			if Compare(name, list[sIdx]) then
+				return 0
+			elseif Compare(list[eIdx], name) then
+				return eIdx
+			end
+		end
+
+		if sIdx == eIdx then
+			return sIdx
+		end
+
+		local f = floor((sIdx + eIdx) / 2)
+
+		if Compare(name, list[f+1]) then
+			return GetIndex(list, name, sIdx, f)
+		else
+			return GetIndex(list, name, f+1, eIdx)
+		end
+	end
+
+	function TransMatchWord(w)
+		return "(["..w:lower()..w:upper().."])([%w_]-)"
+	end
+
+	function RemoveColor4AC(str)
+		local byte
+		local pos = 1
+		local ret = ""
+
+		if not str or #str == 0 then return "" end
+
+		byte = strbyte(str, pos)
+
+		while true do
+			if byte == _Byte.VERTICAL then
+				-- handle the color code
+				pos = pos + 1
+				byte = strbyte(str, pos)
+
+				if byte == _Byte.c then
+					pos = pos + 9
+				elseif byte == _Byte.r then
+					pos = pos + 1
+				else
+					ret = ret .. strchar(_Byte.VERTICAL)
+				end
+
+				byte = strbyte(str, pos)
+			else
+				if not byte then
+					break
+				end
+
+				ret = ret .. strchar(byte)
+
+				pos = pos + 1
+				byte = strbyte(str, pos)
+			end
+		end
+
+		return ret
+	end
+
+	function ApplyColor(...)
+		local ret = ""
+		local word = ""
+		local pos = 0
+
+		local weight = 0
+		local n = select('#', ...)
+
+		for i = 1, n do
+			word = select(i, ...)
+
+			if i % 2 == 1 then
+				pos = floor((i+1)/2)
+				ret = ret .. FontColor.WHITE .. word .. FontColor.CLOSE
+
+				if word ~= _AutoCheckKey:sub(pos, pos) then
+					weight = weight + 1
+				end
+			else
+				ret = ret .. FontColor.GRAY .. word .. FontColor.CLOSE
+
+				if i < n then
+					weight = weight + word:len()
+				end
+			end
+		end
+
+		_AutoWordWeightCache[_AutoCheckWord] = weight
+
+		_AutoWordMap[_AutoCheckWord] = ret
+
+		return ret
+	end
+
+	function ApplyAutoComplete(self)
+		_List.Visible = false
+		_List:Clear()
+
+		if _CommonAutoCompleteList[1] or self.AutoCompleteList[1] then
+			-- Handle the auto complete
+			local startp, endp, word = GetWord(self.FullText, self.CursorPosition, true)
+
+			word = RemoveColor4AC(word)
+
+			wipe(_AutoCacheKeys)
+			wipe(_AutoCacheItems)
+			wipe(_AutoWordMap)
+			wipe(_AutoWordWeightCache)
+
+			if word and word:match("^[%w_]+$") then
+				_AutoCheckKey = word
+
+				word = word:lower()
+
+				-- Match the auto complete list
+				local uword = "^" .. word:gsub("[%w_]", TransMatchWord) .. "$"
+				local header = word:sub(1, 1)
+
+				if not header or #header == 0 then return end
+
+				local lst = self.AutoCompleteList
+				local sIdx = GetIndex(lst, header)
+
+				if sIdx == 0 then sIdx = 1 end
+
+				for i = sIdx, #lst do
+					local value = lst[i]
+					if #value == 0 or Compare(header, value:sub(1, 1)) then break end
+
+					_AutoCheckWord = value
+
+					if _AutoCheckWord:match(uword) then
+						_AutoCheckWord:gsub(uword, ApplyColor)
+
+						tinsert(_AutoCacheKeys, _AutoCheckWord)
+					end
+				end
+
+				lst = _CommonAutoCompleteList
+				sIdx = GetIndex(lst, header)
+
+				if sIdx == 0 then sIdx = 1 end
+
+				for i = sIdx, #lst do
+					local value = lst[i]
+					if not _AutoWordMap[value] then
+						if #value == 0 or Compare(header, value:sub(1, 1)) then break end
+
+						_AutoCheckWord = value
+
+						if _AutoCheckWord:match(uword) then
+							_AutoCheckWord:gsub(uword, ApplyColor)
+
+							tinsert(_AutoCacheKeys, _AutoCheckWord)
+						end
+					end
+				end
+
+				Array.Sort(_AutoCacheKeys, CompareWeight)
+
+				for i, v in ipairs(_AutoCacheKeys) do
+					_AutoCacheItems[i] = _AutoWordMap[v]
+				end
+
+				if #_AutoCacheKeys == 1 and _AutoCacheKeys[1] == _AutoCheckKey then
+					wipe(_AutoCacheKeys)
+					wipe(_AutoCacheItems)
+				end
+			end
+		end
+	end
+
+	function _List:OnItemChoosed(key, text)
+		local editor = _List.CurrentEditor
+		if not editor then
+			_List.Visible = false
+			_List:Clear()
+			return
+		end
+
+		local ct = editor.FullText
+		local startp, endp = GetWord(ct, editor.CursorPosition, true)
+
+		wipe(_BackAutoCache)
+
+		if key then
+			for _, v in ipairs(_List.Keys) do
+				tinsert(_BackAutoCache, v)
+			end
+
+			_BackAutoCache[0] = _List.SelectedIndex
+
+			_List.Visible = false
+			_List:Clear()
+
+			editor.FullText = ReplaceBlock(ct, startp, endp, key)
+
+			AdjustCursorPosition(editor, startp + key:len() - 1)
+
+			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
+		else
+			_List.Visible = false
+			_List:Clear()
+		end
+	end
+
+	------------------------------------------------------
+	-- Help functions
+	------------------------------------------------------
+	function ReplaceBlock(str, startp, endp, replace)
 		return str:sub(1, startp - 1) .. replace .. str:sub(endp + 1, -1)
 	end
 
-	local superAdjustCursorPosition = MultiLineTextBox.AdjustCursorPosition
-	local function AdjustCursorPosition(self, pos)
-		superAdjustCursorPosition(self, pos)
-	end
+	AdjustCursorPosition = MultiLineTextBox.AdjustCursorPosition
 
-	local function InitDefinition(self)
+	function InitDefinition(self)
 		self.__IdentifierCache = self.__IdentifierCache or {}
 		wipe(self.__IdentifierCache)
 
@@ -265,7 +528,7 @@ class "CodeEditor"
 	end
 
 	-- Token
-	local function nextNumber(str, pos, noPeriod, cursorPos, trueWord, newPos)
+	function nextNumber(str, pos, noPeriod, cursorPos, trueWord, newPos)
 		pos = pos or 1
 		newPos = newPos or 0
 		cursorPos = cursorPos or 0
@@ -330,7 +593,7 @@ class "CodeEditor"
 		return pos, trueWord, newPos
 	end
 
-	local function nextComment(str, pos, cursorPos, trueWord, newPos)
+	function nextComment(str, pos, cursorPos, trueWord, newPos)
 		pos = pos or 1
 		newPos = newPos or 0
 		cursorPos = cursorPos or 0
@@ -563,7 +826,7 @@ class "CodeEditor"
 		return pos, trueWord, newPos
 	end
 
-	local function nextString(str, pos, mark, cursorPos, trueWord, newPos)
+	function nextString(str, pos, mark, cursorPos, trueWord, newPos)
 		pos = pos or 1
 		cursorPos = cursorPos or 0
 		newPos = newPos or 0
@@ -639,7 +902,7 @@ class "CodeEditor"
 		return pos, trueWord, newPos
 	end
 
-	local function nextIdentifier(str, pos, cursorPos, trueWord, newPos)
+	function nextIdentifier(str, pos, cursorPos, trueWord, newPos)
 		pos = pos or 1
 		cursorPos = cursorPos or 0
 		newPos = newPos or 0
@@ -696,7 +959,7 @@ class "CodeEditor"
 		return pos, trueWord, newPos
 	end
 
-	local function nextToken(str, pos, cursorPos, needTrueWord)
+	function nextToken(str, pos, cursorPos, needTrueWord)
 		pos = pos or 1
 		cursorPos = cursorPos or 0
 
@@ -1011,7 +1274,7 @@ class "CodeEditor"
 	end
 
 	-- Color
-	local function FormatColor(str, colorTable, cursorPos)
+	function FormatColor(str, colorTable, cursorPos)
 		local pos = 1
 
 		local token
@@ -1091,7 +1354,7 @@ class "CodeEditor"
 	end
 
 	-- Indent
-	local function FormatIndent(str, self)
+	function FormatIndent(str, self)
 		local pos = 1
 
 		local token
@@ -1290,7 +1553,7 @@ class "CodeEditor"
 	end
 
 	-- Edit function
-	local function GetLines(str, startp, endp)
+	function GetLines(str, startp, endp)
 		local byte
 
 		endp = (endp and (endp + 1)) or startp + 1
@@ -1325,7 +1588,7 @@ class "CodeEditor"
 		return startp, endp, str:sub(startp, endp)
 	end
 
-	local function RemoveColor(str, cursorPos)
+	function RemoveColor(str, cursorPos)
 		local pos = 1
 
 		local token
@@ -1372,7 +1635,7 @@ class "CodeEditor"
 		return tblconcat(content), newCurPos
 	end
 
-	local function FormatColor4Line(self, startp, endp)
+	function FormatColor4Line(self, startp, endp)
 		local cursorPos = self.CursorPosition
 		local text = self.FullText
 		local byte
@@ -1515,7 +1778,7 @@ class "CodeEditor"
 		end
 	end
 
-    local function FormatColor4Delay()
+    function FormatColor4Delay()
         if _CheckTimer.Interval <= 0 then return end
 
         local editor = _KeyScan.FocusEditor
@@ -1556,7 +1819,7 @@ class "CodeEditor"
         end
     end
 
-	local function FormatAll(str, self)
+	function FormatAll(str, self)
 		local pos = 1
 		local tab = self.TabWidth
 
@@ -1720,7 +1983,7 @@ class "CodeEditor"
 		return tblconcat(content)
 	end
 
-	local function GetIndex(list, name, sIdx, eIdx)
+	function GetIndex(list, name, sIdx, eIdx)
 		if not sIdx then
 			if not next(list) then
 				return nil
@@ -1749,7 +2012,179 @@ class "CodeEditor"
 		end
 	end
 
-	local function GetPrevObject(self)
+	function GetWord(str, cursorPos, noTail)
+		local startp, endp = GetLines(str, cursorPos)
+
+		if startp > endp then return end
+
+		_BackSpaceList.LastIndex = 0
+
+		local prevPos = startp
+		local byte
+		local curIndex = -1
+		local prevSpecial = nil
+
+		while prevPos <= endp do
+			byte = strbyte(str, prevPos)
+
+			if byte == _Byte.VERTICAL then
+				prevPos = prevPos + 1
+				byte = strbyte(str, prevPos)
+
+				if byte == _Byte.c then
+					-- color start
+					_BackSpaceList.LastIndex = _BackSpaceList.LastIndex + 1
+					_BackSpaceList[_BackSpaceList.LastIndex] = prevPos - 1
+
+					if cursorPos == prevPos - 2 then
+						curIndex = _BackSpaceList.LastIndex
+					end
+
+					prevPos = prevPos + 9
+				elseif byte == _Byte.r then
+					-- color end
+					_BackSpaceList.LastIndex = _BackSpaceList.LastIndex + 1
+					_BackSpaceList[_BackSpaceList.LastIndex] = prevPos - 1
+
+					if cursorPos == prevPos - 2 then
+						curIndex = _BackSpaceList.LastIndex
+					end
+
+					prevPos = prevPos + 1
+				else
+					-- only mean "||"
+					_BackSpaceList.LastIndex = _BackSpaceList.LastIndex + 1
+					_BackSpaceList[_BackSpaceList.LastIndex] = prevPos - 1
+
+					if cursorPos == prevPos - 2 then
+						curIndex = _BackSpaceList.LastIndex
+					end
+
+					prevPos = prevPos + 1
+				end
+			elseif _Special[byte] then
+				_BackSpaceList.LastIndex = _BackSpaceList.LastIndex + 1
+				_BackSpaceList[_BackSpaceList.LastIndex] = prevPos
+
+				if cursorPos == prevPos - 1 then
+					curIndex = _BackSpaceList.LastIndex
+				end
+
+				prevPos = prevPos + 1
+			else
+				_BackSpaceList.LastIndex = _BackSpaceList.LastIndex + 1
+				_BackSpaceList[_BackSpaceList.LastIndex] = prevPos
+
+				if cursorPos == prevPos - 1 then
+					curIndex = _BackSpaceList.LastIndex
+				end
+
+				if byte >= _UTF8_Three_Char then
+					prevPos = prevPos + 3
+				elseif byte >= _UTF8_Two_Char then
+					prevPos = prevPos + 2
+				else
+					prevPos = prevPos + 1
+				end
+			end
+		end
+
+		if cursorPos == endp then
+			curIndex = _BackSpaceList.LastIndex + 1
+		end
+
+		if curIndex > 0 then
+			local prevIndex = curIndex - 1
+			local isSpecial = nil
+			local isColor
+
+			while prevIndex > 0 do
+				prevPos = _BackSpaceList[prevIndex]
+				byte = strbyte(str, prevPos)
+
+				isColor = false
+
+				if byte == _Byte.VERTICAL then
+					prevPos = prevPos + 1
+					byte = strbyte(str, prevPos)
+
+					if byte == _Byte.c or byte == _Byte.r then
+						isColor = true
+					end
+				end
+
+				if isColor then
+					-- skip
+				elseif isSpecial == nil then
+					isSpecial = _Special[byte] and true or false
+				elseif isSpecial then
+					if not _Special[byte] then
+						break
+					end
+				else
+					if _Special[byte] then
+						break
+					end
+				end
+
+				prevIndex = prevIndex - 1
+			end
+
+			prevIndex = prevIndex + 1
+
+			local nextIndex = curIndex
+
+			prevSpecial = isSpecial
+			isSpecial = nil
+
+			while nextIndex <= _BackSpaceList.LastIndex do
+				prevPos = _BackSpaceList[nextIndex]
+				byte = strbyte(str, prevPos)
+
+				isColor = false
+
+				if byte == _Byte.VERTICAL then
+					prevPos = prevPos + 1
+					byte = strbyte(str, prevPos)
+
+					if byte == _Byte.c or byte == _Byte.r then
+						isColor = true
+					end
+				end
+
+				if isColor then
+					-- skip
+				elseif isSpecial == nil then
+					isSpecial = _Special[byte] and true or false
+
+					if noTail and isSpecial ~= prevSpecial then
+						break
+					end
+				elseif isSpecial then
+					if not _Special[byte] then
+						break
+					end
+				else
+					if _Special[byte] then
+						break
+					end
+				end
+
+				nextIndex = nextIndex + 1
+			end
+
+			nextIndex = nextIndex - 1
+
+			startp = _BackSpaceList[prevIndex]
+			if _BackSpaceList.LastIndex > nextIndex and _BackSpaceList[nextIndex + 1] then
+				endp = _BackSpaceList[nextIndex + 1] - 1
+			end
+
+			return startp, endp, str:sub(startp, endp)
+		end
+	end
+
+	function GetPrevObject(self)
 		do
 			return nil
 		end
@@ -1792,9 +2227,14 @@ class "CodeEditor"
 		return obj
 	end
 
-	local function RefreshText(self)
+	function RefreshText(self)
 		self:SetText(self.Text)
 	end
+end
+
+__Doc__[[CodeEditor object is used as a lua code editor]]
+class "CodeEditor"
+	inherit "MultiLineTextBox"
 
 	------------------------------------------------------
 	-- Method
@@ -1821,6 +2261,60 @@ class "CodeEditor"
 		local str = RemoveColor(self.FullText)
         str = str:gsub("\124\124", "\124")
         return str
+	end
+
+	__Doc__[[Clear the auto complete list]]
+	function ClearAutoCompleteList(self)
+		wipe(self.AutoCompleteList)
+	end
+
+	__Doc__[[
+		<desc>Insert word to the auto complete list</desc>
+		<param name="word">string, the world that need for auto complete</param>
+	]]
+	function InsertAutoCompleteWord(self, word)
+		if type(word) == "string" and strtrim(word) ~= "" then
+			word = strtrim(word)
+			word = RemoveColor4AC(word)
+
+			local lst = self.AutoCompleteList
+			local idx = GetIndex(lst, word)
+
+			if lst[idx] == word then
+				return
+			end
+
+			tinsert(lst, idx + 1, word)
+		end
+	end
+
+	__Doc__[[
+		<desc>Append common auto complete list for all MultiLineTextBox</desc>
+		<param name="list" type="table">The common auto complete list</param>
+	]]
+	__Delegate__( Task.ThreadCall )
+	__Static__() function _AppendCommonAutoCompleteList(list)
+		assert(type(list) == "table")
+		local lst = _CommonAutoCompleteList
+		local i = 0
+
+		for key, word in pairs(list) do
+			i = i + 1
+			-- Reduce cost
+			if i % 10 == 0 then Task.Continue() end
+			if type(word) ~= "string" then word = key end
+
+			if type(word) == "string" and strtrim(word) ~= "" then
+				word = strtrim(word)
+				word = RemoveColor(word)
+
+				local idx = GetIndex(lst, word)
+
+				if lst[idx] == word then return end
+
+				tinsert(lst, idx + 1, word)
+			end
+		end
 	end
 
 	------------------------------------------------------
@@ -1852,6 +2346,10 @@ class "CodeEditor"
 		Get = MultiLineTextBox.GetText,
 		Type = String,
 	}
+
+	__Doc__[[The auto complete list like {"if", "then", "else"}]]
+	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
+	property "AutoCompleteList" { Type = System.Table }
 
 	------------------------------------------------------
 	-- Event Handlers
@@ -1931,8 +2429,23 @@ class "CodeEditor"
 	end
 
 	local function OnCursorChanged(self, x, y, w, h)
-		self.__X = x
-		self.__Y = y
+		if self.CurrentOperation == _INPUTCHAR then
+			ApplyAutoComplete(self)
+		elseif self.CurrentOperation ~= _BACKSPACE then
+			_List:Clear()
+		end
+
+		if _List.ItemCount > 0 and self.Focused then
+			_List.CurrentEditor = self
+
+			-- Handle the auto complete
+			_List:SetPoint("TOPLEFT", self, x + self.MarginX, - y - h + self.Value)
+			_List.Visible = true
+			_List.SelectedIndex = 1
+		else
+			_List.CurrentEditor = nil
+			_List.Visible = false
+		end
 	end
 
 	local function OnOperationListChanged(self, startp, endp)
@@ -1946,6 +2459,7 @@ class "CodeEditor"
 	end
 
 	local function OnBackspaceFinished(self)
+		ApplyAutoComplete(self)
 		return FormatColor4Line(self)
 	end
 
@@ -1959,21 +2473,120 @@ class "CodeEditor"
 		return FormatColor4Line(self)
 	end
 
+	local function OnEscapePressed(self, args)
+		if _List.Visible then
+			_List.Visible = false
+			_List:Clear()
+
+			args.Handled = true
+		end
+	end
+
+	local function OnEditFocusLost(self)
+		if _List.Visible then
+			_List.Visible = false
+			_List:Clear()
+		end
+	end
+
+	local function OnTabPressed(self, args)
+		local startp, endp, str, lineBreak
+		local shiftDown = IsShiftKeyDown()
+		local cursorPos = self.CursorPosition
+
+		if _List.Visible then
+			wipe(_BackAutoCache)
+
+			startp, endp, str = GetWord(text, self.CursorPosition, true)
+
+			str = _List:GetSelectedItemValue()
+
+			if str then
+				for _, v in ipairs(_List.Keys) do
+					tinsert(_BackAutoCache, v)
+				end
+
+				_BackAutoCache[0] = _List.SelectedIndex
+
+				self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+
+				AdjustCursorPosition(self, startp + str:len() - 1)
+
+				self:Fire("OnPasting", startp, startp + str:len() - 1)
+
+				args.Handled = true
+			else
+				_List.Visible = false
+				_List:Clear()
+			end
+		elseif #_BackAutoCache > 0 then
+			startp, endp, str = GetWord(text, self.CursorPosition, true)
+
+			str = RemoveColor(str)
+
+			if str == _BackAutoCache[_BackAutoCache[0]] then
+				_BackAutoCache[0] = _BackAutoCache[0] + 1
+
+				if _BackAutoCache[0] > #_BackAutoCache then
+					_BackAutoCache[0] = 1
+				end
+
+				str = _BackAutoCache[_BackAutoCache[0]]
+
+				if str then
+					self.__Text.Text = ReplaceBlock(text, startp, endp, str)
+
+					AdjustCursorPosition(self, startp + str:len() - 1)
+
+					self:Fire("OnPasting", startp, startp + str:len() - 1)
+
+					args.Handled = true
+				else
+					wipe(_BackAutoCache)
+				end
+			end
+		end
+	end
+
+	local function OnDirectionKey(self, args)
+		local key = args.Key
+		if _List.Visible and key == "UP" or key == "DOWN" then
+			self.AltArrowKeyMode = true
+
+			if key == "UP" then
+				if _List.SelectedIndex > 1 then
+					_List.SelectedIndex = _List.SelectedIndex - 1
+				end
+			elseif _List.SelectedIndex < _List.ItemCount then
+				_List.SelectedIndex = _List.SelectedIndex + 1
+			end
+
+			args.Handled = true
+		else
+			self.AltArrowKeyMode = false
+		end
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
     function CodeEditor(self, name, parent, ...)
     	Super(self, name, parent, ...)
 
+		self.AutoCompleteList = {}
+
 		-- Event Handlers
 		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed
-		--self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
+		self.OnCursorChanged = self.OnCursorChanged + OnCursorChanged
 		self.OnChar = self.OnChar + OnChar
 		self.OnOperationListChanged = self.OnOperationListChanged + OnOperationListChanged
 		self.OnPasting = self.OnPasting + OnPasting
 		self.OnDeleteFinished = self.OnDeleteFinished + OnDeleteFinished
 		self.OnBackspaceFinished = self.OnBackspaceFinished + OnBackspaceFinished
 		self.OnCut = self.OnCut + OnCut
+		self.OnEscapePressed = self.OnEscapePressed + OnEscapePressed
+		self.OnEditFocusLost = self.OnEditFocusLost + OnEditFocusLost
+		self.OnDirectionKey = self.OnDirectionKey + OnDirectionKey
 
 		-- Enviroment
 		InitDefinition(self)

@@ -466,6 +466,11 @@ struct "MiniMapPosition"
 	end
 endstruct "MiniMapPosition"
 
+struct "EventArgs"
+	Cancel = Boolean
+	Handled = Boolean
+endstruct "EventArgs"
+
 ------------------------------------------------------
 -- Global Settings
 ------------------------------------------------------
