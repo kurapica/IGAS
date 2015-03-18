@@ -383,6 +383,8 @@ class "List"
 	end
 
 	local function OnItemChoosed_Tip(self, ...)
+		if not self.Visible then return end
+
 		for i = 1, self.__DisplayItemCount do
 			if self:GetChild("ListBtn_"..i).HighlightLocked then
 				self = self:GetChild("ListBtn_"..i)

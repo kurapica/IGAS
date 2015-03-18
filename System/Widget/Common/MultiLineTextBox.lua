@@ -223,6 +223,7 @@ do
 	_KeyScan.KeyboardEnabled = true
 	_KeyScan.FrameStrata = "TOOLTIP"
 	_KeyScan.Visible = false
+	_KeyScan.ActiveKeys = {}
 	--_KeyScan:ActiveThread("OnKeyDown")
 
 	------------------------------------------------------
@@ -1481,7 +1482,10 @@ do
 
 					editor:Fire("OnDirectionKey", _DirectionKeyEventArgs)
 
-					if _DirectionKeyEventArgs.Handled or _DirectionKeyEventArgs.Cancel then return end
+					if _DirectionKeyEventArgs.Handled or _DirectionKeyEventArgs.Cancel then
+						self.ActiveKeys[key] = true
+						return self:SetPropagateKeyboardInput(false)
+					end
 
 					if key == "PAGEUP" then
 						local text = editor.__Text.Text
@@ -1654,6 +1658,7 @@ do
                         EndPrevKey(editor)
 						editor.__DELETE = true
 						NewOperation(editor, _Operation.DELETE)
+						self.ActiveKeys[key] = true
 						self:SetPropagateKeyboardInput(false)
 
 						_Thread.Thread = Thread_DELETE
@@ -1667,6 +1672,7 @@ do
                         EndPrevKey(editor)
 						editor.__BACKSPACE = cursorPos
 						NewOperation(editor, _Operation.BACKSPACE)
+						self.ActiveKeys[key] = true
 						self:SetPropagateKeyboardInput(false)
 
 						_Thread.Thread = Thread_BACKSPACE
@@ -1739,6 +1745,8 @@ do
 
 	function _KeyScan:OnKeyUp(key)
 		self:SetPropagateKeyboardInput(true)
+
+		self.ActiveKeys[key] = nil
 
 		if self.FocusEditor then
 			if key == "DELETE" then
@@ -2591,6 +2599,11 @@ class "MultiLineTextBox"
 	]]
 	function GetTabWidth(self)
 		return self.__TabWidth or _TabWidth
+	end
+
+	__Doc__[[Whether a key is pressed ]]
+	function IsKeyPressed(self, key)
+		return _KeyScan.FocusEditor == self and _KeyScan.ActiveKeys[key] or false
 	end
 
 	------------------------------------------------------

@@ -462,7 +462,9 @@ do
 
 			AdjustCursorPosition(editor, startp + key:len() - 1)
 
-			return editor:Fire("OnPasting", startp, startp + key:len() - 1)
+			FormatColor4Line(editor, startp, startp + key:len() - 1)
+
+			Task.NextCall(OnAutoComplete, editor, key)
 		else
 			_List.Visible = false
 			_List:Clear()
@@ -2545,22 +2547,49 @@ class "CodeEditor"
 		end
 	end
 
-	local function OnDirectionKey(self, args)
-		local key = args.Key
-		if _List.Visible and (key == "UP" or key == "DOWN") then
-			self.AltArrowKeyMode = true
+	local function MoveOnList(self, offset, key)
+		local min, max = 1, _List.ItemCount
+		local index = _List.SelectedIndex
 
-			if key == "UP" then
-				if _List.SelectedIndex > 1 then
-					_List.SelectedIndex = _List.SelectedIndex - 1
-				end
-			elseif _List.SelectedIndex < _List.ItemCount then
-				_List.SelectedIndex = _List.SelectedIndex + 1
+		local first = true
+		self.AltArrowKeyMode = true
+		repeat
+			index = index + offset
+			if index >= min and index <= max then
+				_List.SelectedIndex = index
+			else
+				break
 			end
+			Task.Delay(first and 0.3 or 0.1)
+			first = false
+		until not self:IsKeyPressed(key)
+		self.AltArrowKeyMode = false
+	end
+
+	local function OnDirectionKey(self, args)
+		if _List.Visible then
+			local key = args.Key
+			local offset = 0
 
 			args.Handled = true
-		else
-			self.AltArrowKeyMode = false
+
+			if key == "PAGEUP" then
+				offset = - _List.DisplayItemCount
+			elseif key == "PAGEDOWN" then
+				offset = _List.DisplayItemCount
+			elseif key == "HOME" then
+				offset = 1 - _List.SelectedIndex
+			elseif key == "END" then
+				offset = _List.ItemCount - _List.SelectedIndex
+			elseif key == "UP" then
+				offset = -1
+			elseif key == "DOWN" then
+				offset = 1
+			else
+				args.Handled = false
+			end
+
+			return offset ~= 0 and Task.ThreadCall(MoveOnList, self, offset, key)
 		end
 	end
 
