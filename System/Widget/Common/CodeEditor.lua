@@ -253,6 +253,7 @@ do
 	_List.DisplayItemCount = 5
 	_List.Width = 250
 	_List.Visible = false
+	_List.ShowTooltipForSelectedItem = true
 
 	_AutoCacheKeys = {}
 	_AutoCacheItems = {}
@@ -466,6 +467,17 @@ do
 			_List.Visible = false
 			_List:Clear()
 		end
+	end
+
+	function _List:OnGameTooltipShow(gameTooltip, key)
+		local editor = _List.CurrentEditor
+		if not editor then
+			gameTooltip:ClearLines()
+			gameTooltip:Hide()
+			return
+		end
+
+		return editor:Fire("OnGameTooltipShow", gameTooltip, key)
 	end
 
 	------------------------------------------------------
@@ -2171,6 +2183,16 @@ __Doc__[[CodeEditor object is used as a lua code editor]]
 class "CodeEditor"
 	inherit "MultiLineTextBox"
 
+	__Doc__[[
+		<desc>Run when a gameTooltip need update for the selected auto-complete list</desc>
+		<param name="gameTooltip">System.Widget.GameTooltip, the GameTooltip object</param>
+		<param name="key">any, the choosed item's value</param>
+	]]
+	event "OnGameTooltipShow"
+
+	__Doc__[[Fired when a word is choosed in the auto-complete list]]
+	event "OnAutoComplete"
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -2289,7 +2311,41 @@ class "CodeEditor"
 	------------------------------------------------------
 	-- Event Handlers
 	------------------------------------------------------
-	local function OnEnterPressed(self)
+	local function OnEnterPressed(self, args)
+		if _List.Visible then
+			local startp, endp, str
+			local text = self.FullText
+
+			wipe(_BackAutoCache)
+
+			startp, endp, str = GetWord(text, self.CursorPosition, true)
+
+			str = _List:GetSelectedItemValue()
+
+			if str then
+				for _, v in ipairs(_List.Keys) do
+					tinsert(_BackAutoCache, v)
+				end
+
+				_BackAutoCache[0] = _List.SelectedIndex
+
+				self.FullText = ReplaceBlock(text, startp, endp, str)
+
+				AdjustCursorPosition(self, startp + str:len() - 1)
+
+				FormatColor4Line(self, startp, startp + str:len() - 1)
+
+				Task.NextCall(OnAutoComplete, self, str)
+
+				args.Handled = true
+			else
+				_List.Visible = false
+				_List:Clear()
+			end
+		end
+	end
+
+	local function OnNewLine(self)
 		local cursorPos = self.CursorPosition
 		local text = self.FullText
 		local lstartp, lendp, lstr = GetLines(text, cursorPos - 1)
@@ -2425,9 +2481,7 @@ class "CodeEditor"
 	end
 
 	local function OnTabPressed(self, args)
-		local startp, endp, str, lineBreak
-		local shiftDown = IsShiftKeyDown()
-		local cursorPos = self.CursorPosition
+		local startp, endp, str
 
 		if _List.Visible then
 			local text = self.FullText
@@ -2450,6 +2504,8 @@ class "CodeEditor"
 				AdjustCursorPosition(self, startp + str:len() - 1)
 
 				FormatColor4Line(self, startp, startp + str:len() - 1)
+
+				Task.NextCall(OnAutoComplete, self, str)
 
 				args.Handled = true
 			else
@@ -2478,6 +2534,8 @@ class "CodeEditor"
 					AdjustCursorPosition(self, startp + str:len() - 1)
 
 					FormatColor4Line(self, startp, startp + str:len() - 1)
+
+					Task.NextCall(OnAutoComplete, self, str)
 
 					args.Handled = true
 				else
@@ -2527,6 +2585,7 @@ class "CodeEditor"
 		self.OnEditFocusLost = self.OnEditFocusLost + OnEditFocusLost
 		self.OnDirectionKey = self.OnDirectionKey + OnDirectionKey
 		self.OnTabPressed = self.OnTabPressed + OnTabPressed
+		self.OnNewLine = self.OnNewLine + OnNewLine
 
 		-- Enviroment
 		InitDefinition(self)

@@ -6,12 +6,13 @@
 --		2010/02/12  Add OnSizeChanged script
 --		2010/03/03	Add OnItemDoubleClick script
 --		2010/06/21  Use # to instead of getn, make proxy can be used as keys, items, icons or frames
---		2010/10/19	Now can show tooltip to the listitem buy set ShowTootip to true
+--		2010/10/19	Now can show tooltip to the listitem buy set ShowTooltip to true
 --		2011/03/13	Recode as class
 --      2011/11/02  Remvoe visible check
+--      2015/03/18  Add GameTooltip for selected item
 
 -- Check Version
-local version = 14
+local version = 15
 if not IGAS:NewAddon("IGAS.Widget.List", version) then
 	return
 end
@@ -20,7 +21,17 @@ __Doc__[[List is a widget type using for show list of infomations]]
 class "List"
 	inherit "Frame"
 
-    GameTooltip = IGAS.GameTooltip
+    _GameTooltip = IGAS.GameTooltip
+    rycGameTooltip = Recycle(GameTooltip, "IGAS_List_GameTooltip%d")
+
+    function rycGameTooltip:OnInit(obj)
+    	obj.Visible = false
+    end
+
+    function rycGameTooltip:OnPush(obj)
+    	obj:ClearLines()
+    	obj.Visible = false
+    end
 
 	_Height = 26
 
@@ -71,14 +82,14 @@ class "List"
 	local _OnGameTooltip
 
 	local function Item_OnEnter(self)
-		if self.Parent.ShowTootip then
+		if self.Parent.ShowTooltip and not self.Parent.ShowTooltipForSelectedItem then
 			local from, to = getAnchors(self)
 			local parent = self.Parent
 
 			if _OnGameTooltip then
 				_OnGameTooltip = nil
-				GameTooltip:ClearLines()
-				GameTooltip:Hide()
+				_GameTooltip:ClearLines()
+				_GameTooltip:Hide()
 			end
 
 			if not parent.Items[self.ID] then
@@ -86,20 +97,20 @@ class "List"
 			end
 
 			_OnGameTooltip = self
-			GameTooltip:SetOwner(self, "ANCHOR_NONE")
-			GameTooltip:ClearAllPoints()
-			GameTooltip:SetPoint(from, self, to, 0, 0)
-			GameTooltip:SetText(parent.Items[self.ID])
-			parent:Fire("OnGameTooltipShow", GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
-			GameTooltip:Show()
+			_GameTooltip:SetOwner(self, "ANCHOR_NONE")
+			_GameTooltip:ClearAllPoints()
+			_GameTooltip:SetPoint(from, self, to, 0, 0)
+			_GameTooltip:SetText(parent.Items[self.ID])
+			parent:Fire("OnGameTooltipShow", _GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+			_GameTooltip:Show()
 		end
 		self.Parent:Fire("OnEnter")
 	end
 
 	local function Item_OnLeave(self)
 		_OnGameTooltip = nil
-		GameTooltip:ClearLines()
-        GameTooltip:Hide()
+		_GameTooltip:ClearLines()
+        _GameTooltip:Hide()
 		self.Parent:Fire("OnLeave")
 	end
 
@@ -176,20 +187,20 @@ class "List"
 		end
 
 		if btn == _OnGameTooltip then
-			GameTooltip:ClearLines()
-			GameTooltip:Hide()
+			_GameTooltip:ClearLines()
+			_GameTooltip:Hide()
 			_OnGameTooltip = nil
 
-			if self.ShowTootip and self.Items[btn.ID] then
+			if self.ShowTooltip and self.Items[btn.ID] then
 				local from, to = getAnchors(btn)
 
 				_OnGameTooltip = btn
-				GameTooltip:SetOwner(btn, "ANCHOR_NONE")
-				GameTooltip:ClearAllPoints()
-				GameTooltip:SetPoint(from, btn, to, 0, 0)
-				GameTooltip:SetText(self.Items[btn.ID])
-				self:Fire("OnGameTooltipShow", GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
-				GameTooltip:Show()
+				_GameTooltip:SetOwner(btn, "ANCHOR_NONE")
+				_GameTooltip:ClearAllPoints()
+				_GameTooltip:SetPoint(from, btn, to, 0, 0)
+				_GameTooltip:SetText(self.Items[btn.ID])
+				self:Fire("OnGameTooltipShow", _GameTooltip, self.Keys[btn.ID], self.Items[btn.ID], self.Icons[btn.ID], self.Frames[btn.ID])
+				_GameTooltip:Show()
 			end
 		end
 	end
@@ -371,8 +382,47 @@ class "List"
 		end
 	end
 
+	local function OnItemChoosed_Tip(self, ...)
+		for i = 1, self.__DisplayItemCount do
+			if self:GetChild("ListBtn_"..i).HighlightLocked then
+				self = self:GetChild("ListBtn_"..i)
+				local from, to = getAnchors(self)
+				local parent = self.Parent
+
+				if parent._GameTooltip then
+					parent._GameTooltip:ClearLines()
+					parent._GameTooltip.Visible = false
+				end
+
+				if not parent.Items[self.ID] then
+					return
+				end
+
+				if not parent._GameTooltip then
+					parent._GameTooltip = rycGameTooltip()
+				end
+
+				parent._GameTooltip:SetOwner(self, "ANCHOR_NONE")
+				parent._GameTooltip:ClearAllPoints()
+				parent._GameTooltip:SetPoint(from, self, to, 0, 0)
+				parent._GameTooltip:SetText(parent.Items[self.ID])
+				parent:Fire("OnGameTooltipShow", parent._GameTooltip, parent.Keys[self.ID], parent.Items[self.ID], parent.Icons[self.ID], parent.Frames[self.ID])
+				parent._GameTooltip:Show()
+				return
+			end
+		end
+	end
+
 	local function OnShow(self)
 		self:Refresh()
+		return self.ShowTooltipForSelectedItem and OnItemChoosed_Tip(self)
+	end
+
+	local function OnHide(self)
+		if self._GameTooltip then
+			self._GameTooltip:ClearLines()
+			self._GameTooltip.Visible = false
+		end
 	end
 
 	------------------------------------------------------
@@ -906,7 +956,22 @@ class "List"
 	}
 
 	__Doc__[[whether show tooltip or not]]
-	property "ShowTootip" { Type = Boolean, }
+	property "ShowTooltip" { Type = Boolean }
+
+	__Doc__[[whether only show tooltip for the selected item]]
+	__Handler__(function (self, value)
+		if value then
+			self.OnItemChoosed = self.OnItemChoosed + OnItemChoosed_Tip
+			OnItemChoosed_Tip(self)
+		else
+			self.OnItemChoosed = self.OnItemChoosed - OnItemChoosed_Tip
+			if self._GameTooltip then
+				rycGameTooltip(self._GameTooltip)
+				self._GameTooltip = nil
+			end
+		end
+	end)
+	property "ShowTooltipForSelectedItem" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor
@@ -935,6 +1000,7 @@ class "List"
 
 		self.OnMouseWheel = self.OnMouseWheel + OnMouseWheel
 		self.OnShow = self.OnShow + OnShow
+		self.OnHide = self.OnHide + OnHide
 
 		self.__JustifyH = "LEFT"
 		self.__Style = TEMPLATE_LIGHT

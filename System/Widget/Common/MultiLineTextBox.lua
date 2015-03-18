@@ -1861,6 +1861,9 @@ class "MultiLineTextBox"
 	]]
 	event "OnCut"
 
+	__Doc__[[Fired when a new line is created]]
+	event "OnNewLine"
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
@@ -2983,11 +2986,14 @@ class "MultiLineTextBox"
 		return self:Fire("OnMouseUp", ...)
 	end
 
-    local function OnEscapePressed(self, ...)
-    	local args = EventArgs()
-    	self.__Container:Fire("OnEscapePressed", args)
+	_EscapeEventArgs = EventArgs()
 
-    	if args.Handled or args.Cancel then return end
+    local function OnEscapePressed(self, ...)
+    	_EscapeEventArgs.Cancel = false
+    	_EscapeEventArgs.Handled = false
+    	self.__Container:Fire("OnEscapePressed", _EscapeEventArgs)
+
+    	if _EscapeEventArgs.Handled or _EscapeEventArgs.Cancel then return end
 
         self:ClearFocus()
     end
@@ -3033,7 +3039,14 @@ class "MultiLineTextBox"
 		return self:Fire("OnEditFocusLost", ...)
 	end
 
+	_EnterEventArgs = EventArgs()
+
     local function OnEnterPressed(self, ...)
+    	_EnterEventArgs.Cancel = false
+    	_EnterEventArgs.Handled = false
+    	self.__Container:Fire("OnEnterPressed", _EnterEventArgs)
+    	if _EnterEventArgs.Cancel or _EnterEventArgs.Handled then return end
+
     	if not IsControlKeyDown() then
 			self:Insert("\n")
 		else
@@ -3044,7 +3057,7 @@ class "MultiLineTextBox"
 
 		self = self.__Container
 
-		return self:Fire("OnEnterPressed", ...)
+		return self:Fire("OnNewLine")
 	end
 
     local function OnInputLanguageChanged(self, ...)
