@@ -1705,8 +1705,7 @@ do
 			if IsShiftKeyDown() then
 				-- shift+
 			elseif IsAltKeyDown() then
-				-- alt+
-				return
+				return editor:Fire("OnAltKey", key)
 			elseif IsControlKeyDown() then
 				if key == "A" then
 					editor:HighlightText()
@@ -1717,10 +1716,10 @@ do
 				elseif key == "C" then
 					-- do nothing
 					return
-				elseif key == "Z" then
+				--[[elseif key == "Z" then
 					return editor:Undo()
 				elseif key == "Y" then
-					return editor:Redo()
+					return editor:Redo()--]]
 				elseif key == "X" then
 					if editor.__HighlightTextStart ~= editor.__HighlightTextEnd then
 						NewOperation(editor, _Operation.CUT)
@@ -1732,10 +1731,8 @@ do
 				elseif key == "G" then
 					_Thread.Thread = Thread_GoLine
 					return _Thread(editor)
-				elseif editor.__RegisterControl and editor.__RegisterControl[key] then
-					return editor:Fire("OnControlKey", key)
 				else
-					return
+					return editor:Fire("OnControlKey", key)
 				end
 			end
 
@@ -1833,10 +1830,16 @@ class "MultiLineTextBox"
 	event "OnFunctionKey"
 
 	__Doc__[[
-		<desc>Run when the edit box's control key is pressed</desc>
-		<param name="text">string, The text entered</param>
+		<desc>Fired when a key is combined with ctrl</desc>
+		<param name="key">string, The key entered</param>
 	]]
 	event "OnControlKey"
+
+	__Doc__[[
+		<desc>Fired when a key is combined with alt</desc>
+		<param name="key">string, The key entered</param>
+	]]
+	event "OnAltKey"
 
 	__Doc__[[Fired when the direction key is used, such like PAGEDOWN, LEFT, HOME]]
 	event "OnDirectionKey"
@@ -2481,44 +2484,6 @@ class "MultiLineTextBox"
 	]]
 	function IsModified(self)
 		return self.__DefaultText ~= self.__Text.Text
-	end
-
-	__Doc__[[
-		<desc>Register a short-key combied with ctrl</desc>
-		<param name="key">string, the short key</param>
-	]]
-	function RegisterControlKey(self, key)
-		if type(key) ~= "string" or strlen(key) ~= 1 then
-			error("Usage : MultiLineTextBox:RegisterControlKey(key) - 'key' must be [0-9] or [A-Z], got nil.", 2)
-		end
-
-		key = strupper(key)
-
-		if not key:match("%w") then
-			error("Usage : MultiLineTextBox:RegisterControlKey(key) - 'key' must be [0-9] or [A-Z].", 2)
-		end
-
-		self.__RegisterControl = self.__RegisterControl or {}
-		self.__RegisterControl[key] = true
-	end
-
-	__Doc__[[
-		<desc>UnRegister a short-key combied with ctrl</desc>
-		<param name="key">string, the short key</param>
-	]]
-	function UnRegisterControlKey(self, key)
-		if type(key) ~= "string" or strlen(key) ~= 1 then
-			return
-		end
-
-		key = strupper(key)
-
-		if not key:match("%w") then
-			return
-		end
-
-		self.__RegisterControl = self.__RegisterControl or {}
-		self.__RegisterControl[key] = nil
 	end
 
 	__Doc__[[

@@ -479,6 +479,9 @@ do
 			return
 		end
 
+		gameTooltip:ClearLines()
+		gameTooltip:SetText(key)
+
 		return editor:Fire("OnGameTooltipShow", gameTooltip, key)
 	end
 

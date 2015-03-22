@@ -22,7 +22,7 @@ class "List"
 	inherit "Frame"
 
     _GameTooltip = IGAS.GameTooltip
-    rycGameTooltip = Recycle(GameTooltip, "IGAS_List_GameTooltip%d")
+    rycGameTooltip = Recycle(GameTooltip, "IGAS_List_GameTooltip%d", IGAS.UIParent, "GameTooltipTemplate")
 
     function rycGameTooltip:OnInit(obj)
     	obj.Visible = false
@@ -31,6 +31,7 @@ class "List"
     function rycGameTooltip:OnPush(obj)
     	obj:ClearLines()
     	obj.Visible = false
+    	obj.Parent = IGAS.UIParent
     end
 
 	_Height = 26
@@ -62,8 +63,10 @@ class "List"
 	-- Help functions
     local function getAnchors(frame)
         local x, y = frame:GetCenter()
+        if not x then x, y = frame.Parent:GetCenter() end
         local xFrom, xTo = "", ""
         local yFrom, yTo = "", ""
+
         if x < GetScreenWidth() / 3 then
             xFrom, xTo = "LEFT", "RIGHT"
         elseif x > GetScreenWidth() / 3 then
@@ -402,6 +405,7 @@ class "List"
 
 				if not parent._GameTooltip then
 					parent._GameTooltip = rycGameTooltip()
+					parent._GameTooltip.Parent = parent
 				end
 
 				parent._GameTooltip:SetOwner(self, "ANCHOR_NONE")
@@ -527,6 +531,8 @@ class "List"
 			self.__ChooseItem = index
 			--self:Fire("OnItemChoosed", self.Keys[self.__ChooseItem], self.Items[self.__ChooseItem], self.Icons[self.__ChooseItem], self.Frames[self.__ChooseItem])
 		end
+
+		return self.ShowTooltipForSelectedItem and OnItemChoosed_Tip(self)
 	end
 
 	__Doc__[[
