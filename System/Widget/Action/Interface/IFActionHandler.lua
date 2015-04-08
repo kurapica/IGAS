@@ -1229,7 +1229,7 @@ do
 	end
 
 	-- Special definition
-	__Final__() __NonInheritable__() __NonExpandable__()
+	__Final__() __Sealed__()
 	interface "ActionRefreshMode"
 		RefreshGrid = UpdateGrid
 		RefreshPetGrid = UpdatePetGrid

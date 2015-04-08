@@ -363,8 +363,7 @@ do
 end
 
 __Doc__[[Task system used to improve performance for the whole system]]
-__NonInheritable__()
-interface "Task"
+__Final__() interface "Task"
 
 	------------------------------------------------------
 	-- Task Creation Method

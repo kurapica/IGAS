@@ -463,6 +463,38 @@ do
 			return info
 		end
 	end
+
+	-- Final Check
+	function IsFinalFeature(ns, name, isSuper)
+		ns = _NSInfo[ns]
+
+		if not name then
+			return ns.IsFinal
+		else
+			if isSuper and not ns.Cache[name] then return nil end
+
+			-- Check self
+			if ns.FinalFeatures and ns.FinalFeatures[name] then return true end
+			if ns.Method and ns.Method[name] then return ns.IsFinal or false end
+			if ns.Property and ns.Property[name] then return ns.IsFinal or false end
+
+			-- Check Super class
+			if ns.SuperClass then
+				local ret = IsFinalFeature(ns.SuperClass, name, true)
+				if ret ~= nil then return ret end
+			end
+
+			-- Check Extened interfaces
+			if ns.ExtendInterface then
+				for _, IF in ipairs(ns.ExtendInterface) do
+					local ret = IsFinalFeature(IF, name, true)
+					if ret ~= nil then return ret end
+				end
+			end
+
+			return false
+		end
+	end
 end
 
 ------------------------------------------------------
@@ -592,17 +624,13 @@ do
 
 			if info.Type == TYPE_STRUCT and type(key) == "string" and type(value) == "function" then
 				if key == info.Name then
-					if not info.Validator then
-						info.Validator = value
-						return
-					else
-						error("Can't override the existed validator.", 2)
-					end
-				elseif not info.Method or not info.Method[key] then
+					if info.IsSealed then error(("%s is sealed, can't be overridden."):format(tostring(self)), 2) end
+					info.Validator = value
+					return
+				else
+					if info.IsSealed and ((info.Method and info.Method[key]) or (info.StructEnv[key])) then error(("%s.%s is sealed, can't be overridden."):format(tostring(self), key), 2) end
 					info.Method = info.Method or {}
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
-				else
-					error("Can't override the existed feature.", 2)
 				end
 			elseif (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and type(key) == "string" then
 				-- Static Property
@@ -663,12 +691,14 @@ do
 							error(("%s can't be written."):format(key), 2)
 						end
 					end
-				elseif not info.NonExpandable then
+				else
+					if IsFinalFeature(self, key) then error(("%s.%s is final, can't be overridden."):format(tostring(self), key), 2) end
+					if info.IsSealed and info.Cache[key] then error(("%s.%s is sealed, can't be overridden."):format(tostring(self), key), 2) end
 					-- new feature
-					if type(value) == "function" and not info.Method[key] then
+					if type(value) == "function" then
 						-- Method
 						SaveFixedMethod(info.Method, key, value, info.Owner)
-					elseif type(value) == "table" and not info.Property[key] then
+					elseif type(value) == "table" then
 						-- Property
 						SetPropertyWithSet(info, key, value)
 					elseif not tonumber(key) then
@@ -677,7 +707,7 @@ do
 
 						if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Event[key], AttributeTargets.Event, info.Owner, key) end
 					else
-						error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
+						return
 					end
 
 					return not info.BeginDefinition and RefreshCache(self)
@@ -1843,6 +1873,7 @@ do
 				if IsLocal() then
 					return SaveFixedMethod(self[LOCAL_ENV_FIELD], key, value, info.Owner)
 				else
+					if IsFinalFeature(info.Owner, key) then error(("%s.%s is final, can't be overridden."):format(tostring(info.Owner), key), 2) end
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
 				end
 			end
@@ -1927,7 +1958,7 @@ do
 		info = info or _NSInfo[IF]
 
 		-- Check if the class is final
-		if info.IsFinal then error("The interface is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The interface is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = info.NameSpace or ns
@@ -1967,7 +1998,7 @@ do
 
 		if not IFInfo or IFInfo.Type ~= TYPE_INTERFACE then
 			error("Usage: extend (interface) : 'interface' - interface expected", 3)
-		elseif IFInfo.NonInheritable then
+		elseif IFInfo.IsFinal then
 			error(("%s is non-inheritable."):format(tostring(IF)), 3)
 		end
 
@@ -2149,7 +2180,7 @@ do
 
 		if not IFInfo or (IFInfo.Type ~= TYPE_INTERFACE and IFInfo.Type ~= TYPE_CLASS) then
 			error("Usage: require (interface|class) : interface or class expected", 2)
-		elseif IFInfo.NonInheritable then
+		elseif IFInfo.IsFinal then
 			error(("%s is non-inheritable."):format(tostring(IF)), 2)
 		end
 
@@ -2167,6 +2198,8 @@ do
 				local v = definition[i]
 
 				if getmetatable(v) == TYPE_NAMESPACE then
+					if info.IsSealed then error(("%s is sealed, can't use inherit or extend."):format(tostring(info.Owner)), 2) end
+
 					local vType = _NSInfo[v].Type
 
 					if vType == TYPE_CLASS then
@@ -2179,8 +2212,10 @@ do
 						extend_Inner(info, v)
 					end
 				elseif type(v) == "string" and not tonumber(v) then
+					if info.IsSealed and info.Cache[v] then error(("%s.%s is sealed, can't be overridden."):format(tostring(info.Owner), v), 2) end
 					info.Event[v] = info.Event[v] or Event(v)
 				elseif type(v) == "function" then
+					if info.IsSealed then error(("%s is sealed, can't set the constructor or initializer."):format(tostring(info.Owner)), 2) end
 					if info.Type == TYPE_CLASS then
 						SaveFixedMethod(info, "Constructor", v, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
 					elseif info.Type == TYPE_INTERFACE then
@@ -2191,6 +2226,9 @@ do
 
 			for k, v in pairs(definition) do
 				if type(k) == "string" and not tonumber(k) then
+					if IsFinalFeature(info.Owner, k) then error(("%s.%s is final, can't be overridden."):format(tostring(info.Owner), k), 2) end
+					if info.IsSealed and (info.Cache[k] or k == info.Name or k == DISPOSE_METHOD or (_KeyMeta[k] ~= nil and info.Type == TYPE_CLASS)) then error(("%s.%s is sealed, can't be overridden."):format(tostring(info.Owner), k), 2) end
+
 					local vType = getmetatable(v)
 
 					if vType and type(v) ~= "string" then
@@ -2208,8 +2246,8 @@ do
 							end
 						elseif k == DISPOSE_METHOD then
 							info[DISPOSE_METHOD] = v
-						elseif _KeyMeta[key] ~= nil and info.Type == TYPE_CLASS then
-							local rMeta = _KeyMeta[key] and key or "_"..key
+						elseif _KeyMeta[k] ~= nil and info.Type == TYPE_CLASS then
+							local rMeta = _KeyMeta[k] and k or "_"..k
 							local oldValue = info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta]
 
 							SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
@@ -2588,6 +2626,7 @@ do
 				if IsLocal() then
 					return SaveFixedMethod(self[LOCAL_ENV_FIELD], key, value, info.Owner)
 				else
+					if IsFinalFeature(info.Owner, key) then error(("%s.%s is final, can't be overridden."):format(tostring(info.Owner), key), 2) end
 					return SaveFixedMethod(info.Method, key, value, info.Owner)
 				end
 			end
@@ -3217,7 +3256,7 @@ do
 		info = info or _NSInfo[cls]
 
 		-- Check if the class is final
-		if info.IsFinal then error("The class is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The class is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_CLASS
 		info.NameSpace = info.NameSpace or ns
@@ -3256,7 +3295,7 @@ do
 		local superInfo = _NSInfo[superCls]
 
 		if not superInfo or superInfo.Type ~= TYPE_CLASS then error("Usage: inherit (class) : 'class' - class expected", 2) end
-		if superInfo.NonInheritable then error(("%s is non-inheritable."):format(tostring(superCls)), 2) end
+		if superInfo.IsFinal then error(("%s is non-inheritable."):format(tostring(superCls)), 2) end
 		if IsChildClass(info.Owner, superCls) then error(("%s is inherited from %s, can't be used as super class."):format(tostring(superCls), tostring(info.Owner)), 2) end
 		if info.SuperClass == superCls then return end
 		if info.SuperClass then error(("%s is inherited from %s, can't inherit another class."):format(tostring(info.Owner), tostring(info.SuperClass)), 2) end
@@ -3580,7 +3619,7 @@ do
 		info = info or _NSInfo[enm]
 
 		-- Check if the enum is final
-		if info.IsFinal then error("The enum is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The enum is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_ENUM
 		info.NameSpace = info.NameSpace or ns
@@ -3960,7 +3999,7 @@ do
 		info = info or _NSInfo[strt]
 
 		-- Check if the struct is final
-		if info.IsFinal then error("The struct is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The struct is final, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_STRUCT
 		info.SubType = _STRUCT_TYPE_MEMBER
@@ -3971,6 +4010,7 @@ do
 		info.ArrayElement = nil
 		info.Validator = nil
 		info.Method = nil
+		info.StaticMethod = nil
 		info.Import4Env = nil
 
 		-- Clear Attribute
@@ -4442,28 +4482,30 @@ do
 			return ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_INTERFACE or false
 		end
 
-		doc "IsFinal" [[
-			<desc>Check if the class|interface is final, can't be re-defined</desc>
+		doc "IsSealed" [[
+			<desc>Check if the feature is sealed, can't be re-defined</desc>
 			<param name="object">the object to query</param>
-			<return type="boolean">true if the class|interface is final</return>
-			<usage>System.Reflector.IsFinal(System.Object)</usage>
+			<return type="boolean">true if the feature is sealed</return>
+			<usage>System.Reflector.IsSealed(System.Object)</usage>
 		]]
-		function IsFinal(ns)
+		function IsSealed(ns)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
-			return ns and _NSInfo[ns] and _NSInfo[ns].IsFinal or false
+			return ns and _NSInfo[ns] and _NSInfo[ns].IsSealed or false
 		end
 
-		doc "IsNonInheritable" [[
-			<desc>Check if the class|interface is non-inheritable</desc>
+		doc "IsFinal" [[
+			<desc>Check if the class|interface is final</desc>
 			<param name="object">the object to query</param>
-			<return type="boolean">true if the class|interface is non-inheritable</return>
-			<usage>System.Reflector.IsNonInheritable(System.Object)</usage>
+			<param name="name" optional="true">the method or property's name</param>
+			<return type="boolean">true if the feature is final</return>
+			<usage>System.Reflector.IsFinal(System.Object)</usage>
 		]]
-		function IsNonInheritable(ns)
+		function IsFinal(ns, name)
 			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+			if type(name) ~= "string" then name = nil end
 
-			return ns and _NSInfo[ns] and _NSInfo[ns].NonInheritable or false
+			return ns and IsFinalFeature(ns, name) or false
 		end
 
 		doc "IsUniqueClass" [[
@@ -4491,18 +4533,6 @@ do
 			local autoCache = ns and _NSInfo[ns] and _NSInfo[ns].AutoCache
 
 			return autoCache == true or (name and autoCache and autoCache[name]) or false
-		end
-
-		doc "IsNonExpandable" [[
-			<desc>Check if the class|interface is non-expandable</desc>
-			<param name="object">the object to query</param>
-			<return type="boolean">true if the class|interface is non-expandable</return>
-			<usage>System.Reflector.IsNonExpandable(System.Object)</usage>
-		]]
-		function IsNonExpandable(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].NonExpandable or false
 		end
 
 		doc "GetSubNamespace" [[
@@ -4762,7 +4792,7 @@ do
 
 			local info = _NSInfo[ns]
 
-			return info and info.Type == TYPE_INTERFACE and info.RequireMethod and info.RequireMethod[name] or false
+			return info and info.RequireMethod and info.RequireMethod[name] or false
 		end
 
 		doc "IsRequiredProperty" [[
@@ -4776,7 +4806,7 @@ do
 
 			local info = _NSInfo[ns]
 
-			return info and info.Type == TYPE_INTERFACE and info.RequireProperty and info.RequireProperty[name] or false
+			return info and info.RequireProperty and info.RequireProperty[name] or false
 		end
 
 		doc "IsOptionalMethod" [[
@@ -4790,7 +4820,7 @@ do
 
 			local info = _NSInfo[ns]
 
-			return info and info.Type == TYPE_INTERFACE and info.OptionalMethod and info.OptionalMethod[name] or false
+			return info and info.OptionalMethod and info.OptionalMethod[name] or false
 		end
 
 		doc "IsOptionalProperty" [[
@@ -4804,7 +4834,7 @@ do
 
 			local info = _NSInfo[ns]
 
-			return info and info.Type == TYPE_INTERFACE and info.OptionalProperty and info.OptionalProperty[name] or false
+			return info and info.OptionalProperty and info.OptionalProperty[name] or false
 		end
 
 		doc "IsStaticProperty" [[
@@ -6055,7 +6085,7 @@ do
 			if self.HasSelf == nil then
 				self.HasSelf = true
 				if self.TargetType == AttributeTargets.Method then
-					if Reflector.IsInterface(self.Owner) and Reflector.IsNonInheritable(self.Owner) then self.HasSelf = false end
+					if Reflector.IsInterface(self.Owner) and Reflector.IsFinal(self.Owner) then self.HasSelf = false end
 					if Reflector.IsStaticMethod(self.Owner, self.Name) then self.HasSelf = false end
 				end
 			end
@@ -6160,7 +6190,7 @@ do
 			if self.HasSelf == nil then
 				self.HasSelf = true
 				if self.TargetType == AttributeTargets.Method then
-					if Reflector.IsInterface(self.Owner) and Reflector.IsNonInheritable(self.Owner) then self.HasSelf = false end
+					if Reflector.IsInterface(self.Owner) and Reflector.IsFinal(self.Owner) then self.HasSelf = false end
 					if Reflector.IsStaticMethod(self.Owner, self.Name) then self.HasSelf = false end
 				end
 			end
@@ -6245,7 +6275,7 @@ do
 				if self.HasSelf == nil then
 					self.HasSelf = true
 					if self.TargetType == AttributeTargets.Method then
-						if Reflector.IsInterface(self.Owner) and Reflector.IsNonInheritable(self.Owner) then self.HasSelf = false end
+						if Reflector.IsInterface(self.Owner) and Reflector.IsFinal(self.Owner) then self.HasSelf = false end
 						if Reflector.IsStaticMethod(self.Owner, self.Name) then self.HasSelf = false end
 					end
 				end
@@ -6932,7 +6962,7 @@ do
 
 		function ApplyAttribute(self, target, targetType)
 			if Reflector.IsClass(target) then
-				_NSInfo[target].NonInheritable = true
+				_NSInfo[target].IsFinal = true
 				_NSInfo[target].UniqueObject = true
 			end
 		end
@@ -7025,23 +7055,28 @@ do
 		property "BeforeDefinition" { Type = Boolean }
 	end)
 
-	class "__Final__" (function(_ENV)
+	class "__Sealed__" (function(_ENV)
 		inherit "__Attribute__"
 
-		doc "__Final__" [[Mark the class|interface|struct|enum to be final, and can't be re-defined again]]
+		doc "__Sealed__" [[Mark the feature to be sealed, and can't be re-defined again]]
 
 		function ApplyAttribute(self, target, targetType)
-			if _NSInfo[target] then _NSInfo[target].IsFinal = true end
+			_NSInfo[target].IsSealed = true
 		end
 	end)
 
-	class "__NonInheritable__" (function(_ENV)
+	class "__Final__" (function(_ENV)
 		inherit "__Attribute__"
 
-		doc "__NonInheritable__" [[Mark the class can't be inherited]]
+		doc "__Final__" [[Mark the class|interface can't be inherited, or method|property can't be overridden by child-classes]]
 
-		function ApplyAttribute(self, target, targetType)
-			if Reflector.IsClass(target) or Reflector.IsInterface(target) then _NSInfo[target].NonInheritable = true end
+		function ApplyAttribute(self, target, targetType, owner, name)
+			if targetType == AttributeTargets.Interface or targetType == AttributeTargets.Class then
+				_NSInfo[target].IsFinal = true
+			elseif _NSInfo[owner].Type == TYPE_INTERFACE or _NSInfo[owner].Type == TYPE_CLASS then
+				_NSInfo[owner].FinalFeatures = _NSInfo[owner].FinalFeatures or {}
+				_NSInfo[owner].FinalFeatures[name] = true
+			end
 		end
 	end)
 
@@ -7201,22 +7236,22 @@ do
 		------------------------------------------------------
 		-- For structs
 		------------------------------------------------------
-		__Final__:ApplyAttribute(Boolean)
-		__Final__:ApplyAttribute(String)
-		__Final__:ApplyAttribute(Number)
-		__Final__:ApplyAttribute(Function)
-		__Final__:ApplyAttribute(Table)
-		__Final__:ApplyAttribute(Userdata)
-		__Final__:ApplyAttribute(Thread)
-		__Final__:ApplyAttribute(Any)
-		__Final__:ApplyAttribute(Argument)
+		__Sealed__:ApplyAttribute(Boolean)
+		__Sealed__:ApplyAttribute(String)
+		__Sealed__:ApplyAttribute(Number)
+		__Sealed__:ApplyAttribute(Function)
+		__Sealed__:ApplyAttribute(Table)
+		__Sealed__:ApplyAttribute(Userdata)
+		__Sealed__:ApplyAttribute(Thread)
+		__Sealed__:ApplyAttribute(Any)
+		__Sealed__:ApplyAttribute(Argument)
 
 		------------------------------------------------------
 		-- For Attribute system
 		------------------------------------------------------
 		-- System.AttributeTargets
 		__Flags__:ApplyAttribute(AttributeTargets)
-		__Final__:ApplyAttribute(AttributeTargets)
+		__Sealed__:ApplyAttribute(AttributeTargets)
 
 		-- System.__Attribute__
 		__Arguments__()
@@ -7226,34 +7261,34 @@ do
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true, BeforeDefinition = true}
 		ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Unique__)
-		__Final__:ApplyAttribute(__Unique__)
+		__Sealed__:ApplyAttribute(__Unique__)
 
 		-- System.__Flags__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
 		ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Flags__)
-		__Final__:ApplyAttribute(__Flags__)
+		__Sealed__:ApplyAttribute(__Flags__)
 
 		-- System.__AttributeUsage__
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
 		ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
-		__Final__:ApplyAttribute(__AttributeUsage__)
-		__NonInheritable__:ApplyAttribute(__AttributeUsage__)
+		__Sealed__:ApplyAttribute(__AttributeUsage__)
+		__Final__:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
+
+		-- System.__Sealed__
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		ConsumePreparedAttributes(__Sealed__, AttributeTargets.Class)
+		__Unique__:ApplyAttribute(__Sealed__)
+		__Sealed__:ApplyAttribute(__Sealed__)
 
 		-- System.__Final__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true, BeforeDefinition = true}
 		ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Final__)
-		__Final__:ApplyAttribute(__Final__)
-
-		-- System.__NonInheritable__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface, Inherited = false, RunOnce = true, BeforeDefinition = true}
-		ConsumePreparedAttributes(__NonInheritable__, AttributeTargets.Class)
-		__Unique__:ApplyAttribute(__NonInheritable__)
-		__Final__:ApplyAttribute(__NonInheritable__)
+		__Sealed__:ApplyAttribute(__Final__)
 
 		-- System.__Arguments__
-		__Final__:ApplyAttribute(__Arguments__)
+		__Sealed__:ApplyAttribute(__Arguments__)
 		__Unique__:ApplyAttribute(__Arguments__)
 		__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, Inherited = false, RunOnce = true }
 		ConsumePreparedAttributes(__Arguments__, AttributeTargets.Class)
@@ -7264,29 +7299,29 @@ do
 		-- For other classes
 		------------------------------------------------------
 		-- System.Reflector
-		__Final__:ApplyAttribute(Reflector)
-		__NonInheritable__:ApplyAttribute(Reflector)
+		__Sealed__:ApplyAttribute(Reflector)
+		__Final__:ApplyAttribute(Reflector, AttributeTargets.Interface)
 
 		-- ValidatedType
-		__Final__:ApplyAttribute(ValidatedType)
-		__NonInheritable__:ApplyAttribute(ValidatedType)
+		__Sealed__:ApplyAttribute(ValidatedType)
+		__Final__:ApplyAttribute(ValidatedType, AttributeTargets.Class)
 
 		-- Event
-		__Final__:ApplyAttribute(Event)
-		__NonInheritable__:ApplyAttribute(Event)
+		__Sealed__:ApplyAttribute(Event)
+		__Final__:ApplyAttribute(Event, AttributeTargets.Class)
 
 		-- EventHandler
-		__Final__:ApplyAttribute(EventHandler)
-		__NonInheritable__:ApplyAttribute(EventHandler)
+		__Sealed__:ApplyAttribute(EventHandler)
+		__Final__:ApplyAttribute(EventHandler, AttributeTargets.Class)
 
 		-- FixedMethod
-		__Final__:ApplyAttribute(FixedMethod)
-		__NonInheritable__:ApplyAttribute(FixedMethod)
+		__Sealed__:ApplyAttribute(FixedMethod)
+		__Final__:ApplyAttribute(FixedMethod, AttributeTargets.Class)
 	end
 
 	-- More usable attributes
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Delegate__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Delegate__" [[Wrap the method/event call in a delegate function]]
@@ -7333,7 +7368,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Method + AttributeTargets.Interface, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Cache__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Cache__" [[Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .]]
@@ -7363,7 +7398,7 @@ do
 	}
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true, BeforeDefinition = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__StructType__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7418,7 +7453,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
-	__Final__()
+	__Sealed__()
 	class "__StructOrder__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7460,23 +7495,8 @@ do
 	    end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Class, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
-	class "__NonExpandable__" (function(_ENV)
-		inherit "__Attribute__"
-		doc "__NonExpandable__" [[
-			<desc>Mark the class|interface can't receive functions as new methods like :</desc>
-				System.Object.Print = function(self) print(self) end, give all object of System.Object a new method.
-				The cost should be expensive, use it carefully.
-		]]
-
-		function ApplyAttribute(self, target, targetType)
-			if _NSInfo[target] then _NSInfo[target].NonExpandable = true end
-		end
-	end)
-
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true, BeforeDefinition = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Abstract__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Abstract__" [[Mark the class as abstract class, can't be used to create objects.]]
@@ -7487,7 +7507,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__InitTable__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7508,11 +7528,11 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Require__" (function(_ENV)
 		inherit "__Attribute__"
 
-		doc "__Require__" [[Whether the method or property of the interface is required to be override]]
+		doc "__Require__" [[Whether the method or property is required to be override]]
 
 		------------------------------------------------------
 		-- Method
@@ -7520,7 +7540,7 @@ do
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = _NSInfo[owner]
 
-			if info and info.Type == TYPE_INTERFACE and type(name) == "string" then
+			if info and type(name) == "string" then
 				if targetType == AttributeTargets.Method then
 					info.RequireMethod = info.RequireMethod or {}
 					info.RequireMethod[name] = true
@@ -7533,11 +7553,11 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Optional__" (function(_ENV)
 		inherit "__Attribute__"
 
-		doc "__Optional__" [[Whether the method or property of the interface is optional to be override]]
+		doc "__Optional__" [[Whether the method or property is optional to be override]]
 
 		------------------------------------------------------
 		-- Method
@@ -7545,7 +7565,7 @@ do
 		function ApplyAttribute(self, target, targetType, owner, name)
 			local info = _NSInfo[owner]
 
-			if info and info.Type == TYPE_INTERFACE and type(name) == "string" then
+			if info and type(name) == "string" then
 				if targetType == AttributeTargets.Method then
 					info.OptionalMethod = info.OptionalMethod or {}
 					info.OptionalMethod[name] = true
@@ -7558,7 +7578,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Synthesize__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7584,7 +7604,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Event__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7622,7 +7642,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Handler__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7661,7 +7681,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property + AttributeTargets.Member, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Default__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7732,7 +7752,7 @@ do
 	}
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Setter__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7768,7 +7788,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Getter__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7804,7 +7824,7 @@ do
 	end)
 
 	__AttributeUsage__{Inherited = false, RunOnce = true, BeforeDefinition = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Doc__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7846,7 +7866,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Interface + AttributeTargets.Method, Inherited = false, RunOnce = true, BeforeDefinition = true}
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Local__" (function(_ENV)
 		inherit "__Attribute__"
 
@@ -7864,7 +7884,7 @@ do
 	end)
 
 	__AttributeUsage__{AttributeTarget = AttributeTargets.Property + AttributeTargets.Method, Inherited = false, RunOnce = true }
-	__Final__() __Unique__()
+	__Sealed__() __Unique__()
 	class "__Static__" (function(_ENV)
 		inherit "__Attribute__"
 		doc "__Static__" [[Used to mark the features as static.]]
@@ -7884,35 +7904,8 @@ do
 		end
 	end)
 
-	--[=[__AttributeUsage__{AttributeTarget = AttributeTargets.Method, Inherited = true, RunOnce = true }
-	__Final__()
-	class "__ArgumentsDemand__" (function (_ENV)
-		inherit "__Attribute__"
-		doc "__ArgumentsDemand__" [[The argument definitions of the interface's method]]
-
-		function ApplyAttribute(self, target, targetType, owner, name)
-			assert(Reflector.IsInterface(owner), "__ArgumentsDemand__ can only be used on the interface's method.")
-		end
-
-		function Clone(self)
-			-- Defualt behavior
-			local cache = CACHE_TABLE()
-
-			for _, v in ipairs(self) do tinsert(cache, v) end
-
-			self:RemoveSelf()
-
-			-- Use __Arguments__ instead
-			local obj = __Arguments__(cache)
-
-			CACHE_TABLE(cache)
-
-			return obj
-		end
-	end)--]=]
-
 	-- Static method for __Attribute__
-	__Final__() class "__Attribute__" (function(_ENV)
+	__Sealed__() class "__Attribute__" (function(_ENV)
 		local function IsDefined(target, targetType, owner, name, type)
 			local config = GetTargetAttributes(target, targetType, owner, name)
 
@@ -8211,7 +8204,7 @@ do
 		function Clone(self) end
 	end)
 
-	__Final__()
+	__Sealed__()
 	__Doc__[[The root class of other classes. Object class contains several methodes for common use.]]
 	class "Object" (function(_ENV)
 
@@ -8306,7 +8299,7 @@ do
 	_ModuleKeyWord.enum = enum
 	_ModuleKeyWord.struct = struct
 
-	__Final__()
+	__Sealed__()
 	__Doc__[[Used to create an hierarchical environment with class system settings, like : Module "Root.ModuleA" "v72"]]
 	class "Module" (function(_ENV)
 		inherit "Object"
