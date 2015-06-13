@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2011-2015 WangXH <kurapica.igas@gmail.com>
+Copyright (c) 2011-2015 WangXH <kurapica125@outlook.com>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -33,10 +33,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Author			kurapica.igas@gmail.com
+-- Author			kurapica125@outlook.com
 -- Create Date		2011/02/01
--- Last Update Date 2015/04/03
--- Version			r119
+-- Last Update Date 2015/06/04
+-- Version			r122
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -380,9 +380,13 @@ do
 
 	-- Local marker
 	LOCAL_CACHE = setmetatable({}, WEAK_KEY)
+	PrepareNameSpace_CACHE = setmetatable({}, WEAK_KEY)
 
 	function SetLocal(flag) LOCAL_CACHE[running() or 0] = flag or nil end
 	function IsLocal() return LOCAL_CACHE[running() or 0] end
+
+	function PrepareNameSpace(target) PrepareNameSpace_CACHE[running() or 0] = target end
+	function GetPrepareNameSpace() return PrepareNameSpace_CACHE[running() or 0] end
 
 	-- Equal Check
 	local function checkEqual(obj1, obj2, cache)
@@ -430,10 +434,6 @@ do
 		return result
 	end
 
-	-- Reduce cache table cost
-	local function keepArgsInner(...) yield( running() ) return ... end
-	function KeepArgs(...) return CallThread(keepArgsInner, ...) end
-
 	-- Keyword access system
 	local _KeywordAccessorInfo = {
 		GetKeyword = function(self, owner, key)
@@ -475,8 +475,8 @@ do
 
 			-- Check self
 			if ns.FinalFeatures and ns.FinalFeatures[name] then return true end
-			if ns.Method and ns.Method[name] then return ns.IsFinal or false end
-			if ns.Property and ns.Property[name] then return ns.IsFinal or false end
+			if ns.Method and ns.Method[name] then return isSuper and ns.IsFinal or false end
+			if ns.Property and ns.Property[name] then return isSuper and ns.IsFinal or false end
 
 			-- Check Super class
 			if ns.SuperClass then
@@ -546,11 +546,7 @@ do
 							ckv = ckv * 2
 						end
 
-						local thread = KeepArgs(unpack(rCache))
-
-						CACHE_TABLE(rCache)
-
-						return select(2, resume(thread))
+						return unpack(rCache)
 					end
 				else
 					return info.Cache[value]
@@ -605,7 +601,33 @@ do
 						operTar = oper.DefaultFunc
 						if operTar then
 							value = operTar(self)
-							if value ~= nil then self[key] = value end
+							if value ~= nil then
+								if oper.Set == false then
+									operTar = oper.Field
+
+									-- Check container
+									local container
+
+									if oper.SetWeak then
+										container = info.WeakStaticFields
+										if not container then
+											container = setmetatable({}, WEAK_VALUE)
+											info.WeakStaticFields = container
+										end
+									else
+										container = info.StaticFields
+										if not container then
+											container = {}
+											info.StaticFields = container
+										end
+									end
+
+									-- Set the value
+									container[operTar] = value
+								else
+									self[key] = value
+								end
+							end
 						else
 							value = default
 						end
@@ -637,6 +659,8 @@ do
 				local oper = info.Property[key]
 
 				if oper and oper.IsStatic then
+					if oper.Set == false then error(("%s can't be written."):format(key), 2) end
+
 					-- Property
 					if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
 					if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
@@ -1407,11 +1431,11 @@ do
 					end
 
 					-- Auto generate Field or methods
-					if prop.Set == nil and not prop.SetMethod and prop.Get == nil and not prop.GetMethod then
+					if (prop.Set == nil or (prop.Set == false and prop.DefaultFunc)) and not prop.SetMethod and prop.Get == nil and not prop.GetMethod then
 						if prop.Field == true then prop.Field = nil end
 						local field = prop.Field or "_" .. info.Name:match("^_*(.-)$") .. "_" .. uname
 
-						if set.Synthesize then
+						if set.Synthesize and prop.Set == nil then
 							local getName, setName
 
 							if set.Synthesize == __Synthesize__.NameCase.Pascal then
@@ -1647,8 +1671,6 @@ do
 						else
 							prop.Field = field
 						end
-					else
-						prop.DefaultFunc = nil
 					end
 
 					-- Auto generate Default
@@ -1738,6 +1760,7 @@ do
 			-- Check namespace
 			if info.NameSpace then
 				if key == _NSInfo[info.NameSpace].Name then
+					value = info.NameSpace
 					rawset(self, key, value)
 					return value
 				elseif info.NameSpace[key] then
@@ -1916,7 +1939,7 @@ do
 		depth = tonumber(depth) or 1
 		name = name or env
 		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
-		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
+		local ns = not IsLocal() and (GetPrepareNameSpace() == nil and GetNameSpace4Env(fenv) or GetPrepareNameSpace()) or nil
 
 		-- Create interface or get it
 		local IF, info
@@ -1926,7 +1949,7 @@ do
 			info = _NSInfo[IF]
 
 			if info and info.Type and info.Type ~= TYPE_INTERFACE then
-				error(("%s is existed as %s, not interface."):format(name, tostring(info.Type)), depth + 1)
+				error(("%s is existed as %s, not interface."):format(tostring(name), tostring(info.Type)), depth + 1)
 			end
 
 			name = info.Name
@@ -2250,7 +2273,7 @@ do
 							local rMeta = _KeyMeta[k] and k or "_"..k
 							local oldValue = info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta]
 
-							SaveFixedMethod(info.MetaTable, rMeta, value, info.Owner)
+							SaveFixedMethod(info.MetaTable, rMeta, v, info.Owner)
 
 							UpdateMeta4Children(rMeta, info.ChildClass, oldValue, info.MetaTable["0" .. rMeta] or info.MetaTable[rMeta])
 						else
@@ -2817,7 +2840,27 @@ do
 					operTar = oper.DefaultFunc
 					if operTar then
 						value = operTar(self)
-						if value ~= nil then self[key] = value end
+						if value ~= nil then
+							if oper.Set == false then
+								operTar = oper.Field
+
+								-- Check container
+								local container = self
+
+								if oper.SetWeak then
+									container = rawget(self, "__WeakFields")
+									if type(container) ~= "table" then
+										container = setmetatable({}, WEAK_VALUE)
+										rawset(self, "__WeakFields", container)
+									end
+								end
+
+								-- Set the value
+								rawset(container, operTar, value)
+							else
+								self[key] = value
+							end
+						end
 					else
 						value = default
 					end
@@ -2862,6 +2905,7 @@ do
 				end
 			else
 				-- Property
+				if oper.Set == false then error(("%s can't be written."):format(key), 2) end
 				if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
 				if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
@@ -2994,7 +3038,28 @@ do
 						operTar = oper.DefaultFunc
 						if operTar then
 							value = operTar(self)
-							if value ~= nil then self[key] = value end
+							if value ~= nil then
+								if oper.Set == false then
+									operTar = oper.Field
+
+									-- Check container
+									local container = self
+									local default = oper.Default
+
+									if oper.SetWeak then
+										container = rawget(self, "__WeakFields")
+										if type(container) ~= "table" then
+											container = setmetatable({}, WEAK_VALUE)
+											rawset(self, "__WeakFields", container)
+										end
+									end
+
+									-- Set the value
+									rawset(container, operTar, value)
+								else
+									self[key] = value
+								end
+							end
 						else
 							value = default
 						end
@@ -3037,6 +3102,7 @@ do
 					end
 				else
 					-- Property
+					if oper.Set == false then error(("%s can't be written."):format(key), 2) end
 					if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
 					if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
@@ -3120,20 +3186,23 @@ do
 				local noArgMethod = nil
 
 				while getmetatable(fixedMethod) do
-					fixedMethod.Thread = nil
+					if fixedMethod.ArgCache then
+						CACHE_TABLE(fixedMethod.ArgCache)
+					end
+					fixedMethod.ArgCache = nil
 
 					if #fixedMethod == 0 and initTable then
 						noArgMethod = noArgMethod or fixedMethod
 					elseif fixedMethod:MatchArgs(obj, ...) then
-						if fixedMethod.Thread then
-							return fixedMethod.Method(select(2, resume(fixedMethod.Thread)))
+						if fixedMethod.ArgCache then
+							return fixedMethod.Method(unpack(fixedMethod.ArgCache))
 						else
 							return fixedMethod.Method(obj, ...)
 						end
-					elseif fixedMethod.Thread then
+					elseif fixedMethod.ArgCache then
 						-- Remove argument container
-						resume(fixedMethod.Thread)
-						fixedMethod.Thread = nil
+						CACHE_TABLE(fixedMethod.ArgCache)
+						fixedMethod.ArgCache = nil
 					end
 
 					fixedMethod = fixedMethod.Next
@@ -3212,9 +3281,9 @@ do
 	------------------------------------
 	function class(env, name, depth)
 		depth = tonumber(depth) or 1
-		name = name or  env
+		name = name or env
 		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
-		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
+		local ns = not IsLocal() and (GetPrepareNameSpace() == nil and GetNameSpace4Env(fenv) or GetPrepareNameSpace()) or nil
 
 		-- Create class or get it
 		local cls, info
@@ -3224,7 +3293,7 @@ do
 			info = _NSInfo[cls]
 
 			if info and info.Type and info.Type ~= TYPE_CLASS then
-				error(("%s is existed as %s, not class."):format(name, tostring(info.Type)), depth + 1)
+				error(("%s is existed as %s, not class."):format(tostring(name), tostring(info.Type)), depth + 1)
 			end
 
 			name = info.Name
@@ -3569,7 +3638,7 @@ do
 		name = name or env
 
 		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
-		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
+		local ns = not IsLocal() and (GetPrepareNameSpace() == nil and GetNameSpace4Env(fenv) or GetPrepareNameSpace()) or nil
 
 		-- Create class or get it
 		local enm, info
@@ -3579,7 +3648,7 @@ do
 			info = _NSInfo[enm]
 
 			if info and info.Type and info.Type ~= TYPE_ENUM then
-				error(("%s is existed as %s, not enumeration."):format(name, tostring(info.Type)), depth + 1)
+				error(("%s is existed as %s, not enumeration."):format(tostring(name), tostring(info.Type)), depth + 1)
 			end
 
 			name = info.Name
@@ -3955,7 +4024,7 @@ do
 		depth = tonumber(depth) or 1
 		name = name or env
 		local fenv = type(env) == "table" and env or getfenv(depth + 1) or _G
-		local ns = not IsLocal() and GetNameSpace4Env(fenv) or nil
+		local ns = not IsLocal() and (GetPrepareNameSpace() == nil and GetNameSpace4Env(fenv) or GetPrepareNameSpace()) or nil
 
 		-- Create class or get it
 		local strt, info
@@ -3965,7 +4034,7 @@ do
 			info = _NSInfo[strt]
 
 			if info and info.Type and info.Type ~= TYPE_STRUCT then
-				error(("%s is existed as %s, not struct."):format(name, tostring(info.Type)), depth + 1)
+				error(("%s is existed as %s, not struct."):format(tostring(name), tostring(info.Type)), depth + 1)
 			end
 
 			name = info.Name
@@ -5453,6 +5522,15 @@ do
 				end
 			end
 		end
+
+		doc "GetDefinitionEnvironmentOwner" [[
+			<desc>Get the owner from a definition environment</desc>
+			<param name="env">The environment like the return of (class "MyCls")</param>
+			<return>the owner</return>
+		]]
+		function GetDefinitionEnvironmentOwner(env)
+			if type(env) == "table" then return env[OWNER_FIELD] end
+		end
 	end)
 end
 
@@ -6163,22 +6241,10 @@ do
 
 				-- Keep arguments in thread, so cache can be recycled
 				if argsChanged then
-					count = #cache
-
-					if count == 1 then
-						self.Thread = KeepArgs(cache[1])
-					elseif count == 2 then
-						self.Thread = KeepArgs(cache[1], cache[2])
-					elseif count == 3 then
-						self.Thread = KeepArgs(cache[1], cache[2], cache[3])
-					elseif count == 4 then
-						self.Thread = KeepArgs(cache[1], cache[2], cache[3], cache[4])
-					else
-						self.Thread = KeepArgs(unpack(cache, 1, count))
-					end
+					self.ArgCache = cache
+				else
+					CACHE_TABLE(cache)
 				end
-
-				CACHE_TABLE(cache)
 
 				return true
 			end
@@ -6343,21 +6409,24 @@ do
 
 			-- FixedMethod
 			while getmetatable(matchFunc) do
-				matchFunc.Thread = nil
+				if matchFunc.ArgCache then
+					CACHE_TABLE(matchFunc.ArgCache)
+				end
+				matchFunc.ArgCache = nil
 
 				if MatchArgs(matchFunc, ...) then
-					if matchFunc.Thread then
-						return matchFunc.Method( select(2, resume(matchFunc.Thread)) )
+					if matchFunc.ArgCache then
+						return matchFunc.Method( unpack(matchFunc.ArgCache) )
 					else
 						return matchFunc.Method( ... )
 					end
 				end
 
 				-- Remove argument container
-				if matchFunc.Thread then
-					resume(matchFunc.Thread)
-					matchFunc.Thread = nil
+				if matchFunc.ArgCache then
+					CACHE_TABLE(matchFunc.ArgCache)
 				end
+				matchFunc.ArgCache = nil
 
 				matchFunc = matchFunc.Next
 			end
@@ -7142,18 +7211,7 @@ do
 				-- Convert type to Argument
 				if getmetatable(arg) == ValidatedType then
 					arg = Argument { Type = arg }
-
-					-- Check optional args
-					if arg.Type:Is(nil) then
-						if not self.MinArgs then self.MinArgs = i - 1 end
-					elseif self.MinArgs then
-						-- Only optional args can be defined after optional args
-						error(_Error_Header .. _Error_NotOptional:format(i))
-					end
-
 					self[i] = arg
-
-					return
 				else
 					error(_Error_Header .. _Error_NotArgument:format(i))
 				end
@@ -7186,6 +7244,12 @@ do
 				elseif self.MinArgs then
 					-- Only optional args can be defined after optional args
 					error(_Error_Header .. _Error_NotOptional:format(i))
+				end
+
+				-- Auto generate Default
+				if arg.Default == nil and arg.Type and arg.Type:Is(nil) and #(arg.Type) == 1 then
+					local info = _NSInfo[arg.Type[1]]
+					if info and (info.Type == TYPE_STRUCT or info.Type == TYPE_ENUM) then arg.Default = info.Default end
 				end
 
 				return
@@ -7904,6 +7968,35 @@ do
 		end
 	end)
 
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true, BeforeDefinition = true}
+	__Sealed__() __Unique__()
+	class "__NameSpace__" (function(_ENV)
+		inherit "__Attribute__"
+		doc "__NameSpace__" [[Used to set the namespace directly.]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self) return PrepareNameSpace(nil) end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		function __NameSpace__(self, ns)
+			if getmetatable(ns) == TYPE_NAMESPACE then
+				PrepareNameSpace(ns)
+			elseif type(ns) == "string" then
+				PrepareNameSpace(BuildNameSpace(GetDefaultNameSpace(), ns))
+			elseif ns == nil or ns == false then
+				PrepareNameSpace(false)
+			else
+				error([[Usage: __NameSpace__(name|nil|false)]], 2)
+			end
+
+			return Super(self)
+		end
+	end)
+
 	-- Static method for __Attribute__
 	__Sealed__() class "__Attribute__" (function(_ENV)
 		local function IsDefined(target, targetType, owner, name, type)
@@ -8068,9 +8161,7 @@ do
 					CACHE_TABLE(cache)
 					return r1, r2, r3
 				else
-					local thread = KeepArgs(unpack(cache))
-					CACHE_TABLE(cache)
-					return select(2, resume(thread))
+					return unpack(cache)
 				end
 			else
 				return unpack(config)
