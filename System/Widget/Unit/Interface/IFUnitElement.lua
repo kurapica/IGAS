@@ -132,7 +132,7 @@ interface "IFUnitElement"
 				self:Refresh()
 			end
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	------------------------------------------------------

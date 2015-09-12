@@ -334,10 +334,10 @@ class "UIObject"
 	end
 
 	__Doc__[[The widget object's name, it's parent can use the name to access it by parent[self.Name] ]]
-	property "Name" { Set = SetName, Field = "__Name", Type = String + nil }
+	property "Name" { Set = SetName, Field = "__Name", Type = String }
 
 	__Doc__[[the widget object's parent widget object, can be virtual or not.]]
-	property "Parent" { Type = UIObject + nil }
+	property "Parent" { Type = UIObject }
 
 	------------------------------------------------------
 	-- Dispose

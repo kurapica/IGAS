@@ -323,7 +323,7 @@ class "Region"
 			self:SetWidth(size.width)
 			self:SetHeight(size.height)
 		end,
-		Type = System.Widget.Size,
+		Type = Size,
 	}
 
 	__Doc__[[the location of the region]]

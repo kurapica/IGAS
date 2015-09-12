@@ -874,7 +874,7 @@ class "List"
 			}
 			return self.__Keys
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[a table that contains Text of the items]]
@@ -894,7 +894,7 @@ class "List"
 			self.__Items = self.__Items or {}
 			return self.__Items
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[a table that contains icons of the items]]
@@ -907,7 +907,7 @@ class "List"
 			self.__Icons = self.__Icons or {}
 			return self.__Icons
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[a table that contains frames of the items]]
@@ -920,7 +920,7 @@ class "List"
 			self.__Frames = self.__Frames or {}
 			return self.__Frames
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[the item's count]]
@@ -960,7 +960,7 @@ class "List"
 		Get = function(self)
 			return self.__ChooseItem or 0
 		end,
-		Type = Number + nil,
+		Type = NumberNil,
 	}
 
 	__Doc__[[whether show tooltip or not]]

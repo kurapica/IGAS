@@ -381,7 +381,7 @@ interface "IFContainer"
 		<param name="layout">System.Widget.LayoutPanel class</param>
 		]]
 	function SetLayout(self, layout)
-		layout = Reflector.Validate(-LayoutPanel, layout, "layout", "Usage : IFContainer:SetLayout(layout) : ")
+		assert(Reflector.IsSuperClass(layout, LayoutPanel), "Usage : IFContainer:SetLayout(layout) : the layout must be a child class of the LayoutPanel")
 
 		-- just keep safe
 		if self.__IFContainer_NoSetPanel then return end
@@ -467,7 +467,7 @@ interface "IFContainer"
 	property "Layout" {
 		Set = SetLayout,
 		Get = GetLayout,
-		Type = - LayoutPanel,
+		--Type = - LayoutPanel,
 	}
 
 	__Doc__[[The element's count in the layout panel]]
@@ -483,7 +483,7 @@ interface "IFContainer"
 			self:GetChild("Panel").AutoLayout = value
 		end
 	end )
-	property "AutoLayout" { Type = System.Boolean }
+	property "AutoLayout" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor

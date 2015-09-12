@@ -361,13 +361,13 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("action", value)
 		end,
-		Type = System.Number + nil,
+		Type = NumberNil,
 	}
 
 	__Doc__[[The action page of the action button if type is 'action']]
-	property "ActionPage" { Type = System.Number + nil }
+	property "ActionPage" { Type = NumberNil }
 
 	__Doc__[[Whether the action button is used in the main page]]
-	property "MainPage" { Type = System.Boolean }
+	property "MainPage" { Type = Boolean }
 
 endinterface "IFActionHandler"

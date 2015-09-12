@@ -405,7 +405,7 @@ interface "IFSecurePanel"
 	property "Orientation" { Type = Orientation, Default = Orientation.HORIZONTAL }
 
 	__Doc__[[The element's type]]
-	property "ElementType" { Type = -IFSecureHandler }
+	property "ElementType" { Type = Class }
 
 	__Doc__[[The horizontal spacing]]
 	__Handler__( OnPropertyChanged )
@@ -444,11 +444,11 @@ interface "IFSecurePanel"
 	}
 
 	__Doc__[[The prefix for the element's name]]
-	property "ElementPrefix" { Type = System.String + nil, Default = "Element" }
+	property "ElementPrefix" { Type = String, Default = "Element" }
 
 	__Doc__[[Whether the elementPanel should keep it's max size]]
 	__Handler__( OnPropertyChanged )
-	property "KeepMaxSize" { Type = System.Boolean }
+	property "KeepMaxSize" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

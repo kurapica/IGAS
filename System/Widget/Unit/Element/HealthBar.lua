@@ -141,19 +141,19 @@ class "HealthBar"
 	------------------------------------------------------
 	__Doc__[[Whether use the debuff color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseDebuffColor" { Type = System.Boolean, }
+	property "UseDebuffColor" { Type = Boolean, }
 
 	__Doc__[[Whether use the unit's class color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseClassColor" { Type = System.Boolean, }
+	property "UseClassColor" { Type = Boolean, }
 
 	__Doc__[[Whether smoothing the color changing]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseSmoothColor" { Type = System.Boolean, }
+	property "UseSmoothColor" { Type = Boolean, }
 
 	__Doc__[[The default status bar's color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "DefaultColor" { Type = ColorType + nil }
+	property "DefaultColor" { Type = ColorType }
 
 	------------------------------------------------------
 	-- Constructor
@@ -190,19 +190,19 @@ class "HealthBarFrequent"
 	------------------------------------------------------
 	__Doc__[[Whether use the debuff color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseDebuffColor" { Type = System.Boolean, }
+	property "UseDebuffColor" { Type = Boolean, }
 
 	__Doc__[[Whether use the unit's class color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseClassColor" { Type = System.Boolean, }
+	property "UseClassColor" { Type = Boolean, }
 
 	__Doc__[[Whether smoothing the color changing]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "UseSmoothColor" { Type = System.Boolean, }
+	property "UseSmoothColor" { Type = Boolean, }
 
 	__Doc__[[The default status bar's color]]
 	__Handler__(HealthBar_OnStateChanged)
-	property "DefaultColor" { Type = ColorType + nil }
+	property "DefaultColor" { Type = ColorType }
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------

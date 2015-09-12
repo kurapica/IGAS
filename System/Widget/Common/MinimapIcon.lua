@@ -253,7 +253,7 @@ class "MinimapIcon"
 					["angel"] = self.__MiniMapBtn.__Position["angel"],
 					}
 		end,
-		Type = MiniMapPosition + nil,
+		Type = MiniMapPosition,
 	}
 
 	__Doc__[[the visible of the icon]]

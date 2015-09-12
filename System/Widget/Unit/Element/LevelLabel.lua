@@ -44,10 +44,10 @@ class "LevelLabel"
 	------------------------------------------------------
 	__Doc__[[The level's format like 'Lvl %s', default '%s']]
 	__Handler__( UpdateLabel )
-	property "LevelFormat" { Type = System.String, Default = "%s" }
+	property "LevelFormat" { Type = String, Default = "%s" }
 
 	__Handler__( UpdateLabel )
-	property "Value" { Type = System.Number + nil }
+	property "Value" { Type = NumberNil }
 
 	------------------------------------------------------
 	-- Constructor

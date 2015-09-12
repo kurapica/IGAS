@@ -121,7 +121,7 @@ class "Slider"
 			self:SetThumbTexture(texture, self.Layer)
 		end,
 		Get = "GetThumbTexture",
-		Type = Texture + nil,
+		Type = Texture,
 	}
 
 	__Doc__[[the texture file path for the slider thumb]]
@@ -132,7 +132,7 @@ class "Slider"
 		Set = function(self, texture)
 			self:SetThumbTexture(texture, self.Layer)
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the layer used for drawing the filled-in portion of the slider]]

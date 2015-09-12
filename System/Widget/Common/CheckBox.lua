@@ -152,11 +152,11 @@ class "CheckBox"
 
 	__Doc__[[the text to be displyed when checked if set]]
 	__Handler__( UpdateText )
-	property "TrueText" { Type = LocaleString + nil }
+	property "TrueText" { Type = LocaleString }
 
 	__Doc__[[the text to be displyed when un-checked if set]]
 	__Handler__( UpdateText )
-	property "FalseText" { Type = LocaleString + nil }
+	property "FalseText" { Type = LocaleString }
 
 	__Doc__[[the tooltip to be displyed when mouse over]]
 	__Handler__( function(self, tip)
@@ -178,7 +178,7 @@ class "CheckBox"
 			end
 		end
 	end )
-	property "Tooltip" { Type = LocaleString + nil }
+	property "Tooltip" { Type = LocaleString }
 
 	------------------------------------------------------
 	-- Constructor

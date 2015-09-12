@@ -33,7 +33,7 @@ class "ComboBar"
 				self.Glow.Deactivate.Playing = true
 			end
 		end )
-		property "Activated" { Type = System.Boolean }
+		property "Activated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -97,7 +97,7 @@ class "ComboBar"
 			self[i].Activated = i <= value
 		end
 	end )
-	property "Value" { Type = System.Number }
+	property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler

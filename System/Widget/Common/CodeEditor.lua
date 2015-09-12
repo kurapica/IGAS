@@ -2284,23 +2284,23 @@ class "CodeEditor"
 	------------------------------------------------------
 	__Doc__[[color for normal code]]
 	__Handler__( RefreshText )
-	property "DefaultColor" { Type = System.Widget.ColorType + nil, Default = _DefaultColor }
+	property "DefaultColor" { Type = ColorType, Default = _DefaultColor }
 
 	__Doc__[[color for comment]]
 	__Handler__( RefreshText )
-	property "CommentColor" { Type = System.Widget.ColorType + nil, Default = _CommentColor }
+	property "CommentColor" { Type = ColorType, Default = _CommentColor }
 
 	__Doc__[[color for string]]
 	__Handler__( RefreshText )
-	property "StringColor" { Type = System.Widget.ColorType + nil, Default = _StringColor }
+	property "StringColor" { Type = ColorType, Default = _StringColor }
 
 	__Doc__[[color for number]]
 	__Handler__( RefreshText )
-	property "NumberColor" { Type = System.Widget.ColorType + nil, Default = _NumberColor }
+	property "NumberColor" { Type = ColorType, Default = _NumberColor }
 
 	__Doc__[[color for instruction]]
 	__Handler__( RefreshText )
-	property "InstructionColor" { Type = System.Widget.ColorType + nil, Default = _InstructionColor }
+	property "InstructionColor" { Type = ColorType, Default = _InstructionColor }
 
 	__Doc__[[the full text contains color token]]
 	property "FullText" {
@@ -2311,7 +2311,7 @@ class "CodeEditor"
 
 	__Doc__[[The auto complete list like {"if", "then", "else"}]]
 	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
-	property "AutoCompleteList" { Type = System.Table }
+	property "AutoCompleteList" { Type = Table }
 
 	------------------------------------------------------
 	-- Event Handlers

@@ -363,6 +363,6 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("spell", value)
 		end,
-		Type = System.String + System.Number + nil,
+		Type = StringNumber,
 	}
 endinterface "IFActionHandler"

@@ -91,7 +91,7 @@ class "ActionButton"
 		Set = function(self, value)
 			self:GetChild("Icon").TexturePath = value
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the action's count, like item's count, accessed by IFActionHandler]]
@@ -102,7 +102,7 @@ class "ActionButton"
 		Set = function(self, value)
 			self:GetChild("Count").Text = tostring(value or "")
 		end,
-		Type = System.String + System.Number + nil,
+		Type = StringNumber,
 	}
 
 	__Doc__[[the action's text, accessed by IFActionHandler]]
@@ -113,7 +113,7 @@ class "ActionButton"
 		Set = function(self, value)
 			self:GetChild("Name").Text = value or ""
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the action button's hotkey]]
@@ -125,7 +125,7 @@ class "ActionButton"
 			self:GetChild("HotKey").Text = value or RANGE_INDICATOR
 			UpdateHotKey(self)
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the visible of the flash, accessed by IFActionHandler]]
@@ -146,7 +146,7 @@ class "ActionButton"
 		Set = function(self, value)
 			self:GetChild("FlyoutArrow").Visible = value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[whether the flyout action bar is shown, accessed by IFActionHandler]]
@@ -158,12 +158,12 @@ class "ActionButton"
 			self:GetChild("FlyoutBorder").Visible = value
 			self:GetChild("FlyoutBorderShadow").Visible = value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[whether the target is in range, accessed by IFActionHandler]]
 	__Handler__( UpdateHotKey )
-	property "InRange" { Type = System.Boolean+nil }
+	property "InRange" { Type = BooleanNil }
 
 	__Doc__[[whether the action is usable, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
@@ -173,7 +173,7 @@ class "ActionButton"
 			self:GetChild("Icon"):SetVertexColor(0.4, 0.4, 0.4)
 		end
 	end )
-	property "Usable" { Type = System.Boolean, Default = true }
+	property "Usable" { Type = Boolean, Default = true }
 
 	__Doc__[[whether the action is auto castable, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
@@ -192,7 +192,7 @@ class "ActionButton"
 			end
 		end
 	end )
-	property "AutoCastable" { Type = System.Boolean }
+	property "AutoCastable" { Type = Boolean }
 
 	__Doc__[[whether the action is now auto-casting, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
@@ -203,7 +203,7 @@ class "ActionButton"
 			if self:GetChild("AutoCastShine") then self:GetChild("AutoCastShine"):Stop() end
 		end
 	end )
-	property "AutoCasting" { Type = System.Boolean }
+	property "AutoCasting" { Type = Boolean }
 
 	__Doc__[[Whether an indicator should be shown for equipped item]]
 	__Handler__( function (self, value)

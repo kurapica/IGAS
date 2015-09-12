@@ -568,10 +568,10 @@ class "DropDownList"
 		}
 
 		__Doc__[[the icon to be displayed on the dropDownMenuButton]]
-		property "Icon" { Type = String + nil }
+		property "Icon" { Type = String }
 
 		__Doc__[[the sub pop-up menu for the dropDownMenuButton]]
-		property "DropDownList" { Type = DropDownList + Region + nil }
+		property "DropDownList" {  }
 
 		__Doc__[[the displayed text]]
 		property "Text" { Type = LocaleString }
@@ -1564,7 +1564,7 @@ class "DropDownList"
 		Set = function(self, value)
 			self.__DdList.__DisableAutoHide = not value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

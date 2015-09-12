@@ -48,7 +48,7 @@ interface "IFThreat"
 				end
 			end
 		end,
-		Type = System.Number,
+		Type = Number,
 	}
 
 	------------------------------------------------------

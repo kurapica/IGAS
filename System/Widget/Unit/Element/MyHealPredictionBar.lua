@@ -54,7 +54,7 @@ class "MyHealPredictionBar"
 				value.OnSizeChanged = value.OnSizeChanged + OnSizeChanged
 			end
 		end,
-		Type = StatusBar + String,
+		--Type = StatusBarString,
 	}
 
 	------------------------------------------------------

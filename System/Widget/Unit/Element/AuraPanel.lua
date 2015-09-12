@@ -258,11 +258,11 @@ class "AuraPanel"
 
 			self.__AuraPanelFilter = filter
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[Whether should highlight auras that casted by the player]]
-	property "HighLightPlayer" { Type = System.Boolean }
+	property "HighLightPlayer" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

@@ -228,7 +228,7 @@ class "DataGrid"
 				return self.__CellType or "Label"
 			end,
 
-			Type = DataGridCellType + nil,
+			Type = DataGridCellType,
 		}
 
 		__Doc__[[the default key list for the column's cells]]
@@ -247,7 +247,7 @@ class "DataGrid"
 			Get = function(self)
 				return self.__Keys
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the default text list for the column's cells]]
@@ -266,7 +266,7 @@ class "DataGrid"
 			Get = function(self)
 				return self.__Items
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the column index]]
@@ -453,7 +453,7 @@ class "DataGrid"
 
 				error("Can't get the cellType for multi columns.", 2)
 			end,
-			Type = DataGridCellType + nil,
+			Type = DataGridCellType,
 		}
 
 		__Doc__[[the columns default key list for cells]]
@@ -474,7 +474,7 @@ class "DataGrid"
 
 				error("Can't get the keys for multi columns.", 2)
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the columns defalut item list for cells]]
@@ -495,7 +495,7 @@ class "DataGrid"
 
 				error("Can't get the items for multi columns.", 2)
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the columns default backColor for cells]]
@@ -572,7 +572,7 @@ class "DataGrid"
 				return self.__CellType or self.Parent:GetChild("Column"..self.ColumnIndex).CellType
 			end,
 
-			Type = DataGridCellType + nil,
+			Type = DataGridCellType,
 		}
 
 		__Doc__[[the cell value]]
@@ -705,7 +705,7 @@ class "DataGrid"
 			Get = function(self)
 				return (self.__CellType and self.__Keys) or self.Parent:GetChild("Column"..self.ColumnIndex).Keys
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the cell's item list]]
@@ -724,7 +724,7 @@ class "DataGrid"
 			Get = function(self)
 				return (self.__CellType and self.__Items) or self.Parent:GetChild("Column"..self.ColumnIndex).Items
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the cell's row index]]
@@ -802,7 +802,7 @@ class "DataGrid"
 				error("Can't get the celltype for multi cells.", 2)
 			end,
 
-			Type = DataGridCellType + nil,
+			Type = DataGridCellType,
 		}
 
 		__Doc__[[the cells value]]
@@ -881,7 +881,7 @@ class "DataGrid"
 
 				error("Can't get the keys for multi cells.", 2)
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the text list for the cells]]
@@ -906,7 +906,7 @@ class "DataGrid"
 
 				error("Can't get the items for multi cells.", 2)
 			end,
-			Type = Table + nil,
+			Type = Table,
 		}
 
 		__Doc__[[the backColor for the cells]]

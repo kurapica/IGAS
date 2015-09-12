@@ -277,7 +277,27 @@ interface "IFActionHandler"
 		<param name="container">the container frame</param>
 		<param name="id" optional="true">the container index, un-register if false, use container's id if true</param>
 	]]
-	__Static__()  __Arguments__{ Region, Argument{ Type = Number + Boolean + nil, Default = true } }
+	__Static__()  __Arguments__{ Region, Argument(Number) }
+	function RegisterContainer(container, id)
+		container.OnShow = container.OnShow - OnShowOrHide
+		container.OnHide = container.OnHide - OnShowOrHide
+		for k, v in pairs(_ContainerMap) do
+			for i, c in ipairs(v) do
+				if c == container then
+					tremove(c, i)
+					break
+				end
+			end
+		end
+
+		_ContainerMap[id] = _ContainerMap[id] or {}
+		tinsert(_ContainerMap[id], 1, container)
+
+		container.OnShow = container.OnShow + OnShowOrHide
+		container.OnHide = container.OnHide + OnShowOrHide
+	end
+
+	__Static__()  __Arguments__{ Region, Argument(Boolean, true, true) }
 	function RegisterContainer(container, id)
 		container.OnShow = container.OnShow - OnShowOrHide
 		container.OnHide = container.OnHide - OnShowOrHide
@@ -290,14 +310,10 @@ interface "IFActionHandler"
 			end
 		end
 		if id ~= false then
-			id = type(id) == "number" and id or 100
+			id = 100
 
 			_ContainerMap[id] = _ContainerMap[id] or {}
-			if id == 100 then
-				tinsert(_ContainerMap[id], container)
-			else
-				tinsert(_ContainerMap[id], 1, container)
-			end
+			tinsert(_ContainerMap[id], container)
 
 			container.OnShow = container.OnShow + OnShowOrHide
 			container.OnHide = container.OnHide + OnShowOrHide

@@ -55,7 +55,7 @@ class "SpellActivationAlert"
 			self.OuterGlow.AnimOut.Playing = not value
 			self.Ants.AnimOut.Playing = not value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[whether the fadeout animation is playing]]
@@ -75,7 +75,7 @@ class "SpellActivationAlert"
 			self.OuterGlow.AnimOut.Playing = value
 			self.Ants.AnimOut.Playing = value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

@@ -56,15 +56,15 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("custom", value)
 		end,
-		Type = String + Function + nil,
+		--Type = StringFunction,
 	}
 
 	__Doc__[[The custom text]]
-	property "CustomText" { Type = String + nil }
+	property "CustomText" { Type = String }
 
 	__Doc__[[The custom texture path]]
-	property "CustomTexture" { Type = String + nil }
+	property "CustomTexture" { Type = String }
 
 	__Doc__[[The custom tooltip]]
-	property "CustomTooltip" { Type = String + nil }
+	property "CustomTooltip" { Type = String }
 endinterface "IFActionHandler"

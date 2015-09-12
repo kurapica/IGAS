@@ -186,7 +186,7 @@ interface "IFClassPower"
 	__Optional__() property "Value" { Type = Number }
 
 	__Doc__[[which is used to receive the unit's class power's type]]
-	__Optional__() property "ClassPowerType" { Type = Number + nil }
+	__Optional__() property "ClassPowerType" { Type = NumberNil }
 
 	------------------------------------------------------
 	-- Event Handler

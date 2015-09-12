@@ -249,7 +249,7 @@ interface "IFElementPanel"
 	property "TopToBottom" { Type = Boolean, Default = true }
 
 	__Doc__[[The element's type]]
-	property "ElementType" { Type = - Region }
+	property "ElementType" { Type = Class }
 
 	__Doc__[[The horizontal spacing]]
 	__Handler__( RefreshElement )

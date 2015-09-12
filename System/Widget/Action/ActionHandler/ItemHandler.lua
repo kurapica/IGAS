@@ -273,7 +273,7 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("item", value and GetItemInfo(value) and select(2, GetItemInfo(value)):match("item:%d+") or nil)
 		end,
-		Type = System.String + System.Number + nil,
+		Type = StringNumber,
 	}
 
 endinterface "IFActionHandler"

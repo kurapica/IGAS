@@ -229,7 +229,7 @@ class "CastBar"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The delay time format string like "%.1f"]]
-	property "DelayFormatString" { Type = String + nil, Default = _DELAY_TEMPLATE }
+	property "DelayFormatString" { Type = String, Default = _DELAY_TEMPLATE }
 
 	------------------------------------------------------
 	-- Event Handler

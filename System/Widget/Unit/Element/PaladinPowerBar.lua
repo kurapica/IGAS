@@ -61,7 +61,7 @@ class "PaladinPowerBar"
 			end
 			self.__Min, self.__Max = value.min, value.max
 		end,
-		Type = System.MinMax,
+		Type = MinMax,
 	}
 	-- Value
 	property "Value" {
@@ -102,7 +102,7 @@ class "PaladinPowerBar"
 				self.__Value = value
 			end
 		end,
-		Type = System.Number,
+		Type = Number,
 	}
 
 	------------------------------------------------------

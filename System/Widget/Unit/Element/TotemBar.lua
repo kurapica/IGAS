@@ -40,7 +40,7 @@ class "TotemBar"
 			Set = function(self, value)
 				self:GetChild("Icon").TexturePath = value
 			end,
-			Type = System.String + nil,
+			Type = String,
 		}
 
 		local function OnClick(self)

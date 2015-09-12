@@ -103,7 +103,7 @@ interface "IFPetGroup"
 		Set = function(self, value)
 			Task.NoCombatCall(self.GroupHeader.SetAttribute, self.GroupHeader, "filterOnPet", value)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[description]]
@@ -124,7 +124,7 @@ interface "IFPetGroup"
 				Task.NoCombatCall(UpdateGroupHeader, self)
 			end
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[The group header based on the blizzard's SecureGroupHeader]]

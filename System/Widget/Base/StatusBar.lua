@@ -162,7 +162,7 @@ class "StatusBar"
 			self:SetStatusBarTexture(texture, self.Layer)
 		end,
 		Get = "GetStatusBarTexture",
-		Type = Texture + nil,
+		Type = Texture,
 	}
 
 	__Doc__[[the texture file used for drawing the filled-in portion of the status bar]]
@@ -173,7 +173,7 @@ class "StatusBar"
 		Set = function(self, texture)
 			self:SetStatusBarTexture(texture, self.Layer)
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the layer used for drawing the filled-in portion of the status bar]]

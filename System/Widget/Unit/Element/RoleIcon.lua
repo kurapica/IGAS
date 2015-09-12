@@ -68,7 +68,7 @@ class "RoleIcon"
 		end
 		self:Refresh()
 	end )
-	property "ShowInCombat" { Type = System.Boolean }
+	property "ShowInCombat" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor

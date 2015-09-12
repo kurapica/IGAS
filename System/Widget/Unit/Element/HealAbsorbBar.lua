@@ -84,7 +84,7 @@ class "HealAbsorbBar"
 				value.OnSizeChanged = value.OnSizeChanged + OnSizeChanged
 			end
 		end,
-		Type = StatusBar + String,
+		--Type = StatusBarString,
 	}
 
 	__Handler__( function (self, value) self.OverGlow.Visible = value end )

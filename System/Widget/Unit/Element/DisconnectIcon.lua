@@ -32,7 +32,7 @@ class "DisconnectIcon"
 		Get = function(self)
 			return not self.Visible
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

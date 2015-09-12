@@ -81,7 +81,7 @@ class "CheckButton"
 	property "Checked" { Type = Boolean }
 
 	__Doc__[[the texture object used when the button is checked]]
-	property "CheckedTexture" { Type = Texture + nil }
+	property "CheckedTexture" { Type = Texture }
 
 	__Doc__[[the texture file path used when the button is checked]]
 	property "CheckedTexturePath" {
@@ -91,11 +91,11 @@ class "CheckButton"
 		Set = function(self, texture)
 			self:SetCheckedTexture(texture)
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture object used when the button is disabled and checked]]
-	property "DisabledCheckedTexture" { Type = Texture + nil }
+	property "DisabledCheckedTexture" { Type = Texture }
 
 	__Doc__[[the texture file path used when the button is disabled and checked]]
 	property "DisabledCheckedTexturePath" {
@@ -105,7 +105,7 @@ class "CheckButton"
 		Set = function(self, texture)
 			self:SetDisabledCheckedTexture(texture)
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 endclass "CheckButton"

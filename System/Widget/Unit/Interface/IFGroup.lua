@@ -401,7 +401,7 @@ interface "IFGroup"
 		property "ShowDeadOnly" {
 			Get = "IsShowDeadOnly",
 			Set = "SetShowDeadOnly",
-			Type = System.Boolean,
+			Type = Boolean,
 		}
 
 		------------------------------------------------------
@@ -557,7 +557,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showRaid", value)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[Whether the panel should be shown while in a party and not in a raid]]
@@ -568,7 +568,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showParty", value)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[Whether the panel should show the player while not in a raid]]
@@ -579,7 +579,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showPlayer", value)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[Whether the panel should be shown while not in a group]]
@@ -590,7 +590,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			SecureSetAttribute(self.GroupHeader, "showSolo", value)
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[A list of raid group numbers, used as the filter settings and order settings(if GroupBy is "GROUP")]]
@@ -599,7 +599,7 @@ interface "IFGroup"
 		SetupGroupFilter(self)
 		if self.GroupBy == "GROUP" then SetupGroupingOrder(self) end
 	end)
-	__Setter__("Clone") property "GroupFilter" { Type = GroupFilter + nil }
+	__Setter__("Clone") property "GroupFilter" { Type = GroupFilter }
 
 	__Doc__[[A list of uppercase class names, used as the filter settings and order settings(if GroupBy is "CLASS")]]
 	__Handler__(function (self, value)
@@ -607,7 +607,7 @@ interface "IFGroup"
 		SetupGroupFilter(self)
 		if self.GroupBy == "CLASS" then SetupGroupingOrder(self) end
 	end)
-	__Setter__("Clone") property "ClassFilter" { Type = ClassFilter + nil }
+	__Setter__("Clone") property "ClassFilter" { Type = ClassFilter }
 
 	__Doc__[[A list of uppercase role names, used as the filter settings and order settings(if GroupBy is "ROLE")]]
 	__Handler__(function (self, value)
@@ -617,7 +617,7 @@ interface "IFGroup"
 			SetupGroupingOrder(self)
 		end
 	end)
-	__Setter__("Clone") property "RoleFilter" { Type = RoleFilter + nil }
+	__Setter__("Clone") property "RoleFilter" { Type = RoleFilter }
 
 	__Doc__[[Specifies a "grouping" type to apply before regular sorting (Default: nil)]]
 	__Handler__(function (self, value)
@@ -653,7 +653,7 @@ interface "IFGroup"
 		Set = function(self, value)
 			self.GroupHeader.ShowDeadOnly = value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	------------------------------------------------------

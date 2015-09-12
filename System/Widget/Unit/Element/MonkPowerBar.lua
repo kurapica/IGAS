@@ -35,7 +35,7 @@ class "MonkPowerBar"
 				self.Glow.Deactivate.Playing = true
 			end
 		end )
-		property "Activated" { Type = System.Boolean }
+		property "Activated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -124,7 +124,7 @@ class "MonkPowerBar"
 			end
 			self.__Min, self.__Max = value.min, value.max
 		end,
-		Type = System.MinMax,
+		Type = MinMax,
 	}
 
 	__Handler__( function (self, value)
@@ -132,7 +132,7 @@ class "MonkPowerBar"
 			self["LightEnergy"..i].Activated = i <= value
 		end
 	end )
-	property "Value" { Type = System.Number }
+	property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler

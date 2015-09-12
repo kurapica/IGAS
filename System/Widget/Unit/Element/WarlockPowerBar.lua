@@ -62,7 +62,7 @@ class "WarlockPowerBar"
 				self.SmokeB.AnimOut.Playing = true
 			end
 		end )
-		property "Activated" { Type = System.Boolean }
+		property "Activated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -244,7 +244,7 @@ class "WarlockPowerBar"
 				self.Glow2.AnimOut.Playing = true
 			end
 		end )
-		property "Activated" { Type = System.Boolean }
+		property "Activated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Hanlder
@@ -443,7 +443,7 @@ class "WarlockPowerBar"
 			self.ShowAnim.Playing = true
 		end
 	end )
-	property "ClassPowerType" { Type = System.Number + nil }
+	property "ClassPowerType" { Type = NumberNil }
 
 	-- MinMaxValue
 	property "MinMaxValue" {
@@ -490,7 +490,7 @@ class "WarlockPowerBar"
 				self.Value = value
 			end
 		end,
-		Type = System.MinMax,
+		Type = MinMax,
 	}
 	-- Value
 	property "Value" {
@@ -534,7 +534,7 @@ class "WarlockPowerBar"
 
 			self.__Value = value
 		end,
-		Type = System.Number,
+		Type = Number,
 	}
 
 	------------------------------------------------------

@@ -467,7 +467,7 @@ interface "IFKeyBinding"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[the hotkey property, need override]]
-	__Optional__() property "HotKey" { Type = System.String + nil }
+	__Optional__() property "HotKey" { Type = String }
 
 	------------------------------------------------------
 	-- Event Handler

@@ -113,7 +113,7 @@ class "RuneBar"
 				self.Tooltip = nil
 			end
 		end )
-		property "RuneType" { Type = System.Number + nil }
+		property "RuneType" { Type = NumberNil }
 
 		__Handler__( function (self, value)
 			if value then
@@ -124,7 +124,7 @@ class "RuneBar"
 				self.Glow.RuneColorGlow.Energize:Stop()
 			end
 		end )
-		property "Ready" { Type = System.Boolean }
+		property "Ready" { Type = Boolean }
 
 		__Handler__( function (self, value)
 			if value then
@@ -135,7 +135,7 @@ class "RuneBar"
 				self.Glow.RuneColorGlow.Energize:Stop()
 			end
 		end )
-		property "Energize" { Type = System.Boolean }
+		property "Energize" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Handler

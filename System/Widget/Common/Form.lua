@@ -455,11 +455,11 @@ class "Form"
 				end
 			end
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[true if the form should not be shown in combat with DockMode on]]
-	property "HideForCombat" { Type = System.Boolean }
+	property "HideForCombat" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose

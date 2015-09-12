@@ -507,7 +507,7 @@ class "Mask"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The mask is used to move parent]]
-	property "AsMove" { Type = System.Boolean }
+	property "AsMove" { Type = Boolean }
 
 	__Doc__[[The mask is used to resize parent]]
 	property "AsResize" {
@@ -517,11 +517,11 @@ class "Mask"
 		Set = function(self, value)
 			self.TextureSe.Visible = value
 		end,
-		Type = System.Boolean,
+		Type = Boolean,
 	}
 
 	__Doc__[[The mask is used to bind key]]
-	property "AsKeyBind" { Type = System.Boolean }
+	property "AsKeyBind" { Type = Boolean }
 
 	__Doc__[[The binding key]]
 	property "BindKey" {
@@ -530,7 +530,7 @@ class "Mask"
 			self.__BindKey = value
 			self.Text = ToShortKey(value) or " "
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 
 	__Doc__[[The mask is used as toggle button]]

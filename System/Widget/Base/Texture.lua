@@ -458,7 +458,7 @@ class "Texture"
 			end
 		end,
 		Set = "SetTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the unit be de displayed as a portrait, such as "player", "target"]]
@@ -471,14 +471,14 @@ class "Texture"
 			end
 		end,
 		Set = "SetPortraitUnit",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture to be displayed from a file applying circular opacity mask making it look round like portraits.]]
 	property "PortraitTexture" {
 		Field = "__Portrait",
 		Set = "SetPortraitTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture's color]]

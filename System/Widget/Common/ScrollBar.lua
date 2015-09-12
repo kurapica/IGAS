@@ -5,7 +5,7 @@
 --				2011/03/13	Recode as class
 
 -- Check Version
-local version = 9
+local version = 10
 if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
 	return
 end
@@ -203,7 +203,7 @@ class "ScrollBar"
 		<return type="number">the value of the scrollbar</return>
 	]]
 	function GetValue(self)
-		return self:GetChild("Slider"):GetValue()
+		return floor(self:GetChild("Slider"):GetValue())
 	end
 
 	__Doc__[[

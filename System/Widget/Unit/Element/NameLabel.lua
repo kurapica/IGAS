@@ -42,15 +42,15 @@ class "NameLabel"
 	------------------------------------------------------
 	__Doc__[[Whether using the tap color, default false]]
 	__Handler__( Refresh )
-	property "UseTapColor" { Type = System.Boolean }
+	property "UseTapColor" { Type = Boolean }
 
 	__Doc__[[Whether using the selection color, default false]]
 	__Handler__( Refresh )
-	property "UseSelectionColor" { Type = System.Boolean }
+	property "UseSelectionColor" { Type = Boolean }
 
 	__Doc__[[Whether using the class color, default false]]
 	__Handler__( Refresh )
-	property "UseClassColor" { Type = System.Boolean }
+	property "UseClassColor" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor

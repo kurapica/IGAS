@@ -339,17 +339,14 @@ endstruct "Size"
 -- AnchorPoint
 struct "AnchorPoint"
 	point = FramePoint
-	xOffset = Number + nil
-	yOffset = Number + nil
-	relativeTo = String + nil
-	relativePoint = FramePoint + nil
+	xOffset = Number
+	yOffset = Number
+	relativeTo = String
+	relativePoint = FramePoint
 endstruct "AnchorPoint"
 
 -- struct Location
-__StructType__(StructType.Array)
-struct "Location"
-	element = AnchorPoint
-endstruct "Location"
+struct "Location" { AnchorPoint }
 
 -- MinMax
 struct "MinMax"
@@ -379,11 +376,11 @@ endstruct "ColorFloat"
 
 -- ColorType
 struct "ColorType"
-	r = ColorFloat
-	g = ColorFloat
-	b = ColorFloat
-	a = ColorFloat + nil
-	code = String + nil
+	__Require__() r = ColorFloat
+	__Require__() g = ColorFloat
+	__Require__() b = ColorFloat
+	a = ColorFloat
+	code = String
 
 	function ColorType(value)
 		value.a = value.a or 1	-- default
@@ -408,12 +405,12 @@ endstruct "FontType"
 
 -- BackdropType
 struct "BackdropType"
-	bgFile = String + nil
-	edgeFile = String + nil
-	tile = Boolean + nil
-	tileSize = Number + nil
-	edgeSize = Number + nil
-	insets = Inset + nil
+	bgFile = String
+	edgeFile = String
+	tile = Boolean
+	tileSize = Number
+	edgeSize = Number
+	insets = Inset
 endstruct "BackdropType"
 
 -- AnimOrderType
@@ -440,14 +437,14 @@ struct "LightType"
 	dirX = Number
 	dirY = Number
 	dirZ = Number
-	ambIntensity = ColorFloat + nil
-	ambR = ColorFloat + nil
-	ambG = ColorFloat + nil
-	ambB = ColorFloat + nil
-	dirIntensity = ColorFloat + nil
-	dirR = ColorFloat + nil
-	dirG = ColorFloat + nil
-	dirB = ColorFloat + nil
+	ambIntensity = ColorFloat
+	ambR = ColorFloat
+	ambG = ColorFloat
+	ambB = ColorFloat
+	dirIntensity = ColorFloat
+	dirR = ColorFloat
+	dirG = ColorFloat
+	dirB = ColorFloat
 
 	function LightType(value)
 		assert(value.omni == 0 or value.omni == 1, "%s.omni must be 0 or 1.")

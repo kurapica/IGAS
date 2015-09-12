@@ -358,7 +358,7 @@ class "EditBox"
 	property "Number" { Type = Number }
 
 	__Doc__[[the edit box's text contents]]
-	property "Text" { Type = String + Number }
+	property "Text" { Type = String }
 
 	__Doc__[[the insets from the edit box's edges which determine its interactive text area]]
 	property "TextInsets" {

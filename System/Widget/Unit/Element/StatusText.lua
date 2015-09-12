@@ -101,7 +101,7 @@ class "StatusText"
 	------------------------------------------------------
 	__Doc__[[The display value format, default "%.2f"]]
 	__Handler__ ( RefreshStatus )
-	property "ValueFormat" { Type = System.String + nil, Default = "%.2f" }
+	property "ValueFormat" { Type = String, Default = "%.2f" }
 
 	__Doc__[[The minimum and maximum values]]
 	property "MinMaxValue" {
@@ -111,31 +111,31 @@ class "StatusText"
 		Set = function(self, value)
 			self:SetMinMaxValues(value.min, value.max)
 		end,
-		Type = System.MinMax,
+		Type = MinMax,
 	}
 
 	__Doc__[[The fontstring's value]]
-	property "Value" { Type = System.Number }
+	property "Value" { Type = Number }
 
 	__Doc__[[Whether show lost value]]
 	__Handler__ ( RefreshStatus )
-	property "ShowLost" { Type = System.Boolean }
+	property "ShowLost" { Type = Boolean }
 
 	__Doc__[[Whether show the max value]]
 	__Handler__ ( RefreshStatus )
-	property "ShowMax" { Type = System.Boolean }
+	property "ShowMax" { Type = Boolean }
 
 	__Doc__[[The display format when ShowMax is true, default "%s / %s"]]
 	__Handler__ ( RefreshStatus )
-	property "MaxFormat" { Type = System.String + nil, Default = "%s / %s" }
+	property "MaxFormat" { Type = String, Default = "%s / %s" }
 
 	__Doc__[[Whether show percent format]]
 	__Handler__ ( RefreshStatus )
-	property "ShowPercent" { Type = System.Boolean }
+	property "ShowPercent" { Type = Boolean }
 
 	__Doc__[[The display format when ShowPercent is true, default "%d%%"]]
 	__Handler__ ( RefreshStatus )
-	property "PercentFormat" { Type = System.String + nil, Default = "%d%%" }
+	property "PercentFormat" { Type = String, Default = "%d%%" }
 
 	function StatusText(self, name, parent, ...)
 		Super(self, name, parent, ...)

@@ -62,7 +62,7 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("worldmarker", value, self.WorldMarkerActionType)
 		end,
-		Type = System.Number + nil,
+		Type = NumberNil,
 	}
 
 	__Doc__[[The world marker action type]]

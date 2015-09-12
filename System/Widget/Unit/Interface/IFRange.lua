@@ -55,7 +55,7 @@ interface "IFRange"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[used to receive the result, whether the unit is in the spell range of the player]]
-	__Optional__() property "InRange" { Type = Boolean }
+	__Optional__() property "InRange" { Type = BooleanNil }
 
 	------------------------------------------------------
 	-- Event Handler

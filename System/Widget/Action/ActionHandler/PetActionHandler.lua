@@ -181,7 +181,7 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("pet", value)
 		end,
-		Type = System.Number + nil,
+		Type = NumberNil,
 	}
 
 endinterface "IFActionHandler"

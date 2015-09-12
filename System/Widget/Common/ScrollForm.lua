@@ -152,7 +152,7 @@ class "ScrollForm"
 	}
 
 	__Doc__[[The scroll child frame]]
-	property "ScrollChild" { Type = System.Widget.Region + nil }
+	property "ScrollChild" { Type = Region }
 
 	------------------------------------------------------
 	-- Event handler

@@ -231,6 +231,12 @@ class "Font"
 	end
 endclass "Font"
 
+struct "FontObject" {
+	function (value)
+		assert(type(value) == "string" or Reflector.ObjectIsClass(value, Font), "%s must be a font object or font object's name.")
+	end
+}
+
 class "Font"
 	------------------------------------------------------
 	-- BlzMethodes
@@ -285,7 +291,7 @@ class "Font"
 	}
 
 	__Doc__[[the Font object]]
-	property "FontObject" { Type = Font + String + nil }
+	property "FontObject" { Type = FontObject }
 
 	__Doc__[[the fontstring's horizontal text alignment style]]
 	property "JustifyH" { Type = JustifyHType }

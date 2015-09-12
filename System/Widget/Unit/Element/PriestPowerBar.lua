@@ -47,7 +47,7 @@ class "PriestPowerBar"
 				self.Glow.AnimOut.Playing = true
 			end
 		end )
-		property "Activated" { Type = System.Boolean }
+		property "Activated" { Type = Boolean }
 
 		------------------------------------------------------
 		-- Event Handler
@@ -194,7 +194,7 @@ class "PriestPowerBar"
 			self["Orb"..i].Activated = i <= value
 		end
 	end )
-	property "Value" { Type = System.Number }
+	property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler

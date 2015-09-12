@@ -249,7 +249,7 @@ class "SimpleHTML"
 	property "IndentedWordWrap" { Type = Boolean }
 
 	__Doc__[[The content of the html viewer]]
-	property "Text" { Type = String + nil }
+	property "Text" { Type = String }
 
 	__Doc__[[the font's defined table, contains font path, height and flags' settings]]
 	property "Font" {
@@ -294,7 +294,7 @@ class "SimpleHTML"
 	}
 
 	__Doc__[[the Font object]]
-	property "FontObject" { Type = Font + String + nil }
+	property "FontObject" { Type = FontObject }
 
 	__Doc__[[the fontstring's horizontal text alignment style]]
 	property "JustifyH" { Type = JustifyHType }
@@ -409,7 +409,7 @@ class "SimpleHTML"
 			Set = function (self, obj)
 				self.Owner:SetFontObject(self.Element, obj)
 			end,
-			Type = Font + String + nil,
+			Type = FontObject,
 		}
 
 		__Doc__[[the fontstring's horizontal text alignment style]]

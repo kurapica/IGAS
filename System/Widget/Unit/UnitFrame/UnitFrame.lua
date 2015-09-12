@@ -156,7 +156,7 @@ class "UnitFrame"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The unit's ID]]
-	property "Unit" { Type = String + nil }
+	property "Unit" { Type = String }
 
 	__Doc__[[The refresh interval for special unit like 'targettarget']]
 	property "Interval" { Type = PositiveNumber, Default = 0.5 }

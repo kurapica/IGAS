@@ -84,6 +84,6 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("battlepet", value)
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 endinterface "IFActionHandler"

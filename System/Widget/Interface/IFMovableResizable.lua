@@ -271,7 +271,7 @@ interface "IFMovable"
 
 	__Doc__[[Whether the object should be turn into the moving mode]]
 	property "IFMovable" {
-		Type = System.Boolean,
+		Type = Boolean,
 		Default = true,
 	}
 
@@ -365,7 +365,7 @@ interface "IFResizable"
 
 	__Doc__[[Whether the object should be turn into the resizing mode]]
 	property "IFResizable" {
-		Type = System.Boolean,
+		Type = Boolean,
 		Default = true,
 	}
 
@@ -459,7 +459,7 @@ interface "IFToggleable"
 
 	__Doc__[[Whether the object should be turn into the toggling mode]]
 	property "IFToggleable" {
-		Type = System.Boolean,
+		Type = Boolean,
 		Default = true,
 	}
 

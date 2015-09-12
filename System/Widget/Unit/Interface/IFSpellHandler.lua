@@ -657,12 +657,12 @@ interface "IFSpellHandler"
 		}
 
 		struct "KeySet"
-			HarmAction = ActionType + nil
-			HarmContent = System.String + System.Number + nil
-			HarmWith = ActionWith + nil
-			HelpAction = ActionType + nil
-			HelpContent = System.String + System.Number + nil
-			HelpWith = ActionWith + nil
+			HarmAction = ActionType
+			HarmContent = StringNumber
+			HarmWith = ActionWith
+			HelpAction = ActionType
+			HelpContent = StringNumber
+			HelpWith = ActionWith
 		endstruct "KeySet"
 
 		__Doc__[[DataAccessor is a helper class to the SpellHandlerGroup to access the binding settings]]
@@ -699,7 +699,7 @@ interface "IFSpellHandler"
 					self.__AccessHarmful = false
 					self.__AccessWith = nil
 				end,
-				Type = System.String,
+				Type = String,
 			}
 
 			__Doc__[[Mark the setting is for harmful target]]
@@ -780,7 +780,7 @@ interface "IFSpellHandler"
 
 					self.__GroupHandler:Fire("OnSettingUpdate")
 				end,
-				Type = System.String,
+				Type = String,
 			}
 
 			------------------------------------------------------

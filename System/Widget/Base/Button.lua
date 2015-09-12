@@ -296,10 +296,10 @@ class "Button"
 	property "Locked" { Type = Boolean }
 
 	__Doc__[[the font object used for the button's disabled state]]
-	property "DisabledFontObject" { Type = Font + String + nil }
+	property "DisabledFontObject" { Type = FontObject }
 
 	__Doc__[[the texture object used when the button is disabled]]
-	property "DisabledTexture" { Type = Texture + nil }
+	property "DisabledTexture" { Type = Texture }
 
 	__Doc__[[the texture file path used when the button is disabled]]
 	property "DisabledTexturePath" {
@@ -307,11 +307,11 @@ class "Button"
 			return self:GetDisabledTexture() and self:GetDisabledTexture().TexturePath
 		end,
 		Set = "SetDisabledTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture object used when the button is highlighted]]
-	property "HighlightTexture" { Type = Texture + nil }
+	property "HighlightTexture" { Type = Texture }
 
 	__Doc__[[the texture file path used when the button is highlighted]]
 	property "HighlightTexturePath" {
@@ -319,11 +319,11 @@ class "Button"
 			return self:GetHighlightTexture() and self:GetHighlightTexture().TexturePath
 		end,
 		Set = "SetHighlightTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture object used for the button's normal state]]
-	property "NormalTexture" { Type = Texture + nil }
+	property "NormalTexture" { Type = Texture }
 
 	__Doc__[[the texture file used for the button's normal state]]
 	property "NormalTexturePath" {
@@ -331,11 +331,11 @@ class "Button"
 			return self:GetNormalTexture() and self:GetNormalTexture().TexturePath
 		end,
 		Set = "SetNormalTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the texture object used when the button is pushed]]
-	property "PushedTexture" { Type = Texture + nil }
+	property "PushedTexture" { Type = Texture }
 
 	__Doc__[[the texture file path used when the button is pushed]]
 	property "PushedTexturePath" {
@@ -343,17 +343,17 @@ class "Button"
 			return self:GetPushedTexture() and self:GetPushedTexture().TexturePath
 		end,
 		Set = "SetPushedTexture",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the FontString object used for the button's label text]]
 	property "FontString" { Type = FontString }
 
 	__Doc__[[the font object used when the button is highlighted]]
-	property "HighlightFontObject" { Type = Font + String + nil }
+	property "HighlightFontObject" { Type = FontObject }
 
 	__Doc__[[the font object used for the button's normal state]]
-	property "NormalFontObject" { Type = Font + String + nil }
+	property "NormalFontObject" { Type = FontObject }
 
 	__Doc__[[the offset for moving the button's label text when pushed]]
 	property "PushedTextOffset" {

@@ -1690,17 +1690,6 @@ do
 
             EndPrevKey(editor)
 
-			if key:find("^F%d+") == 1 then
-				if key == "F3" and editor.__InSearch then
-					-- Continue Search
-					Search2Next(editor)
-
-					return
-				end
-
-				return editor:Fire("OnFunctionKey", key)
-			end
-
 			-- Don't consider multi-modified keys
 			if IsShiftKeyDown() then
 				-- shift+
@@ -1734,6 +1723,13 @@ do
 				else
 					return editor:Fire("OnControlKey", key)
 				end
+			elseif key:find("^F%d+") == 1 then
+				if key == "F3" and editor.__InSearch then
+					-- Continue Search
+					return Search2Next(editor)
+				end
+
+				return editor:Fire("OnFunctionKey", key)
 			end
 
 			return NewOperation(editor, _Operation.INPUTCHAR)
@@ -2588,7 +2584,7 @@ class "MultiLineTextBox"
 	}
 
 	__Doc__[[the Font object]]
-	property "FontObject" { Type = Font + String + nil }
+	property "FontObject" { Type = FontObject }
 
 	__Doc__[[the color of the font's text shadow]]
 	property "ShadowColor" {
@@ -2727,7 +2723,7 @@ class "MultiLineTextBox"
 	end }
 
 	__Doc__[[The tab's width]]
-	property "TabWidth" { Type = Number + nil }
+	property "TabWidth" { Type = Number, Default = _TabWidth }
 
 	__Doc__[[The current operation]]
 	property "CurrentOperation" {

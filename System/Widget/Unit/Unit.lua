@@ -415,7 +415,7 @@ class "SmoothValue"
 	------------------------------------------------------
 	__Doc__[[The real value of object]]
 	__Handler__( SetRealValue )
-	property "RealValue" { Type = Number + nil }
+	property "RealValue" { Type = NumberNil }
 
 	__Doc__[[The smoothed value]]
 	__Event__ "OnValueChanged"

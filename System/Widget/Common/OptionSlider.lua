@@ -104,7 +104,7 @@ class "OptionSlider"
 		Set = function(self, texture)
 			self:GetChild("Slider").ThumbTexture = texture
 		end,
-		Type = Texture + nil,
+		Type = Texture,
 	}
 
 	__Doc__[[the texture file path for the slider thumb]]
@@ -115,7 +115,7 @@ class "OptionSlider"
 		Set = function(self, texture)
 			self:GetChild("Slider").ThumbTexturePath = texture
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the layer used for drawing the filled-in portion of the slider]]
@@ -239,7 +239,7 @@ class "OptionSlider"
 			return self:GetChild("Slider").__TooltipAnchor or "ANCHOR_RIGHT"
 		end,
 
-		Type = AnchorType + nil,
+		Type = AnchorType,
 	}
 
 	------------------------------------------------------

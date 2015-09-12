@@ -57,7 +57,7 @@ class "RangeChecker"
 		Set = function(self, value)
 			self:GetChild("Indicator").TexturePath = value
 		end,
-		Type = System.String + nil,
+		Type = String,
 	}
 
 	------------------------------------------------------

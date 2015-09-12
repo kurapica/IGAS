@@ -397,7 +397,7 @@ class "TreeView"
 				end
 				return self.MetaData.Menu
 			end,
-			Type = DropDownList + nil,
+			Type = DropDownList,
 		}
 
 		__Doc__[[whether the treeNode has child-nodes]]
@@ -508,7 +508,7 @@ class "TreeView"
 					return Refresh(self)
 				end
 			end,
-			Type = LocaleString + nil,
+			Type = LocaleString,
 		}
 
 		__Doc__[[whether the child-nodes's order can be changed]]
@@ -1513,7 +1513,7 @@ class "TreeView"
 				return SelectNone(self)
 			end
 		end,
-		Type = TreeNode + nil,
+		Type = TreeNode,
 	}
 
 	__Doc__[[the child-node's count]]

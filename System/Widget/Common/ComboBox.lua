@@ -759,7 +759,7 @@ class "ComboBox"
 	property "DisplayItemCount" { Type = Number }
 
 	__Doc__[[the choosed item's value]]
-	property "Value" { Type = Any + nil }
+	property "Value" { Type = Any }
 
 	__Doc__[[the displayed text]]
 	property "Text" { Type = LocaleString }
@@ -794,7 +794,7 @@ class "ComboBox"
 			self.__Keys = self.__Keys or {}
 			return self.__Keys
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[the comboBox item's text list]]
@@ -810,7 +810,7 @@ class "ComboBox"
 			self.__Items = self.__Items or {}
 			return self.__Items
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[the comboBox item's icon list]]
@@ -826,7 +826,7 @@ class "ComboBox"
 			self.__Icons = self.__Icons or {}
 			return self.__Icons
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[the comboBox item's frame list]]
@@ -842,7 +842,7 @@ class "ComboBox"
 			self.__Frames = self.__Frames or {}
 			return self.__Frames
 		end,
-		Type = Table + Userdata + nil,
+		Type = TableUserdata,
 	}
 
 	__Doc__[[the item's count]]

@@ -58,7 +58,7 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("macro", value)
 		end,
-		Type = System.String + System.Number + nil,
+		Type = StringNumber,
 	}
 
 endinterface "IFActionHandler"

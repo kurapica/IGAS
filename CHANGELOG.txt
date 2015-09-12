@@ -1,3 +1,7 @@
+2015/09/04: IGAS v72
+    1. Update for new PLoop Core.
+    2. Update features for MultiLineTextBox.
+
 2015/03/12: IGAS v71
     1. BagHandler is added to support bag slot buttons.
     2. Update toc.

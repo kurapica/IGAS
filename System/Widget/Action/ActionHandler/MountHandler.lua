@@ -238,6 +238,6 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("mount", value)
 		end,
-		Type = System.Number + nil,
+		Type = NumberNil,
 	}
 endinterface "IFActionHandler"

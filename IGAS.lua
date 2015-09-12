@@ -157,6 +157,18 @@ struct "NaturalNumber"
 	end
 endstruct "NaturalNumber"
 
+struct "StringNumber"
+	function StringNumber(value)
+		if type(value) ~= "number" and type(value) ~= "string" then error(format("%s must be a number or string, got %s.", "%s", type(value))) end
+	end
+endstruct "StringNumber"
+
+struct "TableUserdata"
+	function TableUserdata(value)
+		if type(value) ~= "table" and type(value) ~= "userdata" then error(format("%s must be a table or userdata, got %s.", "%s", type(value))) end
+	end
+endstruct "TableUserdata"
+
 ------------------------------------
 --- Create or get the logger for the given log name
 -- @name IGAS:NewLogger

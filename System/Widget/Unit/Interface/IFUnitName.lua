@@ -49,7 +49,7 @@ interface "IFUnitName"
 	------------------------------------------------------
 	__Doc__[[Whether show the server name]]
 	__Handler__(Refresh)
-	property "WithServerName" { Type = System.Boolean }
+	property "WithServerName" { Type = Boolean }
 
 	__Doc__[[Which used to receive the unit's name]]
 	__Optional__() property "Text" { Type = String }

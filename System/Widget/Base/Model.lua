@@ -220,7 +220,7 @@ class "Model"
 			end
 		end,
 		Get = "GetModel",
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[the position of the 3D model within the frame]]

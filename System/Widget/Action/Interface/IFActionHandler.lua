@@ -292,13 +292,13 @@ interface "IFActionTypeHandler"
 	property "Name" { Type = String }
 
 	__Doc__[[The action type's type]]
-	property "Type" { Type = String + nil }
+	property "Type" { Type = String }
 
 	__Doc__[[The target attribute name]]
-	property "Target" { Type = String + nil }
+	property "Target" { Type = String }
 
 	__Doc__[[The detail attribute name]]
-	property "Detail" { Type = String + nil }
+	property "Detail" { Type = String }
 
 	__Doc__[[Whether the action is player action]]
 	property "IsPlayerAction" { Type = Boolean, Default = true }
@@ -313,25 +313,25 @@ interface "IFActionTypeHandler"
 	property "ReceiveStyle" { Type = HandleStyle, Default = HandleStyle.Clear }
 
 	__Doc__[[The receive map]]
-	property "ReceiveMap" { Type = String + nil }
+	property "ReceiveMap" { Type = String }
 
 	__Doc__[[The pickup map]]
-	property "PickupMap" { Type = String + nil }
+	property "PickupMap" { Type = String }
 
 	__Doc__[[The snippet to setup environment for the action type]]
-	property "InitSnippet" { Type = String + nil }
+	property "InitSnippet" { Type = String }
 
 	__Doc__[[The snippet used when pick up action]]
-	property "PickupSnippet" { Type = String + nil }
+	property "PickupSnippet" { Type = String }
 
 	__Doc__[[The snippet used to update for new action settings]]
-	property "UpdateSnippet" { Type = String + nil }
+	property "UpdateSnippet" { Type = String }
 
 	__Doc__[[The snippet used to receive action]]
-	property "ReceiveSnippet" { Type = String + nil }
+	property "ReceiveSnippet" { Type = String }
 
 	__Doc__[[The snippet used to clear action]]
-	property "ClearSnippet" { Type = String + nil }
+	property "ClearSnippet" { Type = String }
 
 	------------------------------------------------------
 	-- Initialize
@@ -1576,7 +1576,7 @@ interface "IFActionHandler"
 			return self:GetAttribute("IFActionHandlerGroup")
 		end,
 		Default = _GlobalGroup,
-		Type = String + nil,
+		Type = String,
 	}
 
 	------------------------------------------------------
@@ -1650,7 +1650,7 @@ interface "IFActionHandler"
 	__Optional__() property "Icon" { Type = String }
 
 	__Doc__[[Whether the action is in range, used to refresh the action count as a trigger]]
-	__Optional__() property "InRange" { Type = Boolean+nil }
+	__Optional__() property "InRange" { Type = BooleanNil }
 
 	__Doc__[[Whether the action is auto-castable, used to refresh the action count as a trigger]]
 	__Optional__() property "AutoCastable" { Type = Boolean }

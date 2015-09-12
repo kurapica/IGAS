@@ -630,6 +630,6 @@ class "GameTooltip"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The owner of this gametooltip]]
-	property "Owner" { Type = UIObject + nil }
+	property "Owner" { Type = UIObject }
 
 endclass "GameTooltip"

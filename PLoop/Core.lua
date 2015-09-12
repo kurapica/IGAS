@@ -29,14 +29,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 --
 -- Config :
 --    PLOOP_DOCUMENT_ENABLED - Whether enable/disable document system, default true
---    PLOOP_SAME_CLASS_METAMETHOD - Whether using same meta-methods for classes, default false
+--    PLOOP_SAVE_MEMORY - Whether save the memory, default false
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
 -- Author			kurapica125@outlook.com
 -- Create Date		2011/02/01
--- Last Update Date 2015/06/04
--- Version			r122
+-- Last Update Date 2015/09/11
+-- Version			r129
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -158,6 +158,9 @@ do
 			setfenv = function (lvl, env) _FENV_Cache(env) end
 		end
 	end
+
+	-- In lua 5.2, the loadstring is deprecated
+	loadstring = loadstring or load
 end
 
 ------------------------------------------------------
@@ -166,7 +169,7 @@ end
 do
 	-- Used to enable/disable document system, not started with '_', so can be disabled outsider
 	DOCUMENT_ENABLED = PLOOP_DOCUMENT_ENABLED == nil and true or PLOOP_DOCUMENT_ENABLED
-	SAME_CLASS_METAMETHOD = PLOOP_SAME_CLASS_METAMETHOD and true or false
+	SAVE_MEMORY = PLOOP_SAVE_MEMORY and true or false
 
 	TYPE_CLASS = "Class"
 	TYPE_ENUM = "Enum"
@@ -468,6 +471,8 @@ do
 	function IsFinalFeature(ns, name, isSuper)
 		ns = _NSInfo[ns]
 
+		if not ns then return false end
+
 		if not name then
 			return ns.IsFinal
 		else
@@ -506,8 +511,16 @@ do
 
 	_NSInfo = setmetatable({}, {
 		__index = function(self, key)
+			if type(key) == "string" then
+				key = GetNameSpace(GetDefaultNameSpace(), key)
+				if not key then return end
+				local ret = rawget(self, key)
+				if ret then return ret end
+			end
 			if not IsNameSpace(key) then return end
-			local ret = { Owner = key } self[key] = ret return ret
+			local ret = { Owner = key }
+			self[key] = ret
+			return ret
 		end,
 		__mode = "k",
 	})
@@ -572,6 +585,7 @@ do
 				-- Method
 				ret = info.Method[key] or info.Cache[key]
 				if type(ret) == "function" then return ret end
+
 				-- Property
 				ret = info.Property[key]
 				if ret and ret.IsStatic then
@@ -662,7 +676,7 @@ do
 					if oper.Set == false then error(("%s can't be written."):format(key), 2) end
 
 					-- Property
-					if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
+					if oper.Type then value = Validate4Type(oper.Type, value, key, key, 2) end
 					if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
 					-- Get Setter
@@ -718,20 +732,25 @@ do
 				else
 					if IsFinalFeature(self, key) then error(("%s.%s is final, can't be overridden."):format(tostring(self), key), 2) end
 					if info.IsSealed and info.Cache[key] then error(("%s.%s is sealed, can't be overridden."):format(tostring(self), key), 2) end
+
+					local vType = getmetatable(value)
+
 					-- new feature
-					if type(value) == "function" then
+					if vType == TYPE_NAMESPACE then
+						SetPropertyWithSet(info, key, { Type = value })
+					elseif type(value) == "function" then
 						-- Method
 						SaveFixedMethod(info.Method, key, value, info.Owner)
 					elseif type(value) == "table" then
 						-- Property
 						SetPropertyWithSet(info, key, value)
-					elseif not tonumber(key) then
+					elseif not tonumber(key) and value == true then
 						-- Event
 						info.Event[key] = info.Event[key] or Event(key)
 
 						if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(info.Event[key], AttributeTargets.Event, info.Owner, key) end
 					else
-						return
+						error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
 					end
 
 					return not info.BeginDefinition and RefreshCache(self)
@@ -739,39 +758,6 @@ do
 			end
 
 			error(("Can't set value for %s, it's readonly."):format(tostring(self)), 2)
-		end
-
-		_MetaNS.__add = function(v1, v2)
-			local ok, _type1, _type2
-
-			ok, _type1 = pcall(BuildValidatedType, v1)
-			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
-
-			ok, _type2 = pcall(BuildValidatedType, v2)
-			if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
-
-			return _type1 + _type2
-		end
-
-		_MetaNS.__sub = function(v1, v2)
-			local ok, _type1, _type2
-
-			ok, _type1 = pcall(BuildValidatedType, v1)
-			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
-
-			ok, _type2 = pcall(BuildValidatedType, v2, true)
-			if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
-
-			return _type1 + _type2
-		end
-
-		_MetaNS.__unm = function(v1)
-			local ok, _type1
-
-			ok, _type1 = pcall(BuildValidatedType, v1, true)
-			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
-
-			return _type1
 		end
 
 		_MetaNS.__tostring = function(self)
@@ -918,51 +904,116 @@ do
 end
 
 ------------------------------------------------------
--- ValidatedType
+-- Type Validation
 ------------------------------------------------------
 do
-	function IsValidatedType(self) return getmetatable(self) == ValidatedType end
+	function Validate4Type(oType, value, partName, mainName, stack)
+		if value == nil or not oType then return value end
 
-	function BuildValidatedType(ns, onlyClass)
-		local allowNil = false
+		local info = _NSInfo[oType]
+		if not info then return value end
 
-		if ns == nil then
-			allowNil = true
-		elseif IsValidatedType(ns) then
-			return ns
-		end
+		local iType = info.Type
+		local flag, ret
 
-		if ns == nil or IsNameSpace(ns) then
-			local _type = ValidatedType()
+		if iType == TYPE_STRUCT then
+			flag, ret = pcall(ValidateStruct, oType, value)
 
-			_type.AllowNil = allowNil or nil
-			if ns then if onlyClass then _type[-1] = ns else _type[1] = ns end end
+			if flag then return ret end
 
-			return _type
+			ret = strtrim(ret:match(":%d+:%s*(.-)$") or ret)
+		elseif iType == TYPE_ENUM then
+			-- Check if the value is an enumeration value of this enum
+			if type(value) == "string" then
+				local val = info.Enum[strupper(value)]
+				if val ~= nil then return val end
+			end
+
+			if info.MaxValue then
+				-- Bit flag validation, use MaxValue check to reduce cost
+				value = tonumber(value)
+
+				if value then
+					value = floor(value)
+					if (value == 0 and info.Cache[0]) or (value >= 1 and value <= info.MaxValue) then
+						return value
+					end
+				end
+			else
+				if info.Cache[value] then return value end
+			end
+
+			ret = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(oType), GetShortEnumInfo(oType))
 		else
-			error("The type must be combination of nil, struct, enum, interface or class.")
+			local cls = getmetatable(value)
+
+			if iType == TYPE_CLASS then
+				if cls and IsChildClass(oType, cls) then return value end
+
+				ret = ("%s must be an instance of [class]%s."):format("%s", tostring(oType))
+			elseif iType == TYPE_INTERFACE then
+				if cls and IsExtend(oType, cls) then return value end
+
+				ret = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(oType))
+			end
 		end
+
+		if partName and partName ~= "" then
+			if ret:find("%%s([_%w]+)") then
+				ret = ret:gsub("%%s", "%%s"..partName..".")
+			else
+				ret = ret:gsub("%%s", "%%s"..partName)
+			end
+		end
+
+		--if not ret:match("%(Optional%)$") then ret = ret .. "(Optional)" end
+
+		if mainName and ret:find("%%s") then ret = ret:gsub("%%s[_%w]*", mainName) end
+
+		error(ret, (stack or 1) + 1)
 	end
 
-	_UniqueValidatedType = setmetatable({}, WEAK_KEY)
-	_UniqueWithNilValidatedType = setmetatable({}, WEAK_VALUE)
+	function GetValidatedValue(oType, value)
+		if value == nil or not oType then return value end
 
-	function GetUniqueValidatedType(self)
-		if IsValidatedType(self) then
-			-- No unique for complex type
-			if self[-1] or #self ~= 1 then return self end
+		local info = _NSInfo[oType]
+		if not info then return value end
 
-			if self.AllowNil then
-				if _UniqueWithNilValidatedType[self[1]] then return _UniqueWithNilValidatedType[self[1]] end
-				_UniqueWithNilValidatedType[self[1]] = self
-				return self
+		local iType = info.Type
+		local flag, ret
+
+		if iType == TYPE_STRUCT then
+			flag, ret = pcall(ValidateStruct, oType, value)
+
+			if flag then return ret end
+		elseif iType == TYPE_ENUM then
+			-- Check if the value is an enumeration value of this enum
+			if type(value) == "string" then
+				local val = info.Enum[strupper(value)]
+				if val ~= nil then return val end
+			end
+
+			if info.MaxValue then
+				-- Bit flag validation, use MaxValue check to reduce cost
+				value = tonumber(value)
+
+				if value then
+					value = floor(value)
+					if (value == 0 and info.Cache[0]) or (value >= 1 and value <= info.MaxValue) then
+						return value
+					end
+				end
 			else
-				if _UniqueValidatedType[self[1]] then return _UniqueValidatedType[self[1]] end
-				_UniqueValidatedType[self[1]] = self
-				return self
+				if info.Cache[value] then return value end
 			end
 		else
-			return self
+			local cls = getmetatable(value)
+
+			if iType == TYPE_CLASS then
+				if cls and IsChildClass(oType, cls) then return value end
+			elseif iType == TYPE_INTERFACE then
+				if cls and IsExtend(oType, cls) then return value end
+			end
 		end
 	end
 end
@@ -1225,11 +1276,13 @@ do
 							elseif k == "field" then
 								prop.Field = v ~= name and v or nil
 							elseif k == "type" then
-								local ok, ret = pcall(BuildValidatedType, v)
-								if ok then
-									prop.Type = GetUniqueValidatedType(ret)
-								else
-									errorhandler(strtrim(ret:match(":%d+:%s*(.-)$") or ret))
+								local tInfo = _NSInfo[v]
+
+								if tInfo and (tInfo.Type == TYPE_ENUM or
+												tInfo.Type == TYPE_STRUCT or
+												tInfo.Type == TYPE_INTERFACE or
+												tInfo.Type == TYPE_CLASS) then
+									prop.Type = v
 								end
 							elseif k == "default" then
 								prop.Default = v
@@ -1252,10 +1305,9 @@ do
 					-- Validate the default
 					if prop.Default ~= nil then
 						if prop.Type then
-							if prop.Type:GetObjectType(prop.Default) == false then
-								if type(prop.Default) == "function" then prop.DefaultFunc = prop.Default end
-								prop.Default = nil
-							end
+							local val = GetValidatedValue(prop.Type, prop.Default)
+							if val == nil and type(prop.Default) == "function" then prop.DefaultFunc = prop.Default end
+							prop.Default = val
 						elseif type(prop.Default) == "function" then
 							prop.DefaultFunc = prop.Default
 							prop.Default = nil
@@ -1286,7 +1338,7 @@ do
 									prop.Get = info.Method["get" .. uname]
 								elseif staticMethod["Get" .. uname] then
 									prop.Get = info.Method["Get" .. uname]
-								elseif prop.Type and prop.Type:Is(Boolean) then
+								elseif prop.Type == Boolean then
 									-- FlagEnabled -> IsFlagEnabled
 									if staticMethod["is" .. uname] then
 										prop.Get = info.Method["is" .. uname]
@@ -1312,7 +1364,7 @@ do
 									prop.Set = info.Method["set" .. uname]
 								elseif staticMethod["Set" .. uname] then
 									prop.Set = info.Method["Set" .. uname]
-								elseif prop.Type and prop.Type:Is(Boolean) then
+								elseif prop.Type == Boolean then
 									-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
 									local pattern = ParseAdj(uname)
 
@@ -1335,7 +1387,7 @@ do
 								prop.GetMethod = "get" .. uname
 							elseif type(iCache["Get" .. uname]) == "function" then
 								prop.GetMethod = "Get" .. uname
-							elseif prop.Type and prop.Type:Is(Boolean) then
+							elseif prop.Type == Boolean then
 								-- FlagEnabled -> IsFlagEnabled
 								if type(iCache["is" .. uname]) == "function" then
 									prop.GetMethod = "is" .. uname
@@ -1361,7 +1413,7 @@ do
 								prop.SetMethod = "set" .. uname
 							elseif type(iCache["Set" .. uname]) == "function" then
 								prop.SetMethod = "Set" .. uname
-							elseif prop.Type and prop.Type:Is(Boolean) then
+							elseif prop.Type == Boolean then
 								-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
 								local pattern = ParseAdj(uname)
 
@@ -1403,14 +1455,11 @@ do
 						prop.SetClone = Reflector.ValidateFlags(Setter.Clone, prop.Setter) or prop.SetDeepClone
 
 						if prop.Set == nil and not prop.SetMethod then
-							if Reflector.ValidateFlags(Setter.Retain, prop.Setter) and prop.Type and #(prop.Type) > 0 then
-								for _, ty in ipairs(prop.Type) do
-									local tinfo = _NSInfo[ty]
+							if Reflector.ValidateFlags(Setter.Retain, prop.Setter) and prop.Type then
+								local tinfo = _NSInfo[prop.Type]
 
-									if tinfo.Type == TYPE_CLASS or tinfo.Type == TYPE_INTERFACE then
-										prop.SetRetain = true
-										break
-									end
+								if tinfo.Type == TYPE_CLASS or tinfo.Type == TYPE_INTERFACE then
+									prop.SetRetain = true
 								end
 							end
 
@@ -1438,9 +1487,9 @@ do
 						if set.Synthesize and prop.Set == nil then
 							local getName, setName
 
-							if set.Synthesize == __Synthesize__.NameCase.Pascal then
+							if set.Synthesize == __Synthesize__.NameCases.Pascal then
 								getName, setName = "Get" .. uname, "Set" .. uname
-							elseif set.Synthesize == __Synthesize__.NameCase.Camel then
+							elseif set.Synthesize == __Synthesize__.NameCases.Camel then
 								getName, setName = "get" .. uname, "set" .. uname
 							end
 
@@ -1494,7 +1543,10 @@ do
 								wipe(upValues)
 
 								tinsert(upValues, info) tinsert(gbody, "info")
-								if prop.Type then tinsert(upValues, prop.Type) tinsert(gbody, "pType") end
+								if prop.Type then
+									tinsert(upValues, Validate4Type) tinsert(gbody, "Validate4Type")
+									tinsert(upValues, prop.Type) tinsert(gbody, "pType")
+								end
 								if prop.SetRetain then tinsert(upValues, DisposeObject) tinsert(gbody, "DisposeObject") end
 								if prop.SetClone then tinsert(upValues, CloneObj) tinsert(gbody, "CloneObj") end
 								if prop.SetWeak then tinsert(upValues, WEAK_VALUE) tinsert(gbody, "WEAK_VALUE") end
@@ -1507,7 +1559,7 @@ do
 								tinsert(gbody, gHeader)
 
 								tinsert(gbody, [[return function (value)]])
-								if prop.Type then tinsert(gbody, ([[value = pType:Validate(value, "%s", "%s", 2)]]):format(name, name)) end
+								if prop.Type then tinsert(gbody, ([[value = Validate4Type(pType, value, "%s", "%s", 2)]]):format(name, name)) end
 								if prop.SetClone then
 									if prop.SetDeepClone then
 										tinsert(gbody, [[value = CloneObj(value, true)]])
@@ -1609,7 +1661,10 @@ do
 								wipe(gbody)
 								wipe(upValues)
 
-								if prop.Type then tinsert(upValues, prop.Type) tinsert(gbody, "pType") end
+								if prop.Type then
+									tinsert(upValues, Validate4Type) tinsert(gbody, "Validate4Type")
+									tinsert(upValues, prop.Type) tinsert(gbody, "pType")
+								end
 								if prop.SetRetain then tinsert(upValues, DisposeObject) tinsert(gbody, "DisposeObject") end
 								if prop.SetClone then tinsert(upValues, CloneObj) tinsert(gbody, "CloneObj") end
 								if prop.SetWeak then tinsert(upValues, WEAK_VALUE) tinsert(gbody, "WEAK_VALUE") end
@@ -1623,7 +1678,7 @@ do
 								tinsert(gbody, gHeader)
 
 								tinsert(gbody, [[return function (self, value)]])
-								if prop.Type then tinsert(gbody, ([[value = pType:Validate(value, "%s", "%s", 2)]]):format(name, name)) end
+								if prop.Type then tinsert(gbody, ([[value = Validate4Type(pType, value, "%s", "%s", 2)]]):format(name, name)) end
 								if prop.SetClone then
 									if prop.SetDeepClone then
 										tinsert(gbody, [[value = CloneObj(value, true)]])
@@ -1674,10 +1729,10 @@ do
 					end
 
 					-- Auto generate Default
-					if prop.Type and not prop.Type:Is(nil) and prop.Default == nil and #(prop.Type) == 1 then
-						local info = _NSInfo[prop.Type[1]]
+					if prop.Type and prop.Default == nil then
+						local pinfo = _NSInfo[prop.Type]
 
-						if info and (info.Type == TYPE_STRUCT or info.Type == TYPE_ENUM) then prop.Default = info.Default end
+						if pinfo and (pinfo.Type == TYPE_STRUCT or pinfo.Type == TYPE_ENUM) then prop.Default = pinfo.Default end
 					end
 				end
 			end
@@ -1735,9 +1790,9 @@ do
 
 			-- Refresh branch
 			if info.ChildClass then
-				for subcls in pairs(info.ChildClass) do RefreshCache(subcls) end
+				for _, subcls in ipairs(info.ChildClass) do RefreshCache(subcls) end
 			elseif info.ExtendClass then
-				for subcls in pairs(info.ExtendClass) do RefreshCache(subcls) end
+				for _, subcls in ipairs(info.ExtendClass) do RefreshCache(subcls) end
 			end
 		end
 	end
@@ -2053,14 +2108,29 @@ do
 			error(("%s is extended from %s, can't be used here."):format(tostring(IF), tostring(info.Owner)), 3)
 		end
 
-		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
-		IFInfo.ExtendClass[info.Owner] = true
 
 		info.ExtendInterface = info.ExtendInterface or {}
 
 		-- Check if IF is already extend by extend tree
 		for _, pIF in ipairs(info.ExtendInterface) do if IsExtend(IF, pIF) then return end end
-		for i = #(info.ExtendInterface), 1, -1 do if IsExtend(info.ExtendInterface[i], IF) then tremove(info.ExtendInterface, i) end end
+
+		local owner = info.Owner
+		for i = #(info.ExtendInterface), 1, -1 do
+			local pIF = info.ExtendInterface[i]
+			if IsExtend(pIF, IF) then
+				local pExtend = _NSInfo[pIF].ExtendClass
+				for j, v in ipairs(pExtend) do
+					if v == owner then
+						tremove(pExtend, j)
+						break
+					end
+				end
+				tremove(info.ExtendInterface, i)
+			end
+		end
+
+		IFInfo.ExtendClass = IFInfo.ExtendClass or {}
+		tinsert(IFInfo.ExtendClass, owner)
 
 		tinsert(info.ExtendInterface, IF)
 	end
@@ -2255,7 +2325,7 @@ do
 					local vType = getmetatable(v)
 
 					if vType and type(v) ~= "string" then
-						if vType == TYPE_NAMESPACE or vType == ValidatedType then
+						if vType == TYPE_NAMESPACE then
 							SetPropertyWithSet(info, k, { Type = v })
 						end
 					elseif type(v) == "table" then
@@ -2340,6 +2410,13 @@ do
 		__gc = true,		-- dispose a
 		__tostring = true,	-- tostring(a)
 		__exist = true,		-- ClassName(...)	-- return object if existed
+		__idiv = true,		-- // floor division
+		__band = true,		-- & bitwise and
+		__bor = true,		-- | bitwise or
+		__bxor = true,		-- ~ bitwise exclusive or
+		__bnot = true,		-- ~ bitwise unary not
+		__shl = true,		-- << bitwise left shift
+		__shr = true,		-- >> bitwise right shift
 	}
 
 	--------------------------------------------------
@@ -2721,17 +2798,19 @@ do
 	end
 
 	function IsChildClass(cls, child)
-		if not cls or not child or not _NSInfo[cls] or _NSInfo[cls].Type ~= TYPE_CLASS or not _NSInfo[child] or _NSInfo[child].Type ~= TYPE_CLASS then return false end
+		if not cls or not child or not _NSInfo[cls] or _NSInfo[cls].Type ~= TYPE_CLASS then return false end
 
 		if cls == child then return true end
 
 		local info = _NSInfo[child]
 
-		while info and info.SuperClass and info.SuperClass ~= cls do info = _NSInfo[info.SuperClass] end
+		if not info or info.Type ~= TYPE_CLASS then return false end
 
-		if info and info.SuperClass == cls then return true end
+		local scls = info.SuperClass
 
-		return false
+		while scls and scls ~= cls do scls = _NSInfo[scls].SuperClass end
+
+		return scls == cls
 	end
 
 	function UpdateMeta4Child(meta, cls, pre, now)
@@ -2768,7 +2847,7 @@ do
 	end
 
 	function UpdateMeta4Children(meta, sub, pre, now)
-		if sub and pre ~= now then for cls in pairs(sub) do UpdateMeta4Child(meta, cls, pre, now) end end
+		if sub and pre ~= now then for _, cls in ipairs(sub) do UpdateMeta4Child(meta, cls, pre, now) end end
 	end
 
 	function Class_Index(self, key)
@@ -2906,7 +2985,7 @@ do
 			else
 				-- Property
 				if oper.Set == false then error(("%s can't be written."):format(key), 2) end
-				if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
+				if oper.Type then value = Validate4Type(oper.Type, value, key, key, 2) end
 				if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
 				-- Get Setter
@@ -2973,7 +3052,7 @@ do
 
 		local meta = {}
 		meta.__metatable = info.Owner
-		meta.__index = SAME_CLASS_METAMETHOD and Class_Index or function (self, key)
+		meta.__index = SAVE_MEMORY and Class_Index or function (self, key)
 			-- Dispose Method
 			if key == "Dispose" then return DisposeObject end
 
@@ -3075,7 +3154,7 @@ do
 			if oper then return oper(self, key) end
 		end
 
-		meta.__newindex = SAME_CLASS_METAMETHOD and Class_NewIndex or function (self, key, value)
+		meta.__newindex = SAVE_MEMORY and Class_NewIndex or function (self, key, value)
 			local oper = Cache[key]
 
 			if type(oper) == "table" then
@@ -3103,7 +3182,7 @@ do
 				else
 					-- Property
 					if oper.Set == false then error(("%s can't be written."):format(key), 2) end
-					if oper.Type then value = oper.Type:Validate(value, key, key, 2) end
+					if oper.Type then value = Validate4Type(oper.Type, value, key, key, 2) end
 					if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
 					-- Get Setter
@@ -3218,15 +3297,12 @@ do
 					return fixedMethod(obj, ...)
 				else
 					return info.Constructor:RaiseError(obj)
-					--error(("%s has no constructor support such arguments"):format(tostring(cls)), 2)
 				end
 			end
 		end
 
 		-- No constructor or constructor with no arguments, so try init table
-		if initTable then
-			for name, value in pairs(initTable) do obj[name] = value end
-		end
+		if initTable then for name, value in pairs(initTable) do obj[name] = value end end
 	end
 
 	-- The cache for constructor parameters
@@ -3370,7 +3446,7 @@ do
 		if info.SuperClass then error(("%s is inherited from %s, can't inherit another class."):format(tostring(info.Owner), tostring(info.SuperClass)), 2) end
 
 		superInfo.ChildClass = superInfo.ChildClass or {}
-		superInfo.ChildClass[info.Owner] = true
+		tinsert(superInfo.ChildClass, info.Owner)
 
 		info.SuperClass = superCls
 
@@ -3855,13 +3931,12 @@ do
 						-- Don't save to environment until need it
 						return SaveFixedMethod(info.Method, key, value, info.Owner)
 					end
-				elseif (value == nil or IsValidatedType(value) or IsNameSpace(value)) then
-					SaveStructField(self, info, key, value)
-					return
+				elseif _NSInfo[value] and _NSInfo[value].Type then
+					return SaveStructField(self, info, key, value)
 				end
 			end
 
-			rawset(self, key, value)
+			return rawset(self, key, value)
 		end
 
 		_MetaStrtDefEnv.__call = function(self, definition)
@@ -3886,7 +3961,9 @@ do
 	function ValidateStruct(strt, value)
 		local info = _NSInfo[strt]
 
-		if info.SubType ~= _STRUCT_TYPE_CUSTOM then
+		local sType = info.SubType
+
+		if sType ~= _STRUCT_TYPE_CUSTOM then
 			if type(value) ~= "table" then wipe(_ValidatedCache) error(("%s must be a table, got %s."):format("%s", type(value))) end
 
 			if _ValidatedCache[value] then return value end
@@ -3894,21 +3971,33 @@ do
 			if not _ValidatedCache[1] then _ValidatedCache[1] = value end
 			_ValidatedCache[value] = true
 
-			if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
-				for _, n in ipairs(info.Members) do
-					if value[n] == nil and info.DefaultField and info.DefaultField[n] ~= nil then
-						-- Deep clone to make sure no change on default value
-						value[n] = CloneObj(info.DefaultField[n], true)
-					else
-						value[n] = info.StructEnv[n]:Validate(value[n], n)
+			if sType == _STRUCT_TYPE_MEMBER then
+				if info.Members then
+					local env = info.StructEnv
+					local default = info.DefaultField
+					local require = info.RequireMember
+
+					for _, n in ipairs(info.Members) do
+						local val = value[n]
+
+						if val == nil then
+							if default and default[n] ~= nil then
+								-- Deep clone to make sure no change on default value
+								value[n] = CloneObj(default[n], true)
+							elseif require and require[n] then
+								error(("%s.%s can't be nil."):format("%s", n))
+							end
+						else
+							value[n] = Validate4Type(env[n], val, n)
+						end
 					end
 				end
-			elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
+			elseif sType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
 				local flag, ret
 				local ele = info.ArrayElement
 
 				for i, v in ipairs(value) do
-					flag, ret = pcall(ele.Validate, ele, v, "Element")
+					flag, ret = pcall(Validate4Type, ele, v, "Element")
 
 					if flag then
 						value[i] = ret
@@ -3928,10 +4017,10 @@ do
 				error(strtrim(ret:match(":%d+:%s*(.-)$") or ret))
 			end
 
-			if info.SubType == _STRUCT_TYPE_CUSTOM and ret ~= nil then value = ret end
+			if sType == _STRUCT_TYPE_CUSTOM and ret ~= nil then value = ret end
 		end
 
-		if info.SubType ~= _STRUCT_TYPE_CUSTOM and _ValidatedCache[1] == value then wipe(_ValidatedCache) end
+		if sType ~= _STRUCT_TYPE_CUSTOM and _ValidatedCache[1] == value then wipe(_ValidatedCache) end
 
 		return value
 	end
@@ -3986,10 +4075,10 @@ do
 
 				local args = ""
 				for i, n in ipairs(info.Members) do
-					if info.StructEnv[n]:Is(nil) and not args:find("%[") then n = "["..n end
+					--if info.StructEnv[n]:Is(nil) and not args:find("%[") then n = "["..n end
 					if i == 1 then args = n else args = args..", "..n end
 				end
-				if args:find("%[") then args = args.."]" end
+				--if args:find("%[") then args = args.."]" end
 				error(("Usage : %s(%s) - %s"):format(tostring(strt), args, value), 3)
 			end
 		elseif info.SubType == _STRUCT_TYPE_ARRAY then
@@ -4152,36 +4241,30 @@ do
 	end
 
 	function SaveStructField(self, info, key, value)
-		local ok, ret = pcall(BuildValidatedType, value)
+		rawset(self, key, value)
 
-		if ok then
-			rawset(self, key, ret)
+		if tonumber(key) and info.SubType ~= _STRUCT_TYPE_ARRAY then
+			info.SubType = _STRUCT_TYPE_ARRAY
+			info.Members = nil
+		end
 
-			if tonumber(key) and info.SubType ~= _STRUCT_TYPE_ARRAY then
-				info.SubType = _STRUCT_TYPE_ARRAY
-				info.Members = nil
-			end
+		if info.SubType == _STRUCT_TYPE_MEMBER then
+			info.Members = info.Members or {}
+			tinsert(info.Members, key)
+			if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(key, AttributeTargets.Member, info.Owner, key) end
 
-			if info.SubType == _STRUCT_TYPE_MEMBER then
-				info.Members = info.Members or {}
-				tinsert(info.Members, key)
-				if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, key) end
+			-- Auto generate Default
+			if not (info.RequireMember and info.RequireMember[key]) and (not info.DefaultField or info.DefaultField[key] == nil) then
+				local rinfo = _NSInfo[value]
 
-				-- Auto generate Default
-				if not ret:Is(nil) and #ret == 1 and (not info.DefaultField or info.DefaultField[key] == nil) then
-					local rinfo = _NSInfo[ret[1]]
-
-					if rinfo and (rinfo.Type == TYPE_STRUCT or rinfo.Type == TYPE_ENUM) and rinfo.Default ~= nil then
-						info.DefaultField = info.DefaultField or {}
-						info.DefaultField[key] = rinfo.Default
-					end
+				if rinfo and (rinfo.Type == TYPE_STRUCT or rinfo.Type == TYPE_ENUM) and rinfo.Default ~= nil then
+					info.DefaultField = info.DefaultField or {}
+					info.DefaultField[key] = rinfo.Default
 				end
-			elseif info.SubType == _STRUCT_TYPE_ARRAY then
-				info.ArrayElement = ret
-				if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes(ret, AttributeTargets.Member, info.Owner, "ArrayElement") end
 			end
-		else
-			error(strtrim(ret:match(":%d+:%s*(.-)$") or ret), 3)
+		elseif info.SubType == _STRUCT_TYPE_ARRAY then
+			info.ArrayElement = value
+			if ATTRIBUTE_INSTALLED then ConsumePreparedAttributes("ArrayElement", AttributeTargets.Member, info.Owner, "ArrayElement") end
 		end
 	end
 
@@ -4201,37 +4284,6 @@ do
 				info.Default = nil
 			end
 		end
-
-		-- Make field type unique
-		if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
-			local chkNIL = false
-			local hasNIL = false
-			for _, n in ipairs(info.Members) do
-				info.StructEnv[n] = GetUniqueValidatedType(info.StructEnv[n])
-				if info.StructEnv[n] and not info.StructEnv[n].AllowNil then
-					if hasNIL then chkNIL = true end
-				else
-					hasNIL = true
-				end
-			end
-			while chkNIL do
-				chkNIL, hasNIL = false
-
-				for i, n in ipairs(info.Members) do
-					if info.StructEnv[n] and not info.StructEnv[n].AllowNil then
-						if hasNIL then
-							chkNIL = true
-							info.Members[i], info.Members[i-1] = info.Members[i-1], info.Members[i]
-							break
-						end
-					else
-						hasNIL = true
-					end
-				end
-			end
-		elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-			info.ArrayElement = GetUniqueValidatedType(info.ArrayElement)
-		end
 	end
 
 	function ParseStructDefinition(self, definition)
@@ -4242,7 +4294,7 @@ do
 				local vType = getmetatable(v)
 
 				if vType and type(v) ~= "string" then
-					if (vType == TYPE_NAMESPACE or vType == ValidatedType) and (type(k) == "string" or tonumber(k)) then
+					if vType == TYPE_NAMESPACE and (type(k) == "string" or tonumber(k)) then
 						SaveStructField(self, info, k, v)
 					end
 				elseif type(v) == "function" then
@@ -4295,64 +4347,23 @@ end
 do
 	namespace "System"
 
-	struct "Boolean" {
-		Default = false,
-		function (value) return value and true or false end
-	}
-
-	struct "String" {
-		Default = "",
-		function (value)
-			if type(value) ~= "string" then error(("%s must be a string, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "Number" {
-		Default = 0,
-		function (value)
-			if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "Function" {
-		function (value)
-			if type(value) ~= "function" then error(("%s must be a function, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "Table" {
-		function (value)
-			if type(value) ~= "table" then error(("%s must be a table, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "RawTable" {
-		function (value)
-			if type(value) ~= "table" then
-				error(("%s must be a table, got %s."):format("%s", type(value)))
-			elseif getmetatable(value) ~= nil then
-				error("%s must be a table without metatable.")
-			end
-		end
-	}
-
-	struct "Userdata" {
-		function (value)
-			if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "Thread" {
-		function (value)
-			if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end
-		end
-	}
-
-	struct "Any" {
-		function (value)
-			assert(value ~= nil, "%s can't be nil.")
-		end
-	}
+	struct "Boolean"	{ Default = false, function (value) return value and true or false end }
+	struct "BooleanNil"	{ function (value) return value and true or false end }
+	struct "String"		{ function (value) if type(value) ~= "string" then error(("%s must be a string, got %s."):format("%s", type(value))) end end }
+	struct "Number"		{ Default = 0, function (value) if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end end }
+	struct "NumberNil"	{ function (value) if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end end }
+	struct "Function"	{ function (value) if type(value) ~= "function" then error(("%s must be a function, got %s."):format("%s", type(value))) end end }
+	struct "Table"		{ function (value) if type(value) ~= "table" then error(("%s must be a table, got %s."):format("%s", type(value))) end end }
+	struct "RawTable"	{ function (value) assert(type(value) == "table" and getmetatable(value) == nil, "%s must be a table without metatable.") end }
+	struct "Userdata"	{ function (value) if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end end }
+	struct "Thread"		{ function (value) if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end end }
+	struct "Any"		{ function (value) end }
+	struct "Callable"	{ function (value) assert(Reflector.IsCallable(value), "%s isn't callable.") end }
+	struct "Class"		{ function (value) assert(Reflector.IsClass(value), "%s must be a class.") end }
+	struct "Interface"	{ function (value) assert(Reflector.IsInterface(value), "%s must be an interface.") end }
+	struct "Struct"		{ function (value) assert(Reflector.IsStruct(value), "%s must be a struct.") end }
+	struct "Enum"		{ function (value) assert(Reflector.IsEnum(value), "%s must be an enum.") end }
+	struct "AnyType"	{ function (value) local info = _NSInfo[value] assert(info and info.Type, "%s must be a type, such as enum, struct, class or interface.") end }
 
 	------------------------------------------------------
 	-- System.AttributeTargets
@@ -4376,6 +4387,8 @@ do
 	------------------------------------------------------
 	interface "Reflector" (function(_ENV)
 
+		local iterForEmpty = function() end
+
 		doc "Reflector" [[This interface contains many apis used to get the running object-oriented system's informations.]]
 
 		doc "GetCurrentNameSpace" [[
@@ -4385,9 +4398,7 @@ do
 			<return type="namespace">the namespace of the environment</return>
 		]]
 		function GetCurrentNameSpace(env, rawOnly)
-			env = type(env) == "table" and env or getfenv(2) or _G
-
-			return GetNameSpace4Env(env, rawOnly)
+			return GetNameSpace4Env(type(env) == "table" and env or getfenv(2) or _G, rawOnly)
 		end
 
 		doc "SetCurrentNameSpace" [[
@@ -4396,9 +4407,7 @@ do
 			<param name="env" type="table" optional="true">the environment, default the current environment</param>
 		]]
 		function SetCurrentNameSpace(ns, env)
-			env = type(env) == "table" and env or getfenv(2) or _G
-
-			return SetNameSpace4Env(env, ns)
+			return SetNameSpace4Env(type(env) == "table" and env or getfenv(2) or _G, ns)
 		end
 
 		doc "GetNameSpaceForName" [[
@@ -4418,9 +4427,8 @@ do
 			<usage>type = System.Reflector.GetNameSpaceType("System.Object")</usage>
 		]]
 		function GetNameSpaceType(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].Type
+			local info = _NSInfo[ns]
+			return info and info.Type
 		end
 
 		doc "GetNameSpaceName" [[
@@ -4430,35 +4438,26 @@ do
 			<usage>System.Reflector.GetNameSpaceName(System.Object)</usage>
 		]]
 		function GetNameSpaceName(ns)
-			return ns and _NSInfo[ns] and _NSInfo[ns].Name
+			local info = _NSInfo[ns]
+			return info and info.Name
 		end
 
 		doc "GetNameSpaceFullName" [[
 			<desc>Get the full name of the namespace</desc>
-			<param name="namespace|string">the namespace to query</param>
+			<param name="namespace">the namespace to query</param>
 			<return type="string">the full path of the namespace</return>
 			<usage>path = System.Reflector.GetNameSpaceFullName(System.Object)</usage>
 		]]
-		function GetNameSpaceFullName(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return tostring(ns)
-		end
+		GetNameSpaceFullName = tostring
 
 		doc "BeginDefinition" [[
 			<desc>Begin the definition of target namespace, stop cache refresh</desc>
 			<param name="namespace|string">the namespace</param>
 		]]
 		function BeginDefinition(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			if ns then
-				local info = _NSInfo[ns]
-
-				if info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE then
-					info.BeginDefinition = true
-				end
-			end
+			local info = _NSInfo[ns]
+			assert(info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE), "System.Reflector.BeginDefinition(ns) - ns must be a class or interface.")
+			info.BeginDefinition = true
 		end
 
 		doc "EndDefinition" [[
@@ -4466,17 +4465,10 @@ do
 			<param name="namespace|string">the namespace</param>
 		]]
 		function EndDefinition(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			if ns then
-				local info = _NSInfo[ns]
-
-				if info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE then
-					info.BeginDefinition = nil
-
-					return RefreshCache(ns)
-				end
-			end
+			local info = _NSInfo[ns]
+			assert(info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE), "System.Reflector.BeginDefinition(ns) - ns must be a class or interface.")
+			info.BeginDefinition = nil
+			return RefreshCache(info.Owner)
 		end
 
 		doc "GetSuperClass" [[
@@ -4486,9 +4478,8 @@ do
 			<usage>System.Reflector.GetSuperClass(System.Object)</usage>
 		]]
 		function GetSuperClass(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].SuperClass
+			local info = _NSInfo[ns]
+			return info and info.SuperClass
 		end
 
 		doc "IsNameSpace" [[
@@ -4497,11 +4488,7 @@ do
 			<return type="boolean">true if the object is a NameSpace</return>
 			<usage>System.Reflector.IsNameSpace(System.Object)</usage>
 		]]
-		function IsNameSpace(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and true or false
-		end
+		function IsNameSpace(ns) return _NSInfo[ns] and true or false end
 
 		doc "IsClass" [[
 			<desc>Check if the namespace is a class</desc>
@@ -4510,9 +4497,8 @@ do
 			<usage>System.Reflector.IsClass(System.Object)</usage>
 		]]
 		function IsClass(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_CLASS or false
+			local info = _NSInfo[ns]
+			return info and info.Type == TYPE_CLASS or false
 		end
 
 		doc "IsStruct" [[
@@ -4522,9 +4508,8 @@ do
 			<usage>System.Reflector.IsStruct(System.Object)</usage>
 		]]
 		function IsStruct(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_STRUCT or false
+			local info = _NSInfo[ns]
+			return info and info.Type == TYPE_STRUCT or false
 		end
 
 		doc "IsEnum" [[
@@ -4534,9 +4519,8 @@ do
 			<usage>System.Reflector.IsEnum(System.Object)</usage>
 		]]
 		function IsEnum(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_ENUM or false
+			local info = _NSInfo[ns]
+			return info and info.Type == TYPE_ENUM or false
 		end
 
 		doc "IsInterface" [[
@@ -4546,9 +4530,8 @@ do
 			<usage>System.Reflector.IsInterface(System.IFSocket)</usage>
 		]]
 		function IsInterface(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].Type == TYPE_INTERFACE or false
+			local info = _NSInfo[ns]
+			return info and info.Type == TYPE_INTERFACE or false
 		end
 
 		doc "IsSealed" [[
@@ -4558,9 +4541,8 @@ do
 			<usage>System.Reflector.IsSealed(System.Object)</usage>
 		]]
 		function IsSealed(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].IsSealed or false
+			local info = _NSInfo[ns]
+			return info and info.IsSealed or false
 		end
 
 		doc "IsFinal" [[
@@ -4571,10 +4553,7 @@ do
 			<usage>System.Reflector.IsFinal(System.Object)</usage>
 		]]
 		function IsFinal(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-			if type(name) ~= "string" then name = nil end
-
-			return ns and IsFinalFeature(ns, name) or false
+			return IsFinalFeature(ns, type(name) == "string" and name or nil) or false
 		end
 
 		doc "IsUniqueClass" [[
@@ -4584,9 +4563,8 @@ do
 			<usage>System.Reflector.IsUniqueClass(System.Object)</usage>
 		]]
 		function IsUniqueClass(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].UniqueObject and true or false
+			local info = _NSInfo[ns]
+			return info and info.UniqueObject and true or false
 		end
 
 		doc "IsAutoCache" [[
@@ -4597,215 +4575,463 @@ do
 			<usage>System.Reflector.IsAutoCache(System.Object)</usage>
 		]]
 		function IsAutoCache(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			local autoCache = ns and _NSInfo[ns] and _NSInfo[ns].AutoCache
-
+			local info = _NSInfo[ns]
+			local autoCache = info and info.AutoCache
 			return autoCache == true or (name and autoCache and autoCache[name]) or false
 		end
 
 		doc "GetSubNamespace" [[
 			<desc>Get the sub namespace of the namespace</desc>
 			<param name="namespace">the object to query</param>
-			<return type="table">the sub-namespace list</return>
-			<usage>System.Reflector.GetSubNamespace(System)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the sub-namespace iterator|the result table</return>
+			<usage>for name, ns in System.Reflector.GetSubNamespace(System) do print(name) end</usage>
 		]]
-		function GetSubNamespace(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		local _GetSubNamespaceCache, _GetSubNamespaceIter
+		if not SAVE_MEMORY then
+			_GetSubNamespaceCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetSubNamespaceIter = function (ns, key) return next(_NSInfo[ns].SubNS, key) end
+		end
+		function GetSubNamespace(ns, result)
 			local info = _NSInfo[ns]
 
 			if info and info.SubNS then
-				local ret = {}
-
-				for key in pairs(info.SubNS) do tinsert(ret, key) end
-
-				sort(ret)
-
-				return ret
+				if type(result) == "table" then
+					for k, v in pairs(info.SubNS) do result[k] = v end
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetSubNamespaceIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetSubNamespaceCache[ns]
+						if not iter then
+							local subNS = info.SubNS
+							iter = function (ns, key) return next(subNS, key) end
+							_GetSubNamespaceCache[ns] = iter
+						end
+						return iter, ns
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
 		doc "GetExtendInterfaces" [[
 			<desc>Get the extend interfaces of the class|interface</desc>
 			<param name="object">the object to query</param>
-			<return type="table">the extend interface list</return>
-			<usage>System.Reflector.GetExtendInterfaces(System.Object)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the extend interface iterator|the result table</return>
+			<usage>for i, interface in System.Reflector.GetExtendInterfaces(System.Object) do print(interface) end</usage>
 		]]
-		function GetExtendInterfaces(cls)
-			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
+		local _GetExtendInterfacesCache, _GetExtendInterfacesIter
+		if not SAVE_MEMORY then
+			_GetExtendInterfacesCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetExtendInterfacesIter = function (ns, index)
+				index = index + 1
+				local IF = _NSInfo[ns].ExtendInterface[index]
+				if IF then return index, IF end
+			end
+		end
+		function GetExtendInterfaces(ns, result)
+			local info = _NSInfo[ns]
 
-			local info = _NSInfo[cls]
-
-			if info.ExtendInterface then
-				local ret = {}
-
-				for _, IF in ipairs(info.ExtendInterface) do tinsert(ret, IF) end
-
-				return ret
+			if info and info.ExtendInterface then
+				if type(result) == "table" then
+					for _, IF in ipairs(info.ExtendInterface) do tinsert(result, IF) end
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetExtendInterfacesIter, info.Owner, 0
+					else
+						ns = info.Owner
+						local iter = _GetExtendInterfacesCache[ns]
+						if not iter then
+							local eIF = info.ExtendInterface
+							iter = function (ns, index)
+								index = index + 1
+								local IF = eIF[index]
+								if IF then return index, IF end
+							end
+							_GetExtendInterfacesCache[ns] = iter
+						end
+						return iter, ns, 0
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner, 0
 			end
 		end
 
 		doc "GetAllExtendInterfaces" [[
 			<desc>Get all the extend interfaces of the class|interface</desc>
 			<param name="object">the object to query</param>
-			<return type="table">the full extend interface list in the inheritance tree</return>
-			<usage>System.Reflector.GetAllExtendInterfaces(System.Object)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the all extend interface iterator|the result table</return>
+			<usage>for _, IF in System.Reflector.GetAllExtendInterfaces(System.Object) do print(IF) end</usage>
 		]]
-		function GetAllExtendInterfaces(cls)
-			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
-
-			local info = _NSInfo[cls]
-
-			if info.Cache4Interface then
-				local ret = {}
-				for _, IF in ipairs(info.Cache4Interface) do tinsert(ret, IF) end
-				return ret
+		local _GetAllExtendInterfacesCache, _GetAllExtendInterfacesIter
+		if not SAVE_MEMORY then
+			_GetAllExtendInterfacesCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetAllExtendInterfacesIter = function (ns, index)
+				index = index + 1
+				local IF = _NSInfo[ns].Cache4Interface[index]
+				if IF then return index, IF end
 			end
 		end
+		function GetAllExtendInterfaces(ns, result)
+			local info = _NSInfo[ns]
 
-		doc "GetChildClasses" [[
-			<desc>Get the classes that inherited from the class</desc>
-			<param name="object">the object to query</param>
-			<return type="table">the child class list</return>
-			<usage>System.Reflector.GetChildClasses(System.Object)</usage>
-		]]
-		function GetChildClasses(cls)
-			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
-
-			local info = _NSInfo[cls]
-
-			if info.Type == TYPE_CLASS and info.ChildClass then
-				local ret = {}
-
-				for subCls in pairs(info.ChildClass) do tinsert(ret, subCls) end
-
-				return ret
+			if info and info.Cache4Interface then
+				if type(result) == "table" then
+					for _, IF in ipairs(info.Cache4Interface) do tinsert(result, IF) end
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetAllExtendInterfacesIter, info.Owner, 0
+					else
+						ns = info.Owner
+						local iter = _GetAllExtendInterfacesCache[ns]
+						if not iter then
+							local eIF = info.Cache4Interface
+							iter = function (ns, index)
+								index = index + 1
+								local IF = eIF[index]
+								if IF then return index, IF end
+							end
+							_GetAllExtendInterfacesCache[ns] = iter
+						end
+						return iter, ns, 0
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner, 0
 			end
 		end
 
 		doc "GetEvents" [[
-			<desc>Get the events of the class</desc>
-			<format>class|interface[, noSuper]</format>
-			<param name="class"></param>|interface the class or interface to query
-			<param name="noSuper">no super event handlers</param>
-			<return name="table">the event handler list</return>
-			<usage>System.Reflector.GetEvents(System.Object)</usage>
+			<desc>Get the events of the class|interface</desc>
+			<param name="class|interface">the class or interface to query</param>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the event iterator|the result table</return>
+			<usage>for name in System.Reflector.GetEvents(System.Object) do print(name) end</usage>
 		]]
-		function GetEvents(ns, noSuper)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		local _GetEventsCache, _GetEventsIter
+		if not SAVE_MEMORY then
+			_GetEventsCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetEventsIter = function (ns, key) return (next(_NSInfo[ns].Event, key)) end
+		end
+		function GetEvents(ns, result)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
-				local ret = {}
-
-				if noSuper then
-					for i, v in pairs(info.Event) do tinsert(ret, i) end
+			if info and info.Event then
+				if type(result) == "table" then
+					for k in pairs(info.Event) do tinsert(result, k) end
+					sort(result)
+					return result
 				else
-					for i, v in pairs(info.Cache) do if getmetatable(v) then tinsert(ret, i) end end
+					if SAVE_MEMORY then
+						return _GetEventsIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetEventsCache[ns]
+						if not iter then
+							local evts = info.Event
+							iter = function (ns, key) return (next(evts, key)) end
+							_GetEventsCache[ns] = iter
+						end
+						return iter, ns
+					end
 				end
-				sort(ret)
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
+			end
+		end
 
-				return ret
+		doc "GetAllEvents" [[
+			<desc>Get all the events of the class</desc>
+			<param name="class|interface">the class or interface to query</param>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the event iterator|the result table</return>
+			<usage>for name in System.Reflector.GetAllEvents(System.Object) do print(name) end</usage>
+		]]
+		local _GetAllEventsCache, _GetAllEventsIter
+		if not SAVE_MEMORY then
+			_GetAllEventsCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetAllEventsIter = function (ns, key) for k, v in next, _NSInfo[ns].Cache, key do if getmetatable(v) then return k end end end
+		end
+		function GetAllEvents(ns, result)
+			local info = _NSInfo[ns]
+
+			if info and info.Event then
+				if type(result) == "table" then
+					for k, v in pairs(info.Cache) do if getmetatable(v) then tinsert(result, k) end end
+					sort(result)
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetAllEventsIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetAllEventsCache[ns]
+						if not iter then
+							local cache = info.Cache
+							iter = function (ns, key) for k, v in next, cache, key do if getmetatable(v) then return k end end end
+							_GetAllEventsCache[ns] = iter
+						end
+						return iter, ns
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
 		doc "GetProperties" [[
 			<desc>Get the properties of the class|interface</desc>
 			<param name="object">the class or interface to query</param>|
-			<param name="noSuper" optional="true" type="boolean">no super properties</param>
-			<return type="table">the property list</return>
-			<usage>System.Reflector.GetProperties(System.Object)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the property iterator|the result table</return>
+			<usage>for name in System.Reflector.GetProperties(System.Object) do print(name) end</usage>
 		]]
-		function GetProperties(ns, noSuper)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		local _GetPropertiesCache, _GetPropertiesIter
+		if not SAVE_MEMORY then
+			_GetPropertiesCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetPropertiesIter = function (ns, key) return (next(_NSInfo[ns].Property, key)) end
+		end
+		function GetProperties(ns, result)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
-				local ret = {}
-
-				if noSuper then
-					for i, v in pairs(info.Property) do tinsert(ret, i) end
+			if info and info.Property then
+				if type(result) == "table" then
+					for k in pairs(info.Property) do tinsert(result, k) end
+					sort(result)
+					return result
 				else
-					for i, v in pairs(info.Cache) do if type(v) == "table" and not getmetatable(v) then tinsert(ret, i) end end
-					for i, v in pairs(info.Property) do if v.IsStatic then tinsert(ret, i) end end
+					if SAVE_MEMORY then
+						return _GetPropertiesIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetPropertiesCache[ns]
+						if not iter then
+							local props = info.Property
+							iter = function (ns, key) return (next(props, key)) end
+							_GetPropertiesCache[ns] = iter
+						end
+						return iter, ns
+					end
 				end
-				sort(ret)
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
+			end
+		end
 
-				return ret
+		doc "GetAllProperties" [[
+			<desc>Get all the properties of the class|interface</desc>
+			<param name="object">the class or interface to query</param>|
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the property iterator|the result table</return>
+			<usage>for name in System.Reflector.GetAllProperties(System.Object) do print(name) end</usage>
+		]]
+		local _GetAllPropertiesCache, _GetAllPropertiesIter
+		if not SAVE_MEMORY then
+			_GetAllPropertiesCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetAllPropertiesIter = function (ns, key)
+				local info = _NSInfo[ns]
+				local props = info.Cache
+
+				if key == nil or props[key] then
+					for k, v in next, props, key do if type(v) == "table" and not getmetatable(v) then return k end end
+					key = nil
+				end
+
+				props = info.Property
+
+				if key == nil or props[key] then
+					for k, v in next, props, key do if v.IsStatic then return k end end
+				end
+			end
+		end
+		function GetAllProperties(ns, result)
+			local info = _NSInfo[ns]
+
+			if info and info.Property then
+				if type(result) == "table" then
+					for k, v in pairs(info.Cache) do if type(v) == "table" and not getmetatable(v) then tinsert(result, k) end end
+					for k, v in pairs(info.Property) do if v.IsStatic then tinsert(result, k) end end
+					sort(result)
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetAllPropertiesIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetAllPropertiesCache[ns]
+						if not iter then
+							local cache = info.Cache
+							local props = info.Property
+							iter = function (ns, key)
+								if key == nil or cache[key] then
+									for k, v in next, cache, key do if type(v) == "table" and not getmetatable(v) then return k end end
+									key = nil
+								end
+
+								if key == nil or props[key] then
+									for k, v in next, props, key do if v.IsStatic then return k end end
+								end
+							end
+							_GetAllPropertiesCache[ns] = iter
+						end
+						return iter, ns
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
 		doc "GetMethods" [[
 			<desc>Get the methods of the class|interface</desc>
 			<param name="object">the class or interface to query</param>
-			<param name="noSuper" optional="true" type="boolean">no super methodes</param>
-			<return type="table">the method list</return>
-			<usage>System.Reflector.GetMethods(System.Object)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the method iterator|the result table</return>
+			<usage>for name in System.Reflector.GetMethods(System.Object) do print(name) end</usage>
 		]]
-		function GetMethods(ns, noSuper)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		local _GetMethodsCache, _GetMethodsIter
+		if not SAVE_MEMORY then
+			_GetMethodsCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetMethodsIter = function (ns, key) return (next(_NSInfo[ns].Method, key)) end
+		end
+		function GetMethods(ns, result)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE or info.Type == TYPE_STRUCT) then
-				local ret = {}
-
-				if info.Type == TYPE_STRUCT then
-					if not info.Method then return end
-					noSuper = true
-				end
-
-				if noSuper then
-					for k, v in pairs(info.Method) do tinsert(ret, k) end
+			if info and info.Method then
+				if type(result) == "table" then
+					for k in pairs(info.Method) do tinsert(result, k) end
+					sort(result)
+					return result
 				else
-					for k, v in pairs(info.Cache) do if type(v) == "function" then tinsert(ret, k) end end
-					for k, v in pairs(info.Method) do if info.Cache[k] == nil then tinsert(ret, k) end end
+					if SAVE_MEMORY then
+						return _GetMethodsIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetMethodsCache[ns]
+						if not iter then
+							local methods = info.Method
+							iter = function (ns, key) return (next(methods, key)) end
+							_GetMethodsCache[ns] = iter
+						end
+						return iter, ns
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
+			end
+		end
+
+		doc "GetAllMethods" [[
+			<desc>Get all the methods of the class|interface</desc>
+			<param name="object">the class or interface to query</param>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the method iterator|the result table</return>
+			<usage>for name in System.Reflector.GetAllMethods(System.Object) do print(name) end</usage>
+		]]
+		local _GetAllMethodsCache, _GetAllMethodsIter
+		if not SAVE_MEMORY then
+			_GetAllMethodsCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetAllMethodsIter = function (ns, key)
+				local info = _NSInfo[ns]
+				local methods = info.Cache or info.Method
+
+				if key == nil or methods[key] then
+					for k, v in next, methods, key do if type(v) == "function" then return k end end
+					key = nil
 				end
 
-				sort(ret)
+				methods = info.StaticMethod
 
-				return ret
+				if methods and (key == nil or methods[key]) then
+					for k, v in next, methods, key do return k end
+				end
+			end
+		end
+		function GetAllMethods(ns, result)
+			local info = _NSInfo[ns]
+
+			if info and info.Method then
+				if type(result) == "table" then
+					for k, v in pairs(info.Cache or info.Method) do if type(v) == "function" then tinsert(result, k) end end
+					if info.StaticMethod then for k, v in pairs(info.StaticMethod) do tinsert(result, k) end end
+					sort(result)
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetAllMethodsIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetAllMethodsCache[ns]
+						if not iter then
+							local cache = info.Cache or info.Method
+							local static = info.StaticMethod
+							iter = function (ns, key)
+								if key == nil or cache[key] then
+									for k, v in next, cache, key do if type(v) == "function" then return k end end
+									key = nil
+								end
+
+								if static and (key == nil or static[key]) then
+									for k, v in next, static, key do return k end
+								end
+							end
+							_GetAllMethodsCache[ns] = iter
+						end
+						return iter, ns
+					end
+				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
 		doc "GetPropertyType" [[
 			<desc>Get the property type of the property</desc>
 			<param name="owner" type="class|interface">the property's owner</param>
-			<param name="propName" type="string">the property name</param>
+			<param name="name" type="string">the property name</param>
 			<return type="System.Type">the property type</return>
 			<usage>System.Reflector.GetPropertyType(System.Object, "Name")</usage>
 		]]
-		function GetPropertyType(ns, propName)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		function GetPropertyType(ns, name)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE)then
-				local prop = info.Cache[propName] or info.Property[propName]
-				if type(prop) == "table" and not getmetatable(prop) and prop.Type then
-					return prop.Type:Clone()
-				end
+			if info and info.Property then
+				local prop = info.Cache[name] or info.Property[name]
+				return type(prop) == "table" and getmetatable(prop) == nil and prop.Type or nil
 			end
 		end
 
 		doc "HasProperty" [[
 			<desc>whether the property is existed</desc>
 			<param name="owner" type="class|interface">The owner of the property</param>
-			<param name="propName" type="string">The property's name</param>
+			<param name="name" type="string">The property's name</param>
 			<return type="boolean">true if the class|interface has the property</return>
 			<usage>System.Reflector.HasProperty(System.Object, "Name")</usage>
 		]]
-		function HasProperty(ns, propName)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		function HasProperty(ns, name)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE)then
-				local prop = info.Cache[propName] or info.Property[propName]
-				if type(prop) == "table" and not getmetatable(prop) and prop.Type then return true end
+			if info and info.Property then
+				local prop = info.Cache[name] or info.Property[name]
+				if type(prop) == "table" and getmetatable(prop) == nil and prop.Type then return true end
 			end
 			return false
 		end
@@ -4813,19 +5039,17 @@ do
 		doc "IsPropertyReadable" [[
 			<desc>whether the property is readable</desc>
 			<param name="owner" type="class|interface">the property's owner</param>
-			<param name="propName" type="string">the property's name</param>
+			<param name="name" type="string">the property's name</param>
 			<return type="boolean">true if the property is readable</return>
 			<usage>System.Reflector.IsPropertyReadable(System.Object, "Name")</usage>
 		]]
-		function IsPropertyReadable(ns, propName)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		function IsPropertyReadable(ns, name)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
-				local prop = info.Cache[propName]
-				if prop then return type(prop) == "table" and not getmetatable(prop) and (prop.Get or prop.GetMethod or prop.Field or prop.Default ~= nil) and true or false end
-				prop = info.Property[propName]
+			if info and info.Property then
+				local prop = info.Cache[name]
+				if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Get or prop.GetMethod or prop.Field or prop.Default ~= nil) and true or false end
+				prop = info.Property[name]
 				if prop and prop.IsStatic then return (prop.Get or prop.GetMethod or prop.Default ~= nil) and true or false end
 			end
 		end
@@ -4833,19 +5057,17 @@ do
 		doc "IsPropertyWritable" [[
 			<desc>whether the property is writable</desc>
 			<param name="owner" type="class|interface">the property's owner</param>
-			<param name="propName" type="string">the property's name</param>
+			<param name="name" type="string">the property's name</param>
 			<return type="boolean">true if the property is writable</return>
 			<usage>System.Reflector.IsPropertyWritable(System.Object, "Name")</usage>
 		]]
-		function IsPropertyWritable(ns, propName)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		function IsPropertyWritable(ns, name)
 			local info = _NSInfo[ns]
 
-			if info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) then
-				local prop = info.Cache[propName]
-				if prop then return type(prop) == "table" and not getmetatable(prop) and (prop.Set or prop.SetMethod or prop.Field) and true or false end
-				prop = info.Property[propName]
+			if info and info.Property then
+				local prop = info.Cache[name]
+				if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Set or prop.SetMethod or prop.Field) and true or false end
+				prop = info.Property[name]
 				if prop and prop.IsStatic then return (prop.Set or prop.SetMethod) and true or false end
 			end
 		end
@@ -4857,10 +5079,7 @@ do
 			<return type="boolean">true if the method must be overridden</return>
 		]]
 		function IsRequiredMethod(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
-
 			return info and info.RequireMethod and info.RequireMethod[name] or false
 		end
 
@@ -4871,10 +5090,7 @@ do
 			<return type="boolean">true if the property must be overridden</return>
 		]]
 		function IsRequiredProperty(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
-
 			return info and info.RequireProperty and info.RequireProperty[name] or false
 		end
 
@@ -4885,10 +5101,7 @@ do
 			<return type="boolean">true if the method should be overridden</return>
 		]]
 		function IsOptionalMethod(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
-
 			return info and info.OptionalMethod and info.OptionalMethod[name] or false
 		end
 
@@ -4899,10 +5112,7 @@ do
 			<return type="boolean">true if the property should be overridden</return>
 		]]
 		function IsOptionalProperty(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
-
 			return info and info.OptionalProperty and info.OptionalProperty[name] or false
 		end
 
@@ -4913,8 +5123,6 @@ do
 			<return type="boolean">true if the property is static</return>
 		]]
 		function IsStaticProperty(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
 
 			info = info and info.Property
@@ -4930,10 +5138,7 @@ do
 			<return type="boolean">true if the method is static</return>
 		]]
 		function IsStaticMethod(ns, name)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
 			local info = _NSInfo[ns]
-
 			return info and info.StaticMethod and info.StaticMethod[name] or false
 		end
 
@@ -4944,45 +5149,46 @@ do
 			<usage>System.Reflector.IsFlagsEnum(System.AttributeTargets)</usage>
 		]]
 		function IsFlagsEnum(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			return ns and _NSInfo[ns] and _NSInfo[ns].IsFlags or false
+			local info = _NSInfo[ns]
+			return info and info.IsFlags or false
 		end
 
 		doc "GetEnums" [[
 			<desc>Get the enumeration keys of the enum</desc>
 			<param name="enum" type="enum">the enum tyep</param>
-			<return type="table">the enum key list</return>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the enum key iterator|the result table</return>
 			<usage>System.Reflector.GetEnums(System.AttributeTargets)</usage>
 		]]
-		function GetEnums(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
+		local _GetEnumsCache, _GetEnumsIter
+		if not SAVE_MEMORY then
+			_GetEnumsCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetEnumsIter = function (ns, key) return next(_NSInfo[ns].Enum, key) end
+		end
+		function GetEnums(ns, result)
 			local info = _NSInfo[ns]
 
-			if info and info.Type == TYPE_ENUM then
-				if info.IsFlags then
-					local tmp = {}
-					local zero = nil
-
-					for i, v in pairs(info.Enum) do
-						if type(v) == "number" then
-							if v > 0 then tmp[floor(log(v)/log(2)) + 1] = i else zero = i end
-						end
-					end
-
-					if zero then tinsert(tmp, 1, zero) end
-
-					return tmp
+			if info and info.Enum then
+				if type(result) == "table" then
+					for k, v in pairs(info.Enum) do result[k] = v end
+					return result
 				else
-					local tmp = {}
-
-					for i in pairs(info.Enum) do tinsert(tmp, i) end
-
-					sort(tmp)
-
-					return tmp
+					if SAVE_MEMORY then
+						return _GetEnumsIter, info.Owner
+					else
+						ns = info.Owner
+						local iter = _GetEnumsCache[ns]
+						if not iter then
+							local enums = info.Enum
+							iter = function (ns, key) return next(enums, key) end
+							_GetEnumsCache[ns] = iter
+						end
+						return iter, ns
+					end
 				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
@@ -5004,12 +5210,9 @@ do
 			<return type="boolean">if the owner has the event</return>
 			<usage>System.Reflector.HasEvent(Addon, "OnEvent")</usage>
 		]]
-		function HasEvent(cls, evt)
-			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
-
-			local info = _NSInfo[cls]
-
-			return info and (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and getmetatable(info.Cache[evt]) or false
+		function HasEvent(ns, evt)
+			local info = _NSInfo[ns]
+			return info and info.Cache and getmetatable(info.Cache[evt]) or false
 		end
 
 		doc "GetStructType" [[
@@ -5018,10 +5221,7 @@ do
 			<return type="string">the type of the struct type</return>
 		]]
 		function GetStructType(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			local info = ns and _NSInfo[ns]
-
+			local info = _NSInfo[ns]
 			return info and info.Type == TYPE_STRUCT and info.SubType or nil
 		end
 
@@ -5031,42 +5231,77 @@ do
 			<return type="System.Type">the array element's type</return>
 		]]
 		function GetStructArrayElement(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			local info = ns and _NSInfo[ns]
-
+			local info = _NSInfo[ns]
 			return info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement and info.ArrayElement:Clone() or nil
+		end
+
+		doc "HasStructMember" [[
+			<desc>Whether the struct has the query member</desc>
+			<param name="struct" type="struct">the struct type</param>
+			<param name="member" type="string">the query member</param>
+			<return type="boolean">true if the struct has the member</return>
+		]]
+		function HasStructMember(ns, member)
+			local info = _NSInfo[ns]
+
+			if info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+				for _, part in ipairs(info.Members) do if part == member then return true end end
+			end
+
+			return false
+		end
+
+		doc "IsRequiredMember" [[
+			<desc>Whether the member of the struct is required.</desc>
+			<param name="struct" type="struct">the struct type</param>
+			<param name="member" type="string">the query member</param>
+			<return type="boolean">true if the struct has the member</return>
+		]]
+		function IsRequiredMember(ns, member)
+			local info = _NSInfo[ns]
+
+			if info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_MEMBER then
+				if info.RequireMember and info.RequireMember[member] then return true end
+			end
+
+			return false
 		end
 
 		doc "GetStructMembers" [[
 			<desc>Get the parts of the struct type</desc>
 			<param name="struct" type="struct">the struct type</param>
-			<return type="table">the struct part name list</return>
-			<usage>System.Reflector.GetStructMembers(Position)</usage>
+			<param name="result" optional="true">the result table</param>
+			<return name="iterator|result">the member iterator|the result table</return>
+			<usage>for _, member in System.Reflector.GetStructMembers(Position) do print(member) end</usage>
 		]]
-		function GetStructMembers(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
+		local _GetStructMembersCache, _GetStructMembersIter
+		if not SAVE_MEMORY then
+			_GetStructMembersCache = setmetatable({}, WEAK_ALL)
+		else
+			_GetStructMembersIter = function (ns, key) return next(_NSInfo[ns].Members, key) end
+		end
+		function GetStructMembers(ns, result)
+			local info = _NSInfo[ns]
 
-			local info = ns and _NSInfo[ns]
-
-			if info and info.Type == TYPE_STRUCT then
-				if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0 then
-					local tmp = {}
-
-					for _, part in ipairs(info.Members) do tinsert(tmp, part) end
-
-					return tmp
-				elseif info.SubType == _STRUCT_TYPE_ARRAY then
-					return { "element" }
-				elseif info.SubType == _STRUCT_TYPE_CUSTOM then
-					local tmp = {}
-
-					for key, value in pairs(info.StructEnv) do if type(key) == "string" and IsValidatedType(value) then tinsert(tmp, key) end end
-
-					sort(tmp)
-
-					return tmp
+			if info and info.Members then
+				if type(result) == "table" then
+					for _, member in ipairs(info.Members) do tinsert(result, member) end
+					return result
+				else
+					if SAVE_MEMORY then
+						return _GetStructMembersIter, info.Owner
+					else
+						local members = info.Members
+						local iter = _GetStructMembersCache[members]
+						if not iter then
+							iter = function (ns, key) return next(members, key) end
+							_GetStructMembersCache[members] = iter
+						end
+						return iter, ns
+					end
 				end
+			else
+				return type(result) == "table" and result or iterForEmpty, info.Owner
 			end
 		end
 
@@ -5078,19 +5313,14 @@ do
 			<usage>System.Reflector.GetStructMember(Position, "x")</usage>
 		]]
 		function GetStructMember(ns, part)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			local info = ns and _NSInfo[ns]
+			local info = _NSInfo[ns]
 
 			if info and info.Type == TYPE_STRUCT then
-				if info.SubType == _STRUCT_TYPE_MEMBER and info.Members and #info.Members > 0  then
-					for _, p in ipairs(info.Members) do
-						if p == part and IsValidatedType(info.StructEnv[part]) then return info.StructEnv[part]:Clone() end
-					end
+				if info.SubType == _STRUCT_TYPE_MEMBER and info.Members then
+					local mType = rawget(info.StructEnv, part)
+					if IsNameSpace(mType) then return mType end
 				elseif info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement then
-					return info.ArrayElement:Clone()
-				elseif info.SubType == _STRUCT_TYPE_CUSTOM then
-					if IsValidatedType(info.StructEnv[part]) then return info.StructEnv[part]:Clone() end
+					return info.ArrayElement
 				end
 			end
 		end
@@ -5129,10 +5359,7 @@ do
 			<return type="boolean">true if the class is an abstract class</return>
 		]]
 		function IsAbstractClass(ns)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
-
-			local info = ns and _NSInfo[ns]
-
+			local info = _NSInfo[ns]
 			return info and info.AbstractClass or false
 		end
 
@@ -5142,7 +5369,11 @@ do
 			<return type="class">the object's class</return>
 			<usage>System.Reflector.GetObjectClass(obj)</usage>
 		]]
-		GetObjectClass = getmetatable
+		function GetObjectClass(object)
+			local cls = getmetatable(object)
+			local info = _NSInfo[cls]
+			return info and info.Type == TYPE_CLASS and cls or nil
+		end
 
 		doc "ObjectIsClass" [[
 			<desc>Check if this object is an instance of the class</desc>
@@ -5151,9 +5382,8 @@ do
 			<return type="boolean">true if the object is an instance of the class or it's child class</return>
 			<usage>System.Reflector.ObjectIsClass(obj, Object)</usage>
 		]]
-		function ObjectIsClass(obj, cls)
-			if type(cls) == "string" then cls = GetNameSpaceForName(cls) end
-			return (obj and cls and IsChildClass(cls, GetObjectClass(obj))) or false
+		function ObjectIsClass(obj, ns)
+			return IsChildClass(type(ns) == "string" and GetNameSpaceForName(ns) or ns, GetObjectClass(obj)) or false
 		end
 
 		doc "ObjectIsInterface" [[
@@ -5163,9 +5393,8 @@ do
 			<return type="boolean">true if the object's class is extended from the interface</return>
 			<usage>System.Reflector.ObjectIsInterface(obj, IFSocket)</usage>
 		]]
-		function ObjectIsInterface(obj, IF)
-			if type(IF) == "string" then IF = GetNameSpaceForName(IF) end
-			return (obj and IF and IsExtend(IF, GetObjectClass(obj))) or false
+		function ObjectIsInterface(obj, ns)
+			return IsExtend(type(ns) == "string" and GetNameSpaceForName(ns) or ns, GetObjectClass(obj)) or false
 		end
 
 		doc "FireObjectEvent" [[
@@ -5235,25 +5464,10 @@ do
 			end
 		end
 
-		-- Recycle the test type object
-		_Validate_Type = setmetatable({}, {
-			__call = function(self, key)
-				if key then
-					key.AllowNil = nil
-					key[1] = nil
-					key.Name = nil
-
-					tinsert(self, key)
-				else
-					if next(self) then return tremove(self) else return BuildValidatedType(nil) end
-				end
-			end,
-		})
-
 		doc "Validate" [[
 			<desc>Validating the value to the given type.</desc>
 			<format>type, value, name[, prefix[, stacklevel] ]</format>
-			<param name="type">such like Object+String+nil</param>
+			<param name="oType">The test type</param>
 			<param name="value">the test value</param>
 			<param name="name">the parameter's name</param>
 			<param name="prefix">the prefix string</param>
@@ -5261,57 +5475,38 @@ do
 			<return>the validated value</return>
 			<usage>System.Reflector.Validate(System.String+nil, "Test")</usage>
 		]]
-		function Validate(types, value, name, prefix, stacklevel)
-			stacklevel = type(stacklevel) == "number" and stacklevel > 0 and stacklevel or 0
-
-			stacklevel = math.floor(stacklevel)
+		function Validate(oType, value, name, prefix, stacklevel)
+			stacklevel = floor(type(stacklevel) == "number" and stacklevel > 0 and stacklevel or 0)
 
 			if type(name) ~= "string" then name = "value" end
-			if types == nil then return value end
+			if oType == nil then return value end
 
-			if IsNameSpace(types) then
-				local vtype = _Validate_Type()
+			assert(_NSInfo[oType] and _NSInfo[oType].Type, "Usage : System.Reflector.Validate(oType, value[, name[, prefix]]) : oType - must be enum, struct, class or interface.")
 
-				vtype.AllowNil = nil
-				vtype[1] = types
-				vtype.Name = name
+			local ok
 
-				types = vtype
-			end
+			ok, value = pcall(Validate4Type, oType, value)
 
-			local ok, _type = pcall(BuildValidatedType, types)
+			if not ok then
+				value = strtrim(value:match(":%d+:%s*(.-)$") or value):gsub("%%s[_%w]*", name)
 
-			if ok then
-				if _type then
-					ok, value = pcall(_type.Validate, _type, value)
-
-					-- Recycle
-					_Validate_Type(types)
-
-					if not ok then
-						value = strtrim(value:match(":%d+:%s*(.-)$") or value):gsub("%%s[_%w]*", name)
-
-						if type(prefix) == "string" then
-							error(prefix .. value, 3 + stacklevel)
-						else
-							error(value, 2)
-						end
-					end
+				if type(prefix) == "string" then
+					error(prefix .. value, 3 + stacklevel)
 				else
-					-- Recycle
-					_Validate_Type(types)
+					error(value, 2)
 				end
-
-				return value
-			else
-				-- Recycle
-				_Validate_Type(types)
-
-				error("Usage : System.Reflector.Validate(type, value[, name[, prefix]]) : type - must be nil, enum, struct or class.", 2)
 			end
 
 			return value
 		end
+
+		doc "GetValidatedValue" [[
+			<desc>Get validated value for the type</desc>
+			<param name="oType">The test type</param>
+			<param name="value">the test value</param>
+			<return>the validated value, nil if the value can't pass the validation</return>
+		]]
+		GetValidatedValue = GetValidatedValue
 
 		doc "GetDocument" [[
 			<desc>Get the document</desc>
@@ -5368,17 +5563,9 @@ do
 		end
 
 		function Serialize(data, ns)
-			if ns then
-				if ObjectIsClass(ns, ValidatedType) then
-					ns = ns:GetObjectType(data)
+			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 
-					if ns == false then return nil elseif ns == nil then return "nil" end
-				elseif type(ns) == "string" then
-					ns = GetNameSpaceForName(ns)
-				end
-			end
-
-			if ns and _NSInfo[ns] then
+			if _NSInfo[ns] then
 				if Reflector.IsEnum(ns) then
 					if _NSInfo[ns].IsFlags and type(data) == "number" then
 						local ret = {ns(data)}
@@ -5503,12 +5690,11 @@ do
 			<return type="object">the default value if existed</return>
 		]]
 		function GetDefaultValue(ns, part)
-			if type(ns) == "string" then ns = GetNameSpaceForName(ns) end
 			local info = _NSInfo[ns]
 			if info then
 				if (info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE) and part then
 					part = info.Cache[part]
-					if type(part) == "table" and not getmetatable(part) then
+					if type(part) == "table" and getmetatable(part) == nil and type(part.Default) ~= "function" then
 						return part.Default
 					end
 				elseif info.Type == TYPE_ENUM then
@@ -5531,6 +5717,19 @@ do
 		function GetDefinitionEnvironmentOwner(env)
 			if type(env) == "table" then return env[OWNER_FIELD] end
 		end
+
+		doc "IsCallable" [[
+			<desc>Whether the object is callable(function or table with __call meta-method)</desc>
+			<param name="obj">The object need to check</param>
+			<return>boolean, true if the object is callable</return>
+		]]
+		function IsCallable(obj)
+			if type(obj) == "function" then return true end
+			local cls = GetObjectClass(obj)
+			local info = cls and rawget(_NSInfo, cls)
+
+			return info and info.Type == TYPE_CLASS and info.MetaTable.__call and true or false
+		end
 	end)
 end
 
@@ -5538,447 +5737,6 @@ end
 -- Local Namespace (Inner classes)
 ------------------------------------------------------
 do
-	class "ValidatedType" (function(_ENV)
-		doc "ValidatedType" [[The type object used to handle the value's validation]]
-
-		------------------------------------------------------
-		-- Property
-		------------------------------------------------------
-		doc [[Whether allow nil or not]]
-		property "AllowNil" { Type = Boolean }
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		doc "Validate" [[
-			<desc>Used to validate the value</desc>
-			<param name="value"></param>
-			<param name="partName" optional="true">the name of the field</param>
-			<param name="mainName" optional="true">the name present the value</param>
-			<param name="stack" optional="true">the stack level, default 1</param>
-			<return>the validated value</return>
-			<return>the validated type</return>
-		]]
-		function Validate(self, value, partName, mainName, stack)
-			if value == nil and self.AllowNil then return value end
-
-			local flag, errorMsg, info, tmpMsg
-			local index = -1
-			local types
-
-			info = _NSInfo[rawget(self, index)]
-			if info then
-				while info do
-					tmpMsg = nil
-
-					if info.Type == TYPE_CLASS then
-						if IsChildClass(info.Owner, value) then return value end
-						tmpMsg = ("%s must be subclass of [class]%s."):format("%s", tostring(info.Owner))
-					elseif info.Type == TYPE_INTERFACE then
-						if IsExtend(info.Owner, value) then return value end
-						tmpMsg = ("%s must extended from [interface]%s."):format("%s", tostring(info.Owner))
-					elseif value == info.Owner then
-						return value
-					else
-						types = (types or "") .. tostring(info.Owner) .. ", "
-					end
-
-					if tmpMsg and not errorMsg then
-						if partName and partName ~= "" then
-							if tmpMsg:find("%%s([_%w]+)") then
-								errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
-							else
-								errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
-							end
-						else
-							errorMsg = tmpMsg
-						end
-					end
-
-					index = index - 1
-					info = _NSInfo[rawget(self, index)]
-				end
-
-				if types and #types >= 3 and not errorMsg then
-					tmpMsg = ("%s must be the type in ()."):format("%s", types:sub(1, -3))
-
-					if partName and partName ~= "" then
-						if tmpMsg:find("%%s([_%w]+)") then
-							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
-						else
-							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
-						end
-					else
-						errorMsg = tmpMsg
-					end
-				end
-			end
-
-			for _, ns in ipairs(self) do
-				info = _NSInfo[ns]
-
-				tmpMsg = nil
-
-				if not info then
-					-- do nothing
-				elseif info.Type == TYPE_STRUCT then
-					-- Check if the value is an enumeration value of this structure
-					flag, tmpMsg = pcall(ValidateStruct, ns, value)
-
-					if flag then return tmpMsg, ns end
-
-					tmpMsg = strtrim(tmpMsg:match(":%d+:%s*(.-)$") or tmpMsg)
-				elseif info.Type == TYPE_CLASS then
-					-- Check if the value is an instance of this class
-					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then return value, ns end
-
-					tmpMsg = ("%s must be an instance of [class]%s."):format("%s", tostring(ns))
-				elseif info.Type == TYPE_INTERFACE then
-					-- Check if the value is an instance of this interface
-					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then return value, ns end
-
-					tmpMsg = ("%s must be an instance extended from [interface]%s."):format("%s", tostring(ns))
-				elseif info.Type == TYPE_ENUM then
-					-- Check if the value is an enumeration value of this enum
-					if type(value) == "string" and info.Enum[strupper(value)] then return info.Enum[strupper(value)], ns end
-
-					if info.MaxValue then
-						-- Bit flag validation, use MaxValue check to reduce cost
-						value = tonumber(value)
-
-						if value then
-							if value >= 1 and value <= info.MaxValue then
-								return floor(value), ns
-							elseif value == 0 and info.Cache[0] then
-								return value, ns
-							end
-						end
-					else
-						if info.Cache[value] then return value, ns end
-					end
-
-					tmpMsg = ("%s must be a value of [enum]%s ( %s )."):format("%s", tostring(ns), GetShortEnumInfo(ns))
-				end
-
-				if tmpMsg and not errorMsg then
-					if partName and partName ~= "" then
-						if tmpMsg:find("%%s([_%w]+)") then
-							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName..".")
-						else
-							errorMsg = tmpMsg:gsub("%%s", "%%s"..partName)
-						end
-					else
-						errorMsg = tmpMsg
-					end
-				end
-			end
-
-			if errorMsg and self.AllowNil and not errorMsg:match("%(Optional%)$") then errorMsg = errorMsg .. "(Optional)" end
-
-			if errorMsg then
-				if mainName and errorMsg:find("%%s") then errorMsg = errorMsg:gsub("%%s[_%w]*", mainName) end
-
-				error(errorMsg, (stack or 1) + 1)
-			end
-
-			return value
-		end
-
-		doc "Clone" [[
-			<desc>Clone the type object</desc>
-			<return>the clone</return>
-		]]
-		function Clone(self)
-			local _type = ValidatedType()
-
-			for i, v in pairs(self) do _type[i] = v end
-
-			return _type
-		end
-
-		doc "Is" [[
-			<desc>Check if the type object constains such type</desc>
-			<param name="type" type="struct|enum|class|interface|nil">the target type</param>
-			<param name="onlyClass" optional="true">true if the type only match class, not class' object</param>
-			<return type="boolean"></return>
-		]]
-		function Is(self, ns, onlyClass)
-			if ns == nil then return self.AllowNil or false end
-
-			if IsNameSpace(ns) then
-				if not onlyClass then
-					for _, v in ipairs(self) do if v == ns then return true end end
-				else
-					local index = -1
-
-					while self[index] do
-						if self[index] == ns then return true end
-						index = index - 1
-					end
-				end
-			end
-
-			return false
-		end
-
-		doc "GetObjectType" [[
-			<desc>Get the object type if validated, false if nothing match</desc>
-			<param name="value">the value</param>
-			<return name="type">the value's validated type</return>
-		]]
-		function GetObjectType(self, value)
-			if value == nil and self.AllowNil then return end
-
-			local info
-			local index = -1
-
-			while self[index] do
-				info = _NSInfo[self[index]]
-
-				if not info then
-					-- skip
-				elseif info.Type == TYPE_CLASS then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then return info.Owner end
-				elseif info.Type == TYPE_INTERFACE then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then return info.Owner end
-				elseif info.Type then
-					if value == info.Owner then return info.Owner end
-				end
-
-				index = index - 1
-			end
-
-			for _, ns in ipairs(self) do
-				info = _NSInfo[ns]
-
-				if not info then
-					-- do nothing
-				elseif info.Type == TYPE_CLASS then
-					-- Check if the value is an instance of this class
-					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then return ns end
-				elseif info.Type == TYPE_INTERFACE then
-					-- Check if the value is an instance of this interface
-					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then return ns end
-				elseif info.Type == TYPE_ENUM then
-					-- Check if the value is an enumeration value of this enum
-					if type(value) == "string" and info.Enum[strupper(value)] then return ns end
-
-					if info.MaxValue then
-						-- Bit flag validation, use MaxValue check to reduce cost
-						value = tonumber(value)
-
-						if value then
-							if value >= 1 and value <= info.MaxValue then
-								return ns
-							elseif value == 0 and info.Cache[value] then
-								return ns
-							end
-						end
-					elseif info.Cache[value] then
-						return ns
-					end
-				elseif info.Type == TYPE_STRUCT then
-					-- Check if the value is an enumeration value of this structure
-					if pcall(ValidateStruct, ns, value) then return ns end
-				end
-			end
-
-			return false
-		end
-
-		doc "GetValidatedValue" [[
-			<desc>Get the validated value if validated, nil if not match</desc>
-			<param name="value">the value</param>
-			<return name="value">the validated value</return>
-		]]
-		function GetValidatedValue(self, value)
-			if value == nil and self.AllowNil then return end
-
-			local info
-			local index = -1
-
-			while self[index] do
-				info = _NSInfo[self[index]]
-
-				if not info then
-					-- skip
-				elseif info.Type == TYPE_CLASS then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsChildClass(info.Owner, value) then return value end
-				elseif info.Type == TYPE_INTERFACE then
-					if value and _NSInfo[value] and _NSInfo[value].Type == TYPE_CLASS and IsExtend(info.Owner, value) then return value end
-				elseif info.Type then
-					if value == info.Owner then return value end
-				end
-
-				index = index - 1
-			end
-
-			for _, ns in ipairs(self) do
-				info = _NSInfo[ns]
-
-				if not info then
-					-- do nothing
-				elseif info.Type == TYPE_CLASS then
-					-- Check if the value is an instance of this class
-					if type(value) == "table" and getmetatable(value) and IsChildClass(ns, getmetatable(value)) then return value end
-				elseif info.Type == TYPE_INTERFACE then
-					-- Check if the value is an instance of this interface
-					if type(value) == "table" and getmetatable(value) and IsExtend(ns, getmetatable(value)) then return value end
-				elseif info.Type == TYPE_ENUM then
-					-- Check if the value is an enumeration value of this enum
-					if type(value) == "string" then
-						local uValue = info.Enum[strupper(value)]
-						if uValue ~= nil then return uValue end
-					end
-
-					if info.MaxValue then
-						-- Bit flag validation, use MaxValue check to reduce cost
-						value = tonumber(value)
-
-						if value then
-							if value >= 1 and value <= info.MaxValue then
-								return value
-							elseif value == 0 and info.Cache[value] then
-								return value
-							end
-						end
-					elseif info.Cache[value] then
-						return value
-					end
-				elseif info.Type == TYPE_STRUCT then
-					-- Check if the value is an enumeration value of this structure
-					local flag, new = pcall(ValidateStruct, ns, value)
-
-					if flag then return new end
-				end
-			end
-		end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function ValidatedType(self, ns)
-			if IsNameSpace(ns) then self[1] = ns end
-		end
-
-		------------------------------------------------------
-		-- MetaMethod
-		------------------------------------------------------
-		function __exist(ns)
-			if getmetatable(ns) == ValidatedType then return ns end
-		end
-
-		function __add(v1, v2)
-			local ok, _type1, _type2
-
-			ok, _type1 = pcall(BuildValidatedType, v1)
-			if not ok then error(strtrim(_type1:match(":%d+:%s*(.-)$") or _type1), 2) end
-
-			ok, _type2 = pcall(BuildValidatedType, v2)
-			if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
-
-			if _type1 and _type2 then
-				local _type = ValidatedType()
-
-				_type.AllowNil = _type1.AllowNil or _type2.AllowNil
-
-				local tmp = {}
-
-				for _, ns in ipairs(_type1) do
-					tinsert(_type, ns)
-					tmp[ns] = true
-				end
-				for _, ns in ipairs(_type2) do if not tmp[ns] then tinsert(_type, ns) end end
-
-				wipe(tmp)
-
-				local index = -1
-				local pos = -1
-
-				while _type1[index] do
-					tmp[_type1[index]] = true
-					_type[pos] = _type1[index]
-					pos = pos -1
-					index = index - 1
-				end
-
-				index = -1
-
-				while _type2[index] do
-					if not tmp[_type2[index]] then
-						_type[pos] = _type2[index]
-						pos = pos -1
-					end
-					index = index - 1
-				end
-
-				tmp = nil
-
-				return _type
-			else
-				return _type1 or _type2
-			end
-		end
-
-		function __sub(v1, v2)
-			if IsNameSpace(v2) then
-				local ok, _type2
-
-				ok, _type2 = pcall(BuildValidatedType, v2, true)
-				if not ok then error(strtrim(_type2:match(":%d+:%s*(.-)$") or _type2), 2) end
-
-				return v1 + _type2
-			elseif v2 == nil then
-				return v1
-			else
-				error("The operation '-' must be used with class or interface.", 2)
-			end
-		end
-
-		function __unm(v1) error("Can't use unary '-' before a ValidatedType", 2) end
-
-		function __eq(v1, v2)
-			if getmetatable(v1) == ValidatedType and getmetatable(v2) == ValidatedType and v1.AllowNil == v2.AllowNil and #v1 == #v2 then
-				local index = -1
-				while rawget(v1, index) do
-					if v1[index] == v2[index] then
-						index = index - 1
-					else
-						return false
-					end
-				end
-
-				if rawget(v2, index) then return false end
-
-				for i = 1, #v1 do
-					if v1[i] ~= v2[i] then return false end
-				end
-
-				return true
-			else
-				return false
-			end
-		end
-
-		function __tostring(self)
-			local ret = ""
-
-			for _, tns in ipairs(self) do ret = ret .. " + " .. tostring(tns) end
-
-			local index = -1
-			while self[index] do
-				ret = ret .. " - " .. tostring(self[index])
-				index = index - 1
-			end
-
-			-- Allow nil
-			if self.AllowNil then ret = ret .. " + nil" end
-			if ret:sub(1, 2) == " +" then ret = ret:sub(4, -1) end
-
-			return ret
-		end
-	end)
-
 	namespace( nil )
 
 	class "Event" (function(_ENV)
@@ -5988,7 +5746,7 @@ do
 		property "Name" { Type = String, Default = "Anonymous" }
 
 		doc "Delegate" [[The delegate for the event handler, used to wrap the event call]]
-		property "Delegate" { Type = Function + nil }
+		property "Delegate" { Type = Function }
 
 		------------------------------------------------------
 		-- Constructor
@@ -6057,10 +5815,10 @@ do
 		property "Blocked" { Type = Boolean }
 
 		doc "Handler" [[The customer's handler]]
-		property "Handler" { Field = 0, Type = Function + nil, Handler = FireOnEventHandlerChanged }
+		property "Handler" { Field = 0, Type = Function, Handler = FireOnEventHandlerChanged }
 
 		doc "Delegate" [[The delegate for the event handler, used to wrap the event call]]
-		property "Delegate" { Type = Function + nil }
+		property "Delegate" { Type = Function }
 
 		------------------------------------------------------
 		-- Constructor
@@ -6205,7 +5963,7 @@ do
 						-- Clone if needed
 						if arg.CloneNeeded then value = CloneObj(value, true) end
 						-- Validate the value
-						value = arg.Type:GetValidatedValue(value)
+						value = GetValidatedValue(arg.Type, value)
 						if value == nil then return CACHE_TABLE(cache) end
 					end
 
@@ -6227,7 +5985,7 @@ do
 						-- Clone if needed
 						if arg.CloneNeeded then value = CloneObj(value, true) end
 						-- Validate the value
-						value = arg.Type:GetValidatedValue(value)
+						value = GetValidatedValue(arg.Type, value)
 						if value == nil then return CACHE_TABLE(cache) end
 					end
 
@@ -6239,7 +5997,7 @@ do
 
 				if base == 1 then tinsert(cache, 1, (select(1, ...))) end
 
-				-- Keep arguments in thread, so cache can be recycled
+				-- Keep arguments waiting for recycle
 				if argsChanged then
 					self.ArgCache = cache
 				else
@@ -6329,7 +6087,6 @@ do
 
 				return self.__Next or nil
 			end,
-			Type = FixedMethod + Function + nil,
 		}
 
 		doc "Usage" [[The usage of the fixed method]]
@@ -6382,7 +6139,7 @@ do
 						if serialize then str = str .. " = " .. serialize end
 					end
 
-					if not arg.Type or arg.Type:Is(nil) then str = "[" .. str .. "]" end
+					if not arg.Type or arg.Nilable then str = "[" .. str .. "]" end
 
 					tinsert(usage, str)
 				end
@@ -6642,17 +6399,17 @@ do
 			end
 		end
 
-		function ValidateAttributeUsable(config, attr, skipMulti)
-			if getmetatable(config) then
-				if IsEqual(config, attr) then return false end
-
-				if not skipMulti and getmetatable(config) == getmetatable(attr) then
-					local usage = GetAttributeUsage(getmetatable(config))
-
-					if not usage or not usage.AllowMultiple then return false end
+		function ValidateAttributeUsable(config, attr, skipMulti, chkOverride)
+			local cls = getmetatable(config)
+			if cls then
+				if cls == getmetatable(attr) then
+					local usage = GetAttributeUsage(cls)
+					if chkOverride and usage and usage.Overridable then return true end
+					if IsEqual(config, attr) then return false end
+					if not skipMulti and (not usage or not usage.AllowMultiple) then return false end
 				end
 			else
-				for _, v in ipairs(config) do if not ValidateAttributeUsable(v, attr, skipMulti) then return false end end
+				for _, v in ipairs(config) do if not ValidateAttributeUsable(v, attr, skipMulti, chkOverride) then return false end end
 			end
 
 			return true
@@ -6678,6 +6435,7 @@ do
 					arg1 = target.Name
 					arg2 = targetType
 					arg3 = owner
+					arg4 = target.Name
 				elseif targetType == AttributeTargets.Method then
 					arg1 = getmetatable(target) and target.Method or target
 					arg2 = targetType
@@ -6692,6 +6450,7 @@ do
 					arg1 = name
 					arg2 = targetType
 					arg3 = owner
+					arg4 = name
 				elseif targetType == AttributeTargets.Constructor then
 					arg1 = getmetatable(target) and target.Method or target
 					arg2 = targetType
@@ -6854,7 +6613,6 @@ do
 
 			-- Check if already existed
 			local pconfig = GetTargetAttributes(target, targetType, owner, name, true)
-			local sconfig = GetSuperAttributes(target, targetType, owner, name)
 
 			if pconfig then
 				if #prepared > 0 then
@@ -6862,7 +6620,7 @@ do
 
 					-- remove equal attributes
 					for i = #prepared, 1, -1 do
-						if not ValidateAttributeUsable(pconfig, prepared[i], true) then
+						if not ValidateAttributeUsable(pconfig, prepared[i], true, true) then
 							noUseAttr[tremove(prepared, i)] = true
 						end
 					end
@@ -6887,22 +6645,25 @@ do
 						end
 					end
 				end
-			elseif sconfig then
-				-- get inheritable attributes from superTarget
-				local usage
+			else
+				local sconfig = GetSuperAttributes(target, targetType, owner, name)
+				if sconfig then
+					-- get inheritable attributes from superTarget
+					local usage
 
-				if getmetatable(sconfig) then
-					usage = GetAttributeUsage(getmetatable(sconfig))
-
-					if not usage or usage.Inherited then
-						if ValidateAttributeUsable(prepared, sconfig) then sconfig:Clone() end
-					end
-				else
-					for _, attr in ipairs(sconfig) do
-						usage = GetAttributeUsage(getmetatable(attr))
+					if getmetatable(sconfig) then
+						usage = GetAttributeUsage(getmetatable(sconfig))
 
 						if not usage or usage.Inherited then
-							if ValidateAttributeUsable(prepared, attr) then attr:Clone() end
+							if ValidateAttributeUsable(prepared, sconfig) then sconfig:Clone() end
+						end
+					else
+						for _, attr in ipairs(sconfig) do
+							usage = GetAttributeUsage(getmetatable(attr))
+
+							if not usage or usage.Inherited then
+								if ValidateAttributeUsable(prepared, attr) then attr:Clone() end
+							end
 						end
 					end
 				end
@@ -7021,7 +6782,7 @@ do
 		__Attribute__ = SendAttributeToPrepared
 	end)
 
-	-- Attribute system on
+	-- Attribute system OnLine
 	ATTRIBUTE_INSTALLED = true
 
 	class "__Unique__" (function(_ENV)
@@ -7122,6 +6883,9 @@ do
 
 		doc "BeforeDefinition" [[Whether the ApplyAttribute method is running before the feature's definition, only works on class, interface and struct.]]
 		property "BeforeDefinition" { Type = Boolean }
+
+		doc "" [[Whether the attribute can be override, default false.]]
+		property "Overridable" { Type = Boolean }
 	end)
 
 	class "__Sealed__" (function(_ENV)
@@ -7150,40 +6914,40 @@ do
 	end)
 
 	struct "Argument" (function(_ENV)
-		Name = String + nil
-		Type = Any + nil
-		Default = Any + nil
-		IsList = Boolean + nil
+		Type = AnyType
+		Nilable = Boolean
+		Default = Any
+		Name = String
+		IsList = Boolean
+		CloneNeeded = Boolean
 
-		local function isCloneNeeded(self)
-			if getmetatable(self) ~= ValidatedType then return end
+		local function isCloneNeeded(ns)
+			if not ns then return false end
 
-			for _, ns in ipairs(self) do
-				local info = _NSInfo[ns]
+			local info = _NSInfo[ns]
 
-				if info and info.Type == TYPE_STRUCT then
-					if info.SubType == _STRUCT_TYPE_MEMBER then
-						if info.Validator then return true end
+			if info and info.Type == TYPE_STRUCT then
+				if info.SubType == _STRUCT_TYPE_MEMBER then
+					if info.Validator then return true end
 
-						if info.Members then
-							for _, n in ipairs(info.Members) do
-								if isCloneNeeded(info.StructEnv[n]) then return true end
-							end
+					if info.Members then
+						for _, n in ipairs(info.Members) do
+							if isCloneNeeded(info.StructEnv[n]) then return true end
 						end
-					elseif info.SubType == _STRUCT_TYPE_ARRAY then
-						if isCloneNeeded(info.ArrayElement) then return true end
-					elseif info.SubType == _STRUCT_TYPE_CUSTOM and info.Validator then
-						return true
 					end
+				elseif info.SubType == _STRUCT_TYPE_ARRAY then
+					return isCloneNeeded(info.ArrayElement)
+				elseif info.SubType == _STRUCT_TYPE_CUSTOM and info.Validator then
+					return true
 				end
 			end
+
+			return false
 		end
 
 		function Argument(value)
-			value.Type = GetUniqueValidatedType(value.Type and BuildValidatedType(value.Type) or nil)
-
 			if value.Type and value.Default ~= nil then
-				value.Default = value.Type:GetValidatedValue(value.Default)
+				value.Default = GetValidatedValue(value.Type, value.Default)
 			end
 
 			-- Whether the value should be clone, argument match would change some value, Just for safe
@@ -7202,29 +6966,18 @@ do
 		_Error_NotList = [[arg%d can't be a list]]
 
 		local function ValidateArgument(self, i)
-			local arg = self[i]
+			local ok, arg = pcall(Argument, self[i])
 
-			if getmetatable(arg) ~= nil then
-				-- Convert to type
-				if getmetatable(arg) == TYPE_NAMESPACE then arg = ValidatedType(arg) end
+			if ok then
+				self[i] = arg
 
-				-- Convert type to Argument
-				if getmetatable(arg) == ValidatedType then
-					arg = Argument { Type = arg }
-					self[i] = arg
-				else
-					error(_Error_Header .. _Error_NotArgument:format(i))
-				end
-			end
-
-			if pcall( Argument, arg ) then
 				-- Check ... args
 				if arg.IsList then
 					if i == #self then
 						if self.MinArgs then
 							error(_Error_Header .. _Error_NotList:format(i))
 						else
-							if not arg.Type or arg.Type:Is(nil) then
+							if not arg.Type or arg.Nilable then
 								self.MinArgs = i - 1
 							else
 								-- Must have one parameter at least
@@ -7239,7 +6992,7 @@ do
 					else
 						error(_Error_Header .. _Error_NotList:format(i))
 					end
-				elseif not arg.Type or arg.Type:Is(nil) then
+				elseif not arg.Type or arg.Nilable then
 					if not self.MinArgs then self.MinArgs = i - 1 end
 				elseif self.MinArgs then
 					-- Only optional args can be defined after optional args
@@ -7247,8 +7000,8 @@ do
 				end
 
 				-- Auto generate Default
-				if arg.Default == nil and arg.Type and arg.Type:Is(nil) and #(arg.Type) == 1 then
-					local info = _NSInfo[arg.Type[1]]
+				if arg.Default == nil and arg.Type and arg.Nilable then
+					local info = _NSInfo[arg.Type]
 					if info and (info.Type == TYPE_STRUCT or info.Type == TYPE_ENUM) then arg.Default = info.Default end
 				end
 
@@ -7308,6 +7061,13 @@ do
 		__Sealed__:ApplyAttribute(Userdata)
 		__Sealed__:ApplyAttribute(Thread)
 		__Sealed__:ApplyAttribute(Any)
+		__Sealed__:ApplyAttribute(Callable)
+		__Sealed__:ApplyAttribute(Class)
+		__Sealed__:ApplyAttribute(Interface)
+		__Sealed__:ApplyAttribute(Struct)
+		__Sealed__:ApplyAttribute(Enum)
+		__Sealed__:ApplyAttribute(AnyType)
+
 		__Sealed__:ApplyAttribute(Argument)
 
 		------------------------------------------------------
@@ -7366,10 +7126,6 @@ do
 		__Sealed__:ApplyAttribute(Reflector)
 		__Final__:ApplyAttribute(Reflector, AttributeTargets.Interface)
 
-		-- ValidatedType
-		__Sealed__:ApplyAttribute(ValidatedType)
-		__Final__:ApplyAttribute(ValidatedType, AttributeTargets.Class)
-
 		-- Event
 		__Sealed__:ApplyAttribute(Event)
 		__Final__:ApplyAttribute(Event, AttributeTargets.Class)
@@ -7394,7 +7150,7 @@ do
 		-- Property
 		------------------------------------------------------
 		doc "Delegate" [[The delegate function]]
-		property "Delegate" { Type = Function + nil }
+		property "Delegate" { Type = Function }
 
 		------------------------------------------------------
 		-- Method
@@ -7449,11 +7205,6 @@ do
 			end
 		end
 	end)
-
-	-- Apply Attribute to ValidatedType class
-	do
-		__Cache__:ApplyAttribute(ValidatedType, AttributeTargets.Class)
-	end
 
 	enum "StructType" {
 		"MEMBER",
@@ -7591,12 +7342,12 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property + AttributeTargets.Member, Inherited = false, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Require__" (function(_ENV)
 		inherit "__Attribute__"
 
-		doc "__Require__" [[Whether the method or property is required to be override]]
+		doc "__Require__" [[Whether the method or property is required to be override, or a member of a struct is required.]]
 
 		------------------------------------------------------
 		-- Method
@@ -7611,6 +7362,9 @@ do
 				elseif targetType == AttributeTargets.Property then
 					info.RequireProperty = info.RequireProperty or {}
 					info.RequireProperty[name] = true
+				elseif targetType == AttributeTargets.Member then
+					info.RequireMember = info.RequireMember or {}
+					info.RequireMember[name] = true
 				end
 			end
 		end
@@ -7648,7 +7402,7 @@ do
 
 		doc "__Synthesize__" [[Used to generate property accessors automatically]]
 
-		enum "NameCase" {
+		enum "NameCases" {
 			"Camel",	-- setName
 			"Pascal",	-- SetName
 		}
@@ -7657,13 +7411,13 @@ do
 		-- Property
 		------------------------------------------------------
 		doc "NameCase" [[The name case of the generate method, in one program, only need to be set once, default is Pascal case]]
-		property "NameCase" { Type = NameCase, Default = NameCase.Pascal }
+		property "NameCase" { Type = NameCases, Default = NameCases.Pascal, IsStatic = true }
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
-			target.Synthesize = self.NameCase
+			target.Synthesize = __Synthesize__.NameCase
 		end
 	end)
 
@@ -7678,7 +7432,7 @@ do
 		-- Property
 		------------------------------------------------------
 		doc "Event" [[The event that bind to the property]]
-		property "Event" { Type = String + nil }
+		property "Event" { Type = String }
 
 		------------------------------------------------------
 		-- Method
@@ -7697,7 +7451,14 @@ do
 			return Super(self)
 		end
 
-		__Arguments__{ String + Event }
+		__Arguments__{ Event }
+		function __Event__(self, value)
+			self.Event = value
+
+			return Super(self)
+		end
+
+		__Arguments__{ String }
 		function __Event__(self, value)
 			self.Event = value
 
@@ -7712,11 +7473,14 @@ do
 
 		doc "__Handler__" [[Used to bind an handler(method name or function) to the property]]
 
+		__Sealed__()
+		struct "HandlerType" { function(value) assert(type(value) == "function" or type(value) == "string", "%s must be a function or method name.") end }
+
 		------------------------------------------------------
 		-- Property
 		------------------------------------------------------
 		doc "Handler" [[The handler that bind to the property]]
-		property "Handler" { Type = String + Function + nil }
+		property "Handler" { Type = HandlerType }
 
 		------------------------------------------------------
 		-- Method
@@ -7736,7 +7500,7 @@ do
 			return Super(self)
 		end
 
-		__Arguments__{ String + Function }
+		__Arguments__{ HandlerType }
 		function __Handler__(self, value)
 			self.Handler = value
 
@@ -7755,7 +7519,7 @@ do
 		-- Property
 		------------------------------------------------------
 		doc "Default" [[The default value]]
-		property "Default" { Type = Any + nil }
+		property "Default" { Type = Any }
 
 		------------------------------------------------------
 		-- Method
@@ -7768,11 +7532,11 @@ do
 			elseif targetType == AttributeTargets.Member then
 				local info = _NSInfo[owner]
 				if not info or info.SubType ~= _STRUCT_TYPE_MEMBER then return end
-				local ty = rawget(info.StructEnv, target)
-				if not IsValidatedType(ty) or not ty:GetObjectType(self.Default) then return end
+				local val = GetValidatedValue(rawget(info.StructEnv, target), self.Default)
+				if val == nil then return end
 
 				info.DefaultField = info.DefaultField or {}
-				info.DefaultField[target] = self.Default
+				info.DefaultField[target] = val
 			else
 				_NSInfo[target].Default = self.Default
 			end
@@ -7824,7 +7588,7 @@ do
 
 		------------------------------------------------------
 		doc "Setter" [[The setter settings]]
-		property "Setter" { Type = Setter + nil }
+		property "Setter" { Type = Setter }
 
 		------------------------------------------------------
 		-- Method
@@ -7860,7 +7624,7 @@ do
 
 		------------------------------------------------------
 		doc "Getter" [[The getter settings]]
-		property "Getter" { Type = Getter + nil }
+		property "Getter" { Type = Getter }
 
 		------------------------------------------------------
 		-- Method
@@ -8545,16 +8309,16 @@ do
 		-- Property
 		------------------------------------------------------
 		__Doc__[[The module itself]]
-		property "_M" { Get = function(self) return self end, }
+		property "_M" { Get = function(self) return self end }
 
 		__Doc__[[The module's name]]
-		property "_Name" { Get = function(self) return _ModuleInfo[self].Name end, }
+		property "_Name" { Get = function(self) return _ModuleInfo[self].Name end }
 
 		__Doc__[[The module's parent module]]
-		property "_Parent" { Get = function(self) return _ModuleInfo[self].Parent end, }
+		property "_Parent" { Get = function(self) return _ModuleInfo[self].Parent end }
 
 		__Doc__[[The module's version]]
-		property "_Version" { Get = function(self) return _ModuleInfo[self].Version end, }
+		property "_Version" { Get = function(self) return _ModuleInfo[self].Version end }
 
 		------------------------------------------------------
 		-- Dispose
@@ -8844,12 +8608,8 @@ do
 
 			name = _NSInfo[ns].Name
 			if env[name] == nil then env[name] = ns end
-			local children = Reflector.GetSubNamespace(ns)
-			if children then
-				for _, subNs in ipairs(children) do
-					local sub = ns[subNs]
-					if _NSInfo[sub].Type and env[subNs] == nil then env[subNs] = sub end
-				end
+			for subNs, sub in Reflector.GetSubNamespace(ns) do
+				if _NSInfo[sub].Type and env[subNs] == nil then env[subNs] = sub end
 			end
 		end
 		env.Module = env.Module or Module

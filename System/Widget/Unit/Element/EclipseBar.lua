@@ -87,7 +87,7 @@ class "EclipseBar"
 		Set = function(self, value)
 			self.__Min, self.__Max = value.min, value.max
 		end,
-		Type = System.MinMax,
+		Type = MinMax,
 	}
 
 	__Handler__( function (self, value)
@@ -97,7 +97,7 @@ class "EclipseBar"
 			self.Marker:SetPoint("CENTER", (value/self.__Max) *  ECLIPSE_BAR_TRAVEL, 0)
 		end
 	end )
-	property "Value" { Type = System.Number + nil }
+	property "Value" { Type = NumberNil }
 
 	------------------------------------------------------
 	-- Event Handler

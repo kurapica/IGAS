@@ -172,7 +172,7 @@ interface "IFFont"
 		Set = function(self, fontObject)
 			self:SetFontObject(fontObject)
 		end,
-		Type = Font + String + nil,
+		Type = FontObject,
 	}
 
 	__Doc__[[the fontstring's horizontal text alignment style]]

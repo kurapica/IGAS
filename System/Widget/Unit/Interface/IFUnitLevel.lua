@@ -48,7 +48,7 @@ interface "IFUnitLevel"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[which used to receive the unit's level]]
-	__Optional__() property "Value" { Type = Number + nil }
+	__Optional__() property "Value" { Type = NumberNil }
 
 	------------------------------------------------------
 	-- Dispose

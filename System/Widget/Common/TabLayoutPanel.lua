@@ -458,7 +458,7 @@ class "TabLayoutPanel"
 			end
 			self.TabLayoutPanel_Header.Container._Message = value
 		end,
-		Type = String + nil,
+		Type = String,
 	}
 
 	__Doc__[[The selected ui element]]

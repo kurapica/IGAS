@@ -93,13 +93,14 @@ interface "IFPushItemAnim"
 		<param name="bag">the region used for the bag</param>
 		<param name="id" optional="true">the bag slot index</param>
 	]]
-	__Static__() __Arguments__{ Region, Argument{ Type = Number + Boolean + nil, Default = true } }
+	__Static__() __Arguments__{ Region, Argument(Number) }
 	function AttachBag(bag, id)
-		if id == false then
-			_BagMap[bag] = nil
-		else
-			_BagMap[bag] = id
-		end
+		_BagMap[bag] = id
+	end
+
+	__Static__() __Arguments__{ Region, Argument(Boolean, true, true) }
+	function AttachBag(bag, id)
+		_BagMap[bag] = id or nil
 	end
 
 	------------------------------------------------------

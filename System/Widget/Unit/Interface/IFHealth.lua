@@ -111,7 +111,7 @@ interface "IFHealth"
 	------------------------------------------------------
 	__Doc__[[Whether smoothing the value changes]]
 	__Handler__(SwapUnitList)
-	property "Smoothing" { Type = System.Boolean }
+	property "Smoothing" { Type = Boolean }
 
 	__Doc__[[The delay time for smoothing value changes]]
 	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }

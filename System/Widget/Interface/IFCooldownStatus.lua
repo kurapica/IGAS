@@ -45,7 +45,7 @@ interface "IFCooldownStatus"
 	property "IFCooldownStatusReverse" { Type = Boolean }
 
 	__Doc__[[Whether always show the status bar]]
-	property "IFCooldownStatusAlwaysShow" { Type = System.Boolean }
+	property "IFCooldownStatusAlwaysShow" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
