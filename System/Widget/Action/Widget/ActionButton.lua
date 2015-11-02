@@ -15,14 +15,14 @@ class "ActionButton"
 
 	RANGE_INDICATOR = "●"
 
-	local function UpdateHotKey(self)
+	local function UpdateHotKey(self, value)
 		local hotKey = self:GetChild("HotKey")
 
 		if hotKey.Text == RANGE_INDICATOR then
-			if self.InRange == true then
+			if value == true then
 				hotKey:Show()
 				hotKey:SetVertexColor(1, 1, 1)
-			elseif self.InRange == false then
+			elseif value == false then
 				hotKey:Show()
 				hotKey:SetVertexColor(1, 0, 0)
 			else
@@ -30,7 +30,7 @@ class "ActionButton"
 			end
 		else
 			hotKey:Show()
-			if self.InRange == false then
+			if value == false then
 				hotKey:SetVertexColor(1, 0, 0)
 			else
 				hotKey:SetVertexColor(1, 1, 1)
@@ -163,7 +163,7 @@ class "ActionButton"
 
 	__Doc__[[whether the target is in range, accessed by IFActionHandler]]
 	__Handler__( UpdateHotKey )
-	property "InRange" { Type = BooleanNil }
+	property "InRange" { Type = BooleanNil_01 }
 
 	__Doc__[[whether the action is usable, accessed by IFActionHandler]]
 	__Handler__( function (self, value)

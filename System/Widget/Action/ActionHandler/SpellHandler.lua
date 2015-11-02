@@ -20,6 +20,8 @@ _StanceOnTexturePath = [[Interface\Icons\Spell_Nature_WispSplode]]
 _StanceMap = {}
 _Profession = {}
 
+_IndexMap = {}
+
 _MacroMap = {
 	[1499] = true,	-- Freezing Trap
 	[13809] = true,	-- Ice Trap
@@ -46,6 +48,8 @@ function OnEnable(self)
 	self:RegisterEvent("UNIT_AURA")
 
 	OnEnable = nil
+
+	UpdateIndexMap()
 	UpdateStanceMap()
 	UpdateMacroMap()
 	UpdateFakeStanceMap()
@@ -71,7 +75,8 @@ end
 
 function PLAYER_SPECIALIZATION_CHANGED(self, unit)
 	if unit == "player" then
-		return UpdateProfession()
+		UpdateIndexMap()
+		UpdateProfession()
 	end
 end
 
@@ -212,6 +217,18 @@ function UpdateProfession()
 	end
 end
 
+function UpdateIndexMap()
+	local index = 1
+	local _, id = GetSpellBookItemInfo(index, "spell")
+
+	while id do
+		_IndexMap[id] = index
+
+		index = index + 1
+		_, id = GetSpellBookItemInfo(index, "spell")
+	end
+end
+
 -- Spell action type handler
 handler = ActionTypeHandler {
 	Name = "spell",
@@ -319,7 +336,7 @@ function handler:IsConsumableAction()
 end
 
 function handler:IsInRange()
-	return IsSpellInRange(GetSpellInfo(self.ActionTarget), self:GetAttribute("unit"))
+	return IsSpellInRange(_IndexMap[self.ActionTarget], "spell", self:GetAttribute("unit"))
 end
 
 function handler:SetTooltip(GameTooltip)

@@ -1650,7 +1650,7 @@ interface "IFActionHandler"
 	__Optional__() property "Icon" { Type = String }
 
 	__Doc__[[Whether the action is in range, used to refresh the action count as a trigger]]
-	__Optional__() property "InRange" { Type = BooleanNil }
+	__Optional__() property "InRange" { Type = BooleanNil_01 }
 
 	__Doc__[[Whether the action is auto-castable, used to refresh the action count as a trigger]]
 	__Optional__() property "AutoCastable" { Type = Boolean }

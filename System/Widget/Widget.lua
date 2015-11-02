@@ -318,6 +318,13 @@ function assert(flag, msg, ...)
 	end
 end
 
+-- BooleanNil_01
+struct "BooleanNil_01"
+	function BooleanNil_01(value)
+		return value == 1 or value == true
+	end
+endstruct "BooleanNil_01"
+
 -- Point
 struct "Point"
 	x = Number
