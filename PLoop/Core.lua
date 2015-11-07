@@ -35,8 +35,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author			kurapica125@outlook.com
 -- Create Date		2011/02/01
--- Last Update Date 2015/09/11
--- Version			r129
+-- Last Update Date 2015/11/02
+-- Version			r132
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -178,7 +178,6 @@ do
 
 	TYPE_NAMESPACE = "NameSpace"
 	TYPE_SUPERALIAS = "SuperAlias"
-	TYPE_TYPE = "TYPE"
 
 	-- Disposing method name
 	DISPOSE_METHOD = "Dispose"
@@ -246,16 +245,7 @@ do
 		return chkValue( resume(th, ...) )
 	end
 
-	CACHE_TABLE = setmetatable({}, {
-		__call = function(self, key)
-			if key then
-				wipe(key)
-				tinsert(self, key)
-			else
-				return tremove(self) or {}
-			end
-		end,
-	})
+	CACHE_TABLE = setmetatable({}, {__call = function(self, key)if key then wipe(key) tinsert(self, key) else return tremove(self) or {} end end})
 
 	function SaveFixedMethod(storage, key, value, owner, targetType)
 		if ATTRIBUTE_INSTALLED then
@@ -1250,9 +1240,6 @@ do
 
 					prop.Predefined = nil
 
-					-- Static Property
-					prop.IsStatic = set.IsStatic and true or false
-
 					for k, v in pairs(set) do
 						if type(k) == "string" then
 							k = strlower(k)
@@ -1298,20 +1285,20 @@ do
 								prop.Setter = v
 							elseif k == "getter" and type(v) == "number" and floor(v) == v and v > 0 and v <= _NSInfo[Getter].MaxValue then
 								prop.Getter = v
+							elseif k == "isstatic" or k == "static" then
+								prop.IsStatic = v and true or false
 							end
 						end
 					end
 
 					-- Validate the default
-					if prop.Default ~= nil then
-						if prop.Type then
-							local val = GetValidatedValue(prop.Type, prop.Default)
-							if val == nil and type(prop.Default) == "function" then prop.DefaultFunc = prop.Default end
-							prop.Default = val
-						elseif type(prop.Default) == "function" then
-							prop.DefaultFunc = prop.Default
-							prop.Default = nil
-						end
+					if type(prop.Default) == "function" then
+						prop.DefaultFunc = prop.Default
+						prop.Default = nil
+					end
+
+					if prop.Default ~= nil and prop.Type then
+						prop.Default = GetValidatedValue(prop.Type, prop.Default)
 					end
 
 					-- Clear
@@ -1970,7 +1957,7 @@ do
 			local info = _NSInfo[owner]
 			if info.ApplyAttributes then info.ApplyAttributes() end
 
-			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
 
 		_MetaIFEnv.__call = _MetaIFDefEnv.__call
@@ -2791,7 +2778,7 @@ do
 				if ret then error(ret, 3) end
 			end
 
-			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
 
 		_MetaClsEnv.__call = _MetaClsDefEnv.__call
@@ -3949,7 +3936,7 @@ do
 			local info = _NSInfo[owner]
 			if info.ApplyAttributes then info.ApplyAttributes() end
 
-			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or self
+			return not ok and error(strtrim(msg:match(":%d+:%s*(.-)$") or msg), 2) or owner
 		end
 
 		_MetaStrtEnv.__call = _MetaStrtDefEnv.__call
@@ -5232,7 +5219,7 @@ do
 		]]
 		function GetStructArrayElement(ns)
 			local info = _NSInfo[ns]
-			return info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement and info.ArrayElement:Clone() or nil
+			return info and info.Type == TYPE_STRUCT and info.SubType == _STRUCT_TYPE_ARRAY and info.ArrayElement or nil
 		end
 
 		doc "HasStructMember" [[
@@ -5707,15 +5694,6 @@ do
 					end
 				end
 			end
-		end
-
-		doc "GetDefinitionEnvironmentOwner" [[
-			<desc>Get the owner from a definition environment</desc>
-			<param name="env">The environment like the return of (class "MyCls")</param>
-			<return>the owner</return>
-		]]
-		function GetDefinitionEnvironmentOwner(env)
-			if type(env) == "table" then return env[OWNER_FIELD] end
 		end
 
 		doc "IsCallable" [[

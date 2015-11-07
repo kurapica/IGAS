@@ -3,7 +3,7 @@
 --               2012.05.14 Fix cursor position after format color
 
 -- Check Version
-local version = 11
+local version = 12
 
 if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
@@ -484,6 +484,58 @@ do
 
 		return editor:Fire("OnGameTooltipShow", gameTooltip, key)
 	end
+
+	local autoCompleteEditor
+	local autoCompleteTime
+	local taskStarted
+	local autoComplete_x
+	local autoComplete_y
+	local autoComplete_w
+	local autoComplete_h
+
+	function RegisterAutoComplete(self, x, y, w, h)
+		autoCompleteEditor = self
+		autoCompleteTime = GetTime() + self.AutoCompleteDelay
+		autoComplete_x = x
+		autoComplete_y = y
+		autoComplete_w = w
+		autoComplete_h = h
+
+		if not taskStarted then
+			taskStarted = true
+
+			-- Tiny cost for all editor
+			Task.ThreadCall(function ()
+				while true do
+					if autoCompleteTime <= GetTime() and autoCompleteEditor then
+						ApplyAutoComplete( autoCompleteEditor )
+
+						if _List.ItemCount > 0 and autoCompleteEditor.Focused then
+							_List.CurrentEditor = autoCompleteEditor
+
+							-- Handle the auto complete
+							_List:SetPoint("TOPLEFT", autoCompleteEditor, autoComplete_x + autoCompleteEditor.MarginX, - autoComplete_y - autoComplete_h + autoCompleteEditor.Value)
+							_List.Visible = true
+							_List.SelectedIndex = 1
+						else
+							_List.CurrentEditor = nil
+							_List.Visible = false
+						end
+
+						autoCompleteEditor = nil
+					end
+
+					Task.Next()
+				end
+			end)
+		end
+	end
+
+	_thAutoComplete = Threading.Thread(function (editor)
+		while true do
+			Task.Continue()
+		end
+	end)
 
 	------------------------------------------------------
 	-- Help functions
@@ -2313,6 +2365,9 @@ class "CodeEditor"
 	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
 	property "AutoCompleteList" { Type = Table }
 
+	__Doc__[[The delay to show the auto complete.]]
+	property "AutoCompleteDelay" { Type = Number, Default = 0.2 }
+
 	------------------------------------------------------
 	-- Event Handlers
 	------------------------------------------------------
@@ -2425,9 +2480,11 @@ class "CodeEditor"
 	end
 
 	local function OnCursorChanged(self, x, y, w, h)
-		if self.CurrentOperation == _INPUTCHAR then
-			ApplyAutoComplete(self)
-		elseif self.CurrentOperation ~= _BACKSPACE then
+		local oper = self.CurrentOperation
+		if oper == _INPUTCHAR or oper == _BACKSPACE then
+			_List:Clear()
+			RegisterAutoComplete(self, x, y, w, h)
+		else
 			_List:Clear()
 		end
 

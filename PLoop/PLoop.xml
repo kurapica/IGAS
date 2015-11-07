@@ -8,4 +8,11 @@
 	<Script file="System\Logger.lua"/>
 	<Script file="System\Recycle.lua"/>
 	<Script file="System\Data.lua"/>
+	<Script file="System\Text.lua"/>
+	<Script file="System\Serialization.lua"/>
+
+	<Script file="System\Text\UTF8Encoding.lua"/>
+	<Script file="System\Text\UTF16Encoding.lua"/>
+	<Script file="System\Serialization\LuaFormatProvider.lua"/>
+	<Script file="System\Serialization\StringFormatProvider.lua"/>
 </Ui>
