@@ -17,6 +17,6 @@
 	<Script file="CustomHandler.lua"/>
 
 	<Script file="BagHandler.lua"/>
-	<!--Script file="InventoryHandler.lua"/>
-	<Script file="BagSlotHandler.lua"/ -->
+	<!--Script file="InventoryHandler.lua"/ -->
+	<Script file="BagSlotHandler.lua"/>
 </Ui>
