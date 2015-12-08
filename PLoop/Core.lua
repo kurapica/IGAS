@@ -33,10 +33,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
--- Author			kurapica125@outlook.com
--- Create Date		2011/02/01
--- Last Update Date 2015/11/02
--- Version			r132
+-- Author           kurapica125@outlook.com
+-- Create Date      2011/02/01
+-- Last Update Date 2015/12/08
+-- Version          r134
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -729,8 +729,17 @@ do
 					if vType == TYPE_NAMESPACE then
 						SetPropertyWithSet(info, key, { Type = value })
 					elseif type(value) == "function" then
-						-- Method
-						SaveFixedMethod(info.Method, key, value, info.Owner)
+						if key == info.Name then
+							if info.IsSealed then error(("%s is sealed, can't set the constructor or initializer."):format(tostring(info.Owner)), 2) end
+							if info.Type == TYPE_CLASS then
+								SaveFixedMethod(info, "Constructor", value, info.Owner, AttributeTargets and AttributeTargets.Constructor or nil)
+							elseif info.Type == TYPE_INTERFACE then
+								info.Initializer = value
+							end
+						else
+							-- Method
+							SaveFixedMethod(info.Method, key, value, info.Owner)
+						end
 					elseif type(value) == "table" then
 						-- Property
 						SetPropertyWithSet(info, key, value)
@@ -1185,6 +1194,9 @@ do
 		function RefreshCache(ns)
 			local info = _NSInfo[ns]
 			local iCache = info.Cache
+
+			-- Clear Ctor
+			if info.Type == TYPE_CLASS then info.Ctor = nil end
 
 			-- Cache For Interface
 			local cache = CACHE_TABLE()
@@ -2023,7 +2035,7 @@ do
 		info = info or _NSInfo[IF]
 
 		-- Check if the class is final
-		if info.IsSealed then error("The interface is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The interface is sealed, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_INTERFACE
 		info.NameSpace = info.NameSpace or ns
@@ -3242,49 +3254,52 @@ do
 
 		if not ( count == 1 and type(initTable) == "table" and getmetatable(initTable) == nil ) then initTable = nil end
 
-		while info do
-			if not info.Constructor then
-				info = info.SuperClass and _NSInfo[info.SuperClass]
-			elseif type(info.Constructor) == "function" then
-				return info.Constructor(obj, ...)
-			elseif getmetatable(info.Constructor) == FixedMethod then
-				local fixedMethod = info.Constructor
-				local noArgMethod = nil
+		if info.Ctor == nil then
+			local sinfo = info
 
-				while getmetatable(fixedMethod) do
+			while sinfo and not sinfo.Constructor do sinfo = _NSInfo[sinfo.SuperClass] end
+
+			info.Ctor = sinfo and sinfo.Constructor or false
+		end
+
+		if not info.Ctor then
+			-- No oper
+		elseif type(info.Ctor) == "function" then
+			return info.Ctor(obj, ...)
+		elseif getmetatable(info.Ctor) == FixedMethod then
+			local fixedMethod = info.Ctor
+			local noArgMethod = nil
+
+			while getmetatable(fixedMethod) do
+				if fixedMethod.ArgCache then
+					CACHE_TABLE(fixedMethod.ArgCache)
+				end
+				fixedMethod.ArgCache = nil
+
+				if #fixedMethod == 0 and initTable then
+					noArgMethod = noArgMethod or fixedMethod
+				elseif fixedMethod:MatchArgs(obj, ...) then
 					if fixedMethod.ArgCache then
-						CACHE_TABLE(fixedMethod.ArgCache)
+						return fixedMethod.Method(unpack(fixedMethod.ArgCache))
+					else
+						return fixedMethod.Method(obj, ...)
 					end
+				elseif fixedMethod.ArgCache then
+					-- Remove argument container
+					CACHE_TABLE(fixedMethod.ArgCache)
 					fixedMethod.ArgCache = nil
-
-					if #fixedMethod == 0 and initTable then
-						noArgMethod = noArgMethod or fixedMethod
-					elseif fixedMethod:MatchArgs(obj, ...) then
-						if fixedMethod.ArgCache then
-							return fixedMethod.Method(unpack(fixedMethod.ArgCache))
-						else
-							return fixedMethod.Method(obj, ...)
-						end
-					elseif fixedMethod.ArgCache then
-						-- Remove argument container
-						CACHE_TABLE(fixedMethod.ArgCache)
-						fixedMethod.ArgCache = nil
-					end
-
-					fixedMethod = fixedMethod.Next
 				end
 
-				if noArgMethod then
-					-- No arguments method can still using init table
-					noArgMethod.Method(obj)
-					break
-				end
+				fixedMethod = fixedMethod.Next
+			end
 
-				if type(fixedMethod) == "function" then
-					return fixedMethod(obj, ...)
-				else
-					return info.Constructor:RaiseError(obj)
-				end
+			if noArgMethod then
+				-- No arguments method can still using init table
+				noArgMethod.Method(obj)
+			elseif type(fixedMethod) == "function" then
+				return fixedMethod(obj, ...)
+			else
+				return info.Constructor:RaiseError(obj)
 			end
 		end
 
@@ -3388,7 +3403,7 @@ do
 		info = info or _NSInfo[cls]
 
 		-- Check if the class is final
-		if info.IsSealed then error("The class is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The class is sealed, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_CLASS
 		info.NameSpace = info.NameSpace or ns
@@ -3751,7 +3766,7 @@ do
 		info = info or _NSInfo[enm]
 
 		-- Check if the enum is final
-		if info.IsSealed then error("The enum is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The enum is sealed, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_ENUM
 		info.NameSpace = info.NameSpace or ns
@@ -4144,7 +4159,7 @@ do
 		info = info or _NSInfo[strt]
 
 		-- Check if the struct is final
-		if info.IsSealed then error("The struct is final, can't be re-defined.", depth + 1) end
+		if info.IsSealed then error("The struct is sealed, can't be re-defined.", depth + 1) end
 
 		info.Type = TYPE_STRUCT
 		info.SubType = _STRUCT_TYPE_MEMBER
