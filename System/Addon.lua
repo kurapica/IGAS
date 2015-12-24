@@ -1067,7 +1067,7 @@ do
 			end
 
 			-- the module should modify the environment itself
-			mdl(version, 2)
+			mdl(version, 3)
 
 			return mdl
 		end
