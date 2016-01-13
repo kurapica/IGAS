@@ -2,7 +2,7 @@
 -- Create Date : 2015/07/22
 -- ChangeLog   :
 
-Module "System.Serialization" "0.1.0"
+_ENV = Module "System.Serialization" "0.1.0"
 
 namespace "System"
 
@@ -80,14 +80,14 @@ interface "Serialization" (function (_ENV)
 						storage[member] = value
 					end
 				end
-			elseif type(object.Serialize) == "function" then
+			--[[elseif type(object.Serialize) == "function" then
 				local info = rycInfo()
 				_InfoStorage[info] = storage
 				_InfoCache[info] = cache
 
 				object:Serialize(info)
 
-				rycInfo(info)
+				rycInfo(info)--]]
 			else
 				-- A custom table data, can't know its true type, works as default
 				clsType = nil
@@ -235,7 +235,7 @@ interface "Serialization" (function (_ENV)
 	__Doc__ [[Allows an object to control its own serialization and deserialization.]]
 	interface "ISerializable" (function (_ENV)
 		__Doc__[[Use a SerializationInfo to serialize the target object.]]
-		__Require__() function Serialize(dt, info) end
+		__Require__() function Serialize(self, info) end
 	end)
 
 	__Sealed__()

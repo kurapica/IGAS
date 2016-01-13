@@ -737,7 +737,7 @@ interface "IFModule"
 		for i = 1, select('#', ...) do
 			local name = select(i, ...)
 
-			if self:HasEvent(name) then self[name].Delegate = Reflector.ThreadCall end
+			if self:HasEvent(name) then self[name].Delegate = System.Threading.ThreadCall end
 		end
 	end
 

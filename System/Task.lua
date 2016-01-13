@@ -61,7 +61,7 @@ do
 	c_Task = {}
 	c_Event = {}		-- Cache for registered events
 
-	callThread = System.Reflector.ThreadCall
+	callThread = System.Threading.ThreadCall
 
 	-- Phase API
 	function StartPhase()
