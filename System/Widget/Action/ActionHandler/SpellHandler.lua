@@ -337,7 +337,7 @@ end
 
 function handler:IsInRange()
 	local target = self.ActionTarget
-	if not _StanceMap[target] then
+	if not _StanceMap[target] and _IndexMap[target] then
 		return IsSpellInRange(_IndexMap[target], "spell", self:GetAttribute("unit"))
 	end
 end
