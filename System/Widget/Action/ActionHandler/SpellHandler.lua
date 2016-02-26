@@ -336,7 +336,10 @@ function handler:IsConsumableAction()
 end
 
 function handler:IsInRange()
-	return IsSpellInRange(_IndexMap[self.ActionTarget], "spell", self:GetAttribute("unit"))
+	local target = self.ActionTarget
+	if not _StanceMap[target] then
+		return IsSpellInRange(_IndexMap[target], "spell", self:GetAttribute("unit"))
+	end
 end
 
 function handler:SetTooltip(GameTooltip)
