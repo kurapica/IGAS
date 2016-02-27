@@ -28,6 +28,7 @@ class "Form"
 			local i = 1
 			local char
 			local outStr = ""
+			local cnt = 0
 
 			while i <= str:len() do
 				char = str:byte(i)
@@ -47,57 +48,66 @@ class "Form"
 					outStr = outStr .. str:sub(i, i+0) .. "\n"
 					i = i + 1
 				end
+
+				cnt = cnt + 1
 			end
 
-			return outStr
+			return outStr, cnt
 		end
 
 		local function Form_OnHide(self)
 			self = self.__DockHeader.DockHeader
 			if self.NeedHideForm then
+				local txt = self:GetChild("Name")
+				local height = txt.Font.height + txt.Spacing
+				local temp, cnt = AddReturn(self.Form.Caption)
+
 				if self.NeedHideForm == 2 then
-					self:GetChild("Name").Text = AddReturn(self.Form.Caption)
-					self.Height = self:GetChild("Name"):GetStringHeight() + 6
-					self.Width = self:GetChild("Name"):GetStringWidth() + 6
+					self:GetChild("Name").Text = temp
+					self.Height = cnt * height + 12
+					self.Width = height + 12
 				else
 					self:GetChild("Name").Text = self.Form.Caption
-					self.Height = self:GetChild("Name"):GetStringHeight() + 18
-					self.Width = self:GetChild("Name"):GetStringWidth() + 18
+					self.Height = height + 12
+					self.Width = cnt * height + 12
 				end
 
 				self.Visible = true
 			end
 		end
 
+		local function GetScreenFrameRect(frame)
+		    local es = frame:GetEffectiveScale();
+		    local l, b, w, h = frame:GetRect();
+		    if (not (l and b)) then return 0, 0, 0, 0; end
+		    return l * es, (l + w) * es, b * es, (b + h) * es;
+		end
+
 		local function CheckPosition(self, instant)
-		    local l, b, w, h = self.Form:GetRect()
+			local left, right, bottom, top = GetScreenFrameRect(self.Form)
 
-			if not l then
-				self.NeedHideForm = nil
+			if left < 10 then
+				self.NeedHideForm = 2
+
+				self:ClearAllPoints()
+				self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 0, top)
+			elseif right > GetScreenWidth() - 10 then
+				self.NeedHideForm = 2
+
+				self:ClearAllPoints()
+				self:SetPoint("TOPRIGHT", UIParent, "BOTTOMRIGHT", 0, top)
+			elseif bottom < 10 then
+				self.NeedHideForm = 1
+
+				self:ClearAllPoints()
+				self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", left, 0)
+			elseif top > GetScreenHeight() - 10 then
+				self.NeedHideForm = 1
+
+				self:ClearAllPoints()
+				self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", left, 0)
 			else
-				if l < 10 then
-					self.NeedHideForm = 2
-
-					self:ClearAllPoints()
-					self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 0, b + h)
-				elseif l + w > GetScreenWidth() - 10 then
-					self.NeedHideForm = 2
-
-					self:ClearAllPoints()
-					self:SetPoint("TOPRIGHT", UIParent, "BOTTOMRIGHT", 0, b + h)
-				elseif b < 10 then
-					self.NeedHideForm = 1
-
-					self:ClearAllPoints()
-					self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l, 0)
-				elseif b + h > GetScreenHeight() - 10 then
-					self.NeedHideForm = 1
-
-					self:ClearAllPoints()
-					self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", l, 0)
-				else
-					self.NeedHideForm = nil
-				end
+				self.NeedHideForm = nil
 			end
 
 			if self.NeedHideForm then
@@ -105,13 +115,37 @@ class "Form"
 					if instant or InCombatLockdown() then
 						self.Form.Visible = false
 					else
-						RegisterAutoHide(self.Form, 1.5)
+						if not self.AutoHideThread then
+							Task.ThreadCall(function()
+								self.AutoHideThread = true
+
+								local start = GetTime()
+
+								while self.NeedHideForm do
+									local left, right, bottom, top = GetScreenFrameRect(self.Form)
+    								local cursorX, cursorY = GetCursorPosition()
+
+    								if cursorX >= left and cursorX <= right and cursorY >= bottom and cursorY <= top then
+    									start = GetTime()
+    								else
+    									if GetTime() - start > 1.5 then
+    										self.Form.Visible = false
+    										break
+    									end
+    								end
+
+    								Task.Next()
+								end
+
+								self.AutoHideThread = nil
+							end)
+						end
 					end
 				else
 					Form_OnHide(self.Form)
 				end
 			else
-				UnregisterAutoHide(self.Form)
+				self.Visible = false
 			end
 		end
 
