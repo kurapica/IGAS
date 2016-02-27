@@ -1,3 +1,8 @@
+2016/02/27: IGAS v73
+    1. Update for new PLoop Core.
+    2. Fix spell range check for non-existed spell
+    3. Imporve the auto-complete for codeeditor.
+
 2015/09/04: IGAS v72
     1. Update for new PLoop Core.
     2. Update features for MultiLineTextBox.
