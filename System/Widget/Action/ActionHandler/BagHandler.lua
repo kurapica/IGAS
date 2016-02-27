@@ -256,15 +256,6 @@ end
 
 -- Expand IFActionHandler
 interface "IFActionHandler"
-	__Local__() __Default__(0)
-	struct "BagSlot" {
-		function (value)
-			assert(type(value) == "number", "%s must be number.")
-			assert(value >= 0 and value <= 4, "%s must between [0-4]")
-			return math.floor(value)
-		end
-	}
-
 	local function OnShowOrHide(self)
 		return handler:Refresh(RefreshButtonState)
 	end
@@ -331,7 +322,13 @@ interface "IFActionHandler"
 		Set = function(self, value)
 			self:SetAction("bag", value)
 		end,
-		Type = BagSlot,
+		Type = struct { 0,
+			function (value)
+				assert(type(value) == "number", "%s must be number.")
+				assert(value >= 0 and value <= 4, "%s must between [0-4]")
+				return math.floor(value)
+			end
+		},
 	}
 
 	__Doc__[[Whether the search overlay will be shown]]

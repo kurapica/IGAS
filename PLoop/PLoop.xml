@@ -1,6 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
 	<Script file="Core.lua"/>
 	<Script file="System\System.lua"/>
+	<Script file="System\Collections.lua"/>
 	<!--Script file="Error.lua"/-->
 	<Script file="System\IFIterator.lua"/>
 	<Script file="System\Array.lua"/>
@@ -10,6 +11,10 @@
 	<Script file="System\Data.lua"/>
 	<Script file="System\Text.lua"/>
 	<Script file="System\Serialization.lua"/>
+
+	<Script file="System\Collections\ListStreamWorker.lua"/>
+	<Script file="System\Collections\DictionaryStreamWorker.lua"/>
+	<Script file="System\Collections\IIndexedListSorter.lua"/>
 
 	<Script file="System\Text\UTF8Encoding.lua"/>
 	<Script file="System\Text\UTF16Encoding.lua"/>

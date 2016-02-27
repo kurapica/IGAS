@@ -57,3 +57,24 @@ running = coroutine.running
 status = coroutine.status
 wrap = coroutine.wrap
 yield = coroutine.yield
+
+loadstring = loadstring or load
+loadfile = loadfile or load
+
+-----------------------------
+-- Struct
+-----------------------------
+struct "Integer" { 0,
+	function (value)
+		if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value)))  end
+		return floor(value)
+	end
+}
+
+struct "NaturalNumber"  { 0,
+	function (value)
+		if type(value) ~= "number" then error(("%s must be a number, got %s."):format("%s", type(value))) end
+		assert(value >= 0, "%s can't be less than zero.")
+		return floor(value)
+	end
+}

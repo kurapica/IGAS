@@ -255,7 +255,7 @@ do
 	_List.Visible = false
 	_List.ShowTooltipForSelectedItem = true
 
-	_AutoCacheKeys = {}
+	_AutoCacheKeys = System.Collections.List()
 	_AutoCacheItems = {}
 	_AutoWordWeightCache = {}
 	_AutoWordMap = {}
@@ -362,7 +362,13 @@ do
 
 		if _CommonAutoCompleteList[1] or self.AutoCompleteList[1] then
 			-- Handle the auto complete
-			local startp, endp, word = GetWord(self.FullText, self.CursorPosition, true)
+			local fullText = self.FullText
+			local startp, endp, word = GetWord(fullText, self.CursorPosition, true)
+			local preObj, sep
+			if startp then
+				preObj, sep  = GetPrevObject(fullText, startp)
+				if sep then return end
+			end
 
 			word = RemoveColor(word)
 
@@ -421,7 +427,7 @@ do
 					end
 				end
 
-				Array.Sort(_AutoCacheKeys, CompareWeight)
+				_AutoCacheKeys:TimSort(CompareWeight)
 
 				for i, v in ipairs(_AutoCacheKeys) do
 					_AutoCacheItems[i] = _AutoWordMap[v]
@@ -507,7 +513,7 @@ do
 			-- Tiny cost for all editor
 			Task.ThreadCall(function ()
 				while true do
-					if autoCompleteTime <= GetTime() and autoCompleteEditor then
+					if autoCompleteEditor and autoCompleteTime <= GetTime() then
 						ApplyAutoComplete( autoCompleteEditor )
 
 						if _List.ItemCount > 0 and autoCompleteEditor.Focused then
@@ -530,12 +536,6 @@ do
 			end)
 		end
 	end
-
-	_thAutoComplete = Threading.Thread(function (editor)
-		while true do
-			Task.Continue()
-		end
-	end)
 
 	------------------------------------------------------
 	-- Help functions
@@ -2188,47 +2188,63 @@ do
 		end
 	end
 
-	function GetPrevObject(self)
-		do
-			return nil
+	function GetPrevObject(str, pos)
+		pos = pos - 1
+
+		local byte = strbyte(str, pos)
+		local obj, sep
+
+		local previous
+
+		-- Get sep
+		while byte do
+			if byte == _Byte.PERIOD or byte == _Byte.COLON then
+				sep = byte
+				break
+			end
+
+			if byte == _Byte.VERTICAL then
+				if previous ~= _Byte.c and previous ~= _Byte.r then
+					break
+				end
+			elseif _Special[byte] then
+				break
+			end
+
+			previous = byte
+			pos = pos - 1
+			byte = strbyte(str, pos)
 		end
-		local cursorPos = self.CursorPosition
-		local text = self.FullText
 
-		local startp, _, str = GetLines(text, cursorPos)
+		-- Get obj
+		if sep then
+			previous = byte
+			pos = pos - 1
+			byte = strbyte(str, pos)
+			local endp = pos
 
-		str = RemoveColor(str:sub(1, cursorPos - startp))
-
-		local id = str:match("([_%a][_%w%.]*)$")
-
-		if id == "self" then
-			while startp > 1 do
-				startp, _, str = GetLines(text, startp - 2)
-
-				if str ~= "" then
-					str = RemoveColor(str)
-
-					id = str:match("function%s*([_%a][_%w%.]*):")
-
-					if id and id ~= "" then
+			while byte do
+				if byte == _Byte.VERTICAL then
+					if previous == _Byte.r then
+						endp = pos - 1
+					elseif previous == _Byte.c then
+						pos = pos + 9
 						break
 					end
+				elseif _Special[byte] then
+					break
 				end
+
+				previous = byte
+				pos = pos - 1
+				byte = strbyte(str, pos)
 			end
+
+			pos = pos + 1
+			if pos <= endp then obj = str:sub(pos, endp) end
 		end
 
-		local obj
-
-		if id and id ~= "" then
-			for sub in id:gmatch("[^%.]+") do
-				sub = sub and strtrim(sub)
-				if not sub or sub =="" then return end
-
-
-			end
-		end
-
-		return obj
+		return obj, sep
 	end
 
 	function RefreshText(self)
@@ -2362,8 +2378,8 @@ class "CodeEditor"
 	}
 
 	__Doc__[[The auto complete list like {"if", "then", "else"}]]
-	__Handler__( function(self, value) return Array.Sort(value, Compare) end)
-	property "AutoCompleteList" { Type = Table }
+	__Handler__( function(self, value) if value then value:TimSort(Compare) end end)
+	property "AutoCompleteList" { Type = System.Collections.List, Default = function() return System.Collections.List() end }
 
 	__Doc__[[The delay to show the auto complete.]]
 	property "AutoCompleteDelay" { Type = Number, Default = 0.2 }
@@ -2658,8 +2674,6 @@ class "CodeEditor"
 	------------------------------------------------------
     function CodeEditor(self, name, parent, ...)
     	Super(self, name, parent, ...)
-
-		self.AutoCompleteList = {}
 
 		-- Event Handlers
 		self.OnEnterPressed = self.OnEnterPressed + OnEnterPressed

@@ -34,9 +34,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------
 -- Author           kurapica125@outlook.com
--- Create Date      2011/02/01
--- Last Update Date 2016/01/12
--- Version          r143
+-- Create Date      2011/02/03
+-- Last Update Date 2016/02/24
+-- Version          r148
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -160,6 +160,7 @@ do
 
 	-- In lua 5.2, the loadstring is deprecated
 	loadstring = loadstring or load
+	loadfile = loadfile
 end
 
 ------------------------------------------------------
@@ -256,11 +257,7 @@ do
 	end
 
 	-- Local marker
-	LOCAL_CACHE = setmetatable({}, WEAK_KEY)
 	PrepareNameSpace_CACHE = setmetatable({}, WEAK_KEY)
-
-	function SetLocal(flag) LOCAL_CACHE[running() or 0] = flag or nil end
-	function IsLocal() return LOCAL_CACHE[running() or 0] end
 
 	function PrepareNameSpace(target) PrepareNameSpace_CACHE[running() or 0] = target end
 	function GetPrepareNameSpace() return PrepareNameSpace_CACHE[running() or 0] end
@@ -280,8 +277,8 @@ do
 			cache[obj2] = true
 		end
 
+		if IsNameSpace(obj1) then return false end
 		local cls = getmetatable(obj1)
-		if cls == TYPE_NAMESPACE then return false end
 
 		local info = cls and _NSInfo[cls]
 		if info then
@@ -319,17 +316,27 @@ do
 				return self.KeyAccessor
 			end
 		end,
+		ClearKeyword = function(self)
+			self.Owner = nil
+			self.Keyword = nil
+		end,
 	}
 	local _KeyAccessor = newproxy(true)
-	getmetatable(_KeyAccessor).__call = function (self, value)
+	getmetatable(_KeyAccessor).__call = function (self, value, value2)
 		self = _KeywordAccessorInfo[self]
 		local keyword, owner = self.Keyword, self.Owner
 		self.Keyword, self.Owner = nil, nil
 		if keyword and owner then
 			-- In 5.1, tail call for error & setfenv is not supported
-			local ok, ret = pcall(keyword, owner, value, 4)
-			if not ok then error(ret:match("%d+:%s*(.-)$") or ret, 2) end
-			return ret
+			if value2 ~= nil then
+				local ok, ret = pcall(keyword, owner, value, value2, 4)
+				if not ok then error(ret:match("%d+:%s*(.-)$") or ret, 2) end
+				return ret
+			else
+				local ok, ret = pcall(keyword, owner, value, 4)
+				if not ok then error(ret:match("%d+:%s*(.-)$") or ret, 2) end
+				return ret
+			end
 		end
 	end
 	getmetatable(_KeyAccessor).__metatable = false
@@ -340,7 +347,7 @@ do
 			for _, info in pairs(_KeywordAccessorInfo) do if type(info) == "table" then info[key] = value end end
 		else
 			local keyAccessor = newproxy(_KeyAccessor)
-			local info = { GetKeyword = _KeywordAccessorInfo.GetKeyword, KeyAccessor = keyAccessor }
+			local info = { GetKeyword = _KeywordAccessorInfo.GetKeyword, ClearKeyword = _KeywordAccessorInfo.ClearKeyword, KeyAccessor = keyAccessor }
 			_KeywordAccessorInfo[keyAccessor] = info
 			return info
 		end
@@ -357,6 +364,7 @@ do
 		if not ValidateFlags(checkValue, targetValue) then
 			return checkValue + (targetValue or 0)
 		end
+		return targetValue
 	end
 
 	if LUA_VERSION >= 5.3 then
@@ -389,21 +397,15 @@ end
 -- NameSpace & ClassAlias
 ------------------------------------------------------
 do
-	_NameSpace = newproxy(true)
-	_ClassAlias = newproxy(true)
+	PROTYPE_NAMESPACE = newproxy(true)
+	PROTYPE_CLASSALIAS = newproxy(true)
 
-	_NSInfo = setmetatable({}, {
+	_NSInfo = setmetatable({ [PROTYPE_NAMESPACE] = { Owner = PROTYPE_NAMESPACE } }, {
 		__index = function(self, key)
 			if type(key) == "string" then
-				key = GetNameSpace(GetDefaultNameSpace(), key)
-				if not key then return end
-				local ret = rawget(self, key)
-				if ret then return ret end
+				key = GetNameSpace(PROTYPE_NAMESPACE, key)
+				return key and rawget(self, key)
 			end
-			if not IsNameSpace(key) then return end
-			local ret = { Owner = key }
-			self[key] = ret
-			return ret
 		end,
 		__mode = "k",
 	})
@@ -411,7 +413,7 @@ do
 	_AliasMap = setmetatable({}, WEAK_ALL)
 
 	-- metatable for namespaces
-	_MetaNS = getmetatable(_NameSpace)
+	_MetaNS = getmetatable(PROTYPE_NAMESPACE)
 	do
 		_MetaNS.__call = function(self, ...)
 			local info = _NSInfo[self]
@@ -552,7 +554,11 @@ do
 					return value
 				end
 			elseif iType == TYPE_ENUM then
-				return type(key) == "string" and info.Enum[strupper(key)] or error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2)
+				local val
+				if type(key) == "string" then val = info.Enum[strupper(key)] end
+				if val == nil and info.Cache[key] ~= nil then val = key end
+				if val == nil then error(("%s is not an enumeration value of %s."):format(tostring(key), tostring(self)), 2) end
+				return val
 			end
 		end
 
@@ -564,7 +570,7 @@ do
 				local oper = info.Property and info.Property[key]
 
 				if oper and oper.IsStatic then
-					if oper.Set == false then error(("%s can't be overwrited."):format(key), 2) end
+					if oper.Set == false then error(("%s can't be set."):format(key), 2) end
 
 					-- Property
 					if oper.Type then value = Validate4Type(oper.Type, value, key, key, 3) end
@@ -617,7 +623,7 @@ do
 
 							return operTar and operTar(self, value, old, key)
 						else
-							error(("%s can't be overwrited."):format(key), 2)
+							error(("%s can't be set."):format(key), 2)
 						end
 					end
 				else
@@ -656,12 +662,12 @@ do
 	end
 
 	-- metatable for super alias
-	_MetaSA = getmetatable(_ClassAlias)
+	_MetaSA = getmetatable(PROTYPE_CLASSALIAS)
 	do
-		_MetaSA.__call = function(self, ...)
+		_MetaSA.__call = function(self, obj, ...)
 			-- Init the class object
 			local info = _AliasMap[self]
-			if IsChildClass(info.Owner, getmetatable(...)) then return Class1Obj(info, ...) end
+			if IsChildClass(info.Owner, getmetatable(obj)) then return Class1Obj(info, obj, ...) end
 		end
 
 		_MetaSA.__index = function(self, key)
@@ -686,14 +692,27 @@ do
 
 	-- BuildClassAlias
 	function BuildClassAlias(info)
-		local value = newproxy(_ClassAlias)
+		local value = newproxy(PROTYPE_CLASSALIAS)
 		info.ClassAlias = value
 		_AliasMap[value] = info
 		return value
 	end
 
 	-- IsNameSpace
-	function IsNameSpace(ns) return getmetatable(ns) == TYPE_NAMESPACE end
+	function IsNameSpace(ns) return rawget(_NSInfo, ns) and true or false end
+
+	-- RecordNSFeatures
+	local _newFeatures
+
+	function RecordNSFeatures()
+		_newFeatures = {}
+	end
+
+	function GetNsFeatures()
+		local ret = _newFeatures
+		_newFeatures = nil
+		return ret
+	end
 
 	-- BuildNameSpace
 	function BuildNameSpace(ns, namelist)
@@ -705,7 +724,7 @@ do
 
 		for name in namelist:gmatch("[_%w]+") do
 			if not info then
-				cls = newproxy(_NameSpace)
+				cls = newproxy(PROTYPE_NAMESPACE)
 			elseif info.Type == TYPE_ENUM then
 				return error(("The %s is an enumeration, can't define sub-namespace in it."):format(tostring(info.Owner)))
 			else
@@ -717,23 +736,27 @@ do
 						return error(("The [%s] %s - %s is defined, can't be used as namespace."):format(info.Type, tostring(info.Owner), name))
 					end
 
-					scls = newproxy(_NameSpace)
+					scls = newproxy(PROTYPE_NAMESPACE)
 					info.SubNS = info.SubNS or {}
 					info.SubNS[name] = scls
 
-					if cls == _NameSpace then _G[name] = _G[name] or scls end
+					if cls == PROTYPE_NAMESPACE and _G[name] == nil then _G[name] = scls end
 				end
 
 				cls = scls
 			end
 
 			info = _NSInfo[cls]
-			info.Name = info.Name or name
-			if not info.NameSpace then info.NameSpace = parent end
+			if not info then
+				info = { Owner = cls, Name = name, NameSpace = parent }
+				_NSInfo[cls] = info
+			end
 			parent = cls
 		end
 
 		if cls == ns then return end
+
+		if _newFeatures then _newFeatures[cls] = true end
 
 		return cls
 	end
@@ -757,14 +780,11 @@ do
 		return cls
 	end
 
-	-- GetDefaultNameSpace
-	function GetDefaultNameSpace() return _NameSpace end
-
 	-- SetNameSpace
 	function SetNameSpace4Env(env, name)
 		if type(env) ~= "table" then return end
 
-		local ns = type(name) == "string" and BuildNameSpace(GetDefaultNameSpace(), name) or IsNameSpace(name) and name or nil
+		local ns = type(name) == "string" and BuildNameSpace(PROTYPE_NAMESPACE, name) or IsNameSpace(name) and name or nil
 		rawset(env, NAMESPACE_FIELD, ns)
 
 		return ns
@@ -794,15 +814,15 @@ do
 	end
 
 	function GetDefineNS(env, name, ty)
-		if getmetatable(name) == TYPE_NAMESPACE then
-			return name
-		elseif type(name) == "table" or type(name) == "function" then
+		if not name then
 			-- Anonymous
 			return BuildNameSpace(nil, "Anonymous" .. ty)
+		elseif IsNameSpace(name) then
+			return name
 		elseif type(name) == "string" then
 			if not name:match("^[_%w]+$") then return end
 
-			local ns = not IsLocal() and (GetPrepareNameSpace() == nil and GetNameSpace4Env(env) or GetPrepareNameSpace()) or nil
+			local ns = GetPrepareNameSpace() == nil and GetNameSpace4Env(env) or GetPrepareNameSpace() or nil
 
 			if ns then
 				return BuildNameSpace(ns, name)
@@ -1022,7 +1042,7 @@ do
 	function GetDocument(owner, name, targetType)
 		if not DOCUMENT_ENABLED then return end
 
-		if type(owner) == "string" then owner = GetNameSpace(GetDefaultNameSpace(), owner) end
+		if type(owner) == "string" then owner = GetNameSpace(PROTYPE_NAMESPACE, owner) end
 
 		local info = _NSInfo[owner]
 		if not info then return end
@@ -1244,7 +1264,7 @@ do
 									prop.Get = info.Method["get" .. uname]
 								elseif info.Method["Get" .. uname] and ValidateFlags(MD_STATIC_FEATURE, info.FeatureModifier["Get" .. uname]) then
 									prop.Get = info.Method["Get" .. uname]
-								elseif prop.Type == Boolean then
+								elseif prop.Type == Boolean or prop.Type == BooleanNil then
 									-- FlagEnabled -> IsFlagEnabled
 									if info.Method["is" .. uname] and ValidateFlags(MD_STATIC_FEATURE, info.FeatureModifier["is" .. uname]) then
 										prop.Get = info.Method["is" .. uname]
@@ -1273,7 +1293,7 @@ do
 									prop.Set = info.Method["set" .. uname]
 								elseif info.Method["Set" .. uname] and ValidateFlags(MD_STATIC_FEATURE, info.FeatureModifier["Set" .. uname]) then
 									prop.Set = info.Method["Set" .. uname]
-								elseif prop.Type == Boolean then
+								elseif prop.Type == Boolean or prop.Type == BooleanNil then
 									-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
 									local pattern = ParseAdj(uname)
 
@@ -1299,7 +1319,7 @@ do
 								prop.GetMethod = "get" .. uname
 							elseif type(iCache["Get" .. uname]) == "function" then
 								prop.GetMethod = "Get" .. uname
-							elseif prop.Type == Boolean then
+							elseif prop.Type == Boolean or prop.Type == BooleanNil then
 								-- FlagEnabled -> IsFlagEnabled
 								if type(iCache["is" .. uname]) == "function" then
 									prop.GetMethod = "is" .. uname
@@ -1325,7 +1345,7 @@ do
 								prop.SetMethod = "set" .. uname
 							elseif type(iCache["Set" .. uname]) == "function" then
 								prop.SetMethod = "Set" .. uname
-							elseif prop.Type == Boolean then
+							elseif prop.Type == Boolean or prop.Type == BooleanNil then
 								-- FlagEnabled -> EnableFlag, FlagDisabled -> DisableFlag
 								local pattern = ParseAdj(uname)
 
@@ -1392,6 +1412,12 @@ do
 						prop.Getter = nil
 					end
 
+					-- Auto generate Default
+					if prop.Type and prop.Default == nil then
+						local pinfo = _NSInfo[prop.Type]
+						if pinfo and (pinfo.Type == TYPE_STRUCT or pinfo.Type == TYPE_ENUM) then prop.Default = pinfo.Default end
+					end
+
 					-- Auto generate Field or methods
 					if (prop.Set == nil or (prop.Set == false and prop.DefaultFunc)) and not prop.SetMethod and prop.Get == nil and not prop.GetMethod then
 						if prop.Field == true then prop.Field = nil end
@@ -1402,9 +1428,14 @@ do
 
 							if set.Synthesize == __Synthesize__.NameCases.Pascal then
 								getName, setName = "Get" .. uname, "Set" .. uname
+								if prop.Type == Boolean or prop.Type == BooleanNil then getName = "Is" .. uname end
 							elseif set.Synthesize == __Synthesize__.NameCases.Camel then
 								getName, setName = "get" .. uname, "set" .. uname
+								if prop.Type == Boolean or prop.Type == BooleanNil then getName = "is" .. uname end
 							end
+
+							if set.SynthesizeGet then getName = set.SynthesizeGet end
+							if set.SynthesizeSet then setName = set.SynthesizeSet end
 
 							if prop.IsStatic then
 								-- Generate getMethod
@@ -1642,13 +1673,6 @@ do
 							prop.Field = field
 						end
 					end
-
-					-- Auto generate Default
-					if prop.Type and prop.Default == nil then
-						local pinfo = _NSInfo[prop.Type]
-
-						if pinfo and (pinfo.Type == TYPE_STRUCT or pinfo.Type == TYPE_ENUM) then prop.Default = pinfo.Default end
-					end
 				end
 			end
 
@@ -1663,9 +1687,7 @@ do
 		if info.Type == TYPE_CLASS then
 			local isSimpleClass = true
 
-			if info.Constructor or info.Property then
-				isSimpleClass = false
-			elseif info.SuperClass and not _NSInfo[info.SuperClass].IsSimpleClass then
+			if info.Constructor or info.Property or (info.SuperClass and not _NSInfo[info.SuperClass].IsSimpleClass) then
 				isSimpleClass = false
 			elseif info.ExtendInterface then
 				for _, IF in ipairs(info.ExtendInterface) do
@@ -1681,7 +1703,7 @@ do
 
 		-- One-required method interface check
 		if info.Type == TYPE_INTERFACE then
-			local isOneReqMethod
+			local isOneReqMethod = nil
 			if info.FeatureModifier and info.Method then
 				for name, mod in pairs(info.FeatureModifier) do
 					if info.Method[name] and ValidateFlags(MD_REQUIRE_FEATURE, mod) then
@@ -1690,12 +1712,22 @@ do
 					end
 				end
 
-				if isOneReqMethod and info.ExtendInterface then
-					for _, IF in ipairs(info.ExtendInterface) do
-						local iInfo = _NSInfo[IF]
-						if iInfo.FeatureModifier and iInfo.Method then
-							for name, mod in pairs(iInfo.FeatureModifier) do
-								if iInfo.Method[name] and ValidateFlags(MD_REQUIRE_FEATURE, mod) then
+				if info.ExtendInterface then
+					if isOneReqMethod ~= false then
+						for _, IF in ipairs(info.ExtendInterface) do
+							local iInfo = _NSInfo[IF]
+							if isOneReqMethod then
+								if iInfo.IsOneReqMethod and iInfo.IsOneReqMethod ~= isOneReqMethod then
+									isOneReqMethod = false
+									break
+								elseif iInfo.IsOneReqMethod == false then
+									isOneReqMethod = false
+									break
+								end
+							else
+								if iInfo.IsOneReqMethod then
+									isOneReqMethod = iInfo.IsOneReqMethod
+								elseif iInfo.IsOneReqMethod == false then
 									isOneReqMethod = false
 									break
 								end
@@ -1704,7 +1736,7 @@ do
 					end
 				end
 			end
-			info.IsOneReqMethod = isOneReqMethod or nil
+			info.IsOneReqMethod = isOneReqMethod
 		end
 
 		-- Refresh branch
@@ -1737,7 +1769,7 @@ do
 
 			if ele and ele.Predefined then
 				for k, v in pairs(ele.Predefined) do
-					if k:lower() == "type" and getmetatable(v) == TYPE_NAMESPACE and _NSInfo[v].Type then
+					if k:lower() == "type" and IsNameSpace(v) and _NSInfo[v].Type then
 						ele.Type = v
 						break
 					end
@@ -1751,7 +1783,7 @@ do
 						k = k:lower()
 
 						if k == "type" then
-							if getmetatable(v) == TYPE_NAMESPACE and _NSInfo[v].Type then
+							if IsNameSpace(v) and _NSInfo[v].Type then
 								mem.Type = v
 							end
 						elseif k == "default" then
@@ -1783,6 +1815,149 @@ end
 -- Feature Definition
 --------------------------------------------------
 do
+	function checkTypeParams(...)
+		local cnt = select('#', ...)
+		local env, target, defintion, stack
+
+		if cnt > 0 then
+			if cnt > 4 then cnt = 4 end
+
+			stack = select(cnt, ...)
+
+			if type(stack) == "number" then
+				cnt = cnt - 1
+			else
+				stack = nil
+			end
+
+			if cnt == 1 then
+				local val = select(1, ...)
+				local ty = type(val)
+
+				if ty == "table" then
+					if getmetatable(val) == nil then
+						defintion = val
+					elseif _NSInfo[val] then
+						target = val
+					end
+				elseif ty == "string" then
+					if ty:find("^[%w_]+$") then
+						target = val
+					else
+						defintion = val
+					end
+				elseif ty == "function" then
+					defintion = val
+				elseif _NSInfo[val] then
+					target = val
+				end
+			elseif cnt == 2 then
+				local val = select(2, ...)
+				local ty = type(val)
+
+				if ty == "table" then
+					if getmetatable(val) == nil then
+						defintion = val
+					elseif _NSInfo[val] then
+						target = val
+					end
+				elseif ty == "string" then
+					if ty:find("^[%w_]+$") then
+						target = val
+					else
+						defintion = val
+					end
+				elseif ty == "function" then
+					defintion = val
+				elseif _NSInfo[val] then
+					target = val
+				end
+
+				-- Check first value
+				val = select(1, ...)
+				ty = type(val)
+
+				if target then
+					if ty == "table" then env = val end
+				elseif defintion then
+					if ty == "table" then
+						if _NSInfo[val] then
+							target = val
+						else
+							env = val
+						end
+					elseif ty == "string" then
+						if ty:find("^[%w_]+$") then
+							target = val
+						end
+					elseif _NSInfo[val] then
+						target = val
+					end
+				else
+					if ty == "table" then
+						if getmetatable(val) == nil then
+							defintion = val
+						elseif _NSInfo[val] then
+							target = val
+						end
+					elseif ty == "string" then
+						if ty:find("^[%w_]+$") then
+							target = val
+						else
+							defintion = val
+						end
+					elseif ty == "function" then
+						defintion = val
+					elseif _NSInfo[val] then
+						target = val
+					end
+				end
+			elseif cnt == 3 then
+				-- No match just check
+				env, target, defintion = ...
+				if type(env) ~= "table" then env = nil end
+				if type(target) ~= "string" and not _NSInfo[target] then target = nil end
+				if type(target) == "string" and not target:find("^[%w_]+$") then target = nil end
+				local ty = type(defintion)
+				if not (ty == "function" or ty == "table" or ty == "string") then defintion = nil end
+			end
+		end
+
+		stack = stack or 2
+
+		if type(defintion) == "string" then
+			local ret, msg = loadstring("return function(_ENV) " .. defintion .. " end")
+			if not ret then error(msg:match("%d+:%s*(.-)$") or msg, stack + 1) end
+			ret, msg = pcall(ret)
+			if not ret then error(msg:match("%d+:%s*(.-)$") or msg, stack + 1) end
+			defintion = msg
+		end
+
+		return env, target, defintion, stack
+	end
+
+	function IsPropertyReadable(ns, name)
+		local info = _NSInfo[ns]
+
+		if info and (info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS) then
+			local prop = info.Cache[name]
+			if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Get or prop.GetMethod or prop.Field or prop.Default ~= nil) and true or false end
+			prop = info.Property and info.Property[name]
+			if prop and prop.IsStatic then return (prop.Get or prop.GetMethod or prop.Default ~= nil) and true or false end
+		end
+	end
+
+	function IsPropertyWritable(ns, name)
+		local info = _NSInfo[ns]
+
+		if info and (info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS) then
+			local prop = info.Cache[name]
+			if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Set or prop.SetMethod or prop.Field) and true or false end
+			prop = info.Property and info.Property[name]
+			if prop and prop.IsStatic then return (prop.Set or prop.SetMethod) and true or false end
+		end
+	end
+
 	function IsFinalFeature(ns, name, isSuper)
 		ns = _NSInfo[ns]
 
@@ -2051,7 +2226,7 @@ do
 			end
 		end
 
-		IFInfo.ExtendChild = IFInfo.ExtendChild or {}
+		IFInfo.ExtendChild = IFInfo.ExtendChild or setmetatable({}, WEAK_VALUE)
 		tinsert(IFInfo.ExtendChild, owner)
 
 		tinsert(info.ExtendInterface, IF)
@@ -2068,7 +2243,7 @@ do
 		if info.SuperClass == superCls then return end
 		if info.SuperClass then return error(("%s is inherited from %s, can't inherit another class."):format(tostring(info.Owner), tostring(info.SuperClass))) end
 
-		superInfo.ChildClass = superInfo.ChildClass or {}
+		superInfo.ChildClass = superInfo.ChildClass or setmetatable({}, WEAK_VALUE)
 		tinsert(superInfo.ChildClass, info.Owner)
 
 		info.SuperClass = superCls
@@ -2129,7 +2304,7 @@ do
 		local memInfo = { Name = key }
 
 		-- Validate the value
-		if getmetatable(value) == TYPE_NAMESPACE and _NSInfo[value].Type then value = { Type = value } end
+		if IsNameSpace(value) and _NSInfo[value].Type then value = { Type = value } end
 
 		if type(value) ~= "table" then return error([[Usage: member "Name" { -- Field Definition }]]) end
 
@@ -2171,7 +2346,7 @@ do
 
 		-- Save feature
 		if tonumber(key) then
-			if getmetatable(value) == TYPE_NAMESPACE then
+			if IsNameSpace(value) then
 				local vType = _NSInfo[value].Type
 
 				if info.Type == TYPE_STRUCT then
@@ -2208,7 +2383,7 @@ do
 		elseif type(key) == "string" then
 			local vType = type(value)
 
-			if getmetatable(value) == TYPE_NAMESPACE then
+			if IsNameSpace(value) then
 				if info.Type == TYPE_CLASS or info.Type == TYPE_INTERFACE then
 					return SaveProperty(info, key, { Type = value })
 				elseif info.Type == TYPE_STRUCT then
@@ -2244,7 +2419,7 @@ do
 		local ns
 
 		if type(name) == "string" then
-			ns = GetNameSpace(GetDefaultNameSpace(), name)
+			ns = GetNameSpace(PROTYPE_NAMESPACE, name)
 		elseif IsNameSpace(name) then
 			ns = name
 		end
@@ -2451,7 +2626,7 @@ do
 			end
 
 			-- Check base namespace
-			value = GetNameSpace(GetDefaultNameSpace(), key)
+			value = GetNameSpace(PROTYPE_NAMESPACE, key)
 			if value then return value end
 
 			-- Check method, so definition environment can use existed method
@@ -2533,6 +2708,7 @@ do
 			local owner = self[OWNER_FIELD]
 
 			setfenv(2, self[BASE_ENV_FIELD])
+			_KeyWord4IFEnv:ClearKeyword()
 			pcall(setmetatable, self, _MetaIFEnv)
 			RefreshCache(owner)
 
@@ -2540,17 +2716,15 @@ do
 
 			return owner
 		end
-
-		_MetaIFEnv.__call = _MetaIFDefEnv.__call
 	end
 
 	------------------------------------
 	--- Create interface in currect environment's namespace or default namespace
 	------------------------------------
-	function interface(env, name, stack)
-		stack = stack or 2
-		name = name or env
-		local fenv = type(env) == "table" and env or getfenv(stack) or _G
+	function interface(...)
+		local env, name, definition, stack = checkTypeParams(...)
+
+		local fenv = env or getfenv(stack) or _G
 
 		local ok, IF = pcall(GetDefineNS, fenv, name, TYPE_INTERFACE)
 		if not ok then error(IF:match("%d+:%s*(.-)$") or IF, stack) end
@@ -2562,11 +2736,6 @@ do
 		elseif info.Type and info.Type ~= TYPE_INTERFACE then
 			error(("%s is existed as %s, not interface."):format(tostring(name), tostring(info.Type)), stack)
 		end
-
-		-- For Anonymous
-		local definition = (type(name) == "function" or type(name) == "table" and getmetatable(name) == nil) and name or nil
-
-		name = info.Name
 
 		-- Check if the class is final
 		if ValidateFlags(MD_SEALED_FEATURE, info.Modifier) then error("The interface is sealed, can't be re-defined.", stack) end
@@ -2601,6 +2770,7 @@ do
 				setfenv(definition, interfaceEnv)
 				definition(interfaceEnv)
 
+				_KeyWord4IFEnv:ClearKeyword()
 				pcall(setmetatable, interfaceEnv, _MetaIFEnv)
 				RefreshCache(IF)
 				if ATTRIBUTE_INSTALLED then ApplyRestAttribute(IF, AttributeTargets.Interface) end
@@ -2608,7 +2778,7 @@ do
 				return IF
 			else
 				-- save interface to the environment
-				rawset(fenv, name, IF)
+				if type(name) == "string" then rawset(fenv, name, IF) end
 
 				-- Set the environment to interface's environment
 				setfenv(stack, interfaceEnv)
@@ -2628,6 +2798,7 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name or info.Owner == name then
+			_KeyWord4IFEnv:ClearKeyword()
 			setmetatable(env, _MetaIFEnv)
 			setfenv(stack, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
@@ -2670,6 +2841,12 @@ do
 	end
 
 	function Interface2Obj(info, init)
+		if  type(init) == "string" then
+			local ok, ret = pcall(Lambda, init)
+			if not ok then error(ret:match("%d+:%s*(.-)$") or ret, 3) end
+			init = ret
+		end
+
 		if type(init) == "function" then
 			if not info.IsOneReqMethod then error(("%s is not a one required method interface."):format(tostring(info.Owner)), 3) end
 			init = { [info.IsOneReqMethod] = init }
@@ -2815,7 +2992,7 @@ do
 			end
 
 			-- Check base namespace
-			value = GetNameSpace(GetDefaultNameSpace(), key)
+			value = GetNameSpace(PROTYPE_NAMESPACE, key)
 			if value then return value end
 
 			-- Check method, so definition environment can use existed method
@@ -2902,6 +3079,7 @@ do
 			local owner = self[OWNER_FIELD]
 
 			setfenv(2, self[BASE_ENV_FIELD])
+			_KeyWord4ClsEnv:ClearKeyword()
 			pcall(setmetatable, self, _MetaClsEnv)
 			RefreshCache(owner)
 			local info = _NSInfo[owner]
@@ -2912,8 +3090,6 @@ do
 
 			return owner
 		end
-
-		_MetaClsEnv.__call = _MetaClsDefEnv.__call
 	end
 
 	function Class_Index(self, key)
@@ -3050,7 +3226,7 @@ do
 				end
 			else
 				-- Property
-				if oper.Set == false then error(("%s can't be overwrited."):format(key), 2) end
+				if oper.Set == false then error(("%s can't be set."):format(key), 2) end
 				if oper.Type then value = Validate4Type(oper.Type, value, key, key, 3) end
 				if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
@@ -3100,7 +3276,7 @@ do
 
 						return
 					else
-						error(("%s can't be overwrited."):format(key), 2)
+						error(("%s can't be set."):format(key), 2)
 					end
 				end
 			end
@@ -3247,7 +3423,7 @@ do
 					end
 				else
 					-- Property
-					if oper.Set == false then error(("%s can't be overwrited."):format(key), 2) end
+					if oper.Set == false then error(("%s can't be set."):format(key), 2) end
 					if oper.Type then value = Validate4Type(oper.Type, value, key, key, 3) end
 					if oper.SetClone then value = CloneObj(value, oper.SetDeepClone) end
 
@@ -3297,7 +3473,7 @@ do
 
 							return
 						else
-							error(("%s can't be overwrited."):format(key), 2)
+							error(("%s can't be set."):format(key), 2)
 						end
 					end
 				end
@@ -3334,7 +3510,7 @@ do
 
 							if not (iprop and type(iprop) == "table" and getmetatable(iprop) == nil) then
 								error(("The %s lack property declaration for [%s] %s."):format(tostring(info.Owner), tostring(IF), name), stack)
-							elseif prop.Type and iprop.Type ~= prop.Type then
+							elseif (prop.Type and iprop.Type ~= prop.Type) or (IsPropertyReadable(IF, name) and not IsPropertyReadable(info.Owner, name)) or (IsPropertyWritable(IF, name) and not IsPropertyWritable(info.Owner, name)) then
 								if not iprop.Type then
 									iprop.Type = prop.Type
 									if iprop.Default ~= nil then
@@ -3406,10 +3582,32 @@ do
 		-- Create new object
 		local obj
 
-		if info.IsSimpleClass and select('#', ...) == 1 and type((...)) == "table" and getmetatable((...)) == nil then
+		if select('#', ...) == 1 then
 			-- Save memory cost for simple class
-			obj = setmetatable((...), info.MetaTable)
-		else
+			local init = ...
+			if type(init) == "table" and getmetatable(init) == nil then
+				if info.IsSimpleClass then
+					obj = setmetatable(init, info.MetaTable)
+				elseif info.AsSimpleClass then
+					local noConflict = true
+					for name, set in pairs(info.Cache) do
+						if type(set) == "table" then
+							-- Property | Event
+							if init[name] ~= nil then noConflict = false break end
+						else
+							-- Method
+							if init[name] ~= nil and type(init[name]) ~= "function" then noConflict = false break end
+						end
+					end
+					if noConflict then
+						obj = setmetatable(init, info.MetaTable)
+
+						Class1Obj(info, obj)
+					end
+				end
+			end
+		end
+		if not obj then
 			obj = setmetatable({}, info.MetaTable)
 
 			Class1Obj(info, obj, ...)
@@ -3425,10 +3623,10 @@ do
 	------------------------------------
 	--- Create class in currect environment's namespace or default namespace
 	------------------------------------
-	function class(env, name, stack)
-		stack = stack or 2
-		name = name or env
-		local fenv = type(env) == "table" and env or getfenv(stack) or _G
+	function class(...)
+		local env, name, definition, stack = checkTypeParams(...)
+
+		local fenv = env or getfenv(stack) or _G
 
 		local ok, cls = pcall(GetDefineNS, fenv, name, TYPE_CLASS)
 		if not ok then error(cls:match("%d+:%s*(.-)$") or cls, stack) end
@@ -3440,11 +3638,6 @@ do
 		elseif info.Type and info.Type ~= TYPE_CLASS then
 			error(("%s is existed as %s, not class."):format(tostring(name), tostring(info.Type)), stack)
 		end
-
-		-- For Anonymous
-		local definition = (type(name) == "function" or type(name) == "table" and getmetatable(name) == nil) and name or nil
-
-		name = info.Name
 
 		-- Check if the class is final
 		if ValidateFlags(MD_SEALED_FEATURE, info.Modifier) then error("The class is sealed, can't be re-defined.", stack) end
@@ -3479,6 +3672,7 @@ do
 				setfenv(definition, classEnv)
 				definition(classEnv)
 
+				_KeyWord4ClsEnv:ClearKeyword()
 				pcall(setmetatable, classEnv, _MetaClsEnv)
 				RefreshCache(cls)
 				if ATTRIBUTE_INSTALLED then ApplyRestAttribute(cls, AttributeTargets.Class) end
@@ -3489,7 +3683,7 @@ do
 				return cls
 			else
 				-- save class to the environment
-				rawset(fenv, name, cls)
+				if type(name) == "string" then rawset(fenv, name, cls) end
 
 				setfenv(stack, classEnv)
 
@@ -3508,6 +3702,7 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name or info.Owner == name then
+			_KeyWord4ClsEnv:ClearKeyword()
 			setmetatable(env, _MetaClsEnv)
 			setfenv(stack, env[BASE_ENV_FIELD])
 			RefreshCache(info.Owner)
@@ -3593,10 +3788,10 @@ do
 	------------------------------------
 	--- create a enumeration
 	------------------------------------
-	function enum(env, name, stack)
-		stack = stack or 2
-		name = name or env
-		local fenv = type(env) == "table" and env or getfenv(stack) or _G
+	function enum(...)
+		local env, name, definition, stack = checkTypeParams(...)
+
+		local fenv = env or getfenv(stack) or _G
 
 		local ok, enm = pcall(GetDefineNS, fenv, name, TYPE_ENUM)
 		if not ok then error(enm:match("%d+:%s*(.-)$") or enm, stack) end
@@ -3609,11 +3804,6 @@ do
 			error(("%s is existed as %s, not enum."):format(tostring(name), tostring(info.Type)), stack)
 		end
 
-		-- For Anonymous
-		local definition = type(name) == "table" and getmetatable(name) == nil and name or nil
-
-		name = info.Name
-
 		-- Check if the enum is final
 		if ValidateFlags(MD_SEALED_FEATURE, info.Modifier) then error("The enum is sealed, can't be re-defined.", stack) end
 
@@ -3622,13 +3812,13 @@ do
 		info.Cache = nil
 		info.MaxValue = nil
 
-		if definition then
+		if type(definition) == "table" then
 			BuildEnum(info, definition)
 
 			return enm
 		else
 			-- save enum to the environment
-			rawset(fenv, name, enm)
+			if type(name) == "string" then rawset(fenv, name, enm) end
 
 			return function(set) return BuildEnum(info, set) end
 		end
@@ -3675,7 +3865,7 @@ do
 			end
 
 			-- Check base namespace
-			value = GetNameSpace(GetDefaultNameSpace(), key)
+			value = GetNameSpace(PROTYPE_NAMESPACE, key)
 			if value then return value end
 
 			-- Check Method
@@ -3726,7 +3916,7 @@ do
 				return
 			end
 
-			if (type(key) == "string" or tonumber(key)) and getmetatable(value) == TYPE_NAMESPACE and _NSInfo[value].Type then
+			if (type(key) == "string" or tonumber(key)) and IsNameSpace(value) and _NSInfo[value].Type then
 				local ok, msg = pcall(SaveStructMember, info, key, value)
 				if not ok then error(msg:match("%d+:%s*(.-)$") or msg, 2) end
 				return
@@ -3741,6 +3931,7 @@ do
 			local owner = self[OWNER_FIELD]
 
 			setfenv(2, self[BASE_ENV_FIELD])
+			_KeyWord4StrtEnv:ClearKeyword()
 			pcall(setmetatable, self, _MetaStrtEnv)
 			RefreshStruct(owner)
 
@@ -3748,8 +3939,6 @@ do
 
 			return owner
 		end
-
-		_MetaStrtEnv.__call = _MetaStrtDefEnv.__call
 	end
 
 	-- Some struct object may ref to each others, that would crash the validation
@@ -3901,10 +4090,10 @@ do
 	------------------------------------
 	--- create a structure
 	------------------------------------
-	function struct(env, name, stack)
-		stack = stack or 2
-		name = name or env
-		local fenv = type(env) == "table" and env or getfenv(stack) or _G
+	function struct(...)
+		local env, name, definition, stack = checkTypeParams(...)
+
+		local fenv = env or getfenv(stack) or _G
 
 		local ok, strt = pcall(GetDefineNS, fenv, name, TYPE_STRUCT)
 		if not ok then error(strt:match("%d+:%s*(.-)$") or strt, stack) end
@@ -3916,11 +4105,6 @@ do
 		elseif info.Type and info.Type ~= TYPE_STRUCT then
 			error(("%s is existed as %s, not struct."):format(tostring(name), tostring(info.Type)), stack)
 		end
-
-		-- For Anonymous
-		local definition = (type(name) == "function" or type(name) == "table" and getmetatable(name) == nil) and name or nil
-
-		name = info.Name
 
 		-- Check if the struct is final
 		if ValidateFlags(MD_SEALED_FEATURE, info.Modifier) then error("The struct is sealed, can't be re-defined.", stack) end
@@ -3959,6 +4143,7 @@ do
 				setfenv(definition, strtEnv)
 				definition(strtEnv)
 
+				_KeyWord4StrtEnv:ClearKeyword()
 				pcall(setmetatable, strtEnv, _MetaStrtEnv)
 				RefreshStruct(strt)
 				if ATTRIBUTE_INSTALLED then ApplyRestAttribute(strt, AttributeTargets.Struct) end
@@ -3966,7 +4151,7 @@ do
 				return strt
 			else
 				-- save struct to the environment
-				rawset(fenv, name, strt)
+				if type(name) == "string" then rawset(fenv, name, strt) end
 
 				setfenv(stack, strtEnv)
 
@@ -3985,6 +4170,7 @@ do
 		local info = _NSInfo[env[OWNER_FIELD]]
 
 		if info.Name == name or info.Owner == name then
+			_KeyWord4StrtEnv:ClearKeyword()
 			setmetatable(env, _MetaStrtEnv)
 			setfenv(stack, env[BASE_ENV_FIELD])
 			RefreshStruct(info.Owner)
@@ -4051,8 +4237,43 @@ do
 	struct "RawTable"	{ function (value) assert(type(value) == "table" and getmetatable(value) == nil, "%s must be a table without metatable.") end }
 	struct "Userdata"	{ function (value) if type(value) ~= "userdata" then error(("%s must be a userdata, got %s."):format("%s", type(value))) end end }
 	struct "Thread"		{ function (value) if type(value) ~= "thread" then error(("%s must be a thread, got %s."):format("%s", type(value))) end end }
-	struct "Any"		{ function (value) end }
-	struct "Callable"	{ function (value) assert(Reflector.IsCallable(value), "%s isn't callable.") end }
+	struct "Any"		{ }
+
+	struct "Lambda" (function (_ENV)
+		_LambdaCache = setmetatable({}, WEAK_VALUE)
+
+		function Lambda(value)
+			assert(type(value) == "string" and value:find("=>"), "%s must be a string like 'x,y=>x+y'")
+			local func = _LambdaCache[value]
+			if not func then
+				local param, body = value:match("^(.-)=>(.+)$")
+				local args
+				if param then for arg in param:gmatch("[_%w]+") do args = (args and args .. "," or "") .. arg end end
+				if args then
+					func = loadstring(("local %s = ... return %s"):format(args, body or ""))
+					if not func then
+						func = loadstring(("local %s = ... %s"):format(args, body or ""))
+					end
+				else
+					func = loadstring("return " .. (body or ""))
+					if not func then
+						func = loadstring(body or "")
+					end
+				end
+				assert(func, "%s must be a string like 'x,y=>x+y'")
+				_LambdaCache[value] = func
+			end
+			return func
+		end
+	end)
+
+	struct "Callable"	{
+		function (value)
+			if type(value) == "string" then return Lambda(value) end
+			assert(Reflector.IsCallable(value), "%s isn't callable.")
+		end
+	}
+
 	struct "Class"		{ function (value) assert(Reflector.IsClass(value), "%s must be a class.") end }
 	struct "Interface"	{ function (value) assert(Reflector.IsInterface(value), "%s must be an interface.") end }
 	struct "Struct"		{ function (value) assert(Reflector.IsStruct(value), "%s must be a struct.") end }
@@ -4111,7 +4332,7 @@ do
 			<usage>ns = System.Reflector.GetNameSpaceForName("System")</usage>
 		]]
 		function GetNameSpaceForName(name)
-			return GetNameSpace(GetDefaultNameSpace(), name)
+			return GetNameSpace(PROTYPE_NAMESPACE, name)
 		end
 
 		doc "GetUpperNameSpace" [[
@@ -4197,7 +4418,7 @@ do
 			<return type="boolean">true if the object is a NameSpace</return>
 			<usage>System.Reflector.IsNameSpace(System.Object)</usage>
 		]]
-		function IsNameSpace(ns) return _NSInfo[ns] and true or false end
+		IsNameSpace = IsNameSpace
 
 		doc "IsClass" [[
 			<desc>Check if the namespace is a class</desc>
@@ -4682,6 +4903,18 @@ do
 			end
 		end
 
+		doc "HasMetaMethod" [[
+			<desc>Whether the class has the meta-method</desc>
+			<param name="class">the query class</param>
+			<param name="meta-method">the result table</param>
+			<return type="boolean">true if the class has the meta-method</return>
+			<usage>print(System.Reflector.HasMetaMethod(System.Object, "__call")</usage>
+		]]
+		function HasMetaMethod(ns, name)
+			local info = _NSInfo[ns]
+			return info and info.MetaTable and info.MetaTable[_KeyMeta[name]] and true or false
+		end
+
 		doc "GetPropertyType" [[
 			<desc>Get the property type of the property</desc>
 			<param name="owner" type="class|interface">the property's owner</param>
@@ -4722,16 +4955,7 @@ do
 			<return type="boolean">true if the property is readable</return>
 			<usage>System.Reflector.IsPropertyReadable(System.Object, "Name")</usage>
 		]]
-		function IsPropertyReadable(ns, name)
-			local info = _NSInfo[ns]
-
-			if info and (info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS) then
-				local prop = info.Cache[name]
-				if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Get or prop.GetMethod or prop.Field or prop.Default ~= nil) and true or false end
-				prop = info.Property and info.Property[name]
-				if prop and prop.IsStatic then return (prop.Get or prop.GetMethod or prop.Default ~= nil) and true or false end
-			end
-		end
+		IsPropertyReadable = IsPropertyReadable
 
 		doc "IsPropertyWritable" [[
 			<desc>whether the property is writable</desc>
@@ -4740,16 +4964,7 @@ do
 			<return type="boolean">true if the property is writable</return>
 			<usage>System.Reflector.IsPropertyWritable(System.Object, "Name")</usage>
 		]]
-		function IsPropertyWritable(ns, name)
-			local info = _NSInfo[ns]
-
-			if info and (info.Type == TYPE_INTERFACE or info.Type == TYPE_CLASS) then
-				local prop = info.Cache[name]
-				if prop then return type(prop) == "table" and getmetatable(prop) == nil and (prop.Set or prop.SetMethod or prop.Field) and true or false end
-				prop = info.Property and info.Property[name]
-				if prop and prop.IsStatic then return (prop.Set or prop.SetMethod) and true or false end
-			end
-		end
+		IsPropertyWritable = IsPropertyWritable
 
 		doc "IsRequiredMethod" [[
 			<desc>Whether the method is required to be overwrited</desc>
@@ -5230,6 +5445,27 @@ do
 			local info = cls and rawget(_NSInfo, cls)
 
 			return info and info.Type == TYPE_CLASS and info.MetaTable.__call and true or false
+		end
+
+		doc "LoadLuaFile" [[
+			<desc>Load the lua file and return any features that may be created by the file</desc>
+			<param name="path">the file's path</param>
+			<return type="table">the hash table use feature types as key</return>
+		]]
+		function LoadLuaFile(path)
+			local f = assert(loadfile(path))
+
+			if f then
+				RecordNSFeatures()
+
+				local ok, msg = pcall(f)
+
+				local ret = GetNsFeatures()
+
+				assert(ok, msg)
+
+				return ret
+			end
 		end
 	end)
 end
@@ -5805,16 +6041,279 @@ do
 	------------------------------------------------------
 	-- System.IAttribute
 	------------------------------------------------------
-	interface "IAttribute" { SendAttributeToPrepared }
+	interface "IAttribute" (function (_ENV)
+		doc "IAttribute" [[The IAttribute associates predefined system information or user-defined custom information with a target element.]]
 
-	------------------------------------------------------
-	-- System.__Attribute__
-	------------------------------------------------------
-	class "__Attribute__" (function(_ENV)
-		extend "IAttribute"
+		-- Class Method
+		local function IsDefined(target, type)
+			local config = _AttributeMap[target]
 
-		doc "__Attribute__" [[The __Attribute__ class associates predefined system information or user-defined custom information with a target element.]]
+			if not config then
+				return false
+			elseif type == IAttribute then
+				return true
+			elseif getmetatable(config) then
+				return getmetatable(config) == type
+			else
+				for _, attr in ipairs(config) do if getmetatable(attr) == type then return true end end
+			end
+			return false
+		end
 
+		doc "IsNameSpaceAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">the name space</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsNameSpaceAttributeDefined(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			return target and IsDefined(target, cls) or false
+		end
+
+		doc "IsClassAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsClassAttributeDefined(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			return Reflector.IsClass(target) and IsDefined(target, cls)
+		end
+
+		doc "IsEnumAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">enum</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsEnumAttributeDefined(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			return Reflector.IsEnum(target) and IsDefined(target, cls)
+		end
+
+		doc "IsInterfaceAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">interface</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsInterfaceAttributeDefined(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			return Reflector.IsInterface(target) and IsDefined(target, cls)
+		end
+
+		doc "IsStructAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">struct</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsStructAttributeDefined(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			return Reflector.IsStruct(target) and IsDefined(target, cls)
+		end
+
+		doc "IsEventAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class | interface</param>
+			<param name="event">the event's name</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsEventAttributeDefined(cls, target, evt)
+			local info = _NSInfo[target]
+			evt = info and info.Cache and info.Cache[evt]
+			return getmetatable(evt) and IsDefined(evt, cls) or false
+		end
+
+		doc "IsMethodAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class | interface | struct</param>
+			<param name="method">the method's name</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsMethodAttributeDefined(cls, target, method)
+			local info = _NSInfo[target]
+			method = info and (info.Cache and info.Cache[method] or info.Method and info.Method[method])
+			return type(method) == "function" and IsDefined(method, cls) or false
+		end
+
+		doc "IsPropertyAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class | interface</param>
+			<param name="property">the property's name</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsPropertyAttributeDefined(cls, target, prop)
+			local info = _NSInfo[target]
+			prop = info and (info.Cache and info.Cache[prop] or info.Property and info.Property[prop])
+			return type(prop) == "table" and getmetatable(prop) == nil and IsDefined(prop, cls) or false
+		end
+
+		doc "IsMemberAttributeDefined" [[
+			<desc>Check whether the target contains such type attribute</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">struct</param>
+			<param name="member">the member's name</param>
+			<return type="boolean">true if the target contains attribute with the type</return>
+		]]
+		function IsMemberAttributeDefined(cls, target, member)
+			local info = _NSInfo[target]
+			member = info and info.Members and info.Members[member]
+			return member and IsDefined(member, cls) or false
+		end
+
+		local function GetCustomAttribute(target, type)
+			local config = _AttributeMap[target]
+
+			if not config then
+				return
+			elseif getmetatable(config) then
+				return (type == IAttribute or getmetatable(config) == type) and config or nil
+			elseif type == IAttribute then
+				return unpack(config)
+			else
+				local cache = CACHE_TABLE()
+
+				for _, attr in ipairs(config) do if getmetatable(attr) == type then tinsert(cache, attr) end end
+
+				local count = #cache
+
+				if count == 0 then
+					CACHE_TABLE(cache)
+					return
+				elseif count == 1 then
+					local r1 = cache[1]
+					CACHE_TABLE(cache)
+					return r1
+				elseif count == 2 then
+					local r1, r2 = cache[1], cache[2]
+					CACHE_TABLE(cache)
+					return r1, r2
+				elseif count == 3 then
+					local r1, r2, r3 = cache[1], cache[2], cache[3]
+					CACHE_TABLE(cache)
+					return r1, r2, r3
+				else
+					return unpack(cache)
+				end
+			end
+		end
+
+		doc "GetNameSpaceAttribute" [[
+			<desc>Return the attributes of the given type for the NameSpace</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">NameSpace</param>
+			<return>the attribute objects</return>
+		]]
+		function GetNameSpaceAttribute(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			if target then return GetCustomAttribute(target, cls) end
+		end
+
+		doc "GetClassAttribute" [[
+			<desc>Return the attributes of the given type for the class</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class</param>
+			<return>the attribute objects</return>
+		]]
+		function GetClassAttribute(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			if target and Reflector.IsClass(target) then return GetCustomAttribute(target, cls) end
+		end
+
+		doc "GetEnumAttribute" [[
+			<desc>Return the attributes of the given type for the enum</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">enum</param>
+			<return>the attribute objects</return>
+		]]
+		function GetEnumAttribute(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			if target and Reflector.IsEnum(target) then return GetCustomAttribute(target, cls) end
+		end
+
+		doc "GetInterfaceAttribute" [[
+			<desc>Return the attributes of the given type for the interface</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">interface</param>
+			<return>the attribute objects</return>
+		]]
+		function GetInterfaceAttribute(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			if target and Reflector.IsInterface(target) then return GetCustomAttribute(target, cls) end
+		end
+
+		doc "GetStructAttribute" [[
+			<desc>Return the attributes of the given type for the struct</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">struct</param>
+			<return>the attribute objects</return>
+		]]
+		function GetStructAttribute(cls, target)
+			if type(target) == "string" then target = GetNameSpace(PROTYPE_NAMESPACE, target) end
+			if target and Reflector.IsStruct(target) then return GetCustomAttribute(target, cls) end
+		end
+
+		doc "GetEventAttribute" [[
+			<desc>Return the attributes of the given type for the class|interface's event</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class|interface</param>
+			<param name="event">the event's name</param>
+			<return>the attribute objects</return>
+		]]
+		function GetEventAttribute(cls, target, evt)
+			local info = _NSInfo[target]
+			evt = info and info.Cache and info.Cache[evt]
+			if getmetatable(evt) then return GetCustomAttribute(evt, cls) end
+		end
+
+		doc "GetMethodAttribute" [[
+			<desc>Return the attributes of the given type for the class|interface's method</desc>
+			<format>class, target, method</format>
+			<format>class, method</format>
+			<param name="class">the attribute class type</param>
+			<param name="target">class|interface</param>
+			<param name="method">the method's name(with target) or the method itself(without target)</param>
+			<return>the attribute objects</return>
+		]]
+		function GetMethodAttribute(cls, target, method)
+			local info = _NSInfo[target]
+			method = info and (info.Cache and info.Cache[method] or info.Method and info.Method[method])
+			if type(method) == "function" then return GetCustomAttribute(method, cls) end
+		end
+
+		doc "GetPropertyAttribute" [[
+			<desc>Return the attributes of the given type for the class|interface's property</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">class|interface</param>
+			<param name="prop">the property's name</param>
+			<return>the attribute objects</return>
+		]]
+		function GetPropertyAttribute(cls, target, prop)
+			local info = _NSInfo[target]
+			prop = info and (info.Cache and info.Cache[prop] or info.Property and info.Property[prop])
+			if type(prop) == "table" and getmetatable(prop) == nil then return GetCustomAttribute(prop, cls) end
+		end
+
+		doc "GetMemberAttribute" [[
+			<desc>Return the attributes of the given type for the struct's field</desc>
+			<param name="class">the attribute class type</param>
+			<param name="target">struct</param>
+			<param name="member">the member's name</param>
+			<return>the attribute objects</return>
+		]]
+		function GetMemberAttribute(cls, target, member)
+			local info = _NSInfo[target]
+			member = info and info.Members and info.Members[member]
+			if member then return GetCustomAttribute(member, cls) end
+		end
+
+		-- Object Method
 		doc "ApplyAttribute" [[
 			<desc>Apply the attribute to the target, overridable</desc>
 			<param name="target">the attribute's target</param>
@@ -5823,9 +6322,7 @@ do
 			<param name="name">the target's name</param>
 			<return>the target, also can be modified</return>
 		]]
-		function ApplyAttribute(self, target, targetType, owner, name)
-			-- Pass
-		end
+		function ApplyAttribute(self, target, targetType, owner, name) end
 
 		doc [[Remove self from the prepared attributes]]
 		RemoveSelf = RemoveAttributeToPrepared
@@ -5848,13 +6345,16 @@ do
 
 			return obj
 		end
+
+		-- Initializer
+		IAttribute = SendAttributeToPrepared
 	end)
 
 	-- Attribute system OnLine
 	ATTRIBUTE_INSTALLED = true
 
 	class "__Unique__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Unique__" [[Mark the class will only create one unique object, and can't be disposed, also the class can't be inherited]]
 
@@ -5868,7 +6368,7 @@ do
 	end)
 
 	class "__Flags__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Flags__" [[Indicates that an enumeration can be treated as a bit field; that is, a set of flags.]]
 
@@ -5932,7 +6432,7 @@ do
 	end)
 
 	class "__AttributeUsage__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__AttributeUsage__" [[Specifies the usage of another attribute class.]]
 
@@ -5942,8 +6442,8 @@ do
 		doc "AttributeTarget" [[The attribute target type, default AttributeTargets.All]]
 		property "AttributeTarget" { Default = AttributeTargets.All, Type = AttributeTargets }
 
-		doc "Inherited" [[Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied. Default true]]
-		property "Inherited" { Default = true, Type = Boolean }
+		doc "Inherited" [[Whether your attribute can be inherited by classes that are derived from the classes to which your attribute is applied.]]
+		property "Inherited" { Type = Boolean }
 
 		doc "AllowMultiple" [[whether multiple instances of your attribute can exist on an element. default false]]
 		property "AllowMultiple" { Type = Boolean }
@@ -5959,7 +6459,7 @@ do
 	end)
 
 	class "__Sealed__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Sealed__" [[Mark the feature to be sealed, and can't be re-defined again]]
 
@@ -5969,7 +6469,7 @@ do
 	end)
 
 	class "__Final__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Final__" [[Mark the class|interface can't be inherited, or method|property can't be overwrited by child-classes]]
 
@@ -6007,36 +6507,39 @@ do
 		------------------------------------------------------
 		-- For Attribute system
 		------------------------------------------------------
+		-- System.IAttribute
+		__Sealed__:ApplyAttribute(IAttribute)
+
 		-- System.AttributeTargets
 		__Flags__:ApplyAttribute(AttributeTargets)
 		__Sealed__:ApplyAttribute(AttributeTargets)
 
 		-- System.__Unique__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true, BeforeDefinition = true}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, RunOnce = true, BeforeDefinition = true}
 		ConsumePreparedAttributes(__Unique__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Unique__)
 		__Sealed__:ApplyAttribute(__Unique__)
 
 		-- System.__Flags__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Enum, RunOnce = true}
 		ConsumePreparedAttributes(__Flags__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Flags__)
 		__Sealed__:ApplyAttribute(__Flags__)
 
 		-- System.__AttributeUsage__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class}
 		ConsumePreparedAttributes(__AttributeUsage__, AttributeTargets.Class)
 		__Sealed__:ApplyAttribute(__AttributeUsage__)
 		__Final__:ApplyAttribute(__AttributeUsage__, AttributeTargets.Class)
 
 		-- System.__Sealed__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, RunOnce = true}
 		ConsumePreparedAttributes(__Sealed__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Sealed__)
 		__Sealed__:ApplyAttribute(__Sealed__)
 
 		-- System.__Final__
-		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Method + AttributeTargets.Property, Inherited = false, RunOnce = true, BeforeDefinition = true}
+		__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Method + AttributeTargets.Property, RunOnce = true, BeforeDefinition = true}
 		ConsumePreparedAttributes(__Final__, AttributeTargets.Class)
 		__Unique__:ApplyAttribute(__Final__)
 		__Sealed__:ApplyAttribute(__Final__)
@@ -6057,10 +6560,10 @@ do
 		__Final__:ApplyAttribute(EventHandler, AttributeTargets.Class)
 	end
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property + AttributeTargets.Method, Inherited = false, RunOnce = true }
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property + AttributeTargets.Method, RunOnce = true }
 	__Sealed__() __Unique__()
 	class "__Static__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 		doc "__Static__" [[Used to mark the features as static.]]
 
 		------------------------------------------------------
@@ -6075,278 +6578,6 @@ do
 				info.FeatureModifier = info.FeatureModifier or {}
 				info.FeatureModifier[name] = TurnOnFlags(MD_STATIC_FEATURE, info.FeatureModifier[name])
 			end
-		end
-	end)
-
-	-- Static method for __Attribute__
-	__Sealed__()
-	class "__Attribute__" (function(_ENV)
-		local function IsDefined(target, type)
-			local config = _AttributeMap[target]
-
-			if not config then
-				return false
-			elseif not type then
-				return true
-			elseif getmetatable(config) then
-				return getmetatable(config) == type
-			else
-				for _, attr in ipairs(config) do if getmetatable(attr) == type then return true end end
-			end
-			return false
-		end
-
-		doc "IsNameSpaceAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">the name space</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsNameSpaceAttributeDefined(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			return target and IsDefined(target, ty) or false
-		end
-
-		doc "IsClassAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsClassAttributeDefined(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			return Reflector.IsClass(target) and IsDefined(target, ty)
-		end
-
-		doc "IsEnumAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">enum</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsEnumAttributeDefined(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			return Reflector.IsEnum(target) and IsDefined(target, ty)
-		end
-
-		doc "IsInterfaceAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">interface</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsInterfaceAttributeDefined(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			return Reflector.IsInterface(target) and IsDefined(target, ty)
-		end
-
-		doc "IsStructAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">struct</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsStructAttributeDefined(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			return Reflector.IsStruct(target) and IsDefined(target, ty)
-		end
-
-		doc "IsEventAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class | interface</param>
-			<param name="event">the event's name</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsEventAttributeDefined(target, evt, ty)
-			local info = _NSInfo[target]
-			evt = info and info.Cache and info.Cache[evt]
-			return getmetatable(evt) and IsDefined(evt, ty) or false
-		end
-
-		doc "IsMethodAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class | interface | struct</param>
-			<param name="method">the method's name</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsMethodAttributeDefined(target, method, ty)
-			local info = _NSInfo[target]
-			method = info and (info.Cache and info.Cache[method] or info.Method and info.Method[method])
-			return type(method) == "function" and IsDefined(method, ty) or false
-		end
-
-		doc "IsPropertyAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">class | interface</param>
-			<param name="property">the property's name</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsPropertyAttributeDefined(target, prop, ty)
-			local info = _NSInfo[target]
-			prop = info and (info.Cache and info.Cache[prop] or info.Property and info.Property[prop])
-			return type(prop) == "table" and getmetatable(prop) == nil and IsDefined(prop, ty) or false
-		end
-
-		doc "IsMemberAttributeDefined" [[
-			<desc>Check whether the target contains such type attribute</desc>
-			<param name="target">struct</param>
-			<param name="member">the member's name</param>
-			<param name="type">the attribute class type</param>
-			<return type="boolean">true if the target contains attribute with the type</return>
-		]]
-		__Static__() function IsMemberAttributeDefined(target, member, ty)
-			local info = _NSInfo[target]
-			member = info and info.Members and info.Members[member]
-			return member and IsDefined(member, ty) or false
-		end
-
-		local function GetCustomAttribute(target, type)
-			local config = _AttributeMap[target]
-
-			if not config then
-				return
-			elseif getmetatable(config) then
-				return (not type or getmetatable(config) == type) and config or nil
-			elseif type then
-				local cache = CACHE_TABLE()
-
-				for _, attr in ipairs(config) do if getmetatable(attr) == type then tinsert(cache, attr) end end
-
-				local count = #cache
-
-				if count == 0 then
-					CACHE_TABLE(cache)
-					return
-				elseif count == 1 then
-					local r1 = cache[1]
-					CACHE_TABLE(cache)
-					return r1
-				elseif count == 2 then
-					local r1, r2 = cache[1], cache[2]
-					CACHE_TABLE(cache)
-					return r1, r2
-				elseif count == 3 then
-					local r1, r2, r3 = cache[1], cache[2], cache[3]
-					CACHE_TABLE(cache)
-					return r1, r2, r3
-				else
-					return unpack(cache)
-				end
-			else
-				return unpack(config)
-			end
-		end
-
-		doc "GetNameSpaceAttribute" [[
-			<desc>Return the attributes of the given type for the NameSpace</desc>
-			<param name="target">NameSpace</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetNameSpaceAttribute(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			if target then return GetCustomAttribute(target, ty) end
-		end
-
-		doc "GetClassAttribute" [[
-			<desc>Return the attributes of the given type for the class</desc>
-			<param name="target">class</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetClassAttribute(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			if target and Reflector.IsClass(target) then return GetCustomAttribute(target, ty) end
-		end
-
-		doc "GetEnumAttribute" [[
-			<desc>Return the attributes of the given type for the enum</desc>
-			<param name="target">enum</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetEnumAttribute(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			if target and Reflector.IsEnum(target) then return GetCustomAttribute(target, ty) end
-		end
-
-		doc "GetInterfaceAttribute" [[
-			<desc>Return the attributes of the given type for the interface</desc>
-			<param name="target">interface</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetInterfaceAttribute(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			if target and Reflector.IsInterface(target) then return GetCustomAttribute(target, ty) end
-		end
-
-		doc "GetStructAttribute" [[
-			<desc>Return the attributes of the given type for the struct</desc>
-			<param name="target">struct</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetStructAttribute(target, ty)
-			if type(target) == "string" then target = GetNameSpace(GetDefaultNameSpace(), target) end
-			if target and Reflector.IsStruct(target) then return GetCustomAttribute(target, ty) end
-		end
-
-		doc "GetEventAttribute" [[
-			<desc>Return the attributes of the given type for the class|interface's event</desc>
-			<param name="target">class|interface</param>
-			<param name="event">the event's name</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetEventAttribute(target, evt, ty)
-			local info = _NSInfo[target]
-			evt = info and info.Cache and info.Cache[evt]
-			if getmetatable(evt) then return GetCustomAttribute(evt, ty) end
-		end
-
-		doc "GetMethodAttribute" [[
-			<desc>Return the attributes of the given type for the class|interface's method</desc>
-			<format>target, method, type</format>
-			<format>method, type</format>
-			<param name="target">class|interface</param>
-			<param name="method">the method's name(with target) or the method itself(without target)</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetMethodAttribute(target, method, ty)
-			local info = _NSInfo[target]
-			method = info and (info.Cache and info.Cache[method] or info.Method and info.Method[method])
-			if type(method) == "function" then return GetCustomAttribute(method, ty) end
-		end
-
-		doc "GetPropertyAttribute" [[
-			<desc>Return the attributes of the given type for the class|interface's property</desc>
-			<param name="target">class|interface</param>
-			<param name="prop">the property's name</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetPropertyAttribute(target, prop, ty)
-			local info = _NSInfo[target]
-			prop = info and (info.Cache and info.Cache[prop] or info.Property and info.Property[prop])
-			if type(prop) == "table" and getmetatable(prop) == nil then return GetCustomAttribute(prop, ty) end
-		end
-
-		doc "GetMemberAttribute" [[
-			<desc>Return the attributes of the given type for the struct's field</desc>
-			<param name="target">struct</param>
-			<param name="member">the member's name</param>
-			<param name="type">the attribute class type</param>
-			<return>the attribute objects</return>
-		]]
-		__Static__() function GetMemberAttribute(target, member, ty)
-			local info = _NSInfo[target]
-			member = info and info.Members and info.Members[member]
-			if member then return GetCustomAttribute(member, ty) end
 		end
 	end)
 
@@ -6394,10 +6625,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, Inherited = false, RunOnce = true }
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Constructor, RunOnce = true }
 	__Sealed__()
 	class "__Arguments__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Arguments__" [[The overload argument definitions for the target method or constructor]]
 
@@ -6575,7 +6806,7 @@ do
 				overLoads.HasSelf = true
 				if overLoads.TargetType == AttributeTargets.Method then
 					if Reflector.IsInterface(overLoads.Owner) and Reflector.IsFinal(overLoads.Owner) then overLoads.HasSelf = false end
-					if Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
+					if overLoads.Name == "__exist" or Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
 				end
 			end
 
@@ -6671,13 +6902,25 @@ do
 			end
 		end
 
+		local function getUsage(method, index)
+			local overLoads = _OverLoad[method]
+
+			if overLoads then
+				index = (index or 0) + 1
+
+				local info = overLoads[index]
+
+				if info then return index, buildUsage(overLoads, info) end
+			end
+		end
+
 		local function raiseError(overLoads)
 			-- Check if this is a static method
 			if overLoads.HasSelf == nil then
 				overLoads.HasSelf = true
 				if overLoads.TargetType == AttributeTargets.Method then
 					if Reflector.IsInterface(overLoads.Owner) and Reflector.IsFinal(overLoads.Owner) then overLoads.HasSelf = false end
-					if Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
+					if overLoads.Name == "__exist" or Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
 				end
 			end
 
@@ -6720,7 +6963,7 @@ do
 				overLoads.HasSelf = true
 				if overLoads.TargetType == AttributeTargets.Method then
 					if Reflector.IsInterface(overLoads.Owner) and Reflector.IsFinal(overLoads.Owner) then overLoads.HasSelf = false end
-					if Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
+					if overLoads.Name == "__exist" or Reflector.IsStaticMethod(overLoads.Owner, overLoads.Name) then overLoads.HasSelf = false end
 				end
 			end
 
@@ -6921,13 +7164,23 @@ do
 
 			return overLoads[0]
 		end
+
+		doc "GetOverloadUsage" [[Return the usage of the target method]]
+		__Static__() function GetOverloadUsage(ns, name)
+			if type(ns) == "function" then return getUsage, ns end
+			local info = _NSInfo[ns]
+			if info and (info.Cache or info.Method) then
+				local tar = info.Cache[name] or info.Method[name]
+				if type(tar) == "function" then return getUsage, tar end
+			end
+		end
 	end)
 
 	-- More usable attributes
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Event + AttributeTargets.Method, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Delegate__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 		doc "__Delegate__" [[Wrap the method/event call in a delegate function]]
 
 		------------------------------------------------------
@@ -6969,10 +7222,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Cache__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 		doc "__Cache__" [[Mark the class so its objects will cache any methods they accessed, mark the method so the objects will cache the method when they are created, if using on an interface, all object methods defined in it would be marked with __Cache__ attribute .]]
 
 		function ApplyAttribute(self, target, targetType, owner, name)
@@ -6986,10 +7239,10 @@ do
 		"CUSTOM"
 	}
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true, BeforeDefinition = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, RunOnce = true, BeforeDefinition = true}
 	__Sealed__() __Unique__()
 	class "__StructType__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__StructType__" [[Mark the struct's type, default 'Member']]
 
@@ -7037,10 +7290,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct, RunOnce = true}
 	__Sealed__()
 	class "__StructOrder__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__StructOrder__" [[Rearrange the struct member's order]]
 
@@ -7079,10 +7332,10 @@ do
 	    end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true, BeforeDefinition = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, RunOnce = true, BeforeDefinition = true}
 	__Sealed__() __Unique__()
 	class "__Abstract__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 		doc "__Abstract__" [[Mark the class as abstract class, can't be used to create objects.]]
 
 		function ApplyAttribute(self, target, targetType)
@@ -7090,10 +7343,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__InitTable__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__InitTable__" [[Used to mark the class can use init table like: obj = cls(name) { Age = 123 }]]
 
@@ -7111,10 +7364,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Method + AttributeTargets.Property + AttributeTargets.Member, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Interface + AttributeTargets.Method + AttributeTargets.Property + AttributeTargets.Member, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Require__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Require__" [[Whether the method or property is required to be override, or a member of a struct is required, or set the required class|interface for an interface.]]
 
@@ -7157,7 +7410,7 @@ do
 
 		__Arguments__{ String }
 		function __Require__(self, value)
-			value = GetNameSpace(GetDefaultNameSpace(), value)
+			value = GetNameSpace(PROTYPE_NAMESPACE, value)
 
 			local IFInfo = rawget(_NSInfo, value)
 
@@ -7171,10 +7424,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Synthesize__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Synthesize__" [[Used to generate property accessors automatically]]
 
@@ -7184,23 +7437,43 @@ do
 		}
 
 		------------------------------------------------------
-		-- Property
+		-- Static Property
 		------------------------------------------------------
 		doc "NameCase" [[The name case of the generate method, in one program, only need to be set once, default is Pascal case]]
 		property "NameCase" { Type = NameCases, Default = NameCases.Pascal, IsStatic = true }
+
+		------------------------------------------------------
+		-- Property
+		------------------------------------------------------
+		doc "Get" [[The get method name]]
+		property "Get" { Type = String }
+
+		doc "Set" [[The set method name]]
+		property "Set" { Type = String }
 
 		------------------------------------------------------
 		-- Method
 		------------------------------------------------------
 		function ApplyAttribute(self, target, targetType, owner, name)
 			target.Synthesize = __Synthesize__.NameCase
+			target.SynthesizeGet = self.Get
+			target.SynthesizeSet = self.Set
+		end
+
+		------------------------------------------------------
+		-- Constructor
+		------------------------------------------------------
+		__Arguments__ {}
+		function __Synthesize__(self)
+			self.Get = nil
+			self.Set = nil
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Event__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Event__" [[Used to bind an event to the property]]
 
@@ -7236,10 +7509,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Handler__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Handler__" [[Used to bind an handler(method name or function) to the property]]
 
@@ -7274,10 +7547,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property + AttributeTargets.Member, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Property + AttributeTargets.Member, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Default__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Default__" [[Used to set a default value for features like custom struct, enum, struct member, property]]
 
@@ -7333,10 +7606,10 @@ do
 		"DeepClone",
 	}
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Setter__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Setter__" [[Used to set the assign mode of the property]]
 
@@ -7365,10 +7638,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, Inherited = false, RunOnce = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Property, RunOnce = true}
 	__Sealed__() __Unique__()
 	class "__Getter__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Getter__" [[Used to set the get mode of the property]]
 
@@ -7397,10 +7670,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{Inherited = false, RunOnce = true, BeforeDefinition = true}
+	__AttributeUsage__{RunOnce = true, BeforeDefinition = true}
 	__Sealed__() __Unique__()
 	class "__Doc__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 
 		doc "__Doc__" [[Used to document the features like : class, struct, enum, interface, property, event and method]]
 
@@ -7437,28 +7710,10 @@ do
 		end
 	end)
 
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Struct + AttributeTargets.Enum + AttributeTargets.Interface, Inherited = false, RunOnce = true, BeforeDefinition = true}
-	__Sealed__() __Unique__()
-	class "__Local__" (function(_ENV)
-		inherit "__Attribute__"
-
-		doc "__Local__" [[Used to mark the features like class, struct, interface, enum as local.]]
-
-		------------------------------------------------------
-		-- Method
-		------------------------------------------------------
-		function ApplyAttribute(self) return SetLocal(false) end
-
-		------------------------------------------------------
-		-- Constructor
-		------------------------------------------------------
-		function __Local__(self) SetLocal(true) end
-	end)
-
-	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, Inherited = false, RunOnce = true, BeforeDefinition = true}
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class + AttributeTargets.Interface + AttributeTargets.Struct + AttributeTargets.Enum, RunOnce = true, BeforeDefinition = true}
 	__Sealed__() __Unique__()
 	class "__NameSpace__" (function(_ENV)
-		inherit "__Attribute__"
+		extend "IAttribute"
 		doc "__NameSpace__" [[Used to set the namespace directly.]]
 
 		------------------------------------------------------
@@ -7470,16 +7725,35 @@ do
 		-- Constructor
 		------------------------------------------------------
 		function __NameSpace__(self, ns)
-			if getmetatable(ns) == TYPE_NAMESPACE then
+			if IsNameSpace(ns) then
 				PrepareNameSpace(ns)
 			elseif type(ns) == "string" then
-				PrepareNameSpace(BuildNameSpace(GetDefaultNameSpace(), ns))
+				PrepareNameSpace(BuildNameSpace(PROTYPE_NAMESPACE, ns))
 			elseif ns == nil or ns == false then
 				PrepareNameSpace(false)
 			else
 				error([[Usage: __NameSpace__(name|nil|false)]], 2)
 			end
 		end
+	end)
+
+	__AttributeUsage__{AttributeTarget = AttributeTargets.Class, RunOnce = true}
+	__Sealed__() __Unique__()
+	class "__SimpleClass__" (function(_ENV)
+		extend "IAttribute"
+		doc "__SimpleClass__" [[
+			Mark the class as a simple class, if the class is a real simple class, the init-table would be converted as the object.
+			If the class is not a simple class, the system would check the init-table's key-value pairs:
+				i.   The table don't have key equals the class's property name.
+				ii.  The table don't have key equals the class's event name.
+				iii. The table don't have key equals the class's method name, or the value is a function.
+			If the init-table follow the three rules, it would be converted as the class's object directly.
+		]]
+
+		------------------------------------------------------
+		-- Method
+		------------------------------------------------------
+		function ApplyAttribute(self, target) _NSInfo[target].AsSimpleClass = true end
 	end)
 end
 
@@ -8025,11 +8299,12 @@ do
 	System = Reflector.GetNameSpaceForName("System")
 
 	function Install_OOP(env)
-		env.interface = env.interface or interface
-		env.class = env.class or class
-		env.enum = env.enum or enum
+		env.interface = interface
+		env.class = class
+		env.struct = struct
+		env.enum = enum
+
 		env.namespace = env.namespace or namespace
-		env.struct = env.struct or struct
 		env.import = env.import or function(env, name)
 			local ns = Reflector.GetNameSpaceForName(name or env)
 			if not ns then error("No such namespace.", 2) end

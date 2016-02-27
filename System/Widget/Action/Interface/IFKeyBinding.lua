@@ -16,10 +16,10 @@ end
 --		Action_IFKeyBinding_DB
 ------------------------------------------------------
 do
-	_IFKeyBinding_Loaded = _IFKeyBinding_Loaded or false
-	_M._IFKeyBinding_InBindingMode = _M._IFKeyBinding_InBindingMode or false
-	_IFKeyBinding_ButtonList = _IFKeyBinding_ButtonList or Array()
-	_IFKeyBinding_KeyMap = _IFKeyBinding_KeyMap or {}
+	_IFKeyBinding_Loaded = false
+	_M._IFKeyBinding_InBindingMode = false
+	_IFKeyBinding_ButtonList = System.Collections.List()
+	_IFKeyBinding_KeyMap = {}
 
 	_M:ActiveThread("OnLoad")
 
@@ -117,9 +117,7 @@ do
 
 		if InCombatLockdown() then Task.Event "PLAYER_REGEN_ENABLED" end
 
-		for _, frm in ipairs(_IFKeyBinding_ButtonList) do
-			frm:UpdateBindingKey()
-		end
+		_IFKeyBinding_ButtonList:Each(IFKeyBinding.UpdateBindingKey)
 
 		_IFKeyBinding_Loaded = true
 
@@ -494,7 +492,7 @@ interface "IFKeyBinding"
 	------------------------------------------------------
     function IFKeyBinding(self)
 		if Reflector.ObjectIsClass(self, Button) then
-			_IFKeyBinding_ButtonList:Insert(self)
+			_IFKeyBinding_ButtonList:Add(self)
 
 			self.OnEnter = self.OnEnter + OnEnter
 

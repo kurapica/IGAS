@@ -172,7 +172,7 @@ endstruct "TableUserdata"
 __AttributeUsage__{AttributeTarget = AttributeTargets.Method + AttributeTargets.Property, Inherited = false}
 __Sealed__() __Unique__()
 __Doc__ [[Whether the method or property is optional to be overrided]]
-class "__Optional__" { __Attribute__ }
+class "__Optional__" { IAttribute }
 
 ------------------------------------
 --- Create or get the logger for the given log name
