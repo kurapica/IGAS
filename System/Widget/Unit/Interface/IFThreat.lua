@@ -12,17 +12,12 @@ _IFThreatUnitList = _IFThreatUnitList or UnitList(_Name)
 
 function _IFThreatUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 	self.OnUnitListChanged = nil
 end
 
 function _IFThreatUnitList:ParseEvent(event, unit)
-	if not unit then
-		for unit in pairs(_IFThreatUnitList) do
-			self:EachK(unit, "ThreatLevel", UnitThreatSituation(unit) or 0)
-		end
-	elseif self:HasUnit(unit) then
+	if self:HasUnit(unit) then
 		self:EachK(unit, "ThreatLevel", UnitThreatSituation(unit) or 0)
 	end
 end
