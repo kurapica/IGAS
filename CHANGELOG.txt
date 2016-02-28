@@ -1,3 +1,6 @@
+2016/02/28: IGAS v75
+    1. Use IList instead of IFIterator.
+
 2016/02/28: IGAS v74
     1. Fix the Form's auto hide.
 

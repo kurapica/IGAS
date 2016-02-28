@@ -492,7 +492,7 @@ interface "IFKeyBinding"
 	------------------------------------------------------
     function IFKeyBinding(self)
 		if Reflector.ObjectIsClass(self, Button) then
-			_IFKeyBinding_ButtonList:Add(self)
+			_IFKeyBinding_ButtonList:Insert(self)
 
 			self.OnEnter = self.OnEnter + OnEnter
 

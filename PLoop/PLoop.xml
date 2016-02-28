@@ -3,8 +3,6 @@
 	<Script file="System\System.lua"/>
 	<Script file="System\Collections.lua"/>
 	<!--Script file="Error.lua"/-->
-	<Script file="System\IFIterator.lua"/>
-	<Script file="System\Array.lua"/>
 	<Script file="System\Threading.lua"/>
 	<Script file="System\Logger.lua"/>
 	<Script file="System\Recycle.lua"/>
@@ -12,9 +10,10 @@
 	<Script file="System\Text.lua"/>
 	<Script file="System\Serialization.lua"/>
 
-	<Script file="System\Collections\ListStreamWorker.lua"/>
-	<Script file="System\Collections\DictionaryStreamWorker.lua"/>
+	<Script file="System\Collections\List.lua"/>
+	<Script file="System\Collections\Dictionary.lua"/>
 	<Script file="System\Collections\IIndexedListSorter.lua"/>
+	<Script file="System\Array.lua"/>
 
 	<Script file="System\Text\UTF8Encoding.lua"/>
 	<Script file="System\Text\UTF16Encoding.lua"/>

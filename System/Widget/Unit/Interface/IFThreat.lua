@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFThreat", version) then
 	return
 end
@@ -12,12 +12,17 @@ _IFThreatUnitList = _IFThreatUnitList or UnitList(_Name)
 
 function _IFThreatUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 	self.OnUnitListChanged = nil
 end
 
 function _IFThreatUnitList:ParseEvent(event, unit)
-	if self:HasUnit(unit) then
+	if not unit then
+		for unit in pairs(_IFThreatUnitList) do
+			self:EachK(unit, "ThreatLevel", UnitThreatSituation(unit) or 0)
+		end
+	elseif self:HasUnit(unit) then
 		self:EachK(unit, "ThreatLevel", UnitThreatSituation(unit) or 0)
 	end
 end

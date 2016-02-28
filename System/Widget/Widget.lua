@@ -391,7 +391,7 @@ struct "ColorType"
 
 	function ColorType(value)
 		value.a = value.a or 1	-- default
-		value.code = ("\124cff%.2x%.2x%.2x"):format(value.r * 255, value.g * 255, value.b * 255)
+		value.code = value.code or ("\124cff%.2x%.2x%.2x"):format(value.r * 255, value.g * 255, value.b * 255)
 	end
 endstruct "ColorType"
 

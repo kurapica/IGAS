@@ -6,11 +6,43 @@
 --               2013/07/05 Use attribute "deactivated" instead of "__Deactivated"
 --               2013/08/03 Add same unit check, reduce cost
 --               2013/10/20 NoUnitWatch property added, used for unitframes on a unit panel, reduce cost for the SecureStateDriver
+--               2016/02/28 Add monitor for hide un-expected shown NoUnitWatch Frames
 
 -- Check Version
-local version = 10
+local version = 11
 if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
+end
+
+------------------------------------------------------
+-- NoUnitWatch Monitor
+--
+-- For Safely Hide
+------------------------------------------------------
+_NoUnitWatchFrames = setmetatable({}, {__mode = "k"})
+
+function OnLoad(self)
+	self:RegisterEvent("GROUP_ROSTER_UPDATE")
+end
+
+local registerNoCombatCall = false
+
+function OnEvent(self)
+	if not registerNoCombatCall then
+		registerNoCombatCall = true
+
+		Task.NoCombatCall( function()
+			registerNoCombatCall = false
+
+			for k in pairs(_NoUnitWatchFrames) do
+				if k.Visible then
+					if not k.Unit or not UnitExists(k.Unit) then Task.NoCombatCall(k.Hide, k) end
+				elseif k.Unit and UnitExists(k.Unit) then
+					Task.NoCombatCall(k.Show, k)
+				end
+			end
+		end)
+	end
 end
 
 __Doc__[[UnitFrame is used to display information about an unit, and can be used to do the common actions on the unit]]
@@ -41,10 +73,6 @@ class "UnitFrame"
 			return self:UpdateElements()
 		end
 	end
-
-	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Method
@@ -184,6 +212,12 @@ class "UnitFrame"
 		Set = function(self, value)
 			if self.NoUnitWatch ~= value then
 				self:SetAttribute("nounitwatch", value)
+
+				if value then
+					_NoUnitWatchFrames[self] = true
+				elseif _NoUnitWatchFrames[self] then
+					_NoUnitWatchFrames[self] = nil
+				end
 			end
 		end,
 		Type = Boolean,
@@ -350,11 +384,7 @@ class "UnitFrame"
 	------------------------------------------------------
 	-- __index
 	------------------------------------------------------
-    function __index(self, key)
-    	local value = Super.__index(self, key)
-    	if value then
-    		return value
-    	end
-    	return self:GetElement(key)
-    end
+	local sindex = Super.__index
+	local getwidget = IFContainer.GetWidget
+    function __index(self, key) return sindex(self, key) or getwidget(self, key) end
 endclass "UnitFrame"

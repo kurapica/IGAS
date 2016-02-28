@@ -128,7 +128,8 @@ DebuffTypeColor[""] = DebuffTypeColor["none"]
 ------------------------------------------------------
 __Doc__[[UnitList is used to contain ui elements that with the same unit for some special using]]
 class "UnitList"
-	extend "IFIterator"
+	import "System.Collections"
+	extend "IList"
 
 	------------------------------------------------------
 	-- Event Manager
@@ -219,8 +220,25 @@ class "UnitList"
 		end
 	end
 
-	function Next(self, key)
+	------------------------------------
+	--- Iterate with key
+	------------------------------------
+	local iterKey = setmetatable({}, {__mode="k"})
+
+	function EachK(self, key, ...)
+		iterKey[self] = key
+		return IList.Each(self, ...)
+	end
+
+	function Each(self, ...)
+		iterKey[self] = nil
+		return IList.Each(self, ...)
+	end
+
+	function GetIterator(self, key)
+		key = key or iterKey[self]
 		if type(key) == "string" then
+			iterKey[self] = nil
 			return _UnitList_Traverse[self], self, key:lower()
 		else
 			return traversalUnit, self, nil
@@ -349,9 +367,7 @@ class "UnitList"
 		Object.Fire(self, "OnUnitListChanged")
 	end
 
-	function __call(self, unit)
-		return Next(self, unit)
-	end
+	__call = GetIterator
 endclass "UnitList"
 
 __Doc__[[SmoothValue is used to smooth the value changes]]

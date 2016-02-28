@@ -7,9 +7,11 @@ if not IGAS:NewAddon("IGAS.Widget.IFContainer", version) then
 	return
 end
 
+import "System.Collections"
+
 __Doc__[[IFContainer is used to provide a layout panel to contain ui elements for the ui objects]]
 interface "IFContainer"
-	extend "IFIterator"
+	extend "IList"
 
 	local function nextWidget(self, key)
 		key = key + 1
@@ -451,7 +453,7 @@ interface "IFContainer"
 		self.Panel:SetAllPoints(self)
 	end
 
-	function Next(self, key)
+	function GetIterator(self, key)
 		return nextWidget, self, tonumber(key) or 0
 	end
 

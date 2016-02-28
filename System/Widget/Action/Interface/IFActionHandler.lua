@@ -421,7 +421,8 @@ endclass "ActionTypeHandler"
 --
 ------------------------------------------------------
 class "ActionList"
-	extend "IFIterator"
+	import "System.Collections"
+	extend "IList"
 
 	local function nextLink(data, kind)
 		if type(kind) ~= "table" then
@@ -453,11 +454,28 @@ class "ActionList"
 	end
 
 	------------------------------------
+	--- Iterate with key
+	------------------------------------
+	local iterKey = setmetatable({}, {__mode="k"})
+
+	function EachK(self, key, ...)
+		iterKey[self] = key
+		return IList.Each(self, ...)
+	end
+
+	function Each(self, ...)
+		iterKey[self] = nil
+		return IList.Each(self, ...)
+	end
+
+	------------------------------------
 	--- Get the next element
 	------------------------------------
-	function Next(self, kind)
-		if type(kind) == "string" then
-			return nextLink, self, type(kind) == "string" and kind:lower()
+	function GetIterator(self, key)
+		key = key or iterKey[self]
+		if type(key) == "string" then
+			iterKey[self] = nil
+			return nextLink, self, key:lower()
 		else
 			return ipairs(self)
 		end
@@ -521,7 +539,7 @@ class "ActionList"
 		end
 	end
 
-	__call = Next
+	__call = GetIterator
 endclass "ActionList"
 
 ------------------------------------------------------
