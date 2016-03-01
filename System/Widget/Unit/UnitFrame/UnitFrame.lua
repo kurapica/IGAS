@@ -23,6 +23,7 @@ _NoUnitWatchFrames = setmetatable({}, {__mode = "k"})
 
 function OnLoad(self)
 	self:RegisterEvent("GROUP_ROSTER_UPDATE")
+	self:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 
 local registerNoCombatCall = false

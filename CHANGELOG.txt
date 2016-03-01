@@ -1,3 +1,7 @@
+2016/03/01: IGAS v76
+    1. Fix List Each error.
+    2. Fix raid panel's unit frame won't be hidden if the unit not existed.
+
 2016/02/28: IGAS v75
     1. Use IList instead of IFIterator.
 
