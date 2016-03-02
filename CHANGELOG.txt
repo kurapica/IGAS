@@ -1,3 +1,7 @@
+2016/03/03: IGAS v77
+    1. Fix Task.NoCombatCall not works well.
+    2. Fix Add/remove pet during combat would cause more unit frame to be shown.
+
 2016/03/01: IGAS v76
     1. Fix List Each error.
     2. Fix raid panel's unit frame won't be hidden if the unit not existed.

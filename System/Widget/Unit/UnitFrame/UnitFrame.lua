@@ -14,38 +14,6 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 	return
 end
 
-------------------------------------------------------
--- NoUnitWatch Monitor
---
--- For Safely Hide
-------------------------------------------------------
-_NoUnitWatchFrames = setmetatable({}, {__mode = "k"})
-
-function OnLoad(self)
-	self:RegisterEvent("GROUP_ROSTER_UPDATE")
-	self:RegisterEvent("PLAYER_REGEN_ENABLED")
-end
-
-local registerNoCombatCall = false
-
-function OnEvent(self)
-	if not registerNoCombatCall then
-		registerNoCombatCall = true
-
-		Task.NoCombatCall( function()
-			registerNoCombatCall = false
-
-			for k in pairs(_NoUnitWatchFrames) do
-				if k.Visible then
-					if not k.Unit or not UnitExists(k.Unit) then Task.NoCombatCall(k.Hide, k) end
-				elseif k.Unit and UnitExists(k.Unit) then
-					Task.NoCombatCall(k.Show, k)
-				end
-			end
-		end)
-	end
-end
-
 __Doc__[[UnitFrame is used to display information about an unit, and can be used to do the common actions on the unit]]
 class "UnitFrame"
 	inherit "Button"
@@ -213,12 +181,6 @@ class "UnitFrame"
 		Set = function(self, value)
 			if self.NoUnitWatch ~= value then
 				self:SetAttribute("nounitwatch", value)
-
-				if value then
-					_NoUnitWatchFrames[self] = true
-				elseif _NoUnitWatchFrames[self] then
-					_NoUnitWatchFrames[self] = nil
-				end
 			end
 		end,
 		Type = Boolean,

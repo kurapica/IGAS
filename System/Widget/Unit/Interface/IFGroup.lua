@@ -91,6 +91,8 @@ interface "IFGroup"
 			ShadowFrames = newtable()
 			DeadFrames = newtable()
 
+			Manager:SetAttribute("useAttributeChildCnt", 0)
+
 			refreshDeadPlayer = [[
 				for i = 1, #DeadFrames do
 					local unitFrame = UnitFrames[i]
@@ -168,12 +170,25 @@ interface "IFGroup"
 				end
 			]])
 
+			Manager:SetAttribute("refreshRestUnitFrame", [[
+				if Manager:GetAttribute("useAttributeChildCnt") >= #ShadowFrames then return end
+
+				local id = ...
+				if id then
+					-- To safely clear unit frame generated in combat
+					for i = id + 1, #UnitFrames do
+						UnitFrames[i]:SetAttribute("unit", nil)
+					end
+				end
+			]])
+
 			refreshUnitChange = [[
 				local unit = self:GetAttribute("unit")
 				local frame = self:GetAttribute("UnitFrame")
 
 				if frame then
 					frame:SetAttribute("unit", unit)
+					self:GetAttribute("Manager"):RunAttribute("refreshRestUnitFrame", self:GetID())
 				elseif self:GetAttribute("Manager"):GetAttribute("showDeadOnly") then
 					self:GetAttribute("Manager"):RunAttribute("removeDeadPlayer", self:GetID())
 					self:GetAttribute("Manager"):RunAttribute("updateStateForChild", self:GetID())
@@ -193,6 +208,7 @@ interface "IFGroup"
 
 				if frame then
 					frame:SetAttribute("unit", value)
+					self:GetAttribute("Manager"):RunAttribute("refreshRestUnitFrame", self:GetID())
 				elseif self:GetAttribute("Manager"):GetAttribute("showDeadOnly") then
 					self:GetAttribute("Manager"):RunAttribute("removeDeadPlayer", self:GetID())
 					self:GetAttribute("Manager"):RunAttribute("updateStateForChild", self:GetID())
@@ -295,6 +311,8 @@ interface "IFGroup"
 			child:SetAttribute("refreshUnitChange", nil)	-- only used for the entering game combat
 			child:SetAttribute("isdead", nil)
 			child:SetAttribute("_onattributechanged", _Onattributechanged)
+
+			self:SetAttribute("useAttributeChildCnt", count)
 
 			-- Init the panel
 			self = IGAS:GetWrapper(self).Parent

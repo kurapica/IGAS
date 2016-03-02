@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "2.0.1"
+Module "System.Task" "2.1.1"
 
 namespace "System"
 
@@ -351,8 +351,12 @@ do
 		for i = 1, args.NArgs do args[i + 1] = select(i, ...) end
 
 		while task do
-			task.Args = args
-			args.Used = args.Used + 1
+			if not task.NoEventArgs then
+				task.Args = args
+				args.Used = args.Used + 1
+			else
+				task.NoEventArgs = nil
+			end
 
 			task = task.Next
 		end
@@ -441,8 +445,8 @@ __Final__() interface "Task"
 		<param name="func">function, the task function</param>
 		<param name="...">the function's parameters</param>
 	]]
-	__Static__() function NoCombatCall(func, ...)
-		if not InCombatLockdown() then return func(...) end
+	__Static__() function NoCombatCall(callable, ...)
+		if not InCombatLockdown() then return callable(...) end
 
 		local task = tremove(c_Task) or {}
 
@@ -450,6 +454,7 @@ __Final__() interface "Task"
 		for i = 1, task.NArgs do task[i] = select(i, ...) end
 
 		task.Method = callable
+		task.NoEventArgs = true
 
 		return QueueEventTask("PLAYER_REGEN_ENABLED", task)
 	end
