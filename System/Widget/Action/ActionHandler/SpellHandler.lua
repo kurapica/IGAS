@@ -32,6 +32,11 @@ _FakeStanceMap = {
 	[77769] = true,	-- Trap Launcher
 }
 
+-- DraenorZoneAbilityS
+DraenorZoneAbilitySpellID = _G.DraenorZoneAbilitySpellID
+DraenorZoneAbilitySpellName = false
+DraenorZoneAbilityCurrentSpellID = DraenorZoneAbilitySpellID
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("LEARNED_SPELL_IN_TAB")
@@ -62,6 +67,14 @@ function LEARNED_SPELL_IN_TAB(self)
 end
 
 function SPELLS_CHANGED(self)
+	-- Update for the DraenorZoneAbilitySpell
+	DraenorZoneAbilitySpellName = DraenorZoneAbilitySpellName or GetSpellInfo(DraenorZoneAbilitySpellID)
+	if DraenorZoneAbilitySpellName then
+		DraenorZoneAbilityCurrentSpellID = select(7, GetSpellInfo(DraenorZoneAbilitySpellName))
+		for _, btn in handler() do
+			if btn.ActionTarget == DraenorZoneAbilitySpellID then handler:Refresh(btn) end
+		end
+	end
 	return UpdateProfession()
 end
 
@@ -285,7 +298,12 @@ function handler:GetActionTexture()
 end
 
 function handler:GetActionCharges()
-	return GetSpellCharges(self.ActionTarget)
+	local target = self.ActionTarget
+	if target == DraenorZoneAbilitySpellID then
+		return GetSpellCharges(DraenorZoneAbilityCurrentSpellID)
+	else
+		return GetSpellCharges(target)
+	end
 end
 
 function handler:GetActionCount()
@@ -299,6 +317,8 @@ function handler:GetActionCooldown()
 		if select(2, GetSpellCooldown(target)) > 2 then
 			return GetSpellCooldown(target)
 		end
+	elseif target == DraenorZoneAbilitySpellID then
+		return GetSpellCooldown(DraenorZoneAbilityCurrentSpellID)
 	else
 		return GetSpellCooldown(target)
 	end
@@ -343,7 +363,12 @@ function handler:IsInRange()
 end
 
 function handler:SetTooltip(GameTooltip)
-	GameTooltip:SetSpellByID(self.ActionTarget)
+	local target = self.ActionTarget
+	if target == DraenorZoneAbilitySpellID then
+		GameTooltip:SetSpellByID(DraenorZoneAbilityCurrentSpellID)
+	else
+		GameTooltip:SetSpellByID(target)
+	end
 end
 
 function handler:GetSpellId()

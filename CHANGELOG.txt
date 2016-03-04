@@ -1,3 +1,6 @@
+2016/03/04: IGAS v78
+    1. Spell Action button now support Draenor zone ability.
+
 2016/03/03: IGAS v77
     1. Fix Task.NoCombatCall not works well.
     2. Fix Add/remove pet during combat would cause more unit frame to be shown.
