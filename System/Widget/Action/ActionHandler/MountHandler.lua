@@ -43,6 +43,7 @@ function OnEnable(self)
 	self:RegisterEvent("COMPANION_UPDATE")
 	self:RegisterEvent("MOUNT_JOURNAL_USABILITY_CHANGED")
 	self:RegisterEvent("SPELL_UPDATE_USABLE")
+	self:RegisterEvent("UNIT_AURA")
 
 	OnEnable = nil
 end
@@ -76,6 +77,12 @@ end
 
 function SPELL_UPDATE_USABLE(self)
 	return handler:Refresh(RefreshUsable)
+end
+
+function UNIT_AURA(self, unit)
+	if unit == "player" then
+		return handler:Refresh(RefreshButtonState)
+	end
 end
 
 function UpdateMount(init)

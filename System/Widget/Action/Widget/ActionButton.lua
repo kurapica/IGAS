@@ -173,7 +173,7 @@ class "ActionButton"
 			self:GetChild("Icon"):SetVertexColor(0.4, 0.4, 0.4)
 		end
 	end )
-	property "Usable" { Type = Boolean, Default = true }
+	property "Usable" { Type = BooleanNil }
 
 	__Doc__[[whether the action is auto castable, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
@@ -192,7 +192,7 @@ class "ActionButton"
 			end
 		end
 	end )
-	property "AutoCastable" { Type = Boolean }
+	property "AutoCastable" { Type = BooleanNil }
 
 	__Doc__[[whether the action is now auto-casting, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
@@ -203,7 +203,7 @@ class "ActionButton"
 			if self:GetChild("AutoCastShine") then self:GetChild("AutoCastShine"):Stop() end
 		end
 	end )
-	property "AutoCasting" { Type = Boolean }
+	property "AutoCasting" { Type = BooleanNil }
 
 	__Doc__[[Whether an indicator should be shown for equipped item]]
 	__Handler__( function (self, value)
@@ -214,13 +214,13 @@ class "ActionButton"
 			self.Border.Visible = false
 		end
 	end )
-	property "EquippedItemIndicator" { Type = Boolean }
+	property "EquippedItemIndicator" { Type = BooleanNil }
 
 	__Doc__[[Whether the action button's icon is locked]]
 	__Handler__( function (self, value)
 		self:GetChild("Icon"):SetDesaturated(value)
 	end )
-	property "IconLocked" { Type = Boolean }
+	property "IconLocked" { Type = BooleanNil }
 
 	------------------------------------------------------
 	-- Event Handler

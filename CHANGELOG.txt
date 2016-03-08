@@ -1,3 +1,7 @@
+2016/03/08: IGAS v79
+    1. Fix ActionButton's vertex color for usable.
+    2. Fix Mount ActionButton's activation.
+
 2016/03/04: IGAS v78
     1. Spell Action button now support Draenor zone ability.
 
