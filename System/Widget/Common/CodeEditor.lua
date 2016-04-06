@@ -1,9 +1,10 @@
 -- Author      : Kurapica
 -- Create Date : 7/27/2011
 --               2012.05.14 Fix cursor position after format color
+--               2016.04.06 Fix number match for upper case chars
 
 -- Check Version
-local version = 12
+local version = 14
 
 if not IGAS:NewAddon("IGAS.Widget.CodeEditor", version) then
 	return
@@ -157,8 +158,11 @@ do
 		E = strbyte("E"),
 		e = strbyte("e"),
 		x = strbyte("x"),
+		X = strbyte("X"),
 		a = strbyte("a"),
 		f = strbyte("f"),
+		A = strbyte("A"),
+		F = strbyte("F"),
 
 		-- String
 		SINGLE_QUOTE = strbyte("'"),
@@ -569,6 +573,8 @@ do
 		local startPos = pos
 
 		local byte = strbyte(str, pos)
+		local cnt = 0
+		local isHex = true
 
 		-- Number
 		while true do
@@ -591,23 +597,34 @@ do
 				startPos = pos
 				byte = strbyte(str, pos)
 			else
-				if not byte then
-					break
-				elseif byte >= _Byte.ZERO and byte <= _Byte.NINE then
-					if e == 1 then e = 2 end
-				elseif byte == _Byte.E or byte == _Byte.e then
-					if e == 0 then
-						e = 1
+				if not byte then break end
+
+				cnt = cnt + 1
+
+				if cnt == 1 and byte ~= _Byte.ZERO then isHex = false end
+				if isHex and cnt == 2 and byte ~= _Byte.x and byte ~= _Byte.X then isHex = false end
+
+				if isHex then
+					if cnt > 2 then
+						if (byte >= _Byte.ZERO and byte <= _Byte.NINE) or (byte >= _Byte.a and byte <= _Byte.f) or (byte >= _Byte.A and byte <= _Byte.F) then
+							-- continue
+						else
+							break
+						end
 					end
-				elseif byte >= _Byte.a and byte <= _Byte.f then
-					if e == 1 then e = 2 end
-				elseif not noPeriod and e == 0 and byte == _Byte.PERIOD then
-					-- '.' only work before 'e'
-					noPeriod = true
-				elseif e == 1 and (byte == _Byte.MINUS or byte == _Byte.PLUS) then
-					e = 2
 				else
-					break
+					if byte >= _Byte.ZERO and byte <= _Byte.NINE then
+						if e == 1 then e = 2 end
+					elseif byte == _Byte.E or byte == _Byte.e then
+						if e == 0 then e = 1 else break end
+					elseif not noPeriod and e == 0 and byte == _Byte.PERIOD then
+						-- '.' only work before 'e'
+						noPeriod = true
+					elseif e == 1 and (byte == _Byte.MINUS or byte == _Byte.PLUS) then
+						e = 2
+					else
+						break
+					end
 				end
 
 				if pos <= cursorPos then
