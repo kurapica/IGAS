@@ -4,7 +4,7 @@
 --               2014/11/16 Add support to trap launcher, works like stance spell
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Action.SpellHandler", version) then
 	return
 end
@@ -23,9 +23,11 @@ _Profession = {}
 _IndexMap = {}
 
 _MacroMap = {
-	[1499] = true,	-- Freezing Trap
-	[13809] = true,	-- Ice Trap
-	[13813] = true,	-- Explosive Trap
+	[1499] = false,		-- Freezing Trap
+	[13809] = false,	-- Ice Trap
+	[13813] = false,	-- Explosive Trap
+	[102401] = false,	-- Feral Charge
+	[175683] = false,	-- Ursols Vortex
 }
 
 _FakeStanceMap = {
@@ -288,7 +290,9 @@ end
 function handler:GetActionTexture()
 	local target = self.ActionTarget
 
-	if _StanceMap[target] then
+	if _MacroMap[target] then
+		return GetSpellTexture(_MacroMap[target])
+	elseif _StanceMap[target] then
 		return (GetShapeshiftFormInfo(_StanceMap[target]))
 	elseif _FakeStanceMap[target] and _FakeStanceMap[target] ~= true and UnitAura("player", _FakeStanceMap[target]) then
 		return _StanceOnTexturePath
@@ -313,7 +317,9 @@ end
 function handler:GetActionCooldown()
 	local target = self.ActionTarget
 
-	if _StanceMap[target] then
+	if _MacroMap[target] then
+		return GetSpellCooldown(_MacroMap[target])
+	elseif _StanceMap[target] then
 		if select(2, GetSpellCooldown(target)) > 2 then
 			return GetSpellCooldown(target)
 		end
@@ -344,7 +350,9 @@ end
 function handler:IsUsableAction()
 	local target = self.ActionTarget
 
-	if _StanceMap[target] then
+	if _MacroMap[target] then
+		return IsUsableSpell(_MacroMap[target])
+	elseif _StanceMap[target] then
 		return select(4, GetShapeshiftFormInfo(_StanceMap[target]))
 	else
 		return IsUsableSpell(target)
