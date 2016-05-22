@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.ActionButton", version) then
 	return
 end
@@ -297,7 +297,7 @@ class "ActionButton"
 		flyoutArrow.Height = 11
 		flyoutArrow:SetPoint("BOTTOM", self, "TOP")
 
-		local hotKey = FontString("HotKey", self, "ARTWORK", "NumberFontNormalSmallGray", 2)
+		local hotKey = FontString("HotKey", self, "ARTWORK", "NumberFontNormal", 2)
 		hotKey.JustifyH = "Right"
 		hotKey.Height = 10
 		hotKey:SetPoint("TOPLEFT", 1, -3)
