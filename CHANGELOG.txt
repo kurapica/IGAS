@@ -1,3 +1,6 @@
+2016/05/23: IGAS v82
+    1. Recode the System.Widget.Unit.SmoothValue to provide more smooth effect.
+
 2016/04/06: IGAS v80
     1. Fix CodeEditor's render for hex numbers.
 

@@ -4,7 +4,7 @@
 -- ChangeLog
 
 ------------------------------------------------------
-local version = 7
+local version = 8
 
 if not IGAS:NewAddon("IGAS.Widget.Unit", version) then
 	return
@@ -373,51 +373,28 @@ endclass "UnitList"
 __Doc__[[SmoothValue is used to smooth the value changes]]
 class "SmoothValue"
 
-	import "System.Task"
+	local Next = System.Task.Next
+	local ThreadCall = System.Task.ThreadCall
 
-	_Smoothing = {}
-	_Running = false
-	_PreviousTime = 0
+	local function process(self)
+		self.Processing = true
 
-	local function Process()
-		if not next(_Smoothing) then
-			_Running = false
-			return
+		local chkTime = GetTime()
+
+		while not self.Disposed and self.NowDelay > 0 do
+			Next() -- Wait for next phase
+
+			local now = GetTime()
+			local delay = self.NowDelay - (now - chkTime)
+			chkTime = now
+
+			if delay < 0 then delay = 0 end
+			self.NowDelay = delay
+
+			self.Value = (self.RealValue - self.OldValue) * (1 - delay / self.SmoothDelay) + self.OldValue
 		end
 
-		local new = GetTime()
-		local elpased = GetTime() - _PreviousTime
-		_PreviousTime = new
-
-		for obj in pairs(_Smoothing) do
-			local now = obj.NowDelay
-
-			now = now - elpased
-
-			if now <= 0 then
-				_Smoothing[obj] = nil
-				obj.NowDelay = 0
-				obj.Value = obj.RealValue
-			else
-				obj.NowDelay = now
-				obj.Value = (obj.RealValue - obj.OldValue) * (1 - now / obj.SmoothDelay) + obj.OldValue
-			end
-		end
-
-		return NextCall( Process )
-	end
-
-	local function SetRealValue(self, new, old)
-		self.NowDelay = self.SmoothDelay
-		self.OldValue = self.Value or new
-
-		_Smoothing[self] = true
-
-		if not _Running then
-			_Running = true
-			_PreviousTime = GetTime()
-			return NextCall( Process )
-		end
+		self.Processing = false
 	end
 
 	------------------------------------------------------
@@ -430,7 +407,29 @@ class "SmoothValue"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[The real value of object]]
-	__Handler__( SetRealValue )
+	__Handler__( function(self, new, old)
+		if not self.Processing then
+			self.NowDelay = self.SmoothDelay
+			self.OldValue = self.Value
+			self.TargetValue = new
+
+			return ThreadCall(process, self)
+		else
+			if self.TargetValue > self.OldValue then
+				if new > self.TargetValue then
+					self.NowDelay = self.SmoothDelay
+					self.OldValue = self.Value
+					self.TargetValue = new
+				end
+			else
+				if new < self.TargetValue then
+					self.NowDelay = self.SmoothDelay
+					self.OldValue = self.Value
+					self.TargetValue = new
+				end
+			end
+		end
+	end)
 	property "RealValue" { Type = NumberNil }
 
 	__Doc__[[The smoothed value]]
@@ -441,9 +440,11 @@ class "SmoothValue"
 	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
 
 	------------------------------------------------------
-	-- Dispose
+	-- Constructor
 	------------------------------------------------------
-	function Dispose(self)
-		_Smoothing[self] = nil
+	__Arguments__{ }
+	function SmoothValue(self)
+		self.Processing = false
+		self.Disposed = false
 	end
 endclass "SmoothValue"
