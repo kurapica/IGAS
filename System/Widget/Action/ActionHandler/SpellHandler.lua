@@ -19,16 +19,7 @@ _StanceOnTexturePath = [[Interface\Icons\Spell_Nature_WispSplode]]
 
 _StanceMap = {}
 _Profession = {}
-
-_IndexMap = {}
-
-_MacroMap = {
-	[1499] = false,		-- Freezing Trap
-	[13809] = false,	-- Ice Trap
-	[13813] = false,	-- Explosive Trap
-	[102401] = false,	-- Feral Charge
-	[175683] = false,	-- Ursols Vortex
-}
+_MacroMap = {}
 
 _FakeStanceMap = {
 	[77769] = true,	-- Trap Launcher
@@ -56,7 +47,6 @@ function OnEnable(self)
 
 	OnEnable = nil
 
-	UpdateIndexMap()
 	UpdateStanceMap()
 	UpdateMacroMap()
 	UpdateFakeStanceMap()
@@ -77,6 +67,7 @@ function SPELLS_CHANGED(self)
 			if btn.ActionTarget == DraenorZoneAbilitySpellID then handler:Refresh(btn) end
 		end
 	end
+	UpdateMacroMap()
 	return UpdateProfession()
 end
 
@@ -90,7 +81,6 @@ end
 
 function PLAYER_SPECIALIZATION_CHANGED(self, unit)
 	if unit == "player" then
-		UpdateIndexMap()
 		UpdateProfession()
 	end
 end
@@ -137,12 +127,10 @@ function UpdateStanceMap()
 	wipe(_StanceMap)
 
 	for i = 1, GetNumShapeshiftForms() do
-	    local name = select(2, GetShapeshiftFormInfo(i))
-	    name = GetSpellLink(name)
-	    name = tonumber(name and name:match("spell:(%d+)"))
-	    if name then
-			str = str.._StanceMapTemplate:format(name, i)
-	    	_StanceMap[name] = i
+		local id = select(5, GetShapeshiftFormInfo(i))
+	    if id then
+			str = str.._StanceMapTemplate:format(id, i)
+	    	_StanceMap[id] = i
 	    end
 	end
 
@@ -161,18 +149,28 @@ function UpdateStanceMap()
 end
 
 function UpdateMacroMap()
-	local str = ""
-	for spell in pairs(_MacroMap) do
-		local name = GetSpellInfo(spell)
-		if name then
-			_MacroMap[spell] = name
-			str = str .. _MacroMapTemplate:format(spell, name)
+	local str = {}
+	local cnt = 0
+	local index = 1
+	local _, id = GetSpellBookItemInfo(index, "spell")
+
+	while id do
+		if not _MacroMap[id] then
+			local name = GetSpellInfo(id)
+			if name then
+				_MacroMap[id] = name
+				cnt = cnt + 1
+				str[cnt] = _MacroMapTemplate:format(id, name)
+			end
 		end
+
+		index = index + 1
+		_, id = GetSpellBookItemInfo(index, "spell")
 	end
 
-	if str ~= "" then
+	if cnt > 0 then
 		Task.NoCombatCall(function ()
-			handler:RunSnippet( str )
+			handler:RunSnippet( tblconcat(str, "\n") )
 
 			for _, btn in handler() do
 				if _MacroMap[btn.ActionTarget] then
@@ -232,18 +230,6 @@ function UpdateProfession()
 	end
 end
 
-function UpdateIndexMap()
-	local index = 1
-	local _, id = GetSpellBookItemInfo(index, "spell")
-
-	while id do
-		_IndexMap[id] = index
-
-		index = index + 1
-		_, id = GetSpellBookItemInfo(index, "spell")
-	end
-end
-
 -- Spell action type handler
 handler = ActionTypeHandler {
 	Name = "spell",
@@ -260,12 +246,12 @@ handler = ActionTypeHandler {
 		if _StanceMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click StanceButton".. _StanceMap[target])
-		elseif _MacroMap[target] then
-			self:SetAttribute("*type*", "macro")
-			self:SetAttribute("*macrotext*", "/cast ".. _MacroMap[target])
 		elseif _FakeStanceMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/cancelaura ".. _FakeStanceMap[target] .. "\n/cast ".. _FakeStanceMap[target])
+		elseif _MacroMap[target] then
+			self:SetAttribute("*type*", "macro")
+			self:SetAttribute("*macrotext*", "/cast ".. _MacroMap[target])
 		end
 	]],
 
@@ -290,12 +276,12 @@ end
 function handler:GetActionTexture()
 	local target = self.ActionTarget
 
-	if _MacroMap[target] then
-		return GetSpellTexture(_MacroMap[target])
-	elseif _StanceMap[target] then
+	if _StanceMap[target] then
 		return (GetShapeshiftFormInfo(_StanceMap[target]))
 	elseif _FakeStanceMap[target] and _FakeStanceMap[target] ~= true and UnitAura("player", _FakeStanceMap[target]) then
 		return _StanceOnTexturePath
+	elseif _MacroMap[target] then
+		return GetSpellTexture(_MacroMap[target])
 	else
 		return GetSpellTexture(target)
 	end
@@ -305,26 +291,31 @@ function handler:GetActionCharges()
 	local target = self.ActionTarget
 	if target == DraenorZoneAbilitySpellID then
 		return GetSpellCharges(DraenorZoneAbilityCurrentSpellID)
+	elseif _MacroMap[target] then
+		return GetSpellCharges(_MacroMap[target])
 	else
 		return GetSpellCharges(target)
 	end
 end
 
 function handler:GetActionCount()
-	return GetSpellCount(self.ActionTarget)
+	local target = self.ActionTarget
+	if _MacroMap[target] then
+		return GetSpellCount(_MacroMap[target])
+	end
 end
 
 function handler:GetActionCooldown()
 	local target = self.ActionTarget
 
-	if _MacroMap[target] then
-		return GetSpellCooldown(_MacroMap[target])
-	elseif _StanceMap[target] then
+	if _StanceMap[target] then
 		if select(2, GetSpellCooldown(target)) > 2 then
 			return GetSpellCooldown(target)
 		end
 	elseif target == DraenorZoneAbilitySpellID then
 		return GetSpellCooldown(DraenorZoneAbilityCurrentSpellID)
+	elseif _MacroMap[target] then
+		return GetSpellCooldown(_MacroMap[target])
 	else
 		return GetSpellCooldown(target)
 	end
@@ -338,35 +329,39 @@ function handler:IsActivedAction()
 	local target = self.ActionTarget
 	if _StanceMap[target] then
 		return select(3, GetShapeshiftFormInfo(_StanceMap[target]))
-	else
-		return IsCurrentSpell(target)
+	elseif _MacroMap[target] then
+		return IsCurrentSpell(_MacroMap[target])
 	end
 end
 
 function handler:IsAutoRepeatAction()
-	return IsAutoRepeatSpell(GetSpellInfo(self.ActionTarget))
+	local target = self.ActionTarget
+	if _MacroMap[target] then
+		return IsAutoRepeatSpell(_MacroMap[target])
+	end
 end
 
 function handler:IsUsableAction()
 	local target = self.ActionTarget
 
-	if _MacroMap[target] then
-		return IsUsableSpell(_MacroMap[target])
-	elseif _StanceMap[target] then
+	if _StanceMap[target] then
 		return select(4, GetShapeshiftFormInfo(_StanceMap[target]))
-	else
-		return IsUsableSpell(target)
+	elseif _MacroMap[target] then
+		return IsUsableSpell(_MacroMap[target])
 	end
 end
 
 function handler:IsConsumableAction()
-	return IsConsumableSpell(self.ActionTarget)
+	local target = self.ActionTarget
+	if _MacroMap[target] then
+		return IsConsumableSpell(_MacroMap[target])
+	end
 end
 
 function handler:IsInRange()
 	local target = self.ActionTarget
-	if not _StanceMap[target] and _IndexMap[target] then
-		return IsSpellInRange(_IndexMap[target], "spell", self:GetAttribute("unit"))
+	if not _StanceMap[target] and _MacroMap[target] then
+		return IsSpellInRange(_MacroMap[target], self:GetAttribute("unit"))
 	end
 end
 
