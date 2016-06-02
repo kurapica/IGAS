@@ -5,9 +5,10 @@
 --				2010.12.22	GetMenuButton can use numeric paramters as index, or fix using with string
 --				2011.01.04	Now menubutton's dropdownlist can be a Frame or DropDownList
 --				2011/03/13	Recode as class
+--				2016/06/02  Fix menu not show
 
 -- Check Version
-local version = 18
+local version = 19
 
 if not IGAS:NewAddon("IGAS.Widget.DropDownList", version) then
 	return
@@ -857,6 +858,8 @@ class "DropDownList"
                 self:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
             elseif offscreenY then
                 self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+            else
+            	self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
             end
         end
 

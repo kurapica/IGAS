@@ -1,3 +1,6 @@
+2016/06/02: IGAS v84
+    1. Fix drop down list not show.
+
 2016/05/24: IGAS v83
     1. Use macro for spell action buttons, to avoid no use actions.
     2. Fix stance check.
