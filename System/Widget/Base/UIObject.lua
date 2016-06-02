@@ -23,7 +23,7 @@ class "UIObject"
 	_ScriptHandler = _ScriptHandler or setmetatable({}, {
 		__index = function(self, handler)
 			rawset(self, handler, function(self, ...)
-				return self.__Wrapper and self.__Wrapper:Fire(handler, ...)
+				return _WrapperMap[self]:Fire(handler, ...)
 			end)
 
 			return rawget(self, handler)
@@ -392,7 +392,7 @@ class "UIObject"
 			-- Wrapper blz's element
 			self[0] = name[0]
 			self.__UI = name
-			name.__Wrapper = self
+			_WrapperMap[name] = self
 
 			self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
 
@@ -417,7 +417,7 @@ class "UIObject"
 		local obj = self:Constructor(name, parent, ...) or self
 		self[0] = obj[0]
 		self.__UI = obj
-		obj.__Wrapper = self
+		_WrapperMap[obj] = self
 
 		self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
 
@@ -437,8 +437,8 @@ class "UIObject"
 				return name
 			end
 
-			if name.__Wrapper and Object.IsClass(name.__Wrapper, UIObject) then
-				return name.__Wrapper
+			if _WrapperMap[name] and Object.IsClass(_WrapperMap[name], UIObject) then
+				return _WrapperMap[name]
 			end
 
 			return

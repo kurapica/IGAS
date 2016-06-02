@@ -1,3 +1,6 @@
+2016/06/03: IGAS v85
+    1. No longer save wrapper in the wow's ui element to avoid some addons may save the whole ui element in saved variables.
+
 2016/06/02: IGAS v84
     1. Fix drop down list not show.
 

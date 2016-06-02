@@ -204,7 +204,7 @@ class "Font"
 
 		self[0] = fontObject[0]
 		self.__UI = fontObject
-		fontObject.__Wrapper = self
+		_WrapperMap[fontObject] = self
 	end
 
 	------------------------------------------------------
@@ -224,8 +224,8 @@ class "Font"
 				return fontObject
 			end
 
-			if fontObject.__Wrapper and Object.IsClass(fontObject.__Wrapper, Font) then
-				return fontObject.__Wrapper
+			if _WrapperMap[fontObject] and Object.IsClass(_WrapperMap[fontObject], Font) then
+				return _WrapperMap[fontObject]
 			end
 		end
 	end

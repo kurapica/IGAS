@@ -478,6 +478,8 @@ endstruct "EventArgs"
 ------------------------------------------------------
 -- Global Settings
 ------------------------------------------------------
+_WrapperMap = setmetatable({}, {__mode="k"})
+
 ------------------------------------
 --- Get the true frame of a IGAS frame
 -- <param name="frame">the IGAS frame</param>
@@ -509,10 +511,10 @@ function IGAS:GetWrapper(frame)
 		return frame
 	end
 
-	if frame.__Wrapper and Object.IsClass(frame.__Wrapper, Widget["UIObject"]) then
+	if _WrapperMap[frame] and Object.IsClass(_WrapperMap[frame], Widget["UIObject"]) then
 		-- Check if the frame already has a wrapper
 		-- Don't store it because I don't want a hashtable to be refreshed frequently.
-		return frame.__Wrapper
+		return _WrapperMap[frame]
 	end
 
 	-- Now build a new wrapper for it.
