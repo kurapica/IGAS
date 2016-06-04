@@ -94,6 +94,7 @@ interface "IFMana"
 	------------------------------------------------------
 	function Refresh(self)
 		if not _M._UseHiddenMana then return end
+		if not self.Unit ~= "player" then return end
 
 		if UnitPowerType('player') == SPELL_POWER_MANA or (select(2, UnitClass('player')) == 'MONK' and GetSpecialization() ~= 2) then
 			return self:Hide()
@@ -101,7 +102,7 @@ interface "IFMana"
 			self:Show()
 		end
 
-		local min, max = UnitPower(self.Unit, SPELL_POWER_MANA), UnitPowerMax(self.Unit, SPELL_POWER_MANA)
+		local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
 
 		_MinMax.max = max
 		self.MinMaxValue = _MinMax
