@@ -122,9 +122,9 @@ function UNIT_AURA(self, unit)
 end
 
 function UpdateStanceMap()
-	local str = "for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
+	local str = "" --"for i in pairs(_StanceMap) do _StanceMap[i] = nil end\n"
 
-	wipe(_StanceMap)
+	--wipe(_StanceMap)
 
 	for i = 1, GetNumShapeshiftForms() do
 		local id = select(5, GetShapeshiftFormInfo(i))

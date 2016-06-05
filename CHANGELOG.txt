@@ -1,3 +1,6 @@
+2016/06/05: IGAS v88
+    1. No longer clear the stance cache for some stance not work.
+
 2016/06/04: IGAS v87
     1. Fix IFMana not hidden.
 
