@@ -68,7 +68,8 @@ function SPELLS_CHANGED(self)
 		end
 	end
 	UpdateMacroMap()
-	return UpdateProfession()
+	UpdateProfession()
+	UpdateStanceMap()
 end
 
 function SKILL_LINES_CHANGED(self)

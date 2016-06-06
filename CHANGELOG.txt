@@ -1,3 +1,6 @@
+2016/06/05: IGAS v89
+    1. Update the stance cache when SPELL_CHANGES to fix the stance changed by talents.
+
 2016/06/05: IGAS v88
     1. No longer clear the stance cache for some stance not work.
 
