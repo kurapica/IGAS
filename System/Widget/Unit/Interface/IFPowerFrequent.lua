@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFPowerFrequent", version) then
 	return
 end
@@ -135,6 +135,7 @@ interface "IFPowerFrequent"
 
 		if self.Smoothing and self._SmoothValueObj then
 			self._SmoothValueObj.Value = self.Value
+			self._SmoothValueObj.RealValue = self.Value
 		end
 	end
 
