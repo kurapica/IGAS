@@ -1,3 +1,6 @@
+2016/06/17: IGAS v91
+    1. Fix the cooldown indicator display the number for blizzard's settings.
+
 2016/06/17: IGAS v90
     1. Fix the frequent headlth and power for changing target.
 

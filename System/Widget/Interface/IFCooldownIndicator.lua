@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.IFCooldownIndicator", version) then
 	return
 end
@@ -24,6 +24,7 @@ interface "IFCooldownIndicator"
 		<param name="indicator">System.Widget.Cooldown</param>
 	]]
 	function SetUpCooldownIndicator(self, indicator)
+		indicator:SetHideCountdownNumbers(true)
 		indicator:SetAllPoints(self)
 	end
 
