@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.HealthBar", version) then
 	return
 end
@@ -62,7 +62,7 @@ function HealthBar_OnStateChanged(self, value)
 	end
 
 	-- Choose color
-	if self.UseDebuffColor then
+	if self.UseDebuffColor and not UnitCanAttack("player", self.Unit) then
 		if _DEBUFF_ABLE['Magic'] and self.HasMagic then
 			color = "Magic"
 		elseif _DEBUFF_ABLE['Curse'] and self.HasCurse then

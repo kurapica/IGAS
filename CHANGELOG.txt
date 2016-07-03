@@ -1,3 +1,6 @@
+2016/07/03: IGAS v94
+    1. No debuff color for enemy's health bar.
+
 2016/07/03: IGAS v93
     1. Improve the spell handler for clear bindings.
 
