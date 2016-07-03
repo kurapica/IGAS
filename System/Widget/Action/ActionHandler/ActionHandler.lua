@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Action.ActionHandler", version) then
 	return
 end
@@ -154,7 +154,7 @@ do
 	end
 
 	-- Fix for temp shape shift bar
-	tinsert(state, "[stance:1]tempshapeshift")
+	tinsert(state, "[shapeshift]tempshapeshift")
 
 	tinsert(state, "1")
 

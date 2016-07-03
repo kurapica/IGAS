@@ -1,3 +1,6 @@
+2016/07/03: IGAS v92
+    1. Now the action buttons of the main bar would works well when been temporary shapeshifted.
+
 2016/06/17: IGAS v91
     1. Fix the cooldown indicator display the number for blizzard's settings.
 
