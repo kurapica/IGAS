@@ -1,3 +1,6 @@
+2016/07/03: IGAS v93
+    1. Improve the spell handler for clear bindings.
+
 2016/07/03: IGAS v92
     1. Now the action buttons of the main bar would works well when been temporary shapeshifted.
 

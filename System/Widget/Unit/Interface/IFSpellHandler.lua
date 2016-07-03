@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 3
+local version = 4
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFSpellHandler", version) then
 	return
 end
@@ -251,6 +251,8 @@ do
 			if not next(db) then
 				_DBChar[group][key] = nil
 			end
+
+			return true
 		end
 	end
 
@@ -900,9 +902,17 @@ interface "IFSpellHandler"
 		-- Method
 		------------------------------------------------------
 		__Doc__[[Clear the settings]]
+		__Arguments__{ Argument(String, true) }
 		function Clear(self, key)
 			if ClearBindingDB4Key(self.Group, key) then
-				self:Fire("OnSettingUpdate")
+				return self:Fire("OnSettingUpdate")
+			end
+		end
+
+		__Arguments__{ ActionType, StringNumber }
+		function Clear(self, type, content)
+			if ClearBindingDB(self.Group, type, content) then
+				return self:Fire("OnSettingUpdate")
 			end
 		end
 
