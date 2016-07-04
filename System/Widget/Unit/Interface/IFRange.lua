@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 4
+local version = 5
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRange", version) then
 	return
 end
@@ -30,6 +30,11 @@ function RefreshUnit(unit)
 			_IFRangeCache[unit] = inRange
 
 			_IFRangeUnitList:EachK(unit, "InRange", inRange)
+		end
+	else
+		if not _IFRangeCache[unit] then
+			_IFRangeCache[unit] = true
+			_IFRangeUnitList:EachK(unit, "InRange", true)
 		end
 	end
 end

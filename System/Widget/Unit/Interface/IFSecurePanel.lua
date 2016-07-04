@@ -31,31 +31,52 @@ do
 			local elements = IFSecurePanel_Panels[panel]
 			local count = 0
 
-			if elements and not panel:GetAttribute("IFSecurePanel_KeepMaxSize") and ( not noForce or panel:GetAttribute("IFSecurePanel_AutoSize") ) then
-				for i = #elements, 1, -1 do
-					if elements[i]:IsShown() then
-						count = i
-						break
+			local row
+			local column
+			local columnCount = panel:GetAttribute("IFSecurePanel_ColumnCount") or 99
+			local rowCount = panel:GetAttribute("IFSecurePanel_RowCount") or 99
+			local elementWidth = panel:GetAttribute("IFSecurePanel_ElementWidth") or 16
+			local elementHeight = panel:GetAttribute("IFSecurePanel_ElementHeight") or 16
+			local hSpacing = panel:GetAttribute("IFSecurePanel_HSpacing") or 0
+			local vSpacing = panel:GetAttribute("IFSecurePanel_VSpacing") or 0
+			local marginTop = panel:GetAttribute("IFSecurePanel_MarginTop") or 0
+			local marginBottom = panel:GetAttribute("IFSecurePanel_MarginBottom") or 0
+			local marginLeft = panel:GetAttribute("IFSecurePanel_MarginLeft") or 0
+			local marginRight = panel:GetAttribute("IFSecurePanel_MarginRight") or 0
+			local orientation = panel:GetAttribute("IFSecurePanel_Orientation") or "HORIZONTAL"
+
+			if elements then
+				if panel:GetAttribute("IFSecurePanel_AutoPosition") then
+					for i = 1, #elements do
+						local frm = elements[i]
+
+						if frm:IsShown() then
+							if orientation == "HORIZONTAL" then
+								-- Row first
+								frm:SetPoint("CENTER", panel, "TOPLEFT", count % columnCount * (elementWidth + hSpacing) + marginLeft + (elementWidth/2), -floor(count / columnCount) * (elementHeight + vSpacing) - marginTop - (elementHeight/2))
+							else
+								-- Column first
+								frm:SetPoint("CENTER", panel, "TOPLEFT", floor(count / rowCount) * (elementWidth + hSpacing) + marginLeft + (elementWidth/2), -(count % rowCount) * (elementHeight + vSpacing) - marginTop - (elementHeight/2))
+							end
+
+							count = count + 1
+						end
+					end
+				else
+					for i = #elements, 1, -1 do
+						if elements[i]:IsShown() then
+							count = i
+							break
+						end
 					end
 				end
+			end
 
+			if not panel:GetAttribute("IFSecurePanel_KeepMaxSize") and ( not noForce or panel:GetAttribute("IFSecurePanel_AutoSize") ) then
 				if count ~= IFSecurePanel_Cache[panel] then
 					IFSecurePanel_Cache[panel] = count
 
-					local row
-					local column
-					local columnCount = panel:GetAttribute("IFSecurePanel_ColumnCount") or 99
-					local rowCount = panel:GetAttribute("IFSecurePanel_RowCount") or 99
-					local elementWidth = panel:GetAttribute("IFSecurePanel_ElementWidth") or 16
-					local elementHeight = panel:GetAttribute("IFSecurePanel_ElementHeight") or 16
-					local hSpacing = panel:GetAttribute("IFSecurePanel_HSpacing") or 0
-					local vSpacing = panel:GetAttribute("IFSecurePanel_VSpacing") or 0
-					local marginTop = panel:GetAttribute("IFSecurePanel_MarginTop") or 0
-					local marginBottom = panel:GetAttribute("IFSecurePanel_MarginBottom") or 0
-					local marginLeft = panel:GetAttribute("IFSecurePanel_MarginLeft") or 0
-					local marginRight = panel:GetAttribute("IFSecurePanel_MarginRight") or 0
-
-					if panel:GetAttribute("IFSecurePanel_Orientation") == "HORIZONTAL" then
+					if orientation == "HORIZONTAL" then
 						row = ceil(count / columnCount)
 						column = row == 1 and count or columnCount
 					else
@@ -194,10 +215,42 @@ interface "IFSecurePanel"
 		end
 	end
 
+	local function AdjustElements(self)
+		local index = 0
+
+		self:Each(function(element)
+			element.Width = self.ElementWidth
+			element.Height = self.ElementHeight
+
+			if not self.AutoPosition or element.Visible then
+				if self.Orientation == Orientation.HORIZONTAL then
+					-- Row first
+					element:SetPoint("CENTER", self, "TOPLEFT", index % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -floor(index / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+				else
+					-- Column first
+					element:SetPoint("CENTER", self, "TOPLEFT", floor(index / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -(index % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+				end
+				index = index + 1
+			end
+		end)
+	end
+
 	local function AdjustPanel(self)
 		if self.KeepMaxSize then
-			self.Width = self.ColumnCount * self.ElementWidth + (self.ColumnCount - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
-			self.Height = self.RowCount * self.ElementHeight + (self.RowCount - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
+			--self.Width = self.ColumnCount * self.ElementWidth + (self.ColumnCount - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
+			--self.Height = self.RowCount * self.ElementHeight + (self.RowCount - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
+			local row, column
+
+			if self.Orientation == "HORIZONTAL" then
+				row = ceil(self.Count / self.ColumnCount)
+				column = row == 1 and self.Count or self.ColumnCount
+			else
+				column = ceil(self.Count / self.RowCount)
+				row = column == 1 and self.Count or self.RowCount
+			end
+
+			self:SetWidth(column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight)
+			self:SetHeight(row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom)
 		else
 			SecureUpdatePanelSize(self)
 		end
@@ -212,8 +265,8 @@ interface "IFSecurePanel"
 			for i = self.Count, index + 1, -1 do
 				ele = self:GetChild(self.ElementPrefix .. i)
 				self:Fire("OnElementRemove", ele)
-				ele:Dispose()
-
+				--ele:Dispose()
+				self.ElementRecycle(ele)
 				self:SetAttribute("IFSecurePanel_Count", i - 1)
 			end
 
@@ -223,19 +276,22 @@ interface "IFSecurePanel"
 
 	local function Generate(self, index)
 		if self.ElementType and index > self.Count then
+			self.ElementRecycle = self.ElementRecycle or Recycle(self.ElementType, self.ElementPrefix .. "%d", self)
+
 			local ele
 
 			for i = self.Count + 1, index do
-				ele = self.ElementType(self.ElementPrefix .. i, self)
+				ele = self.ElementRecycle()
 				ele.ID = i
 
-				AdjustElement(ele, self)
+				-- AdjustElement(ele, self)
 
 				self:Fire("OnElementAdd", ele)
 
 				self:SetAttribute("IFSecurePanel_Count", i)
 			end
 
+			AdjustElements(self)
 			AdjustPanel(self)
 		end
 	end
@@ -252,6 +308,7 @@ interface "IFSecurePanel"
 		KeepMaxSize = 0,
 		MarginRight = 0,
 		MarginBottom = 0,
+		AutoSize = 0,
 
 		-- 1 - self:Each(AdjustElement, self)
 		MarginLeft = 1,
@@ -262,12 +319,12 @@ interface "IFSecurePanel"
 		ElementHeight = 1,
 		ElementWidth = 1,
 
-		-- 2 - SecureUpdatePanelSize(self)
-		AutoSize = 2,
-
 		-- 3 - Reduce + AdjustElement
 		RowCount = 3,
 		ColumnCount = 3,
+
+		-- 4
+		AutoPosition = 4,
 	}
 
 	local function OnPropertyChanged(self, value, old, prop)
@@ -277,9 +334,16 @@ interface "IFSecurePanel"
 			local oper = _OperationMap[prop]
 			if oper == 1 or oper == 3 then
 				if oper == 3 then Reduce(self) end
-				return self:Each(AdjustElement, self)
+				-- return self:Each(AdjustElement, self)
+				return AdjustElements(self)
 			elseif oper == 2 then
 				return SecureUpdatePanelSize(self)
+			elseif oper == 4 then
+				if value then
+					return SecureUpdatePanelSize(self)
+				else
+					return AdjustElements(self)
+				end
 			end
 
 			return AdjustPanel(self)
@@ -443,6 +507,10 @@ interface "IFSecurePanel"
 	__Doc__[[Whether the elementPanel should keep it's max size]]
 	__Handler__( OnPropertyChanged )
 	property "KeepMaxSize" { Type = Boolean }
+
+	__Doc__[[Whether adjust the elements position automatically]]
+	__Handler__( OnPropertyChanged )
+	property "AutoPosition" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

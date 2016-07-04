@@ -1,3 +1,6 @@
+2016/07/04: IGAS v95
+    1. The secure panel can modify elements' position automatically.
+
 2016/07/03: IGAS v94
     1. No debuff color for enemy's health bar.
 
