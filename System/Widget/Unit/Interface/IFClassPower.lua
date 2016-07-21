@@ -10,6 +10,19 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFClassPower", version) then
 	return
 end
 
+SPEC_WARLOCK_AFFLICTION = 1
+SPEC_WARLOCK_DEMONOLOGY = 2
+SPEC_WARLOCK_DESTRUCTION = 3
+SPEC_PRIEST_SHADOW = 3
+SPEC_MONK_MISTWEAVER = 2
+SPEC_MONK_BREWMASTER = 1
+SPEC_MONK_WINDWALKER = 3
+SPEC_PALADIN_RETRIBUTION = 3
+SPEC_MAGE_ARCANE = 1
+SPEC_SHAMAN_RESTORATION = 3
+
+SPEC_DRUID_BALANCE = 2
+
 _IFClassPowerUnitList = _IFClassPowerUnitList or UnitList(_Name)
 
 _PlayerClass = select(2, UnitClass("player"))
@@ -19,25 +32,16 @@ _MinMax = MinMax(0, 1)
 SPEC_ALL = 0
 
 _ClassMap = {
-	MONK = {
+	ROGUE = {
 		[SPEC_ALL] = {
-			PowerType = _G.SPELL_POWER_CHI,
+			PowerType = _G.SPELL_POWER_COMBO_POINTS,
 			PowerToken = {
-				CHI = true,
-				DARK_FORCE = true,
-			},
-		},
-	},
-	PRIEST = {
-		[SPEC_PRIEST_SHADOW] = {
-			PowerType = _G.SPELL_POWER_SHADOW_ORBS,
-			PowerToken = {
-				SHADOW_ORBS = true,
+				COMBO_POINTS = true,
 			},
 		},
 	},
 	PALADIN = {
-		[SPEC_ALL] = {
+		[SPEC_PALADIN_RETRIBUTION] = {
 			ShowLevel = _G.PALADINPOWERBAR_SHOW_LEVEL,
 			PowerType = _G.SPELL_POWER_HOLY_POWER,
 			PowerToken = {
@@ -45,27 +49,43 @@ _ClassMap = {
 			},
 		},
 	},
+	MAGE = {
+		[SPEC_MAGE_ARCANE] = {
+			PowerType = _G.SPELL_POWER_ARCANE_CHARGES,
+			PowerToken = {
+				ARCANE_CHARGES = true,
+			},
+		},
+	},
+	DRUID = {
+		[SPEC_DRUID_BALANCE] = {
+			PowerType = _G.SPELL_POWER_LUNAR_POWER,
+			PowerToken = {
+				LUNAR_POWER = true,
+			},
+		},
+	},
+	PRIEST = {
+		[SPEC_PRIEST_SHADOW] = {
+			PowerType = _G.SPELL_POWER_INSANITY,
+			PowerToken = {
+				INSANITY = true,
+			},
+		},
+	},
+	MONK = {
+		[SPEC_MONK_WINDWALKER] = {
+			PowerType = _G.SPELL_POWER_CHI,
+			PowerToken = {
+				CHI = true,
+			},
+		},
+	},
 	WARLOCK = {
-		[SPEC_WARLOCK_AFFLICTION] = {
-			RequireSpell = _G.WARLOCK_SOULBURN,
+		[SPEC_ALL] = {
 			PowerType = _G.SPELL_POWER_SOUL_SHARDS,
 			PowerToken = {
 				SOUL_SHARDS = true,
-			},
-		},
-		[SPEC_WARLOCK_DEMONOLOGY] = {
-			RequireBuff = _G.WARLOCK_METAMORPHOSIS,
-			PowerType = _G.SPELL_POWER_DEMONIC_FURY,
-			PowerToken = {
-				DEMONIC_FURY = true,
-			},
-		},
-		[SPEC_WARLOCK_DESTRUCTION] = {
-			RequireSpell = _G.WARLOCK_BURNING_EMBERS,
-			PowerType = _G.SPELL_POWER_BURNING_EMBERS,
-			RealPower = true,
-			PowerToken = {
-				BURNING_EMBERS = true,
 			},
 		},
 	},

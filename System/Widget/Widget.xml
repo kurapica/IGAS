@@ -24,6 +24,7 @@
 	<Script file="Base\Frame.lua"/>
 	<Script file="Base\Texture.lua"/>
 	<Script file="Base\FontString.lua"/>
+	<Script file="Base\Line.lua"/>
 	<Script file="Base\Button.lua"/>
 	<Script file="Base\Cooldown.lua"/>
 	<Script file="Base\ColorSelect.lua"/>
@@ -44,6 +45,7 @@
 	<Script file="Base\ArchaeologyDigSiteFrame.lua"/>
 	<Script file="Base\QuestPOIFrame.lua"/>
 	<Script file="Base\MovieFrame.lua"/>
+	<Script file="Base\CinematicModel.lua"/>
 
 	<!-- Panel -->
 	<Script file="Common\LayoutPanel.lua"/>

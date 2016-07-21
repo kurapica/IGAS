@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFRune", version) then
 	return
 end
@@ -11,51 +11,47 @@ end
 _All = "all"
 _IFRuneUnitList = _IFRuneUnitList or UnitList(_Name)
 
+SPELL_POWER_RUNES = _G.SPELL_POWER_RUNES
+
 MAX_RUNES = 6
-_RuneIndexMap = {}
 
 function _IFRuneUnitList:OnUnitListChanged()
 	self:RegisterEvent("RUNE_POWER_UPDATE")
 	self:RegisterEvent("RUNE_TYPE_UPDATE")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("UNIT_MAXPOWER")
 
 	self.OnUnitListChanged = nil
 end
 
 function _IFRuneUnitList:ParseEvent(event, runeIndex, isEnergize)
-	if event == "PLAYER_ENTERING_WORLD" then
-		for i = 1, MAX_RUNES do
-			_RuneIndexMap[i] = GetRuneType(i)
-
-			self:EachK(_All, UpdatePowerType, i)
+	if event == "RUNE_POWER_UPDATE" and  runeIndex then
+		self:EachK(_All, UpdatePower, runeIndex, isEnergize)
+	elseif event == "UNIT_MAXPOWER" and runeIndex == "player" then
+		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
+		self:EachK(_All, "Max", max)
+	elseif event == "RUNE_TYPE_UPDATE" and runeIndex then
+		self:EachK(_All, UpdatePowerType, runeIndex)
+	elseif event == "PLAYER_ENTERING_WORLD" then
+		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
+		self:EachK(_All, "Max", max)
+		for i = 1, max do
 			self:EachK(_All, UpdatePower, i)
 		end
-	elseif event == "RUNE_TYPE_UPDATE" and runeIndex then
-		if GetRuneType(runeIndex) ~= _RuneIndexMap[runeIndex] then
-			_RuneIndexMap[runeIndex] = GetRuneType(runeIndex)
-
-			self:EachK(_All, UpdatePowerType, runeIndex)
-		end
-	elseif event == "RUNE_POWER_UPDATE" and  runeIndex then
-		self:EachK(_All, UpdatePower, runeIndex, isEnergize)
 	end
 end
 
 function UpdatePowerType(self, index)
-	if self[index] then
-		self[index].RuneType = _RuneIndexMap[index] or GetRuneType(index)
-	else
-		self:Refresh(index)
-	end
+	self:Refresh(index)
 end
 
 function UpdatePower(self, index, isEnergize)
-	if self[index] and self[index]:IsInterface(IFCooldown) then
+	if self[index] then
 		local start, duration, runeReady = GetRuneCooldown(index)
 
 		if not runeReady then
 			if start then
-				self[index]:OnCooldownUpdate(start, duration)
+				self[index]:Fire("OnCooldownUpdate", start, duration)
 			end
 			self[index].Ready = false
 		else
@@ -63,8 +59,6 @@ function UpdatePower(self, index, isEnergize)
 		end
 
 		self[index].Energize = isEnergize
-	else
-		self:Refresh(index)
 	end
 end
 
@@ -73,7 +67,6 @@ __Doc__[[
 	<optional name="Visible" type="property" valuetype="boolean">used to receive the check result that whether the rune power should be shown</optional>
 	<usage>
 		For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
-			RuneType property, number, the rune's type
 			Ready property, boolean, whether the rune is Ready
 			Energize property, boolean, whether the rune is energized
 	</usage>
@@ -85,10 +78,16 @@ interface "IFRune"
 	-- Method
 	------------------------------------------------------
 	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		for i = 1, MAX_RUNES do
-			UpdatePowerType(self, i)
+	function Refresh(self, index)
+		if index then
 			UpdatePower(self, i)
+		else
+			local max = UnitPowerMax("player", SPELL_POWER_RUNES)
+			self.Max = max
+
+			for i = 1, max do
+				UpdatePower(self, i)
+			end
 		end
 	end
 

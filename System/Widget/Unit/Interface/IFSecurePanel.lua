@@ -84,8 +84,13 @@ do
 						row = column == 1 and count or rowCount
 					end
 
-					panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
-					panel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
+					if row > 0 and column > 0 then
+						panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
+						panel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
+					else
+						panel:SetWidth(1)
+						panel:SetHeight(1)
+					end
 				end
 			end
 		]=]
@@ -249,8 +254,13 @@ interface "IFSecurePanel"
 				row = column == 1 and self.Count or self.RowCount
 			end
 
-			self:SetWidth(column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight)
-			self:SetHeight(row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom)
+			if row > 0 and column > 0 then
+				self:SetWidth(column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight)
+				self:SetHeight(row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom)
+			else
+				self:SetWidth(1)
+				self:SetHeight(1)
+			end
 		else
 			SecureUpdatePanelSize(self)
 		end

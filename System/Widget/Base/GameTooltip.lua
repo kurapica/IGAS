@@ -180,18 +180,6 @@ class "GameTooltip"
 		<param name="index">number, index of an auction in the listing</param>
 	]]
 
-	__Doc__"function_name" [[
-		<desc>Fills the tooltip with information about the item currently being set up for auction. Return values 2 and higher are only available if the item to be auctioned is actually a battle pet.</desc>
-		<return type="hasCooldown">boolean, 1 or nil</return>
-		<return type="speciesID">number, speciesID to identify a battle pet's species</return>
-		<return type="level">number, the level of this battle pet</return>
-		<return type="breedQuality">number, quality (rarity) level of the battle pet</return>
-		<return type="health">number, maximum health of this battle pet</return>
-		<return type="power">number, attack power of this battle pet</return>
-		<return type="speed">number, attack speed of this battle pet</return>
-		<return type="petName">string, the name of this battle pet.</return>
-	]]
-
 	__Doc__"SetBackpackToken" [[
 		<desc>Fills the tooltip with information about a currency marked for watching on the Backpack UI</desc>
 		<param name="index">number, index of a 'slot' for displaying currencies on the backpack (between 1 and MAX_WATCHED_TOKENS)</param>
@@ -234,16 +222,6 @@ class "GameTooltip"
 	__Doc__"SetFrameStack" [[
 		<desc>Fills the tooltip with a list of frames under the mouse cursor. Not relevant outside of addon development and debugging.</desc>
 		<param name="includeHidden">boolean, true to include hidden frames in the list; false to list only visible frames</param>
-	]]
-
-	__Doc__"SetGlyph" [[
-		<desc>Fills the tooltip with information about one of the player's glyphs</desc>
-		<param name="socket">number, which socket's glyph to display (between 1 and NUM_GLYPH_SLOTS)</param>
-		<param name="talentGroup">number, which set of glyphs to display, if the player has Dual Talent Specialization enabled, 1 - Primary Talents, 2 - Secondary Talents, nil - Currently active talents</param>
-	]]
-
-	__Doc__"SetGlyphByID" [[
-		<param name="id">numbr</param>
 	]]
 
 	__Doc__"SetGuildBankItem" [[
@@ -441,12 +419,6 @@ class "GameTooltip"
 	__Doc__"SetTradePlayerItem" [[
 		<desc>Fills the tooltip with information about an item offered for trade by the player.</desc>
 		<param name="index">number, index of an item offered for trade by the player (between 1 and MAX_TRADE_ITEMS)</param>
-	]]
-
-	__Doc__"SetTradeSkillItem" [[
-		<desc>Fills the tooltip with information about an item created by a trade skill recipe or a reagent in the recipe</desc>
-		<param name="skillIndex">number, index of a recipe in the trade skill list (between 1 and GetNumTradeSkills())</param>
-		<param name="reagentIndex">number, index of a reagent in the recipe (between 1 and GetTradeSkillNumReagents()); if omitted, displays a tooltip for the item created by the recipe</param>
 	]]
 
 	__Doc__"SetTradeTargetItem" [[

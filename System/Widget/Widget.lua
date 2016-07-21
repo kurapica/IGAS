@@ -597,7 +597,7 @@ function StoreBlzMethod(cls, managerCls, managerCls2)
 	end
 
 	for fname, func in pairs(getmetatable(IGAS:GetUI(sample)).__index) do
-		if cls[fname] == nil then
+		if cls == sample or cls[fname] == nil then
 			clsEnv[fname] = func
 		end
 	end

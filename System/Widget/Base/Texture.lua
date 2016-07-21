@@ -174,10 +174,13 @@ class "Texture"
 
 		SetTexCoord(self, 0, 1, 0, 1)
 
-		if select("#", ...) > 0 then
-			if type(select(1, ...)) == "string" then
-				return self.__UI:SetTexture(select(1, ...))
-			elseif type(select(1, ...)) == "number" then
+		local cnt = select("#", ...)
+		local val = ...
+
+		if cnt > 0 then
+			if type(val) == "string" or (cnt == 1 and type(val) == "number" and val >= 1) then
+				return self.__UI:SetTexture(val)
+			elseif type(val) == "number" then
 				local r, g, b, a = ...
 
 				r = (r and type(r) == "number" and ((r < 0 and 0) or (r > 1 and 1) or r)) or 0
@@ -190,7 +193,7 @@ class "Texture"
 				self.__B = b
 				self.__A = a
 
-				return self.__UI:SetTexture(r, g, b, a)
+				return self.__UI:SetColorTexture(r, g, b, a)
 			end
 		end
 		return self.__UI:SetTexture(nil)
@@ -455,10 +458,12 @@ class "Texture"
 
 			if type(path) == "string" and not strmatch(path, "^Color%-") and not strmatch(path, "^RTPortrait%d*") then
 				return path
+			elseif type(path) == "number" then
+				return path
 			end
 		end,
 		Set = "SetTexture",
-		Type = String,
+		Type = String+Number,
 	}
 
 	__Doc__[[the unit be de displayed as a portrait, such as "player", "target"]]
@@ -489,7 +494,7 @@ class "Texture"
 			end
 		end,
 		Set = function(self, color)
-			self:SetTexture(color.r, color.g, color.b, color.a)
+			self:SetColorTexture(color.r, color.g, color.b, color.a)
 		end,
 		Type = ColorType,
 	}

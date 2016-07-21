@@ -595,12 +595,14 @@ class "Mask"
 
 	local function OnLeave(self)
 		self.KeyboardEnabled = false
+		if self.Parent then self.Parent:Fire("OnLeave") end
 	end
 
 	local function OnEnter(self)
 		if self.AsKeyBind then
 			self.KeyboardEnabled = true
 		end
+		if self.Parent then self.Parent:Fire("OnEnter") end
 	end
 
 	------------------------------------------------------

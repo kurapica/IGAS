@@ -91,7 +91,7 @@ class "ActionButton"
 		Set = function(self, value)
 			self:GetChild("Icon").TexturePath = value
 		end,
-		Type = String,
+		Type = String+Number,
 	}
 
 	__Doc__[[the action's count, like item's count, accessed by IFActionHandler]]

@@ -40,16 +40,17 @@ interface "IFGroup"
 
 	enum "PlayerClass" {
 		"WARRIOR",
-		"PALADIN",
-		"HUNTER",
-		"ROGUE",
-		"PRIEST",
 		"DEATHKNIGHT",
+		"PALADIN",
+		"MONK",
+		"PRIEST",
 		"SHAMAN",
+		"DRUID",
+		"ROGUE",
 		"MAGE",
 		"WARLOCK",
-		"MONK",
-		"DRUID",
+		"HUNTER",
+		"DEMONHUNTER",
 	}
 
 	struct "GroupFilter" { System.Number }
@@ -70,6 +71,7 @@ interface "IFGroup"
 		"MAGE",
 		"WARLOCK",
 		"HUNTER",
+		"DEMONHUNTER",
 	}
 	DEFAULT_ROLE_SORT_ORDER = {"MAINTANK", "MAINASSIST", "TANK", "HEALER", "DAMAGER", "NONE"}
 	DEFAULT_GROUP_SORT_ORDER = {1, 2, 3, 4, 5, 6, 7, 8}
@@ -177,7 +179,9 @@ interface "IFGroup"
 				if id then
 					-- To safely clear unit frame generated in combat
 					for i = id + 1, #UnitFrames do
-						UnitFrames[i]:SetAttribute("unit", nil)
+						if UnitFrames[i]:GetAttribute("unit") then
+							UnitFrames[i]:SetAttribute("unit", nil)
+						end
 					end
 				end
 			]])
@@ -442,7 +446,7 @@ interface "IFGroup"
     		self:WrapScript(self, "OnHide", _Hide)
 
     		-- Throw out of the screen
-    		self:SetPoint("TOPRIGHT", WorldFrame, "TOPLEFT")
+    		self:SetPoint("TOPRIGHT", UIParent, "TOPLEFT")
     		self.Alpha = 0
 	    end
 	endclass "ShadowGroupHeader"

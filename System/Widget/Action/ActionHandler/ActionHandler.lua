@@ -56,7 +56,7 @@ end
 function UPDATE_SUMMONPETS_ACTION(self)
 	for _, btn in handler() do
 		if GetActionInfo(btn.ActionTarget) == "summonpet" then
-			button.Icon = GetActionTexture(btn.ActionTarget)
+			btn.Icon = GetActionTexture(btn.ActionTarget)
 		end
 	end
 end

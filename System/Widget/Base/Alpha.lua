@@ -20,16 +20,6 @@ class "Alpha"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__"GetChange" [[
-		<desc>Returns the animation's amount of alpha (opacity) change. A region's alpha value can be between 0 (fully transparent) and 1 (fully opaque); thus, an animation which changes alpha by 1 will always increase the region to full opacity, regardless of the region's existing alpha (and an animation whose change amount is -1 will reduce the region to fully transparent).</desc>
-		<return type="number">Amount by which the region's alpha value changes over the animation's duration (between -1 and 1)</return>
-	]]
-
-	__Doc__"SetChange" [[
-		<desc>Sets the animation's amount of alpha (opacity) change. A region's alpha value can be between 0 (fully transparent) and 1 (fully opaque); thus, an animation which changes alpha by 1 will always increase the region to full opacity, regardless of the region's existing alpha (and an animation whose change amount is -1 will reduce the region to fully transparent).</desc>
-		<param name="change">number, Amount by which the region's alpha value should change over the animation's duration (between -1 and 1)</param>
-	]]
-
 	__Doc__"GetFromAlpha" [[
 		<desc>Returns the animation's amount of alpha (opacity) start from.</desc>
 		<return type="number">Amount by which the region's alpha value start from over the animation's duration (between -1 and 1)</return>
@@ -75,9 +65,6 @@ class "Alpha"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[the animation's amount of alpha (opacity) change]]
-	property "Change" { Type = Number }
-
 	__Doc__[[the animation's amount of alpha (opacity) start from]]
 	property "FromAlpha" { Type = Number }
 

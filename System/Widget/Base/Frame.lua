@@ -729,4 +729,5 @@ class "Frame"
 	__Doc__[[whether the frame's depth property is ignored (for stereoscopic 3D setups)]]
 	property "DepthIgnored" { Type = Boolean }
 
+	property "FlattensRenderLayers" { Type = Boolean }
 endclass "Frame"

@@ -3,12 +3,13 @@
 	<Script file="System\System.lua"/>
 	<Script file="System\Collections.lua"/>
 	<!--Script file="Error.lua"/-->
-	<Script file="System\Threading.lua"/>
 	<Script file="System\Logger.lua"/>
-	<Script file="System\Recycle.lua"/>
 	<Script file="System\Data.lua"/>
 	<Script file="System\Text.lua"/>
+	<Script file="System\IO.lua"/>
+	<Script file="System\Recycle.lua"/>
 	<Script file="System\Serialization.lua"/>
+	<Script file="System\Threading.lua"/>
 
 	<Script file="System\Collections\List.lua"/>
 	<Script file="System\Collections\Dictionary.lua"/>

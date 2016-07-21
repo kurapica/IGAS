@@ -63,8 +63,12 @@ interface "IFElementPanel"
 				row = column == 1 and i or self.RowCount
 			end
 
-			self.Width = column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
-			self.Height = row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
+			if row > 0 and column > 0 then
+				self.Width = column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
+				self.Height = row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
+			else
+				self:SetSize(1, 1)
+			end
 		end
 	end
 

@@ -24,7 +24,7 @@ class "NameLabel"
 		-- Handle the text color
 		if self.Unit then
 			if self.UseTapColor then
-				if UnitIsTapped(self.Unit) and not UnitIsTappedByPlayer(self.Unit) and not UnitIsTappedByAllThreatList(self.Unit) then
+				if UnitIsTapDenied(self.Unit) then
 					return self:SetTextColor(0.5, 0.5, 0.5)
 				end
 			end

@@ -23,12 +23,12 @@ __Doc__[[ComboBox is using for choosing one item from a list]]
 class "ComboBox"
 	inherit "Frame"
 
-	WorldFrame = IGAS.WorldFrame
+	UIParent = IGAS.UIParent
 
     ------------------------------------------------------
 	---------------------  List   ----------------------
 	------------------------------------------------------
-    local _ComboBoxListContainer = Frame("IGAS_GUI_ListContainer", WorldFrame)
+    local _ComboBoxListContainer = Frame("IGAS_GUI_ListContainer", UIParent)
     _ComboBoxListContainer.__ShowList = _ComboBoxListContainer.__ShowList or nil
 	if not _ComboBoxListContainer.__Timer then
 		local timer = Timer("Timer", _ComboBoxListContainer)

@@ -35,8 +35,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------
 -- Author           kurapica125@outlook.com
 -- Create Date      2011/02/03
--- Last Update Date 2016/02/24
--- Version          r148
+-- Last Update Date 2016/04/20
+-- Version          r150
 ------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -415,6 +415,9 @@ do
 	-- metatable for namespaces
 	_MetaNS = getmetatable(PROTYPE_NAMESPACE)
 	do
+		local _UnmStruct = {}
+		local _MixedStruct = {}
+
 		_MetaNS.__call = function(self, ...)
 			local info = _NSInfo[self]
 			local iType = info.Type
@@ -644,15 +647,97 @@ do
 			local info = _NSInfo[self]
 
 			if info then
-				local name = info.Name
+				if info.OriginNS then
+					return "-" .. tostring(info.OriginNS)
+				elseif info.CombineNS then
+					local name = ""
+					for _, ns in ipairs(info.CombineNS) do
+						ns = tostring(ns)
+						if ns:match("^%-") then ns = "(" .. ns .. ")" end
+						if name ~= "" then
+							name = name .. "+" .. ns
+						else
+							name = ns
+						end
+					end
+					return name
+				elseif info.OriginIF then
+					return tostring(info.OriginIF) .. "." .. "AnonymousClass"
+				else
+					local name = info.Name
 
-				while info and info.NameSpace do
-					info = _NSInfo[info.NameSpace]
+					while info and info.NameSpace do
+						info = _NSInfo[info.NameSpace]
 
-					if info.Name then name = info.Name.."."..name end
+						if info.Name then name = info.Name.."."..name end
+					end
+
+					return name
 				end
+			end
+		end
 
-				return name
+		_MetaNS.__unm = function(self)
+			local sinfo = _NSInfo[self]
+			if sinfo.Type == TYPE_CLASS or sinfo.Type == TYPE_INTERFACE then
+				local strt = _UnmStruct[self]
+				if not strt then
+					if sinfo.Type == TYPE_CLASS then
+						local errMsg = "%s must be child-class of [Class]" .. tostring(self)
+						__Sealed__()
+						__Default__(self)
+						strt = struct {
+							function (value)
+								assert(IsChildClass(self, value), errMsg)
+							end
+						}
+					else
+						local errorMsg = "%s must extend the [Interface]" .. tostring(self)
+						__Sealed__()
+						__Default__(self)
+						strt = struct {
+							function (value)
+								assert(IsExtend(self, value), errMsg)
+							end
+						}
+					end
+
+					_UnmStruct[self] = strt
+					_NSInfo[strt].OriginNS = self
+				end
+				return strt
+			else
+				error("The unary '-' operation only support class and interface types", 2)
+			end
+		end
+
+		_MetaNS.__add = function(self, other)
+			local sinfo = _NSInfo[self]
+			local oinfo = _NSInfo[other]
+			if sinfo and oinfo then
+				local sref = tostring(sinfo):match("%w+$")
+				local oref = tostring(oinfo):match("%w+$")
+
+				local strt = _MixedStruct[sref .. "_" .. oref] or _MixedStruct[oref .. "_" .. sref]
+				if strt then return strt end
+
+				local errMsg = "%s must be value of "
+
+				__Sealed__()
+				strt = struct {
+					function (value)
+						local ret = GetValidatedValue(self, value)
+						if ret == nil then ret = GetValidatedValue(other, value) end
+						assert(ret ~= nil, errMsg)
+						return ret
+					end
+				}
+
+				_MixedStruct[sref .. "_" .. oref] = strt
+				_NSInfo[strt].CombineNS = { self, other }
+				errMsg = errMsg .. tostring(strt)
+
+				return strt
 			end
 		end
 
@@ -1413,7 +1498,7 @@ do
 					end
 
 					-- Auto generate Default
-					if prop.Type and prop.Default == nil then
+					if prop.Type and prop.Default == nil and prop.DefaultFunc == nil then
 						local pinfo = _NSInfo[prop.Type]
 						if pinfo and (pinfo.Type == TYPE_STRUCT or pinfo.Type == TYPE_ENUM) then prop.Default = pinfo.Default end
 					end
@@ -2834,8 +2919,10 @@ do
 
 	function BuildAnonymousClass(info)
 		local cls = class {}
+		local cInfo	= _NSInfo[cls]
 		SaveExtend(_NSInfo[cls], info.Owner)
 		RefreshCache(cls)
+		cInfo.OriginIF = info.Owner
 		info.AnonymousClass = cls
 		return cls
 	end
@@ -2851,8 +2938,6 @@ do
 			if not info.IsOneReqMethod then error(("%s is not a one required method interface."):format(tostring(info.Owner)), 3) end
 			init = { [info.IsOneReqMethod] = init }
 		end
-
-		if type(init) ~= "table" then error(("%s {} is the only format can be accepted."):format(tostring(info.Owner)), 3) end
 
 		return (info.AnonymousClass or BuildAnonymousClass(info))(init)
 	end
@@ -2924,9 +3009,6 @@ do
 
 			if not info then return end
 
-			-- No dispose to a unique object
-			if info.UniqueObject then return end
-
 			local cache = info.Cache4Interface
 			if cache then
 				for i = #(cache), 1, -1 do
@@ -2944,6 +3026,9 @@ do
 
 				objCls = _NSInfo[objCls].SuperClass
 			end
+
+			-- No dispose to a unique object
+			if info.UniqueObject then return end
 
 			-- Clear the table
 			wipe(self)
@@ -4274,11 +4359,28 @@ do
 		end
 	}
 
+	struct "Guid" (function (_ENV)
+		if math.randomseed and os.time then math.randomseed(os.time()) end
+
+		local GUID_TEMPLTE = [[xx-x-x-x-xxx]]
+		local GUID_FORMAT = "^" .. GUID_TEMPLTE:gsub("x", "%%x%%x%%x%%x"):gsub("%-", "%%-") .. "$"
+		local function GenerateGUIDPart(v) return ("%04X"):format(math.random(0xffff)) end
+
+		function Guid(value)
+			if value == nil then
+				return (GUID_TEMPLTE:gsub("x", GenerateGUIDPart))
+			elseif type(value) ~= "string" or #value ~= 36 or not value:match(GUID_FORMAT) then
+				error("%s require data with format like '" .. GUID_TEMPLTE:gsub("x", GenerateGUIDPart) .."'.")
+			end
+		end
+	end)
+
 	struct "Class"		{ function (value) assert(Reflector.IsClass(value), "%s must be a class.") end }
 	struct "Interface"	{ function (value) assert(Reflector.IsInterface(value), "%s must be an interface.") end }
 	struct "Struct"		{ function (value) assert(Reflector.IsStruct(value), "%s must be a struct.") end }
 	struct "Enum"		{ function (value) assert(Reflector.IsEnum(value), "%s must be an enum.") end }
 	struct "AnyType"	{ function (value) local info = _NSInfo[value] assert(info and info.Type, "%s must be a type, such as enum, struct, class or interface.") end }
+	struct "NameSpace"	{ function (value) value = _NSInfo[value] assert(value, "%s must be a namespace") return value.Owner end}
 
 	------------------------------------------------------
 	-- System.AttributeTargets

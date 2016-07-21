@@ -25,7 +25,7 @@ function OnEnable(self)
 	end
 
 	-- Load toy informations
-	C_ToyBox.FilterToys()
+	C_ToyBox.ForceToyRefilter()
 
 	self:RegisterEvent("BAG_UPDATE")
 	self:RegisterEvent("BAG_UPDATE_COOLDOWN")

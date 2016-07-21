@@ -193,7 +193,8 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animInSpark)
 		alpha.Order = 1
 		alpha.Duration = 0.2
-		alpha.Change = 1
+		alpha.FromAlpha = 0
+		alpha.ToAlpha = 1
 
 		scale = Scale("Scale2", animInSpark)
 		scale.Order = 1
@@ -205,7 +206,8 @@ class "SpellActivationAlert"
 		alpha.Order = 1
 		alpha.Duration = 0.2
 		alpha.StartDelay = 0.2
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For InnerGlow
 		local animInInnerGlow = AnimationGroup("AnimIn", innerGlow)
@@ -219,7 +221,8 @@ class "SpellActivationAlert"
 		alpha.Order = 1
 		alpha.Duration = 0.2
 		alpha.StartDelay = 0.3
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For InnerGlowOver
 		local animInInnerGlowOver = AnimationGroup("AnimIn", innerGlowOver)
@@ -232,7 +235,8 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animInInnerGlowOver)
 		alpha.Order = 1
 		alpha.Duration = 0.3
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For OuterGlow
 		local animInOuterGlow = AnimationGroup("AnimIn", outerGlow)
@@ -253,7 +257,8 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animInOuterGlowOver)
 		alpha.Order = 1
 		alpha.Duration = 0.3
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For Ants
 		local animInAnts = AnimationGroup("AnimIn", ants)
@@ -262,7 +267,8 @@ class "SpellActivationAlert"
 		alpha.Order = 1
 		alpha.Duration = 0.2
 		alpha.StartDelay = 0.2
-		alpha.Change = 1
+		alpha.FromAlpha = 0
+		alpha.ToAlpha = 1
 
 		animInInnerGlow.OnPlay = AnimIn_OnPlay
 		animInInnerGlow.OnFinished = AnimIn_OnFinished
@@ -274,12 +280,14 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animOutOuterGlowOver)
 		alpha.Order = 1
 		alpha.Duration = 0.2
-		alpha.Change = 1
+		alpha.FromAlpha = 0
+		alpha.ToAlpha = 1
 
 		alpha = Alpha("Alpha2", animOutOuterGlowOver)
 		alpha.Order = 2
 		alpha.Duration = 0.2
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For OuterGlow
 		local animOutOuterGlow = AnimationGroup("AnimOut", outerGlow)
@@ -288,7 +296,8 @@ class "SpellActivationAlert"
 		alpha.Order = 1
 		alpha.Duration = 0.2
 		alpha.StartDelay = 0.2
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		--- For Ants
 		local animOutAnts = AnimationGroup("AnimOut", ants)
@@ -296,7 +305,8 @@ class "SpellActivationAlert"
 		alpha = Alpha("Alpha1", animOutOuterGlow)
 		alpha.Order = 1
 		alpha.Duration = 0.2
-		alpha.Change = -1
+		alpha.FromAlpha = 1
+		alpha.ToAlpha = 0
 
 		animOutOuterGlowOver.OnFinished = AnimOut_OnFinished
     end

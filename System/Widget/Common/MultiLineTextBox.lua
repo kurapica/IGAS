@@ -218,7 +218,7 @@ do
 	------------------------------------------------------
 	-- Key Scanner
 	------------------------------------------------------
-	_KeyScan = Frame("IGAS_MultiLineTextBox_KeyScan", IGAS.WorldFrame)
+	_KeyScan = Frame("IGAS_MultiLineTextBox_KeyScan", IGAS.UIParent)
 	_KeyScan:SetPropagateKeyboardInput(true)
 	_KeyScan.KeyboardEnabled = true
 	_KeyScan.FrameStrata = "TOOLTIP"
@@ -234,8 +234,8 @@ do
 	------------------------------------------------------
 	-- Short Key Block
 	------------------------------------------------------
-	_BtnBlockUp = SecureButton("IGAS_MultiLineTextBox_UpBlock", IGAS.WorldFrame)
-	_BtnBlockDown = SecureButton("IGAS_MultiLineTextBox_DownBlock", IGAS.WorldFrame)
+	_BtnBlockUp = SecureButton("IGAS_MultiLineTextBox_UpBlock", IGAS.UIParent)
+	_BtnBlockDown = SecureButton("IGAS_MultiLineTextBox_DownBlock", IGAS.UIParent)
 	_BtnBlockUp.Visible = false
 	_BtnBlockDown.Visible = false
 

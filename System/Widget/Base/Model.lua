@@ -219,7 +219,7 @@ class "Model"
 				self:ClearModel()
 			end
 		end,
-		Get = "GetModel",
+		--Get = "GetModel",
 		Type = String,
 	}
 

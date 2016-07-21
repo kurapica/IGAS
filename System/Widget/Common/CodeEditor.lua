@@ -252,7 +252,7 @@ do
 	------------------------------------------------------
 	-- Code smart helper
 	------------------------------------------------------
-	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.WorldFrame)
+	_List = List("IGAS_MultiLineTextBox_AutoComplete", IGAS.UIParent)
 	_List.FrameStrata = "TOOLTIP"
 	_List.DisplayItemCount = 5
 	_List.Width = 250

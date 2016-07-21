@@ -29,15 +29,15 @@ __Doc__[[
 class "DropDownList"
 	inherit "VirtualUIObject"
 
-	WorldFrame = IGAS.WorldFrame
+	UIParent = IGAS.UIParent
 
 	-- Container & ColorPicker
-    _DropDownListContainer = Frame("IGAS_GUI_ListContainer", WorldFrame)
+    _DropDownListContainer = Frame("IGAS_GUI_ListContainer", UIParent)
     _DropDownListContainer.__ShowList = _DropDownListContainer.__ShowList or nil
 
 	_DropDownColorPicker = ColorPicker("DropDownColorPicker", _DropDownListContainer)
 	_DropDownColorPicker:ClearAllPoints()
-	_DropDownColorPicker:SetPoint("CENTER", WorldFrame, "CENTER")
+	_DropDownColorPicker:SetPoint("CENTER", UIParent, "CENTER")
 	_DropDownColorPicker.Visible = false
 
 	function _DropDownColorPicker:OnColorPicked(red, green, blue, alpha)

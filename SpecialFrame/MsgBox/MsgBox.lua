@@ -17,7 +17,7 @@ strlower = string.lower
 _Queue = _Queue or {}
 _MaxQueue = 10
 
-frmPop = PopupDialog("IGAS_GUI_MSGBOX", WorldFrame)
+frmPop = PopupDialog("IGAS_GUI_MSGBOX", UIParent)
 frmPop.Style = "LIGHT"
 frmPop.OkayButtonText = L"Okay"
 frmPop.NoButtonText = L"No"
@@ -32,19 +32,19 @@ function ShowDialog(_Message, _Map, _KeyList, _Callback, _Thread)
 	frmPop.Input:Clear()
 	frmPop.Text = ""
 	frmPop.__CallBack = _Callback or _Thread
-	
+
 	if frmPop.ShowInputBox and type(_KeyList) == "table" and next(_KeyList) then
 		frmPop.Input.HideDropDownButton = false
 		frmPop.Input.Editable = false
 		frmPop.Input.AutoFocus = false
-		
+
 		frmPop.Input:SetList(_KeyList)
 	else
 		frmPop.Input.HideDropDownButton = true
 		frmPop.Input.Editable = true
 		frmPop.Input.AutoFocus = true
 	end
-	
+
 	frmPop.Visible = true
 end
 
@@ -52,7 +52,7 @@ function frmPop:OnHide()
 	if _Queue[1] then
 		local info = _Queue[1]
 		tremove(_Queue, 1)
-		
+
 		return ShowDialog(info.Message, info.Map, info.KeyList, info.Callback, info.Thread)
 	end
 end
@@ -108,19 +108,19 @@ function IGAS:MsgBox(_Message, _Map, _KeyList, _Callback)
 	if not _Map or type(_Map) ~= "string" then
 		_Map = ""
 	end
-	
+
 	if type(_KeyList) == "function" then
 		_KeyList, _Callback = _Callback, _KeyList
 	end
-	
+
 	if _Callback and type(_Callback) ~= "function" then
 		error("Usage : IGAS:MsgBox(message, map[, keylist][,callback]) - 'callback' must be function.", 2)
 	end
-	
+
 	_Map = strlower(_Map)
-	
+
 	local _Thread = System.Threading.Thread()
-	
+
 	if frmPop.Visible then
 		if #_Queue < _MaxQueue then
 			tinsert(_Queue, {["Message"] = _Message, ["Map"] = _Map, ["Callback"] = _Callback, ["KeyList"] = _KeyList, ["Thread"] = _Thread})
@@ -130,7 +130,7 @@ function IGAS:MsgBox(_Message, _Map, _KeyList, _Callback)
 	else
 		ShowDialog(_Message, _Map, _KeyList, _Callback, _Thread)
 	end
-	
+
 	if not _Callback then
 		return _Thread:Yield()
 	end

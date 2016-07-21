@@ -26,18 +26,21 @@ ClassPowerMap = {
 	[1] = "RAGE",
 	[2] = "FOCUS",
 	[3] = "ENERGY",
-	[4] = "NOUSE",
+	[4] = "COMBO_POINTS",
 	[5] = "RUNES",
 	[6] = "RUNIC_POWER",
 	[7] = "SOUL_SHARDS",
-	[8] = "ECLIPSE",
+	[8] = "LUNAR_POWER",
 	[9] = "HOLY_POWER",
 	[10] = "ALTERNATE_POWER",
-	[11] = "DARK_FORCE",
+	[11] = "MAELSTROM",
 	[12] = "CHI",
-	[13] = "SHADOW_ORBS",
-	[14] = "BURNING_EMBERS",
-	[15] = "DEMONIC_FURY",
+	[13] = "INSANITY",
+	[14] = "OBSOLETE",
+	[15] = "OBSOLETE2",
+	[16] = "ARCANE_CHARGES",
+	[17] = "FURY",
+	[18] = "PAIN",
 }
 
 for i, v in ipairs(ClassPowerMap) do
@@ -45,31 +48,33 @@ for i, v in ipairs(ClassPowerMap) do
 end
 
 CLASS_ICON_TCOORDS = {
-    ["WARRIOR"]     = {0, 0.25, 0, 0.25},
-    ["MAGE"]        = {0.25, 0.49609375, 0, 0.25},
-    ["ROGUE"]       = {0.49609375, 0.7421875, 0, 0.25},
-    ["DRUID"]       = {0.7421875, 0.98828125, 0, 0.25},
-    ["HUNTER"]      = {0, 0.25, 0.25, 0.5},
-    ["SHAMAN"]      = {0.25, 0.49609375, 0.25, 0.5},
-    ["PRIEST"]      = {0.49609375, 0.7421875, 0.25, 0.5},
-    ["WARLOCK"]     = {0.7421875, 0.98828125, 0.25, 0.5},
-    ["PALADIN"]     = {0, 0.25, 0.5, 0.75},
-    ["DEATHKNIGHT"] = {0.25, .5, 0.5, .75},
-    ["MONK"]    = {0.5, 0.73828125, 0.5, .75},
+	["WARRIOR"]		= {0, 0.25, 0, 0.25},
+	["MAGE"]		= {0.25, 0.49609375, 0, 0.25},
+	["ROGUE"]		= {0.49609375, 0.7421875, 0, 0.25},
+	["DRUID"]		= {0.7421875, 0.98828125, 0, 0.25},
+	["HUNTER"]		= {0, 0.25, 0.25, 0.5},
+	["SHAMAN"]	 	= {0.25, 0.49609375, 0.25, 0.5},
+	["PRIEST"]		= {0.49609375, 0.7421875, 0.25, 0.5},
+	["WARLOCK"]		= {0.7421875, 0.98828125, 0.25, 0.5},
+	["PALADIN"]		= {0, 0.25, 0.5, 0.75},
+	["DEATHKNIGHT"]	= {0.25, .5, 0.5, .75},
+	["MONK"]		= {0.5, 0.73828125, 0.5, .75},
+	["DEMONHUNTER"]	= {0.7421875, 0.98828125, 0.5, 0.75},
 }
 
 RAID_CLASS_COLORS = {
-    ["HUNTER"] = { r = 0.67, g = 0.83, b = 0.45, colorStr = "ffabd473" },
-    ["WARLOCK"] = { r = 0.58, g = 0.51, b = 0.79, colorStr = "ff9482c9" },
-    ["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0, colorStr = "ffffffff" },
-    ["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73, colorStr = "fff58cba" },
-    ["MAGE"] = { r = 0.41, g = 0.8, b = 0.94, colorStr = "ff69ccf0" },
-    ["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41, colorStr = "fffff569" },
-    ["DRUID"] = { r = 1.0, g = 0.49, b = 0.04, colorStr = "ffff7d0a" },
-    ["SHAMAN"] = { r = 0.0, g = 0.44, b = 0.87, colorStr = "ff0070de" },
-    ["WARRIOR"] = { r = 0.78, g = 0.61, b = 0.43, colorStr = "ffc79c6e" },
-    ["DEATHKNIGHT"] = { r = 0.77, g = 0.12 , b = 0.23, colorStr = "ffc41f3b" },
-    ["MONK"] = { r = 0.0, g = 1.00 , b = 0.59, colorStr = "ff00ff96" },
+	["HUNTER"] = { r = 0.67, g = 0.83, b = 0.45, colorStr = "ffabd473" },
+	["WARLOCK"] = { r = 0.53, g = 0.53, b = 0.93, colorStr = "ff8788ee" },
+	["PRIEST"] = { r = 1.0, g = 1.0, b = 1.0, colorStr = "ffffffff" },
+	["PALADIN"] = { r = 0.96, g = 0.55, b = 0.73, colorStr = "fff58cba" },
+	["MAGE"] = { r = 0.25, g = 0.78, b = 0.92, colorStr = "ff3fc7eb" },
+	["ROGUE"] = { r = 1.0, g = 0.96, b = 0.41, colorStr = "fffff569" },
+	["DRUID"] = { r = 1.0, g = 0.49, b = 0.04, colorStr = "ffff7d0a" },
+	["SHAMAN"] = { r = 0.0, g = 0.44, b = 0.87, colorStr = "ff0070de" },
+	["WARRIOR"] = { r = 0.78, g = 0.61, b = 0.43, colorStr = "ffc79c6e" },
+	["DEATHKNIGHT"] = { r = 0.77, g = 0.12 , b = 0.23, colorStr = "ffc41f3b" },
+	["MONK"] = { r = 0.0, g = 1.00 , b = 0.59, colorStr = "ff00ff96" },
+	["DEMONHUNTER"] = { r = 0.64, g = 0.19, b = 0.79, colorStr = "ffa330c9" },
 }
 
 FIRE_TOTEM_SLOT = 1
@@ -87,16 +92,22 @@ SHAMAN_TOTEM_PRIORITIES = {
 }
 
 PowerBarColor = {}
-PowerBarColor["MANA"] = { r = 0.00, g = 0.60, b = 1.00 }
-PowerBarColor["RAGE"] = { r = 1.00, g = 0.00, b = 0.00 }
-PowerBarColor["FOCUS"] = { r = 1.00, g = 0.50, b = 0.25 }
-PowerBarColor["ENERGY"] = { r = 1.00, g = 1.00, b = 0.00 }
-PowerBarColor["CHI"] = { r = 0.71, g = 1.0, b = 0.92 }
+PowerBarColor["MANA"] = { r = 0.00, g = 0.00, b = 1.00 }
+PowerBarColor["RAGE"] = { r = 1.00, g = 0.00, b = 0.00, fullPowerAnim=true }
+PowerBarColor["FOCUS"] = { r = 1.00, g = 0.50, b = 0.25, fullPowerAnim=true }
+PowerBarColor["ENERGY"] = { r = 1.00, g = 1.00, b = 0.00, fullPowerAnim=true }
+PowerBarColor["COMBO_POINTS"] = { r = 1.00, g = 0.96, b = 0.41 }
 PowerBarColor["RUNES"] = { r = 0.50, g = 0.50, b = 0.50 }
 PowerBarColor["RUNIC_POWER"] = { r = 0.00, g = 0.82, b = 1.00 }
 PowerBarColor["SOUL_SHARDS"] = { r = 0.50, g = 0.32, b = 0.55 }
-PowerBarColor["ECLIPSE"] = { negative = { r = 0.30, g = 0.52, b = 0.90 },  positive = { r = 0.80, g = 0.82, b = 0.60 }}
+PowerBarColor["LUNAR_POWER"] = { r = 0.30, g = 0.52, b = 0.90, atlas="_Druid-LunarBar" }
 PowerBarColor["HOLY_POWER"] = { r = 0.95, g = 0.90, b = 0.60 }
+PowerBarColor["MAELSTROM"] = { r = 0.00, g = 0.50, b = 1.00, atlas = "_Shaman-MaelstromBar", fullPowerAnim=true }
+PowerBarColor["INSANITY"] = { r = 0.40, g = 0, b = 0.80, atlas = "_Priest-InsanityBar"}
+PowerBarColor["CHI"] = { r = 0.71, g = 1.0, b = 0.92 }
+PowerBarColor["ARCANE_CHARGES"] = { r = 0.1, g = 0.1, b = 0.98 }
+PowerBarColor["FURY"] = { r = 0.788, g = 0.259, b = 0.992, atlas = "_DemonHunter-DemonicFuryBar", fullPowerAnim=true }
+PowerBarColor["PAIN"] = { r = 255/255, g = 156/255, b = 0, atlas = "_DemonHunter-DemonicPainBar", fullPowerAnim=true }
 -- vehicle colors
 PowerBarColor["AMMOSLOT"] = { r = 0.80, g = 0.60, b = 0.00 }
 PowerBarColor["FUEL"] = { r = 0.0, g = 0.55, b = 0.5 }
@@ -112,8 +123,12 @@ PowerBarColor[4] = PowerBarColor["CHI"]
 PowerBarColor[5] = PowerBarColor["RUNES"]
 PowerBarColor[6] = PowerBarColor["RUNIC_POWER"]
 PowerBarColor[7] = PowerBarColor["SOUL_SHARDS"]
-PowerBarColor[8] = PowerBarColor["ECLIPSE"]
+PowerBarColor[8] = PowerBarColor["LUNAR_POWER"]
 PowerBarColor[9] = PowerBarColor["HOLY_POWER"]
+PowerBarColor[11] = PowerBarColor["MAELSTROM"]
+PowerBarColor[13] = PowerBarColor["INSANITY"]
+PowerBarColor[17] = PowerBarColor["FURY"]
+PowerBarColor[18] = PowerBarColor["PAIN"]
 
 DebuffTypeColor = {}
 DebuffTypeColor["none"] = { r = 0.80, g = 0, b = 0 }
