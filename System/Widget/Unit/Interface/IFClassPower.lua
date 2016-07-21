@@ -19,9 +19,16 @@ SPEC_MONK_BREWMASTER = 1
 SPEC_MONK_WINDWALKER = 3
 SPEC_PALADIN_RETRIBUTION = 3
 SPEC_MAGE_ARCANE = 1
+SPEC_SHAMAN_ELEMENTAL = 1
+SPEC_SHAMAN_ENHANCEMENT = 2
 SPEC_SHAMAN_RESTORATION = 3
 
-SPEC_DRUID_BALANCE = 2
+SPEC_DRUID_BALANCE = 1
+SPEC_DRUID_FERAL = 2
+SPEC_DRUID_GUARDIAN = 3
+SPEC_DRUID_RESTORATION = 4
+
+CAT_FORM = _G.CAT_FORM
 
 _IFClassPowerUnitList = _IFClassPowerUnitList or UnitList(_Name)
 
@@ -58,18 +65,19 @@ _ClassMap = {
 		},
 	},
 	DRUID = {
-		[SPEC_DRUID_BALANCE] = {
-			PowerType = _G.SPELL_POWER_LUNAR_POWER,
+		USE_SHAPESHIFTFORM = true,
+		[CAT_FORM] = {
+			PowerType = _G.SPELL_POWER_COMBO_POINTS,
 			PowerToken = {
-				LUNAR_POWER = true,
+				COMBO_POINTS = true,
 			},
 		},
 	},
 	PRIEST = {
 		[SPEC_PRIEST_SHADOW] = {
-			PowerType = _G.SPELL_POWER_INSANITY,
+			PowerType = _G.SPELL_POWER_MANA,
 			PowerToken = {
-				INSANITY = true,
+				MANA = true,
 			},
 		},
 	},
@@ -89,6 +97,20 @@ _ClassMap = {
 			},
 		},
 	},
+	SHAMAN = {
+		[SPEC_SHAMAN_ELEMENTAL] = {
+			PowerType = _G.SPELL_POWER_MANA,
+			PowerToken = {
+				MANA = true,
+			},
+		},
+		[SPEC_SHAMAN_ENHANCEMENT] = {
+			PowerType = _G.SPELL_POWER_MANA,
+			PowerToken = {
+				MANA = true,
+			},
+		},
+	},
 }
 
 _PlayerClassMap = _ClassMap[_PlayerClass] or false
@@ -100,6 +122,9 @@ function _IFClassPowerUnitList:OnUnitListChanged()
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 	-- Check require
+	if _PlayerClassMap.USE_SHAPESHIFTFORM then
+		self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+	end
 	if not _PlayerClassMap[SPEC_ALL] then
 		self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	elseif _PlayerClassMap[SPEC_ALL].ShowLevel and UnitLevel("player") < _PlayerClassMap[0].ShowLevel then
@@ -131,8 +156,15 @@ function _IFClassPowerUnitList:ParseEvent(event, unit, powerToken)
 end
 
 function RefreshActivePower(trueLevel)
-	local spec = GetSpecialization() or 1
-	local map = _PlayerClassMap[spec] or _PlayerClassMap[SPEC_ALL]
+	local map
+
+	if _PlayerClassMap.USE_SHAPESHIFTFORM then
+		local shift = GetShapeshiftFormID()
+		map = shift and _PlayerClassMap[shift]
+	else
+		local spec = GetSpecialization() or 1
+		map = _PlayerClassMap[spec] or _PlayerClassMap[SPEC_ALL]
+	end
 
 	_IFClassPowerUnitList:UnregisterEvent("SPELLS_CHANGED")
 

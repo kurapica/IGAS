@@ -16,7 +16,7 @@ SPELL_POWER_MANA = _G.SPELL_POWER_MANA
 
 _MinMax = MinMax(0, 1)
 
-if select(2, UnitClass('player')) == 'DRUID' or select(2, UnitClass('player')) == 'MONK' then
+if select(2, UnitClass('player')) == 'DRUID' then
 	_UseHiddenMana = true
 else
 	_UseHiddenMana = false
@@ -95,7 +95,7 @@ interface "IFMana"
 	function Refresh(self)
 		if not _M._UseHiddenMana then return end
 
-		if UnitPowerType('player') == SPELL_POWER_MANA or (select(2, UnitClass('player')) == 'MONK' and GetSpecialization() ~= 2) then
+		if UnitPowerType('player') == SPELL_POWER_MANA then
 			return self:Hide()
 		else
 			self:Show()

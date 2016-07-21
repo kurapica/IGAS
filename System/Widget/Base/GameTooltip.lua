@@ -496,6 +496,46 @@ class "GameTooltip"
 	end
 
 	__Doc__[[
+		<desc>Set the left text of the given index line</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<param name="text">string</param>
+		<return type="string"></return>
+	]]
+	function SetLeftText(self, index, text)
+		local name = self:GetName()
+
+		if not name or not index or type(index) ~= "number" then
+			return
+		end
+
+		name = name.."TextLeft"..index
+
+		if _G[name] and type(_G[name]) == "table" and _G[name].GetText then
+			return _G[name]:SetText(text)
+		end
+	end
+
+	__Doc__[[
+		<desc>Set the right text of the given index line</desc>
+		<param name="index">number, between 1 and self:NumLines()</param>
+		<param name="text">string</param>
+		<return type="string"></return>
+	]]
+	function SetRightText(self, index, text)
+		local name = self:GetName()
+
+		if not name or not index or type(index) ~= "number" then
+			return
+		end
+
+		name = name.."TextRight"..index
+
+		if _G[name] and type(_G[name]) == "table" and _G[name].GetText then
+			return _G[name]:SetText(text)
+		end
+	end
+
+	__Doc__[[
 		<desc>Get the texutre of the given index line</desc>
 		<param name="index">number, between 1 and self:NumLines()</param>
 		<return type="string"></return>

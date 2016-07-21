@@ -1,3 +1,6 @@
+2016/07/21: IGAS v96
+    1. Update for wow 7.0 version.
+
 2016/07/04: IGAS v95
     1. The secure panel can modify elements' position automatically.
 

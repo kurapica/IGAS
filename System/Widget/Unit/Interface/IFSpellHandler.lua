@@ -31,6 +31,12 @@ do
 	function OnLoad(self)
 		-- DB
 		IGAS_DB_Char.Unit_IFSpellHandler_DB = IGAS_DB_Char.Unit_IFSpellHandler_DB or {}
+
+		if not IGAS_DB_Char.Unit_IFSpellHandler_DBVer then
+			IGAS_DB_Char.Unit_IFSpellHandler_DBVer = 70000
+			IGAS_DB_Char.Unit_IFSpellHandler_DB = {}
+		end
+
 		_DBChar = IGAS_DB_Char.Unit_IFSpellHandler_DB
 
 		self:RegisterEvent('PLAYER_LOGOUT')
