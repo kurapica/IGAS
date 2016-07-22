@@ -13,22 +13,17 @@ import "System.Widget.Action.ActionRefreshMode"
 
 _StanceMapTemplate = "_StanceMap[%d] = %d\n"
 _MacroMapTemplate = "_MacroMap[%d]=%q\n"
-_FakeStanceMapTemplate = "_FakeStanceMap[%d]=%q\n"
+--_FakeStanceMapTemplate = "_FakeStanceMap[%d]=%q\n"
 
-_StanceOnTexturePath = [[Interface\Icons\Spell_Nature_WispSplode]]
+--_StanceOnTexturePath = [[Interface\Icons\Spell_Nature_WispSplode]]
 
 _StanceMap = {}
 _Profession = {}
 _MacroMap = {}
 
-_FakeStanceMap = {
-	[77769] = true,	-- Trap Launcher
-}
-
--- DraenorZoneAbilityS
-DraenorZoneAbilitySpellID = _G.DraenorZoneAbilitySpellID
-DraenorZoneAbilitySpellName = false
-DraenorZoneAbilityCurrentSpellID = DraenorZoneAbilitySpellID
+--_FakeStanceMap = {
+--	[77769] = true,	-- Trap Launcher
+--}
 
 -- Event handler
 function OnEnable(self)
@@ -49,7 +44,7 @@ function OnEnable(self)
 
 	UpdateStanceMap()
 	UpdateMacroMap()
-	UpdateFakeStanceMap()
+	--UpdateFakeStanceMap()
 end
 
 function LEARNED_SPELL_IN_TAB(self)
@@ -59,14 +54,6 @@ function LEARNED_SPELL_IN_TAB(self)
 end
 
 function SPELLS_CHANGED(self)
-	-- Update for the DraenorZoneAbilitySpell
-	DraenorZoneAbilitySpellName = DraenorZoneAbilitySpellName or GetSpellInfo(DraenorZoneAbilitySpellID)
-	if DraenorZoneAbilitySpellName then
-		DraenorZoneAbilityCurrentSpellID = select(7, GetSpellInfo(DraenorZoneAbilitySpellName))
-		for _, btn in handler() do
-			if btn.ActionTarget == DraenorZoneAbilitySpellID then handler:Refresh(btn) end
-		end
-	end
 	UpdateMacroMap()
 	UpdateProfession()
 	UpdateStanceMap()
@@ -117,7 +104,8 @@ function UNIT_AURA(self, unit)
 		for _, btn in handler() do
 			local target = btn.ActionTarget
 
-			if _StanceMap[target] or _FakeStanceMap[target] then handler:Refresh(btn) end
+			--if _StanceMap[target] or _FakeStanceMap[target] then handler:Refresh(btn) end
+			if _StanceMap[target] then handler:Refresh(btn) end
 		end
 	end
 end
@@ -183,7 +171,7 @@ function UpdateMacroMap()
 	end
 end
 
-function UpdateFakeStanceMap()
+--[[function UpdateFakeStanceMap()
 	local str = ""
 	for spell in pairs(_FakeStanceMap) do
 		local name = GetSpellInfo(spell)
@@ -205,7 +193,7 @@ function UpdateFakeStanceMap()
 			end
 		end)
 	end
-end
+end--]]
 
 function UpdateProfession()
 	local lst = {GetProfessions()}
@@ -238,7 +226,7 @@ handler = ActionTypeHandler {
 	InitSnippet = [[
 		_StanceMap = newtable()
 		_MacroMap = newtable()
-		_FakeStanceMap = newtable()
+		--_FakeStanceMap = newtable()
 	]],
 
 	UpdateSnippet = [[
@@ -247,9 +235,9 @@ handler = ActionTypeHandler {
 		if _StanceMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click StanceButton".. _StanceMap[target])
-		elseif _FakeStanceMap[target] then
-			self:SetAttribute("*type*", "macro")
-			self:SetAttribute("*macrotext*", "/cancelaura ".. _FakeStanceMap[target] .. "\n/cast ".. _FakeStanceMap[target])
+		--elseif _FakeStanceMap[target] then
+		--	self:SetAttribute("*type*", "macro")
+		--	self:SetAttribute("*macrotext*", "/cancelaura ".. _FakeStanceMap[target] .. "\n/cast ".. _FakeStanceMap[target])
 		elseif _MacroMap[target] then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/cast ".. _MacroMap[target])
@@ -279,8 +267,8 @@ function handler:GetActionTexture()
 
 	if _StanceMap[target] then
 		return (GetShapeshiftFormInfo(_StanceMap[target]))
-	elseif _FakeStanceMap[target] and _FakeStanceMap[target] ~= true and UnitAura("player", _FakeStanceMap[target]) then
-		return _StanceOnTexturePath
+	--elseif _FakeStanceMap[target] and _FakeStanceMap[target] ~= true and UnitAura("player", _FakeStanceMap[target]) then
+	--	return _StanceOnTexturePath
 	elseif _MacroMap[target] then
 		return GetSpellTexture(_MacroMap[target])
 	else
@@ -290,9 +278,7 @@ end
 
 function handler:GetActionCharges()
 	local target = self.ActionTarget
-	if target == DraenorZoneAbilitySpellID then
-		return GetSpellCharges(DraenorZoneAbilityCurrentSpellID)
-	elseif _MacroMap[target] then
+	if _MacroMap[target] then
 		return GetSpellCharges(_MacroMap[target])
 	else
 		return GetSpellCharges(target)
@@ -313,8 +299,6 @@ function handler:GetActionCooldown()
 		if select(2, GetSpellCooldown(target)) > 2 then
 			return GetSpellCooldown(target)
 		end
-	elseif target == DraenorZoneAbilitySpellID then
-		return GetSpellCooldown(DraenorZoneAbilityCurrentSpellID)
 	elseif _MacroMap[target] then
 		return GetSpellCooldown(_MacroMap[target])
 	else
@@ -368,11 +352,7 @@ end
 
 function handler:SetTooltip(GameTooltip)
 	local target = self.ActionTarget
-	if target == DraenorZoneAbilitySpellID then
-		GameTooltip:SetSpellByID(DraenorZoneAbilityCurrentSpellID)
-	else
-		GameTooltip:SetSpellByID(target)
-	end
+	GameTooltip:SetSpellByID(target)
 end
 
 function handler:GetSpellId()

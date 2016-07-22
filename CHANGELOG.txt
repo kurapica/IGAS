@@ -1,3 +1,6 @@
+2016/07/22: IGAS v97
+    1. Remove useless codes.
+
 2016/07/21: IGAS v96
     1. Update for wow 7.0 version.
 
