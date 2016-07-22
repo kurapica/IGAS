@@ -25,6 +25,8 @@ _MacroMap = {}
 --	[77769] = true,	-- Trap Launcher
 --}
 
+local _CheckSpellUsableTime = GetTime()
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("LEARNED_SPELL_IN_TAB")
@@ -45,6 +47,17 @@ function OnEnable(self)
 	UpdateStanceMap()
 	UpdateMacroMap()
 	--UpdateFakeStanceMap()
+
+	Task.ThreadCall(function()
+		-- Refresh Usable
+		while true do
+			Task.Delay(0.1)
+
+			if GetTime() - _CheckSpellUsableTime >= 0.1 then
+				handler:Refresh(RefreshUsable)
+			end
+		end
+	end)
 end
 
 function LEARNED_SPELL_IN_TAB(self)
@@ -88,6 +101,7 @@ function SPELL_UPDATE_COOLDOWN(self)
 end
 
 function SPELL_UPDATE_USABLE(self)
+	_CheckSpellUsableTime = GetTime()
 	return handler:Refresh(RefreshUsable)
 end
 
