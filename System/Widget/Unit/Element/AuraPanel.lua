@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.AuraPanel", version) then
 	return
 end
@@ -20,6 +20,7 @@ class "AuraPanel"
 		NOT_CANCELABLE = true,
 		PLAYER = true,
 		RAID = true,
+		INCLUDE_NAME_PLATE_ONLY = true,
 	}
 
 	local function CheckFilter(...)

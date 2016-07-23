@@ -1,3 +1,6 @@
+2016/07/22: IGAS v99
+    1. Add 'INCLUDE_NAME_PLATE_ONLY' for aura filter.
+
 2016/07/22: IGAS v98
     1. The SPELL_UPDATE_USABLE doesn't work well, add a thread to force update usable for spell buttons.
 
