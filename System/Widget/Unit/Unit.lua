@@ -115,18 +115,24 @@ PowerBarColor["STAGGER"] = { {r = 0.52, g = 1.0, b = 0.52}, {r = 1.0, g = 0.98, 
 
 -- these are mostly needed for a fallback case (in case the code tries to index a power token that is missing from the table,
 -- it will try to index by power type instead)
+
 PowerBarColor[0] = PowerBarColor["MANA"]
 PowerBarColor[1] = PowerBarColor["RAGE"]
 PowerBarColor[2] = PowerBarColor["FOCUS"]
 PowerBarColor[3] = PowerBarColor["ENERGY"]
-PowerBarColor[4] = PowerBarColor["CHI"]
+PowerBarColor[4] = PowerBarColor["COMBO_POINTS"]
 PowerBarColor[5] = PowerBarColor["RUNES"]
 PowerBarColor[6] = PowerBarColor["RUNIC_POWER"]
 PowerBarColor[7] = PowerBarColor["SOUL_SHARDS"]
 PowerBarColor[8] = PowerBarColor["LUNAR_POWER"]
 PowerBarColor[9] = PowerBarColor["HOLY_POWER"]
+PowerBarColor[10] = PowerBarColor["ALTERNATE_POWER"]
 PowerBarColor[11] = PowerBarColor["MAELSTROM"]
+PowerBarColor[12] = PowerBarColor["CHI"]
 PowerBarColor[13] = PowerBarColor["INSANITY"]
+PowerBarColor[14] = PowerBarColor["OBSOLETE"]
+PowerBarColor[15] = PowerBarColor["OBSOLETE2"]
+PowerBarColor[16] = PowerBarColor["ARCANE_CHARGES"]
 PowerBarColor[17] = PowerBarColor["FURY"]
 PowerBarColor[18] = PowerBarColor["PAIN"]
 

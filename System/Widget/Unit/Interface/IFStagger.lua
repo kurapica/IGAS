@@ -72,6 +72,7 @@ interface "IFStagger"
 			if _MinMax.max == 0 then _MinMax.max = 100 end -- Keep safe
 			self.MinMaxValue = _MinMax
 			self.Value = UnitStagger("player") or 0
+			self.Visible = true
 		else
 			self.Value = 0
 			self.Visible = false
