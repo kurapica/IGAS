@@ -192,11 +192,13 @@ class "DockLayoutPanel"
 	end
 
 	local function SecureUpdateLayout(self)
-		Super.SuspendLayout(self)
+		local isSus = self:IsSuspended()
+
+		if not isSus then Super.SuspendLayout(self) end
 
 		pcall(UpdateLayout, self)
 
-		Super.ResumeLayout(self)
+		if not isSus then Super.ResumeLayout(self) end
 	end
 
 	local function ValidateAdd(self, prefix, direction, before, widget, size, unit)

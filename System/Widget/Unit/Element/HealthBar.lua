@@ -20,6 +20,7 @@ _DEBUFF_ABILITIES = {
 	["WARLOCK"] = { Magic = true, },
 	["DEATHKNIGHT"] = { },
 	["MONK"] = { Poison = true, Disease = true, Magic = true, },
+	["DEMONHUNTER"] = { },
 }
 
 _DEBUFF_ABLE = _DEBUFF_ABILITIES[select(2, UnitClass('player'))] or {}

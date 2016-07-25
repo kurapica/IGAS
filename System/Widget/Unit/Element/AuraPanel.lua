@@ -163,7 +163,7 @@ class "AuraPanel"
 		function AuraIcon(self, name, parent, ...)
 			Super(self, name, parent, ...)
 
-			self.MouseEnabled = false
+			self.MouseEnabled = true
 			self.MouseWheelEnabled = false
 
 			local icon = Texture("Icon", self, "BORDER")
