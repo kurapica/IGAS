@@ -5,7 +5,7 @@
 --               2013/09/12 Fix for wow 5.4.0
 
 -- Check Version
-local version = 5
+local version = 6
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitName", version) then
 	return
 end
@@ -21,11 +21,19 @@ end
 
 function _IFUnitNameUnitList:ParseEvent(event, unit)
 	if event == "UNIT_NAME_UPDATE" and self:HasUnit(unit) then
-		self:EachK(unit, "Refresh")
+		self:EachK(unit, OnForceRefresh)
 	elseif event == "GROUP_ROSTER_UPDATE" then
 		for unit in pairs(self) do
-			self:EachK(unit, "Refresh")
+			self:EachK(unit, OnForceRefresh)
 		end
+	end
+end
+
+function OnForceRefresh(self)
+	if self.Unit then
+		self:SetUnitName(GetUnitName(self.Unit, self.WithServerName) or self.Unit)
+	else
+		self:SetUnitName("")
 	end
 end
 
@@ -34,13 +42,19 @@ interface "IFUnitName"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFUnitNameUnitList[self] = self.Unit
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			self.Text = GetUnitName(self.Unit, self.WithServerName) or self.Unit
-		else
-			self.Text = ""
+	__Doc__[[Set the unit name to the element, overridable]]
+	__Optional__() function SetUnitName(self, name)
+		if self:IsClass(FontString) then
+			self:SetText(name or "")
 		end
 	end
 
@@ -48,18 +62,8 @@ interface "IFUnitName"
 	-- Property
 	------------------------------------------------------
 	__Doc__[[Whether show the server name]]
-	__Handler__(Refresh)
+	__Handler__ "Refresh"
 	property "WithServerName" { Type = Boolean }
-
-	__Doc__[[Which used to receive the unit's name]]
-	__Optional__() property "Text" { Type = String }
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	local function OnUnitChanged(self)
-		_IFUnitNameUnitList[self] = self.Unit
-	end
 
 	------------------------------------------------------
 	-- Dispose
@@ -73,5 +77,6 @@ interface "IFUnitName"
 	------------------------------------------------------
 	function IFUnitName(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFUnitName"

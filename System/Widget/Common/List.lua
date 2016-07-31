@@ -18,6 +18,7 @@ if not IGAS:NewAddon("IGAS.Widget.List", version) then
 end
 
 __Doc__[[List is a widget type using for show list of infomations]]
+__AutoProperty__()
 class "List"
 	inherit "Frame"
 

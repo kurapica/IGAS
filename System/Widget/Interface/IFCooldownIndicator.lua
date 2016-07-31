@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.IFCooldownIndicator", version) then
 end
 
 __Doc__[[IFCooldownLabel is used to provide a CooldownIndicator to display the cooldown]]
+__AutoProperty__()
 interface "IFCooldownIndicator"
 	extend "IFCooldown"
 

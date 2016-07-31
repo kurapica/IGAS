@@ -13,11 +13,13 @@ if not IGAS:NewAddon("IGAS.Widget.Form", version) then
 end
 
 __Doc__[[Form is used to create base frames to contain other ui elements. It can move, resize, has a caption, a close button, and a message bar.]]
+__AutoProperty__()
 class "Form"
 	inherit "Frame"
 	extend "IFContainer"
 
 	__Doc__[[DockHeader is used to attach the form to the screen border]]
+	__AutoProperty__()
 	class "DockHeader"
 		inherit "VirtualUIObject"
 

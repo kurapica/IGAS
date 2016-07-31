@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Frame", version) then
 end
 
 __Doc__[[Frame is in many ways the most fundamental widget object. Other types of widget derivatives such as FontStrings, Textures and Animations can only be created attached to a Frame or other derivative of a Frame.]]
+__AutoProperty__()
 class "Frame"
 	inherit "Region"
 

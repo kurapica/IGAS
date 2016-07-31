@@ -19,6 +19,8 @@ class "CombatIcon"
 	function CombatIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\CharacterFrame\UI-StateIcon]]
+		self:SetTexCoord(.5, 1, 0, .49)
 		self.Height = 32
 		self.Width = 32
 	end

@@ -197,6 +197,7 @@ do
 end
 
 __Doc__[[IFMovable provide a frame moving system]]
+__AutoProperty__()
 interface "IFMovable"
 	require "Region"
 
@@ -291,6 +292,7 @@ interface "IFMovable"
 endinterface "IFMovable"
 
 __Doc__[[IFResizable provide a frame resize system]]
+__AutoProperty__()
 interface "IFResizable"
 	require "Region"
 
@@ -385,6 +387,7 @@ interface "IFResizable"
 endinterface "IFResizable"
 
 __Doc__[[IFToggleable provide a frame toggle system]]
+__AutoProperty__()
 interface "IFToggleable"
 	require "Region"
 

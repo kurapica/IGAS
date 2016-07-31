@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.SpellActivationAlert", version) then
 end
 
 __Doc__[[SpellActivationAlert is used to alert the activation of the action button]]
+__AutoProperty__()
 class "SpellActivationAlert"
 	inherit "Frame"
 

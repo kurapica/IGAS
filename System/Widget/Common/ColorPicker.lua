@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.ColorPicker", version) then
 end
 
 __Doc__[[ColorPicker is using to pick color for special using]]
+__AutoProperty__()
 class "ColorPicker"
 	inherit "ColorSelect"
 

@@ -445,6 +445,7 @@ do
 end
 
 __Doc__[[Mask is used to moving, resizing or key binding for other frames.]]
+__AutoProperty__()
 class "Mask"
 	inherit "Button"
 

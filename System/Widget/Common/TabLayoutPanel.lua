@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.TabLayoutPanel", version) then
 end
 
 __Doc__[[TabLayoutPanel is used to contain tabpages]]
+__AutoProperty__()
 class "TabLayoutPanel"
 	inherit "LayoutPanel"
 

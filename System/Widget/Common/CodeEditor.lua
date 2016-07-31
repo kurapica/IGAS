@@ -2270,6 +2270,7 @@ do
 end
 
 __Doc__[[CodeEditor object is used as a lua code editor]]
+__AutoProperty__()
 class "CodeEditor"
 	inherit "MultiLineTextBox"
 

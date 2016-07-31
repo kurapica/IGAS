@@ -14,6 +14,7 @@ __Doc__[[
 	An Animation in a group has an order from 1 to 100, which determines when it plays; once all animations with order 1 have completed, including any delays, the AnimationGroup starts all animations with order 2.
 	An AnimationGroup can also be set to loop, either repeating from the beginning or playing backward back to the beginning. An AnimationGroup has an OnLoop handler that allows you to call your own code back whenever a loop completes. The :Finish() method stops the animation after the current loop has completed, rather than immediately.
 ]]
+__AutoProperty__()
 class "AnimationGroup"
 	inherit "UIObject"
 
@@ -242,5 +243,4 @@ class "AnimationGroup"
 
 	__Doc__[[Whether to final alpha is set]]
 	property "ToFinalAlpha" { Type = Boolean }
-
 endclass "AnimationGroup"

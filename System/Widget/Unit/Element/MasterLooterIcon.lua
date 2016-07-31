@@ -19,6 +19,7 @@ class "MasterLooterIcon"
 	function MasterLooterIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\GroupFrame\UI-Group-MasterLooter]]
 		self.Height = 16
 		self.Width = 16
 	end

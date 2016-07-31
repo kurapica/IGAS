@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.ActionButton", version) then
 end
 
 __Doc__[[the base action button template]]
+__AutoProperty__()
 class "ActionButton"
 	inherit "CheckButton"
 	extend "IFActionHandler" "IFKeyBinding" "IFCooldownIndicator"

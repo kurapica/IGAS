@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollBar", version) then
 end
 
 __Doc__[[ScrollBar is used as scroll controller for scrollForm and others]]
+__AutoProperty__()
 class "ScrollBar"
 	inherit "Frame"
 

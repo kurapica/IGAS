@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.EditBox", version) then
 end
 
 __Doc__[[EditBoxes are used to allow the player to type text into a UI component.]]
+__AutoProperty__()
 class "EditBox"
 	inherit "Frame"
 	extend "IFFont"

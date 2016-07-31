@@ -10,7 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.VirtualUIObject", version) then
 end
 
 __Doc__[[VirtualUIObject is an abstract UI object type.]]
-__InitTable__()
+__InitTable__() __AutoProperty__()
 class "VirtualUIObject"
 	inherit "Object"
 

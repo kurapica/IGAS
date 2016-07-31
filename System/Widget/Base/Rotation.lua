@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Rotation", version) then
 end
 
 __Doc__[[Rotation is an Animation that automatically applies an affine rotation to the region being animated. You can set the origin around which the rotation is being done, and the angle of rotation in either degrees or radians.]]
+__AutoProperty__()
 class "Rotation"
 	inherit "Animation"
 
@@ -87,5 +88,4 @@ class "Rotation"
 		end,
 		Type = AnimOriginType,
 	}
-
 endclass "Rotation"

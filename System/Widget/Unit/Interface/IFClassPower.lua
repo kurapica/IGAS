@@ -35,7 +35,6 @@ _IFClassPowerUnitList = _IFClassPowerUnitList or UnitList(_Name)
 _PlayerClass = select(2, UnitClass("player"))
 _PlayerActivePower = false
 
-_MinMax = MinMax(0, 1)
 SPEC_ALL = 0
 
 _ClassMap = {
@@ -140,15 +139,21 @@ function _IFClassPowerUnitList:ParseEvent(event, unit, powerToken)
 
 		if _PlayerActivePower and _PlayerActivePower.Max ~= UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower) then
 			_PlayerActivePower.Max = UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
+			local power = UnitPower("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
 
-			_MinMax.max = _PlayerActivePower.Max
-			self:EachK("player", "MinMaxValue", _MinMax)
+			for obj in self:GetIterator("player") do
+				obj:SetUnitClassPower(power, _PlayerActivePower.Max)
+			end
 		end
 	elseif event == "UNIT_POWER_FREQUENT" then
 		if unit ~= "player" then return end
 
 		if _PlayerActivePower and _PlayerActivePower.PowerToken[powerToken] then
-			self:EachK("player", "Value", UnitPower("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower))
+			local power = UnitPower("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
+
+			for obj in self:GetIterator("player") do
+				obj:SetUnitClassPower(power, _PlayerActivePower.Max)
+			end
 		end
 	else
 		RefreshActivePower(event=="PLAYER_LEVEL_UP" and unit or nil)
@@ -188,57 +193,65 @@ function RefreshActivePower(trueLevel)
 		end
 
 		if _PlayerActivePower then
-			_IFClassPowerUnitList:EachK("player", "Visible", true)
-			_IFClassPowerUnitList:EachK("player", "ClassPowerType", _PlayerActivePower.PowerType)
-			_IFClassPowerUnitList:EachK("player", "Value", UnitPower("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower))
-			_PlayerActivePower.Max = UnitPowerMax("player", _PlayerActivePower.PowerType, _PlayerActivePower.RealPower)
-			_MinMax.max = _PlayerActivePower.Max
-			_IFClassPowerUnitList:EachK("player", "MinMaxValue", _MinMax)
+			local powerType = _PlayerActivePower.PowerType
+			local power, max = UnitPower("player", powerType, _PlayerActivePower.RealPower), UnitPowerMax("player", powerType, _PlayerActivePower.RealPower)
+
+			for obj in _IFClassPowerUnitList:GetIterator("player") do
+				obj:SetClassPowerVisible(true)
+				obj:SetClassPowerType(powerType)
+				obj:SetUnitClassPower(power, max)
+			end
 		else
-			_IFClassPowerUnitList:EachK("player", "Visible", false)
-			_IFClassPowerUnitList:EachK("player", "ClassPowerType", nil)
-			_IFClassPowerUnitList:EachK("player", "Value", 0)
-			_MinMax.max = 0
-			_IFClassPowerUnitList:EachK("player", "MinMaxValue", _MinMax)
+			for obj in _IFClassPowerUnitList:GetIterator("player") do
+				obj:SetClassPowerVisible(false)
+				obj:SetClassPowerType(nil)
+				obj:SetUnitClassPower(0, 0)
+			end
 		end
 	else
 		_PlayerActivePower = false
-		_IFClassPowerUnitList:EachK("player", "Visible", false)
-		_IFClassPowerUnitList:EachK("player", "ClassPowerType", nil)
-		_IFClassPowerUnitList:EachK("player", "Value", 0)
-		_MinMax.max = 0
-		_IFClassPowerUnitList:EachK("player", "MinMaxValue", _MinMax)
+
+		for obj in _IFClassPowerUnitList:GetIterator("player") do
+			obj:SetClassPowerVisible(false)
+			obj:SetClassPowerType(nil)
+			obj:SetUnitClassPower(0, 0)
+		end
 	end
+end
+
+function OnForceRefresh(self)
+	RefreshActivePower()
 end
 
 __Doc__[[IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.]]
 interface "IFClassPower"
 	extend "IFUnitElement"
 
+	_DefaultColor = ColorType(1, 1, 1)
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		if _M._PlayerClassMap then
-			return RefreshActivePower()
+	__Doc__[[Set the unit class power & max power to the element, overridable]]
+	__Optional__() function SetUnitClassPower(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
+	end
+
+	__Doc__[[Set the unit's class power type to the element]]
+	__Optional__() function SetClassPowerType(self, ty)
+		local info = ty and PowerBarColor[ty] or _DefaultColor
+		if self:IsClass(StatusBar) then
+			self:SetStatusBarColor(info.r, info.g, info.b)
+		elseif self:IsClass(LayeredRegion) then
+			self:SetVertexColor(info.r, info.g, info.b, 1)
 		end
 	end
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[which used to receive the check value for whether the class power need to be shown]]
-	__Optional__() property "Visible" { Type = Boolean }
-
-	__Doc__[[which used to receive the unit's class power's min and max value]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[which is used to receive the unit's class power's value]]
-	__Optional__() property "Value" { Type = Number }
-
-	__Doc__[[which is used to receive the unit's class power's type]]
-	__Optional__() property "ClassPowerType" { Type = NumberNil }
+	__Doc__[[Whether show or hide the class power bar]]
+	__Optional__() function SetClassPowerVisible(self, show)
+		self.Visible = show
+	end
 
 	------------------------------------------------------
 	-- Event Handler
@@ -246,10 +259,9 @@ interface "IFClassPower"
 	local function OnUnitChanged(self)
 		if self.Unit == "player" then
 			_IFClassPowerUnitList[self] = self.Unit
-			self.Visible = true
 		else
 			_IFClassPowerUnitList[self] = nil
-			self.Visible = false
+			self:SetClassPowerVisible(false)
 		end
 	end
 
@@ -265,12 +277,11 @@ interface "IFClassPower"
 	------------------------------------------------------
 	function IFClassPower(self)
 		if not _M._PlayerClassMap then
-			self.Visible = false
+			self:SetClassPowerVisible(false)
 			return
 		end
 
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFClassPower"

@@ -7,7 +7,7 @@ local version = 1
 if not IGAS:NewAddon("IGAS.Widget.MovieFrame", version) then
 	return
 end
-
+__AutoProperty__()
 class "MovieFrame"
 	inherit "Frame"
 

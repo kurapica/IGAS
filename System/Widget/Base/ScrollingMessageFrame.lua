@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollingMessageFrame", version) then
 end
 
 __Doc__[[ScrollingMessageFrame expands on MessageFrame with the ability to store a much longer series of messages.]]
+__AutoProperty__()
 class "ScrollingMessageFrame"
 	inherit "Frame"
 	extend "IFFont"

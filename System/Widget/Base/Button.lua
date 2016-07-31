@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.Button", version) then
 end
 
 __Doc__[[Button is the primary means for users to control the game and their characters.]]
+__AutoProperty__()
 class "Button"
 	inherit "Frame"
 
@@ -378,5 +379,4 @@ class "Button"
 		end
 	end )
 	property "HighlightLocked" { Field = true, Type = Boolean }
-
 endclass "Button"

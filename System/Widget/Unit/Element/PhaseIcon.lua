@@ -14,28 +14,12 @@ class "PhaseIcon"
 	extend "IFPhase"
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	function Refresh(self)
-		self.Visible = not UnitInPhase(self.Unit)
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function PhaseIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
 		self.TexturePath = [[Interface\TargetingFrame\UI-PhasingIcon]]
-
 		self.Height = 16
 		self.Width = 16
 	end

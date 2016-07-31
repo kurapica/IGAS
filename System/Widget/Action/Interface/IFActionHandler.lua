@@ -72,6 +72,7 @@ end
 --
 ------------------------------------------------------
 __Doc__[[Interface for action type handlers]]
+__AutoProperty__()
 interface "IFActionTypeHandler"
 
 	_RegisterSnippetTemplate = "%s[%q] = %q"
@@ -401,7 +402,8 @@ endinterface "IFActionTypeHandler"
 --
 ------------------------------------------------------
 __Doc__[[The handler for each action types]]
-__Cache__() class "ActionTypeHandler"
+__Cache__() __AutoProperty__()
+class "ActionTypeHandler"
 	extend "IFActionTypeHandler"
 
 	------------------------------------------------------
@@ -420,6 +422,7 @@ endclass "ActionTypeHandler"
 -- ActionList
 --
 ------------------------------------------------------
+__AutoProperty__()
 class "ActionList"
 	import "System.Collections"
 	extend "IList"
@@ -1450,6 +1453,7 @@ do
 end
 
 __Doc__[[IFActionHandler is used to manage action buttons]]
+__AutoProperty__()
 interface "IFActionHandler"
 	extend "IFSecureHandler" "IFCooldown"
 	require "CheckButton"

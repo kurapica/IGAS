@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFConnect", version) then
 	return
 end
@@ -22,11 +22,7 @@ function _IFConnectUnitList:OnUnitListChanged()
 end
 
 function _IFConnectUnitList:ParseEvent(event, unit)
-	if not _IFConnectUnitList:HasUnit(unit) then
-		return
-	end
-
-	if event == "UNIT_CONNECTION" then
+	if _IFConnectUnitList:HasUnit(unit) then
 		return UpdateConnectState(unit)
 	end
 end
@@ -38,9 +34,11 @@ function _IFConnectTimer:OnTimer()
 end
 
 function UpdateConnectState(unit)
-	if UnitExists(unit) then
-		_IFConnectUnitList:EachK(unit, "Connected", UnitIsConnected(unit) or false)
-	end
+	_IFConnectUnitList:EachK(unit, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	self:SetConnectState(not self.Unit or UnitIsConnected(self.Unit))
 end
 
 __Doc__[[IFConnect is used to check whether the unit is connected]]
@@ -48,33 +46,23 @@ interface "IFConnect"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-	__Doc__[[Fired when the unit's connecting state is changed]]
-	event "OnStateChanged"
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		if self.Unit then
-			self.Connected = UnitIsConnected(self.Unit)
-		end
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[which used to receive the check result for whether the unit is connected]]
-	__Optional__() property "Connected" { Type = Boolean }
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFConnectUnitList[self] = self.Unit
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the connect state to the element, overridable]]
+	__Optional__() function SetConnectState(self, connected)
+		self.Visible = not connected
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -88,5 +76,6 @@ interface "IFConnect"
 	------------------------------------------------------
 	function IFConnect(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFConnect"

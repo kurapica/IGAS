@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Path", version) then
 end
 
 __Doc__[[Path is an Animation type that  combines multiple transitions into a single control path with multiple ControlPoints.]]
+__AutoProperty__()
 class "Path"
 	inherit "Animation"
 
@@ -79,10 +80,10 @@ class "Path"
 	------------------------------------------------------
 	__Doc__[[The curveType of the given path]]
 	property "Curve" { Type = AnimCurveType }
-
 endclass "Path"
 
 __Doc__[[A special type of UIObject that represent a point in a Path Animation.]]
+__AutoProperty__()
 class "ControlPoint"
 	inherit "UIObject"
 
@@ -144,5 +145,4 @@ class "ControlPoint"
 
 	__Doc__[[Position at which the animation will play relative to others in its group (between 0 and 100)]]
 	property "Order" { Type = Number }
-
 endclass "ControlPoint"

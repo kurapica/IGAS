@@ -16,23 +16,19 @@ function _IFClassificationUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
+function _IFClassificationUnitList:ParseEvent(event, unit)
+	if self:HasUnit(unit) then
+		self:EachK(unit, OnForceRefresh)
+	end
+end
+
+function OnForceRefresh(self)
+	self:SetClassification(self.Unit and UnitClassification(self.Unit))
+end
+
 __Doc__[[IFClassification is used to check whether the unit's classification, the default refresh method is used to check if the unit is a quest boss]]
 interface "IFClassification"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		self.Visible = self.Unit and UnitIsQuestBoss(self.Unit)
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[which used to receive the check result]]
-	property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -40,6 +36,16 @@ interface "IFClassification"
 	local function OnUnitChanged(self)
 		_IFClassificationUnitList[self] = self.Unit
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the classification to the element, overridable]]
+	__Optional__() function SetClassification(self, classification) end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -53,12 +59,6 @@ interface "IFClassification"
 	------------------------------------------------------
 	function IFClassification(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\TargetingFrame\PortraitQuestBadge]]
-			end
-		end
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFClassification"

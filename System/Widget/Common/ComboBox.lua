@@ -20,6 +20,7 @@ if not IGAS:NewAddon("IGAS.Widget.ComboBox", version) then
 end
 
 __Doc__[[ComboBox is using for choosing one item from a list]]
+__AutoProperty__()
 class "ComboBox"
 	inherit "Frame"
 

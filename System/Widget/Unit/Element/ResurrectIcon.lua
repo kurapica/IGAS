@@ -19,6 +19,7 @@ class "ResurrectIcon"
 	function ResurrectIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\RaidFrame\Raid-Icon-Rez]]
 		self.Height = 16
 		self.Width = 16
 	end

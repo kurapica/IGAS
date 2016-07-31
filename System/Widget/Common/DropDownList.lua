@@ -26,6 +26,7 @@ __Doc__[[
 		end
 	</usage>
 ]]
+__AutoProperty__()
 class "DropDownList"
 	inherit "VirtualUIObject"
 
@@ -61,6 +62,7 @@ class "DropDownList"
 	end
 
 	__Doc__[[DropDownMenuButton is used to create menu buttons to the DropDownList]]
+	__AutoProperty__()
 	class "DropDownMenuButton"
 		inherit "Button"
 

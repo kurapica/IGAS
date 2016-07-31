@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.DataGrid", version) then
 end
 
 __Doc__[[DataGrid is used to display data settings. Beta version]]
+__AutoProperty__()
 class "DataGrid"
 	inherit "Frame"
 
@@ -112,6 +113,7 @@ class "DataGrid"
 	-- Column
 	------------------------------------
 	__Doc__[[Column object using in the DataGrid]]
+	__AutoProperty__()
 	class "Column"
 		inherit "Button"
 
@@ -366,6 +368,7 @@ class "DataGrid"
 		<desc>Column accessor</desc>
 		<usage>object.Columns(startColumn, endColumn).CellType = "number"</usage>
 	]]
+	__AutoProperty__()
 	class "Columns"
 		inherit "VirtualUIObject"
 
@@ -543,6 +546,7 @@ class "DataGrid"
 	-- Cell
 	------------------------------------
 	__Doc__[[Cell object in the DataGrid]]
+	__AutoProperty__()
 	class "Cell"
 		inherit "VirtualUIObject"
 
@@ -772,6 +776,7 @@ class "DataGrid"
 			object.Cells(row, column).CellType = "number"
 		</usage>
 	]]
+	__AutoProperty__()
 	class "Cells"
 		inherit "VirtualUIObject"
 

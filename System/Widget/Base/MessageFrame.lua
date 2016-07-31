@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.MessageFrame", version) then
 end
 
 __Doc__[[MessageFrames are used to present series of messages or other lines of text, usually stacked on top of each other.]]
+__AutoProperty__()
 class "MessageFrame"
 	inherit "Frame"
 	extend "IFFont"
@@ -109,5 +110,4 @@ class "MessageFrame"
 
 	__Doc__[[the position at which new messages are added to the frame]]
 	property "InsertMode" { Type = InsertMode }
-
 endclass "MessageFrame"

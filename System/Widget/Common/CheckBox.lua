@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.CheckBox", version) then
 end
 
 __Doc__[[CheckBox is a widget type using for boolean selection with a label]]
+__AutoProperty__()
 class "CheckBox"
 	inherit "Button"
 

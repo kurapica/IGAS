@@ -65,6 +65,7 @@ function _Action_AutoCastShine:OnUpdate(elapsed)
 end
 
 __Doc__[[Animation for auto cast action button]]
+__AutoProperty__()
 class "AutoCastShine"
 	inherit "Frame"
 

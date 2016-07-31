@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.MinimapIcon", version) then
 end
 
 __Doc__[[MinimapIcon is used to add icon to minimap]]
+__AutoProperty__()
 class "MinimapIcon"
 	inherit "VirtualUIObject"
 

@@ -15,6 +15,7 @@ __Doc__[[
 	You can also change how the elapsed time corresponds to the progress by changing the smoothing, which creates acceleration or deceleration, or by adding a delay to the beginning or end of the animation.
 	You can also use an Animation as a timer, by setting the Animation's OnFinished script to trigger a callback and setting the duration to the desired time.
 ]]
+__AutoProperty__()
 class "Animation"
 	inherit "UIObject"
 
@@ -275,5 +276,4 @@ class "Animation"
 			end
 		end,
 	}
-
 endclass "Animation"

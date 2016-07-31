@@ -24,7 +24,11 @@ function _IFPortraitUnitList:ParseEvent(event, unit)
 		unit = "party"..unit
 	end
 
-	self:EachK(unit, "Refresh", event == "UNIT_MODEL_CHANGED")
+	return self:EachK(unit, OnForceRefresh, event == "UNIT_MODEL_CHANGED")
+end
+
+function OnForceRefresh(self, force)
+	self:UpdatePortrait(force)
 end
 
 __Doc__[[IFPortrait is used to handle the unit's portrait updating]]
@@ -38,8 +42,8 @@ interface "IFPortrait"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self, force)
+	__Doc__[[Update the portrait, overridable]]
+	__Optional__() function UpdatePortrait(self, force)
 		if self:IsClass(PlayerModel) then
 			local unit = self.Unit
 			local guid = unit and UnitGUID(unit) or nil
@@ -86,5 +90,6 @@ interface "IFPortrait"
 	------------------------------------------------------
 	function IFPortrait(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFPortrait"

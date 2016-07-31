@@ -12,7 +12,7 @@ if not IGAS:NewAddon("IGAS.Widget.UIObject", version) then
 end
 
 __Doc__[[UIObject is the base ui elemenet type]]
-__InitTable__()
+__InitTable__() __AutoProperty__()
 class "UIObject"
 	inherit "Object"
 

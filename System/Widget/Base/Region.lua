@@ -12,6 +12,7 @@ if not IGAS:NewAddon("IGAS.Widget.Region", version) then
 end
 
 __Doc__[[Region is the basic type for anything that can occupy an area of the screen. As such, Frames, Textures and FontStrings are all various kinds of Region. Region provides most of the functions that support size, position and anchoring, including animation. It is a "real virtual" type; it cannot be instantiated, but objects can return true when asked if they are Regions.]]
+__AutoProperty__()
 class "Region"
 	inherit "UIObject"
 

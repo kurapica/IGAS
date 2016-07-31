@@ -18,7 +18,15 @@ function _IFTargetUnitList:OnUnitListChanged()
 end
 
 function _IFTargetUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	if self.Unit then
+		self:SetTargetState(UnitIsUnit(self.Unit, 'target'))
+	else
+		self:SetTargetState(false)
+	end
 end
 
 __Doc__[[IFTarget is used to check whether the unit is the target]]
@@ -26,17 +34,21 @@ interface "IFTarget"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFTargetUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		self.IsTarget = self.Unit and UnitExists('target') and UnitIsUnit(self.Unit, 'target')
-	end
+	__Doc__[[Set the target state to the element, overridable]]
+	__Optional__() function SetTargetState(self, isTarget) end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[which used to receive the check result]]
-	__Optional__() property "IsTarget" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -49,6 +61,7 @@ interface "IFTarget"
 	-- Initializer
 	------------------------------------------------------
 	function IFTarget(self)
-		_IFTargetUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFTarget"

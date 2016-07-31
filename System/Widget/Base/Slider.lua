@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Slider", version) then
 end
 
 __Doc__[[Sliders are elements intended to display or allow the user to choose a value in a range.]]
+__AutoProperty__()
 class "Slider"
 	inherit "Frame"
 
@@ -174,5 +175,4 @@ class "Slider"
 		end,
 		Type = MinMax,
 	}
-
 endclass "Slider"

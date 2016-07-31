@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.SplitLayoutPanel", version) then
 end
 
 __Doc__[[Add split line between dock elements]]
+__AutoProperty__()
 class "SplitLayoutPanel"
 	inherit "DockLayoutPanel"
 

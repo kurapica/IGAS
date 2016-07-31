@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.RaidRosterIcon", version) then
 	return
 end
@@ -16,20 +16,13 @@ class "RaidRosterIcon"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	------------------------------------
-	--- Refresh the element
-	-- -- ------------------------------------
-	function Refresh(self)
-		if IsInRaid() and self.Unit and not UnitHasVehicleUI(self.Unit) then
-			if GetPartyAssignment('MAINTANK', self.Unit) then
-				self.Visible = true
-				self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]]
-			elseif GetPartyAssignment('MAINASSIST', self.Unit) then
-				self.Visible = true
-				self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]]
-			else
-				self.Visible = false
-			end
+	function SetPartyAssignment(self, assignment)
+		if assignment == "MAINTANK" then
+			self.Visible = true
+			self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINTANKICON]]
+		elseif assignment == "MAINASSIST" then
+			self.Visible = true
+			self.TexturePath = [[Interface\GROUPFRAME\UI-GROUP-MAINASSISTICON]]
 		else
 			self.Visible = false
 		end

@@ -10,7 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Font", version) then
 end
 
 __Doc__[[The Font object is to be shared between other objects that share font characteristics.]]
-__InitTable__()
+__InitTable__() __AutoProperty__()
 class "Font"
 	inherit "Object"
 
@@ -340,5 +340,4 @@ class "Font"
 
 	__Doc__[[whether long lines of text are indented when wrapping]]
 	property "IndentedWordWrap" { Type = Boolean }
-
 endclass "Font"

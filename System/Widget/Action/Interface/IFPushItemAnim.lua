@@ -11,8 +11,10 @@ end
 _BagMap = {}
 
 __Doc__[[IFPushItemAnim is used to provide the animation that push item into a bag.]]
+__AutoProperty__()
 interface "IFPushItemAnim"
 
+	__AutoProperty__()
 	class "PushItemAnim"
 		inherit "Frame"
 

@@ -21,6 +21,7 @@ if not IGAS:NewAddon("IGAS.Widget.TabGroup", version) then
 	return
 end
 
+__AutoProperty__()
 class "TabGroup"
 	inherit "Frame"
 
@@ -36,6 +37,7 @@ class "TabGroup"
 	-- @field Text the text that displayed on the TabButton
 	-- @field Container the Container binded to the TabButton
 	---------------------------------------------------------------------------------------------------------------------------------------
+    __AutoProperty__()
     class "TabButton"
 		inherit "Button"
 

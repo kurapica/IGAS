@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.StackLayoutPanel", version) then
 end
 
 __Doc__[[Auto stack elements into the layout panel]]
+__AutoProperty__()
 class "StackLayoutPanel"
 	inherit "LayoutPanel"
 

@@ -9,9 +9,6 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFStagger", version) then
 end
 
 _IFStaggerUnitList = _IFStaggerUnitList or UnitList(_Name)
-_IFStaggerUnitMaxHealthCache = _IFStaggerUnitMaxHealthCache or {}
-
-_MinMax = MinMax(0, 1)
 
 SPEC_MONK_BREWMASTER = _G.SPEC_MONK_BREWMASTER
 
@@ -26,22 +23,13 @@ end
 function _IFStaggerUnitList:ParseEvent(event, unit)
 	if unit and unit ~= "player" then return end
 
-	if event == "UNIT_HEALTH_FREQUENT" then
-		_MinMax.max = UnitHealthMax(unit)
-		if _IFStaggerUnitMaxHealthCache[unit] ~= _MinMax.max then
-			_IFStaggerUnitMaxHealthCache[unit] = _MinMax.max
-			self:EachK(unit, "MinMaxValue", _MinMax)
-		end
-
-		self:EachK(unit, "Value", UnitStagger(unit) or 0)
-	elseif event == "UNIT_MAXHEALTH" then
-		_MinMax.max = UnitHealthMax(unit)
-		_IFStaggerUnitMaxHealthCache[unit] = _MinMax.max
-		self:EachK(unit, "MinMaxValue", _MinMax)
-
-		self:EachK(unit, "Value", UnitStagger(unit) or 0)
-	elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+	if event == "PLAYER_SPECIALIZATION_CHANGED" then
 		UpdateCondition(self)
+	else
+		local stagger, max = UnitStagger("player", SPELL_POWER_MANA) or 0, UnitHealthMax("player")
+		for obj in self:GetIterator("player") do
+			obj:SetUnitStagger(stagger, max)
+		end
 	end
 end
 
@@ -50,12 +38,20 @@ function UpdateCondition(self)
 	if SPEC_MONK_BREWMASTER == GetSpecialization() then
 		self:RegisterEvent("UNIT_MAXHEALTH")
 		self:RegisterEvent("UNIT_HEALTH_FREQUENT")
-		self:EachK("player", "Visible", true)
-		self:EachK("player", "Refresh")
 	else
 		self:UnregisterEvent("UNIT_MAXHEALTH")
 		self:UnregisterEvent("UNIT_HEALTH_FREQUENT")
-		self:EachK("player", "Visible", false)
+	end
+	self:EachK("player", OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	if SPEC_MONK_BREWMASTER == GetSpecialization() then
+		self:SetStaggerVisible(true)
+
+		self:SetUnitStagger(UnitStagger("player") or 0, UnitHealthMax("player"))
+	else
+		self:SetStaggerVisible(false)
 	end
 end
 
@@ -66,30 +62,16 @@ interface "IFStagger"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit == "player" and select(2, UnitClass("player")) == "MONK" and SPEC_MONK_BREWMASTER == GetSpecialization() then
-			_MinMax.max = UnitHealthMax("player")
-			if _MinMax.max == 0 then _MinMax.max = 100 end -- Keep safe
-			self.MinMaxValue = _MinMax
-			self.Value = UnitStagger("player") or 0
-			self.Visible = true
-		else
-			self.Value = 0
-			self.Visible = false
-		end
+	__Doc__[[Set the unit stagger & max health to the element, overridable]]
+	__Optional__() function SetUnitStagger(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[used to receive the stagger's value]]
-	__Optional__() property "Value" { Type = Number }
-
-	__Doc__[[used to receive the result whether should show the stagger value]]
-	__Optional__() property "Visible" { Type = Boolean }
+	__Doc__[[Whether show or hide the stargger bar]]
+	__Optional__() function SetStaggerVisible(self, show)
+		self.Visible = show
+	end
 
 	------------------------------------------------------
 	-- Event Handler
@@ -115,9 +97,9 @@ interface "IFStagger"
 	function IFStagger(self)
 		if select(2, UnitClass("player")) == "MONK" then
 			self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-			self.MouseEnabled = false
+			self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 		else
-			self.Visible = false
+			self:SetStaggerVisible(false)
 		end
 	end
 endinterface "IFStagger"

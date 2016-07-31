@@ -16,10 +16,7 @@
 	<Script file="Interface\IFClassification.lua"/>
 	<Script file="Interface\IFClassPower.lua"/>
 	<Script file="Interface\IFCombat.lua"/>
-	<!--Script file="Interface\IFComboPoint.lua"/-->
 	<Script file="Interface\IFConnect.lua"/>
-	<Script file="Interface\IFDebuffState.lua"/>
-	<!--Script file="Interface\IFEclipse.lua"/-->
 	<Script file="Interface\IFFaction.lua"/>
 	<Script file="Interface\IFGroupLoot.lua"/>
 	<Script file="Interface\IFGroupRole.lua"/>
@@ -45,6 +42,9 @@
 	<Script file="Interface\IFUnitName.lua"/>
 	<Script file="Interface\IFUnitLevel.lua"/>
 	<Script file="Interface\IFStagger.lua"/>
+	<!-- Script file="Interface\IFComboPoint.lua"/>
+	<Script file="Interface\IFDebuffState.lua"/>
+	<Script file="Interface\IFEclipse.lua"/ -->
 
 	<!-- Elements -->
 	<Script file="Element\AlternatePowerBar.lua"/>

@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.PopupDialog", version) then
 end
 
 __Doc__[[PopupDialog is using to show message and apply some operations like, confirm, cancel.]]
+__AutoProperty__()
 class "PopupDialog"
 	inherit "Frame"
 

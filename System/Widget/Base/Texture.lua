@@ -14,6 +14,7 @@ end
 _SetPortraitTexture = SetPortraitTexture
 
 __Doc__[[Texture is used to display pic or color]]
+ __AutoProperty__()
 class "Texture"
 	inherit "LayeredRegion"
 
@@ -518,5 +519,4 @@ class "Texture"
 
 	__Doc__[[whether the texture object loads its image file in the background]]
 	property "NonBlocking" { Type = Boolean }
-
 endclass "Texture"

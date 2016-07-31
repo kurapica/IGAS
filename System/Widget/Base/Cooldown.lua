@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Cooldown", version) then
 end
 
 __Doc__[[Cooldown is a specialized variety of Frame that displays the little "clock" effect over abilities and buffs. It can be set with its running time, whether it should appear to "fill up" or "empty out", and whether or not there should be a bright edge where it's changing between dim and bright.]]
+__AutoProperty__()
 class "Cooldown"
 	inherit "Frame"
 
@@ -61,5 +62,4 @@ class "Cooldown"
 	------------------------------------------------------
 	__Doc__[[true if the cooldown animation "sweeps" an area of darkness over the underlying image; false if the animation darkens the underlying image and "sweeps" the darkened area away]]
 	property "Reverse" { Type = Boolean }
-
 endclass "Cooldown"

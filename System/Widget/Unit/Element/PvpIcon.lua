@@ -13,13 +13,10 @@ class "PvpIcon"
 	inherit "Texture"
 	extend "IFFaction"
 
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
 	------------------------------------
 	--- Refresh the element
 	-- -- ------------------------------------
-	function Refresh(self)
+	function UpdateFaction(self)
 		local unit = self.Unit
 		if unit and UnitIsPVPFreeForAll(unit) then
 			self.TexturePath = [[Interface\TargetingFrame\UI-PVP-FFA]]

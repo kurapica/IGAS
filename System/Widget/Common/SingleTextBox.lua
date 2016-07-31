@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.SingleTextBox", version) then
 end
 
 __Doc__[[SingleTextBox is a widget type using to contain one line text]]
+__AutoProperty__()
 class "SingleTextBox"
 	inherit "EditBox"
 

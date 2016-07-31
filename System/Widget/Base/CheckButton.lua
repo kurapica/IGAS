@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.CheckButton", version) then
 end
 
 __Doc__[[CheckButtons are a specialized form of Button; they maintain an on/off state, which toggles automatically when they are clicked, and additional textures for when they are checked, or checked while disabled.]]
+__AutoProperty__()
 class "CheckButton"
 	inherit "Button"
 
@@ -107,5 +108,4 @@ class "CheckButton"
 		end,
 		Type = String,
 	}
-
 endclass "CheckButton"

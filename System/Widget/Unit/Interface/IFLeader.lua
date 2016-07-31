@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFLeader", version) then
 	return
 end
@@ -19,7 +19,12 @@ function _IFLeaderUnitList:OnUnitListChanged()
 end
 
 function _IFLeaderUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	local unit = self.Unit
+	self:SetLeader(unit and (UnitInParty(unit) or UnitInRaid(unit)) and UnitIsGroupLeader(unit))
 end
 
 __Doc__[[IFLeader is used to handle the unit leader state's updating]]
@@ -27,18 +32,23 @@ interface "IFLeader"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFLeaderUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		local unit = self.Unit
-		self.Visible = unit and (UnitInParty(unit) or UnitInRaid(unit)) and UnitIsGroupLeader(unit)
+	__Doc__[[Set the leader state to the element, overridable]]
+	__Optional__() function SetLeader(self, isLeader)
+		self.Visible = isLeader
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[used to receive the result that whether the leader indicator should be shown]]
-	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -51,13 +61,7 @@ interface "IFLeader"
 	-- Initializer
 	------------------------------------------------------
 	function IFLeader(self)
-		_IFLeaderUnitList[self] = _All
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\GroupFrame\UI-Group-LeaderIcon]]
-			end
-		end
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFLeader"

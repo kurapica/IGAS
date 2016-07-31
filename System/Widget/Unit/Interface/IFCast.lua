@@ -42,6 +42,21 @@ function _IFCastUnitList:ParseEvent(event, unit, ...)
 	self:EachK(unit, _IFCast_EVENT_HANDLER[event], ...)
 end
 
+function OnForceRefresh(self)
+	if self.Unit then
+		if UnitCastingInfo(self.Unit) then
+			local name, subText, _, _, _, _, _, castID, notInterruptible = UnitCastingInfo(self.Unit)
+			self:Start(name, subText, castID)
+		elseif UnitChannelInfo(self.Unit) then
+			self:ChannelStart()
+		else
+			self:Stop()
+		end
+	else
+		self:Stop()
+	end
+end
+
 __Doc__[[IFCast is used to handle the unit's spell casting]]
 interface "IFCast"
 	extend "IFUnitElement"
@@ -49,22 +64,6 @@ interface "IFCast"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			if UnitCastingInfo(self.Unit) then
-				local name, subText, _, _, _, _, _, castID, notInterruptible = UnitCastingInfo(self.Unit)
-				self:Start(name, subText, castID)
-				return
-			elseif UnitChannelInfo(self.Unit) then
-				return self:ChannelStart()
-			else
-				return self:Stop()
-			end
-		else
-			return self:Stop()
-		end
-	end
-
 	__Doc__[[
 		<desc>Be called when unit begins casting a spell</desc>
 		<param name="spell">string, the name of the spell that's being casted</param>
@@ -182,5 +181,6 @@ interface "IFCast"
 	------------------------------------------------------
 	function IFCast(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFCast"

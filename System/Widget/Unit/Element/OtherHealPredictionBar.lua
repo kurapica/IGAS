@@ -57,6 +57,7 @@ class "OtherHealPredictionBar"
     function OtherHealPredictionBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.MouseEnabled = false
 		self.StatusBarTexturePath = [[Interface\Tooltips\UI-Tooltip-Background]]
 		self.StatusBarColor = ColorType(0, 0.631, 0.557)
     end

@@ -20,6 +20,7 @@ __Doc__[[
 	To draw a blob onto the frame use the DrawBlob function. This will draw a polygon representing the specified digsite. It seems that it's only possible to draw digsites where you can dig and is on the current map.
 	Changes to how the blobs should render will only affect newly drawn blobs. That means that if you want to change the opacity of a blob you must first clear all blobs using the DrawNone function and then redraw the blobs.
 ]]
+__AutoProperty__()
 class "ArchaeologyDigSiteFrame"
 	inherit "Frame"
 

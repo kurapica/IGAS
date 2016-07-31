@@ -27,11 +27,25 @@ enum "Role" {
 }
 
 enum "PowerType" {
-	["0"] = "Mana",
-	["1"] = "Rage",
-	["2"] = "Focus",
-	["3"] = "Energy",
-	["4"] = "Runic Power",
+	[0] = "MANA",
+	[1] = "RAGE",
+	[2] = "FOCUS",
+	[3] = "ENERGY",
+	[4] = "COMBO_POINTS",
+	[5] = "RUNES",
+	[6] = "RUNIC_POWER",
+	[7] = "SOUL_SHARDS",
+	[8] = "LUNAR_POWER",
+	[9] = "HOLY_POWER",
+	[10] = "ALTERNATE_POWER",
+	[11] = "MAELSTROM",
+	[12] = "CHI",
+	[13] = "INSANITY",
+	[14] = "OBSOLETE",
+	[15] = "OBSOLETE2",
+	[16] = "ARCANE_CHARGES",
+	[17] = "FURY",
+	[18] = "PAIN",
 }
 
 enum "Reaction" {
@@ -54,20 +68,22 @@ enum "Gender" {
 __Doc__[[IFUnitElement is the root interface for the unit system, contains several useful definitions]]
 interface "IFUnitElement"
 
+	local fireEvent = System.Reflector.FireObjectEvent
+
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Fired when the object's unit is changed]]
 	event "OnUnitChanged"
 
+	__Doc__[[Fired when the object's forced to refresh]]
+	event "OnForceRefresh"
+
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[Refresh the element, overridable]]
-	__Optional__()
-	function Refresh(self)
-		-- need override
-	end
+	__Doc__[[Force to refresh the element]]
+	function Refresh(self, ...) return fireEvent(self, "OnForceRefresh", ...) end
 
 	__Doc__[[Activate the unit element]]
 	function Activate(self)

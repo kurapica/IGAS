@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.QuestPOIFrame", version) then
 	return
 end
 
+__AutoProperty__()
 class "QuestPOIFrame"
 	inherit "Frame"
 

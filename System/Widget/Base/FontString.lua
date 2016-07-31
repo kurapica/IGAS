@@ -12,6 +12,7 @@ if not IGAS:NewAddon("IGAS.Widget.FontString", version) then
 end
 
 __Doc__[[ FontStrings are one of the two types of Region that is visible on the screen. It draws a block of text on the screen using the characteristics in an associated FontObject.]]
+__AutoProperty__()
 class "FontString"
 	inherit "LayeredRegion"
 	extend "IFFont"
@@ -132,5 +133,4 @@ class "FontString"
 
 	__Doc__[[the text to be displayed in the font string]]
 	property "Text" { Type = LocaleString }
-
 endclass "FontString"

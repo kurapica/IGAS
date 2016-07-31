@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.PlayerModel", version) then
 end
 
 __Doc__[[PlayerModels are the most commonly used subtype of Model frame. They expand on the Model type by adding functions to quickly set the model to represent a particular player or creature, by unitID or creature ID.]]
+__AutoProperty__()
 class "PlayerModel"
 	inherit "Model"
 

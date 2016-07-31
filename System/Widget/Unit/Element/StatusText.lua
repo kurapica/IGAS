@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.StatusText", version) then
 end
 
 __Doc__[[The fontstring used to display status value]]
+__AutoProperty__()
 class "StatusText"
 	inherit "FontString"
 

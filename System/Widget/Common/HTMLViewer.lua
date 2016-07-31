@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.HTMLViewer", version) then
 end
 
 __Doc__[[HTMLViewer is used to view simple html]]
+__AutoProperty__()
 class "HTMLViewer"
 	inherit "ScrollForm"
 

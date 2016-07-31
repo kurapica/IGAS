@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.CinematicModel", version) then
 	return
 end
 
+__AutoProperty__()
 class "CinematicModel"
 	inherit "PlayerModel"
 

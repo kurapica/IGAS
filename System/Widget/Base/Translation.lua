@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Translation", version) then
 end
 
 __Doc__[[Translation is an Animation type that applies an affine translation to its affected region automatically as it progresses.]]
+__AutoProperty__()
 class "Translation"
 	inherit "Animation"
 

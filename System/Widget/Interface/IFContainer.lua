@@ -10,6 +10,7 @@ end
 import "System.Collections"
 
 __Doc__[[IFContainer is used to provide a layout panel to contain ui elements for the ui objects]]
+__AutoProperty__()
 interface "IFContainer"
 	extend "IList"
 

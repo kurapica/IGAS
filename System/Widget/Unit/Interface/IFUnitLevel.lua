@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFUnitLevel", version) then
 	return
 end
@@ -20,7 +20,19 @@ function _IFUnitLevelUnitList:OnUnitListChanged()
 end
 
 function _IFUnitLevelUnitList:ParseEvent(event, level)
-	self:EachK(_All, "Refresh", event == "PLAYER_LEVEL_UP" and level or nil)
+	self:EachK(_All, OnForceRefresh, event == "PLAYER_LEVEL_UP" and level or nil)
+end
+
+function OnForceRefresh(self, playerLevel)
+	if self.Unit then
+		if self.Unit == "player" and playerLevel then
+			self:SetUnitLevel(playerLevel)
+		else
+			self:SetUnitLevel(UnitLevel(self.Unit))
+		end
+	else
+		self:SetUnitLevel(nil)
+	end
 end
 
 __Doc__[[IFUnitLevel is used to handle the unit level's update]]
@@ -28,27 +40,23 @@ interface "IFUnitLevel"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFUnitLevelUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self, playerLevel)
-		if self.Unit then
-			local lvl = UnitLevel(self.Unit)
-
-			if self.Unit == "player" and playerLevel then
-				lvl = playerLevel
-			end
-
-			self.Value = lvl
-		else
-			self.Value = nil
-		end
+	__Doc__[[Set the unit level to the element, overridable]]
+	__Optional__() function SetUnitLevel(self, lvl)
+		self:SetText(lvl or "???")
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[which used to receive the unit's level]]
-	__Optional__() property "Value" { Type = NumberNil }
 
 	------------------------------------------------------
 	-- Dispose
@@ -61,6 +69,7 @@ interface "IFUnitLevel"
 	-- Initializer
 	------------------------------------------------------
 	function IFUnitLevel(self)
-		_IFUnitLevelUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFUnitLevel"

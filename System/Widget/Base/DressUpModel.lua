@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.DressUpModel", version) then
 end
 
 __Doc__[[The DressUpModel type was added to provide support for the "dressing room" functionality when it was introduced. This model can be set to a particular unit, and then given different pieces of gear to display on that unit with the TryOn function. It also provides an Undress feature which can be used to view how your character's gear will look without concealing articles such as a cloak or tabard that you might be wearing.]]
+__AutoProperty__()
 class "DressUpModel"
 	inherit "PlayerModel"
 

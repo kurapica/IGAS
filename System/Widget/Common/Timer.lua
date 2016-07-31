@@ -27,6 +27,7 @@ function RefreshTimer(self)
 end
 
 __Doc__[[Timer is used to fire an event on a specified interval]]
+__AutoProperty__()
 class "Timer"
 	inherit "VirtualUIObject"
 

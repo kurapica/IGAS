@@ -11,7 +11,7 @@ end
 __Doc__[[The aura panel to display buffs or debuffs]]
 class "AuraPanel"
 	inherit "Frame"
-	extend "IFElementPanel""IFAura"
+	extend "IFElementPanel" "IFAura"
 
 	_FILTER_LIST = {
 		CANCELABLE = true,
@@ -192,13 +192,9 @@ class "AuraPanel"
 	endclass "AuraIcon"
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
+	function UpdateAuras(self)
 		local index = 1
 		local i = 1
 		local name
@@ -264,10 +260,6 @@ class "AuraPanel"
 
 	__Doc__[[Whether should highlight auras that casted by the player]]
 	property "HighLightPlayer" { Type = Boolean }
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Constructor

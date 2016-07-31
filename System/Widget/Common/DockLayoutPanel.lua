@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.DockLayoutPanel", version) then
 end
 
 __Doc__[[DockLayoutPanel is using to contain other widget elements and manager their size &amp; position with the dock settings.]]
+__AutoProperty__()
 class "DockLayoutPanel"
 	inherit "LayoutPanel"
 

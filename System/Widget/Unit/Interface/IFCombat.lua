@@ -3,11 +3,12 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFCombat", version) then
 	return
 end
 
+_All = "all"
 _IFCombatUnitList = _IFCombatUnitList or UnitList(_Name)
 
 function _IFCombatUnitList:OnUnitListChanged()
@@ -18,7 +19,11 @@ function _IFCombatUnitList:OnUnitListChanged()
 end
 
 function _IFCombatUnitList:ParseEvent(event, unit)
-	self:EachK("player", "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	self:SetCombatState(UnitAffectingCombat('player'))
 end
 
 __Doc__[[IFCombat is used to check whether the player is in the combat]]
@@ -26,26 +31,23 @@ interface "IFCombat"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFCombatUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		self.Visible = self.Unit == 'player' and UnitAffectingCombat('player')
+	__Doc__[[Set the combat state to the element, overridable]]
+	__Optional__() function SetCombatState(self, inCombat)
+		self.Visible = inCombat
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[which used to receive the check result]]
-	__Optional__() property "Visible" { Type = Boolean }
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	local function OnUnitChanged(self)
-		_IFCombatUnitList[self] = self.Unit
-		Refresh(self)
-	end
 
 	------------------------------------------------------
 	-- Dispose
@@ -59,13 +61,6 @@ interface "IFCombat"
 	------------------------------------------------------
 	function IFCombat(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\CharacterFrame\UI-StateIcon]]
-				self:SetTexCoord(.5, 1, 0, .49)
-			end
-		end
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFCombat"

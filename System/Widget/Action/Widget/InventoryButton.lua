@@ -9,6 +9,7 @@ if not IGAS:NewAddon("IGAS.Widget.Action.InventoryButton", version) then
 end
 
 __Doc__[[the base inventory button template]]
+__AutoProperty__()
 class "InventoryButton"
 
 endclass "InventoryButton"

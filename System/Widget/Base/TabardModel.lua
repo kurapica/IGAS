@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.TabardModel", version) then
 end
 
 __Doc__[[TabardModel is a frame type provided specifically for designing or modifying guild tabards.]]
+__AutoProperty__()
 class "TabardModel"
 	inherit "PlayerModel"
 

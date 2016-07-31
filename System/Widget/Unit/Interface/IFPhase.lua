@@ -18,7 +18,11 @@ function _IFPhaseUnitList:OnUnitListChanged()
 end
 
 function _IFPhaseUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	self:SetInPhase(self.Unit and UnitInPhase(self.Unit))
 end
 
 __Doc__[[IFPhase is used to check whether the unit is in the same phase with the player]]
@@ -26,17 +30,23 @@ interface "IFPhase"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFUnitNameUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		self.Visible = self.Unit and UnitInPhase(self.Unit)
+	__Doc__[[Set the phase state to the element, overridable]]
+	__Optional__() function SetInPhase(self, inPhase)
+		self.Visible = inPhase
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[used to receive the result that whether the unit is in the same phase with the player]]
-	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -49,13 +59,7 @@ interface "IFPhase"
 	-- Initializer
 	------------------------------------------------------
 	function IFPhase(self)
-		_IFPhaseUnitList[self] = _All
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\TargetingFrame\UI-PhasingIcon]]
-			end
-		end
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFPhase"

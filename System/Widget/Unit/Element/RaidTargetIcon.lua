@@ -14,11 +14,24 @@ class "RaidTargetIcon"
 	extend "IFRaidTarget"
 
 	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	function SetRaidTarget(self, index)
+		if index then
+			SetRaidTargetIconTexture(self, index)
+			self.Visible = true
+		else
+			self.Visible = false
+		end
+	end
+
+	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function RaidTargetIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\TargetingFrame\UI-RaidTargetingIcons]]
 		self.Height = 16
 		self.Width = 16
 	end

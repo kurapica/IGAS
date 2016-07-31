@@ -16,6 +16,16 @@ function _IFAuraUnitList:OnUnitListChanged()
 	self.OnUnitListChanged = nil
 end
 
+function _IFAuraUnitList:ParseEvent(event, unit)
+	if unit and self:HasUnit(unit) then
+		self:EachK(unit, OnForceRefresh)
+	end
+end
+
+function OnForceRefresh(self)
+	self:UpdateAuras()
+end
+
 __Doc__[[IFAura is used to handle the unit's aura updating]]
 interface "IFAura"
 	extend "IFUnitElement"
@@ -26,6 +36,12 @@ interface "IFAura"
 	local function OnUnitChanged(self)
 		_IFAuraUnitList[self] = self.Unit
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Update the auras, overridable]]
+	__Optional__() function UpdateAuras(self) end
 
 	------------------------------------------------------
 	-- Dispose
@@ -39,5 +55,6 @@ interface "IFAura"
 	------------------------------------------------------
 	function IFAura(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFAura"

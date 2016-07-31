@@ -15,6 +15,7 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.UnitFrame", version) then
 end
 
 __Doc__[[UnitFrame is used to display information about an unit, and can be used to do the common actions on the unit]]
+__AutoProperty__()
 class "UnitFrame"
 	inherit "Button"
 	extend "IFContainer" "IFSecureHandler"

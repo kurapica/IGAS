@@ -312,6 +312,7 @@ do
 end
 
 __Doc__[[IFKeyBinding is used to manage key bindings]]
+__AutoProperty__()
 interface "IFKeyBinding"
 
 	local function Clear4key(key)

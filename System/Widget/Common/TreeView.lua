@@ -62,6 +62,7 @@ __Doc__[[
 			}
 	</usage>
 ]]
+__AutoProperty__()
 class "TreeView"
 	inherit "Frame"
 
@@ -97,6 +98,7 @@ class "TreeView"
 	end
 
 	__Doc__[[TreeNode is used to store data for tree nodes]]
+	__AutoProperty__()
 	class "TreeNode"
 		inherit "VirtualUIObject"
 

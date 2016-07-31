@@ -19,6 +19,7 @@ class "LeaderIcon"
 	function LeaderIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\GroupFrame\UI-Group-LeaderIcon]]
 		self.Height = 16
 		self.Width = 16
 	end

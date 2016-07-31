@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.IFFont", version) then
 end
 
 __Doc__[[IFFont is the interface for the font frames]]
+__AutoProperty__()
 interface "IFFont"
 
 	------------------------------------------------------

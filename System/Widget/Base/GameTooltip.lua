@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.GameTooltip", version) then
 end
 
 __Doc__[[GameTooltips are used to display explanatory information relevant to a particular element of the game world.]]
+__AutoProperty__()
 class "GameTooltip"
 	inherit "Frame"
 
@@ -643,5 +644,4 @@ class "GameTooltip"
 	------------------------------------------------------
 	__Doc__[[The owner of this gametooltip]]
 	property "Owner" { Type = UIObject }
-
 endclass "GameTooltip"

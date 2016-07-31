@@ -9,15 +9,6 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFResurrect", version) then
 	return
 end
 
--- The resurrect check
-_RESURRECT_CHECKTIME = 2
-_Resurrect_CheckThread = _Resurrect_CheckThread or setmetatable({}, {
-	__index = function (self, unit)
-		rawset(self, unit, Threading.Thread())
-		return rawget(self, unit)
-	end,
-})
-
 _IFResurrectUnitList = _IFResurrectUnitList or UnitList(_Name)
 
 function _IFResurrectUnitList:OnUnitListChanged()
@@ -28,25 +19,18 @@ end
 
 function checkUnitForResurrect(unit)
 	if UnitHasIncomingResurrection(unit) then
-		_IFResurrectUnitList:EachK(unit, "Visible", true)
+		_IFResurrectUnitList:EachK(unit, OnForceRefresh)
 
 		-- Some times the resurrect event don't come when the target select resurrect to the tomb
-		local thread = _Resurrect_CheckThread[unit]
-
-		if thread:IsDead() then
-			thread.Thread = function()
-				while UnitHasIncomingResurrection(unit) do
-					Threading.Sleep(_RESURRECT_CHECKTIME)
-				end
-
-				_IFResurrectUnitList:EachK(unit, "Visible", false)
+		Task.ThreadCall(function()
+			while UnitExists(unit) and UnitHasIncomingResurrection(unit) do
+				Task.Delay(2)
 			end
 
-			-- Start the watcher
-			thread()
-		end
+			return _IFResurrectUnitList:EachK(unit, OnForceRefresh)
+		end)
 	else
-		_IFResurrectUnitList:EachK(unit, "Visible", false)
+		_IFResurrectUnitList:EachK(unit, OnForceRefresh)
 	end
 end
 
@@ -54,22 +38,13 @@ function _IFResurrectUnitList:ParseEvent(event)
 	self:Each(checkUnitForResurrect)
 end
 
+function OnForceRefresh(self)
+	self:SetResurrectState(self.Unit and UnitHasIncomingResurrection(self.Unit))
+end
+
 __Doc__[[IFResurrect is used to handle the unit resurrection state's updating]]
 interface "IFResurrect"
 	extend "IFUnitElement"
-
-	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	function Refresh(self)
-		self.Visible = self.Unit and UnitHasIncomingResurrection(self.Unit)
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the result that whether the resurrection indicator should be shown]]
-	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler
@@ -77,6 +52,18 @@ interface "IFResurrect"
 	local function OnUnitChanged(self)
 		_IFResurrectUnitList[self] = self.Unit
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the resurrect state to the element, overridable]]
+	__Optional__() function SetResurrectState(self, isResurrect)
+		self.Visible = isResurrect
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -90,12 +77,6 @@ interface "IFResurrect"
 	------------------------------------------------------
 	function IFResurrect(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\RaidFrame\Raid-Icon-Rez]]
-			end
-		end
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFResurrect"

@@ -53,29 +53,49 @@ end
 handler = ActionTypeHandler {
 	Name = "mount",
 
-	InitSnippet = [[
-		_MountCastTemplate = "/run if not InCombatLockdown() then if select(4, C_MountJournal.GetMountInfoByID(%d)) then C_MountJournal.Dismiss() else C_MountJournal.SummonByID(%d) end end"
-	]],
-
 	PickupSnippet = "Custom",
 
 	UpdateSnippet = [[
 		local target = ...
 
 		if target then
-			self:SetAttribute("*type*", "macro")
-			self:SetAttribute("*macrotext*", _MountCastTemplate:format(target, target))
+			self:SetAttribute("*type*", "summonmount")
+			Manager:CallMethod("RegisterMount", self:GetName())
 		else
 			self:SetAttribute("*type*", nil)
-			self:SetAttribute("*macrotext*", nil)
+			Manager:CallMethod("UnregisterMount", self:GetName())
 		end
 	]],
 
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)
-		self:SetAttribute("*macrotext*", nil)
+		Manager:CallMethod("UnregisterMount", self:GetName())
 	]],
 }
+
+IGAS:GetUI(handler.Manager).SummonMount = function (self, btnName)
+	local mountID = IGAS:GetWrapper(_G[btnName]).Mount
+
+	if mountID then
+		if select(4, C_MountJournal.GetMountInfoByID(mountID)) then
+			C_MountJournal.Dismiss()
+		else
+			C_MountJournal.SummonByID(mountID)
+		end
+	end
+end
+
+IGAS:GetUI(handler.Manager).RegisterMount = function (self, btnName)
+	Task.NoCombatCall(function()
+		_G[btnName]:SetAttribute("_summonmount", [=[ self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("SummonMount", self:GetName()) ]]) ]=])
+	end)
+end
+
+IGAS:GetUI(handler.Manager).UnregisterMount = function (self, btnName)
+	Task.NoCombatCall(function()
+		_G[btnName]:SetAttribute("_summonmount",  nil)
+	end)
+end
 
 -- Overwrite methods
 function handler:PickupAction(target)
@@ -126,7 +146,8 @@ function handler:SetTooltip(GameTooltip)
 	if target == SUMMON_RANDOM_ID then
 		return GameTooltip:SetSpellByID(SUMMON_RANDOM_FAVORITE_MOUNT_SPELL)
 	else
-		return GameTooltip:SetMountBySpellID(target)
+		local _, spell = C_MountJournal.GetMountInfoByID(target)
+		return GameTooltip:SetMountBySpellID(spell)
 	end
 end
 

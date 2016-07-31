@@ -1757,6 +1757,7 @@ do
 end
 
 __Doc__[[MultiLineTextBox is used as a multi-line text editor.]]
+__AutoProperty__()
 class "MultiLineTextBox"
 	inherit "ScrollForm"
 

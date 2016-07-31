@@ -8,16 +8,12 @@ if not IGAS:NewAddon("IGAS.Widget.Unit.IFRune", version) then
 	return
 end
 
-_All = "all"
 _IFRuneUnitList = _IFRuneUnitList or UnitList(_Name)
 
 SPELL_POWER_RUNES = _G.SPELL_POWER_RUNES
 
-MAX_RUNES = 6
-
 function _IFRuneUnitList:OnUnitListChanged()
 	self:RegisterEvent("RUNE_POWER_UPDATE")
-	self:RegisterEvent("RUNE_TYPE_UPDATE")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("UNIT_MAXPOWER")
 
@@ -25,70 +21,61 @@ function _IFRuneUnitList:OnUnitListChanged()
 end
 
 function _IFRuneUnitList:ParseEvent(event, runeIndex, isEnergize)
-	if event == "RUNE_POWER_UPDATE" and  runeIndex then
-		self:EachK(_All, UpdatePower, runeIndex, isEnergize)
+	if event == "RUNE_POWER_UPDATE" and runeIndex and runeIndex >=1 then
+		local start, duration, ready = GetRuneCooldown(runeIndex)
+
+		for obj in self:GetIterator("player") do
+			obj:SetRuneByIndex(runeIndex, start, duration, ready, isEnergize)
+		end
 	elseif event == "UNIT_MAXPOWER" and runeIndex == "player" then
 		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
-		self:EachK(_All, "Max", max)
-	elseif event == "RUNE_TYPE_UPDATE" and runeIndex then
-		self:EachK(_All, UpdatePowerType, runeIndex)
+		for obj in self:GetIterator("player") do
+			obj:SetMaxRune(max)
+		end
 	elseif event == "PLAYER_ENTERING_WORLD" then
-		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
-		self:EachK(_All, "Max", max)
-		for i = 1, max do
-			self:EachK(_All, UpdatePower, i)
-		end
+		self:EachK("player", OnForceRefresh)
 	end
 end
 
-function UpdatePowerType(self, index)
-	self:Refresh(index)
-end
+function OnForceRefresh(self)
+	local max = UnitPowerMax("player", SPELL_POWER_RUNES)
 
-function UpdatePower(self, index, isEnergize)
-	if self[index] then
-		local start, duration, runeReady = GetRuneCooldown(index)
+	self:SetMaxRune(max)
 
-		if not runeReady then
-			if start then
-				self[index]:Fire("OnCooldownUpdate", start, duration)
-			end
-			self[index].Ready = false
-		else
-			self[index].Ready = true
-		end
-
-		self[index].Energize = isEnergize
+	for i = 1, max do
+		self:SetRuneByIndex(i, GetRuneCooldown(i))
 	end
 end
 
-__Doc__[[
-	<desc>IFRune is used to handle the unit's rune power's updating</desc>
-	<optional name="Visible" type="property" valuetype="boolean">used to receive the check result that whether the rune power should be shown</optional>
-	<usage>
-		For default, the object should has MAX_RUNES elements, each elements should extend System.Widget.IFCooldown and with several properties :
-			Ready property, boolean, whether the rune is Ready
-			Energize property, boolean, whether the rune is energized
-	</usage>
-]]
+__Doc__[[IFRune is used to handle the unit's rune power's updating]]
 interface "IFRune"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self, index)
-		if index then
-			UpdatePower(self, i)
-		else
-			local max = UnitPowerMax("player", SPELL_POWER_RUNES)
-			self.Max = max
-
-			for i = 1, max do
-				UpdatePower(self, i)
+	__Doc__[[Refresh the rune by index]]
+	__Optional__() function SetRuneByIndex(self, index, start, duration, ready, isEnergize)
+		if self[index] then
+			if not ready then
+				if start then
+					self[index]:Fire("OnCooldownUpdate", start, duration)
+				end
+				self[index].Ready = false
+			else
+				self[index].Ready = true
 			end
+
+			self[index].Energize = isEnergize
 		end
+	end
+
+	__Doc__[[Set the max rune count to the element]]
+	__Optional__() function SetMaxRune(self, max) end
+
+	__Doc__[[Whether show or hide the rune bar]]
+	__Optional__() function SetRuneVisible(self, show)
+		self.Visible = show
 	end
 
 	------------------------------------------------------
@@ -100,9 +87,11 @@ interface "IFRune"
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		if self.Unit == "player" then
-			_IFRuneUnitList[self] = _All
+			_IFRuneUnitList[self] = "player"
+			self:SetRuneVisible(true)
 		else
 			_IFRuneUnitList[self] = nil
+			self:SetRuneVisible(false)
 		end
 	end
 
@@ -119,8 +108,9 @@ interface "IFRune"
 	function IFRune(self)
 		if select(2, UnitClass("player")) == "DEATHKNIGHT" then
 			self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+			self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 		else
-			self.Visible = false
+			self:SetRuneVisible(false)
 		end
 	end
 endinterface "IFRune"

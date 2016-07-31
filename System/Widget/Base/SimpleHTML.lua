@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.SimpleHTML", version) then
 end
 
 __Doc__[[The most sophisticated control over text display is offered by SimpleHTML widgets. When its text is set to a string containing valid HTML markup, a SimpleHTML widget will parse the content into its various blocks and sections, and lay the text out. While it supports most common text commands, a SimpleHTML widget accepts an additional argument to most of these; if provided, the element argument will specify the HTML elements to which the new style information should apply, such as formattedText:SetTextColor("h2", 1, 0.3, 0.1) which will cause all level 2 headers to display in red. If no element name is specified, the settings apply to the SimpleHTML widget's default font.]]
+__AutoProperty__()
 class "SimpleHTML"
 	inherit "Frame"
 
@@ -501,5 +502,4 @@ class "SimpleHTML"
 		end,
 		Type = Element
 	}
-
 endclass "SimpleHTML"

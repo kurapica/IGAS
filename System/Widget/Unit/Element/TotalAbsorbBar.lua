@@ -16,6 +16,13 @@ class "TotalAbsorbBar"
 	_TotalAbsorbBarMap = _TotalAbsorbBarMap or setmetatable({}, {__mode = "kv"})
 
 	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	function SetUnitOverAbsorb(self, isOver)
+		self.OverGlow.Visible = isOver
+	end
+
+	------------------------------------------------------
 	-- Script Handler
 	------------------------------------------------------
 	local function OnSizeChanged(self)
@@ -61,14 +68,13 @@ class "TotalAbsorbBar"
 		--Type = StatusBarString,
 	}
 
-	__Handler__( function (self, value) self.OverGlow.Visible = value end )
-	property "OverAbsorb" { }
-
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
     function TotalAbsorbBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
+
+		self.MouseEnabled = false
 
     	local overGlow = Texture("OverGlow", self)
 

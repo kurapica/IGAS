@@ -65,6 +65,7 @@ do
 end
 
 __Doc__[[IFAutoPosition provide a position &amp; size control system for frames.]]
+__AutoProperty__()
 interface "IFAutoPosition"
 
 	------------------------------------------------------

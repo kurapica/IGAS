@@ -17,6 +17,7 @@ if not IGAS:NewAddon("IGAS.Widget.GroupBox", version) then
 	return
 end
 
+__AutoProperty__()
 class "GroupBox"
 	inherit "Frame"
 	extend "IFContainer"

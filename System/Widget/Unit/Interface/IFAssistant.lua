@@ -18,7 +18,12 @@ function _IFAssistantUnitList:OnUnitListChanged()
 end
 
 function _IFAssistantUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	local unit = self.Unit
+	self:SetAssistant(unit and UnitInRaid(unit) and UnitIsGroupAssistant(unit) and not UnitIsGroupLeader(unit))
 end
 
 __Doc__[[IFAssistant is used to check whether the unit is the assistant in the group]]
@@ -26,19 +31,23 @@ interface "IFAssistant"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFAssistantUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		local unit = self.Unit
-		self.Visible = unit and UnitInRaid(unit) and UnitIsGroupAssistant(unit) and not UnitIsGroupLeader(unit)
+	__Doc__[[Set whether the unit is assistant to the element, overridable]]
+	__Optional__() function SetAssistant(self, isAssistant)
+		self.Visible = isAssistant
 	end
 
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[which used to receive the check result]]
-	__Optional__() property "Visible" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -51,13 +60,7 @@ interface "IFAssistant"
 	-- Initializer
 	------------------------------------------------------
 	function IFAssistant(self)
-		_IFAssistantUnitList[self] = _All
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\GroupFrame\UI-Group-AssistantIcon]]
-			end
-		end
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFAssistant"

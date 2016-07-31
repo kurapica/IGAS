@@ -22,7 +22,6 @@ for slot, index in ipairs(PRIORITIES) do
 	SLOT_MAP[index] = slot
 end
 
-_All = "all"
 _IFTotemUnitList = _IFTotemUnitList or UnitList(_Name)
 
 function _IFTotemUnitList:OnUnitListChanged()
@@ -33,49 +32,58 @@ function _IFTotemUnitList:OnUnitListChanged()
 end
 
 function _IFTotemUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK("player", OnForceRefresh)
 end
 
-__Doc__[[
-	<desc>IFTotem is used to handle the unit's totem updating</desc>
-	<usage>
-		For default, the object need contains MAX_TOTEMS elements, these elements should extend from System.Widget.IFCooldown, and with several properties:
-			Icon property, string, used to receive the totem's image file path
-			Slot property, number, used to receive the totem's slot index
-			Visible property, boolean, used to receive the check result for whether should show the totem
-	</usage>
-]]
+function OnForceRefresh(self)
+	for i = 1, MAX_TOTEMS do
+		if SLOT_MAP[i] then
+			self:SetTotemByIndex(i, GetTotemInfo(SLOT_MAP[i]))
+		end
+	end
+end
+
+__Doc__[[IFTotem is used to handle the unit's totem updating]]
 interface "IFTotem"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		if self.Unit == "player" then
+			_IFTotemUnitList[self] = self.Unit
+			self:SetTotemVisible(true)
+		else
+			_IFTotemUnitList[self] = nil
+			self:SetTotemVisible(false)
+		end
+	end
+
+	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[The default refresh method, overridable]]
-	function Refresh(self)
-		local btn
+	__Doc__[[Refresh the rune by index]]
+	__Optional__() function SetTotemByIndex(self, index, haveTotem, name, start, duration, icon)
+		local btn = self[index]
 
-		for i = 1, MAX_TOTEMS do
-			btn = self[i]
+		if btn then
+			if haveTotem and duration > 0 then
+				btn.Icon = icon
+				btn.Slot = SLOT_MAP[i]
+				btn:OnCooldownUpdate(start, duration)
 
-			if btn and SLOT_MAP[i] then
-				local haveTotem, name, start, duration, icon = GetTotemInfo(SLOT_MAP[i])
-
-				if haveTotem and duration > 0 then
-					btn.Icon = icon
-					btn.Slot = SLOT_MAP[i]
-					btn:OnCooldownUpdate(start, duration)
-
-					btn.Visible = true
-				else
-					btn:OnCooldownUpdate()
-					btn.Visible = false
-				end
+				btn.Visible = true
 			else
 				btn:OnCooldownUpdate()
 				btn.Visible = false
 			end
 		end
+	end
+
+	__Doc__[[Whether show or hide the totem bar]]
+	__Optional__() function SetTotemVisible(self, show)
+		self.Visible = show
 	end
 
 	------------------------------------------------------
@@ -89,6 +97,7 @@ interface "IFTotem"
 	-- Initializer
 	------------------------------------------------------
 	function IFTotem(self)
-		_IFTotemUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFTotem"

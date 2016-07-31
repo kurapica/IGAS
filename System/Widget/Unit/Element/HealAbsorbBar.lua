@@ -27,27 +27,32 @@ class "HealAbsorbBar"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	local oldSetValue = Super.SetValue
-	local oldSetMinMaxValues = Super.SetMinMaxValues
-	local oldGetWidth = Super.GetWidth
-
-	function SetValue(self, value)
-		if self.__Value ~= value then
-			self.__Value = value
-
-			oldSetValue(self, value)
-
-			local width = oldGetWidth(self)
+	function SetUnitHealAbsorb(self, value, max)
+		if max then
+			self.__MaxHealth = max
+			self:SetMinMaxValues(0, max)
+		end
+		if value then
+			self:SetValue(value)
 
 			if self.__HealthBar then
-				self:SetPoint("TOPLEFT", self.__HealthBar.StatusBarTexture, "TOPRIGHT", - width * value / self.__MaxHealth, 0)
+				self:SetPoint("TOPLEFT", self.__HealthBar.StatusBarTexture, "TOPRIGHT", - self.Width * value / self.__MaxHealth, 0)
 			end
 		end
 	end
 
-	function SetMinMaxValues(self, min, max)
-		self.__MaxHealth = max
-		oldSetMinMaxValues(self, min, max)
+	function SetUnitOverAbsorb(self, isOver)
+		self.OverGlow.Visible = isOver
+	end
+
+	function SetUnitHasIncomingHeal(self, has)
+		if self.Value == 0 then has = true end
+
+		self.LeftShadow.Visible = not has
+	end
+
+	function SetUnitHasAbsorb(self, has)
+		self.RightShadow.Visible = has
 	end
 
 	------------------------------------------------------
@@ -87,34 +92,15 @@ class "HealAbsorbBar"
 		--Type = StatusBarString,
 	}
 
-	__Handler__( function (self, value) self.OverGlow.Visible = value end )
-	property "OverAbsorb" { }
-
-	property "HasIncomingHeal" {
-		Field = "__HasIncomingHeal",
-		Set = function(self, value)
-			if self.__Value == 0 then
-				value = true
-			end
-
-			if self.__HasIncomingHeal ~= value then
-				self.__HasIncomingHeal = value
-				self.LeftShadow.Visible = not value
-			end
-		end,
-	}
-
-	__Handler__( function (self, value) self.RightShadow.Visible = value end )
-	property "HasAbsorb" { }
-
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
     function HealAbsorbBar(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
-    	self.__MaxHealth = 0
+    	self.__MaxHealth = 100
 
+		self.MouseEnabled = false
     	self.StatusBarTexturePath = [[Interface\RaidFrame\Absorb-Fill]]
 
     	local leftShadow = Texture("LeftShadow", self)

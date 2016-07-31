@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.Line", version) then
 	return
 end
 
+__AutoProperty__()
 class "Line"
 	inherit "Texture"
 

@@ -10,7 +10,8 @@ if not IGAS:NewAddon("IGAS.Widget.Minimap", version) then
 end
 
 __Doc__[[Minimap is a frame type whose backdrop is filled in with a top-down representation of the area around the character being played.]]
-	class "Minimap"
+__AutoProperty__()
+class "Minimap"
 	inherit "Frame"
 
 	------------------------------------------------------
@@ -112,5 +113,4 @@ class "Minimap"
 	------------------------------------------------------
 	__Doc__[[the minimap's current zoom level]]
 	property "Zoom" { Type = Number }
-
 endclass "Minimap"

@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Alpha", version) then
 end
 
 __Doc__[[Alpha is a type of animation that automatically changes the transparency level of its attached region as it progresses. You can set the degree by which it will change the alpha as a fraction; for instance, a change of -1 will fade out a region completely]]
+__AutoProperty__()
 class "Alpha"
 	inherit "Animation"
 

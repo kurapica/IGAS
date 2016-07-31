@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.ColorSelect", version) then
 end
 
 __Doc__[[ColorSelect is a very specialized type of frame with a specific purpose; to allow the user to interactively select a color, typically to control the appearance of another UI element.]]
+__AutoProperty__()
 class "ColorSelect"
 	inherit "Frame"
 

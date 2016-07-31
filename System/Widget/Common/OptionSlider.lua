@@ -12,6 +12,7 @@ if not IGAS:NewAddon("IGAS.Widget.OptionSlider", version) then
 end
 
 __Doc__[[OptionSlider is using to make settings in numbers]]
+__AutoProperty__()
 class "OptionSlider"
 	inherit "Frame"
 

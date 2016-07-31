@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.Scale", version) then
 end
 
 __Doc__[[Scale is an Animation type that automatically applies an affine scalar transformation to the region being animated as it progresses. You can set both the multiplier by which it scales, and the point from which it is scaled.]]
+__AutoProperty__()
 class "Scale"
 	inherit "Animation"
 
@@ -126,5 +127,4 @@ class "Scale"
 		end,
 		Type = Dimension,
 	}
-
 endclass "Scale"

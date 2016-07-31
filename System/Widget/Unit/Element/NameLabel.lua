@@ -13,44 +13,14 @@ class "NameLabel"
 	inherit "FontString"
 	extend "IFUnitName" "IFFaction"
 
-	_DefaultColor = ColorType(1, 1, 1)
-
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		IFUnitName.Refresh(self)
+	SetUnitName = FontString.SetText
 
-		-- Handle the text color
-		if self.Unit then
-			if self.UseTapColor then
-				if UnitIsTapDenied(self.Unit) then
-					return self:SetTextColor(0.5, 0.5, 0.5)
-				end
-			end
-
-			if self.UseSelectionColor and not UnitIsPlayer(self.Unit) then
-				self:SetTextColor(UnitSelectionColor(self.Unit))
-			elseif self.UseClassColor then
-				self.TextColor = RAID_CLASS_COLORS[select(2, UnitClass(self.Unit))] or _DefaultColor
-			end
-		end
+	function UpdateFaction(self)
+		self:SetTextColor(self:GetFactionColor())
 	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[Whether using the tap color, default false]]
-	__Handler__( Refresh )
-	property "UseTapColor" { Type = Boolean }
-
-	__Doc__[[Whether using the selection color, default false]]
-	__Handler__( Refresh )
-	property "UseSelectionColor" { Type = Boolean }
-
-	__Doc__[[Whether using the class color, default false]]
-	__Handler__( Refresh )
-	property "UseClassColor" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Constructor
@@ -59,6 +29,5 @@ class "NameLabel"
 		Super(self, name, parent, ...)
 
 		self.DrawLayer = "BORDER"
-		self.TextColor = _DefaultColor
 	end
 endclass "NameLabel"

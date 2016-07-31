@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.LayeredRegion", version) then
 end
 
 __Doc__[[LayeredRegion is an abstract UI type that groups together the functionality of layered graphical regions, specifically Textures and FontStrings.]]
+__AutoProperty__()
 class "LayeredRegion"
 	inherit "Region"
 

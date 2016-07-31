@@ -18,12 +18,43 @@ function _IFRaidRosterUnitList:OnUnitListChanged()
 end
 
 function _IFRaidRosterUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	if IsInRaid() and self.Unit and not UnitHasVehicleUI(self.Unit) then
+		if GetPartyAssignment('MAINTANK', self.Unit) then
+			self:SetPartyAssignment("MAINTANK")
+		elseif GetPartyAssignment('MAINASSIST', self.Unit) then
+			self:SetPartyAssignment("MAINASSIST")
+		else
+			self:SetPartyAssignment("NONE")
+		end
+	else
+		self:SetPartyAssignment("NONE")
+	end
 end
 
 __Doc__[[IFRaidRoster is used to handle the unit raid roster state's updating]]
 interface "IFRaidRoster"
 	extend "IFUnitElement"
+
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFRaidRosterUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the party assignment to the element, overridable]]
+	__Optional__() function SetPartyAssignment(self, assignment) end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -36,6 +67,7 @@ interface "IFRaidRoster"
 	-- Constructor
 	------------------------------------------------------
 	function IFRaidRoster(self)
-		_IFRaidRosterUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFRaidRoster"

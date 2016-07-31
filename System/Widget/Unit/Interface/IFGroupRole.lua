@@ -19,12 +19,37 @@ function _IFGroupRoleUnitList:OnUnitListChanged()
 end
 
 function _IFGroupRoleUnitList:ParseEvent(event)
-	self:EachK(_All, "Refresh")
+	self:EachK(_All, OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	if self.Unit then
+		self:SetGroupRole(UnitGroupRolesAssigned(self.Unit))
+	else
+		self:SetGroupRole("NONE")
+	end
 end
 
 __Doc__[[IFGroupRole is used to handle group role's updating]]
 interface "IFGroupRole"
 	extend "IFUnitElement"
+
+	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnUnitChanged(self)
+		_IFGroupRoleUnitList[self] = self.Unit and _All or nil
+	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the group role to the element, overridable]]
+	__Optional__() function SetGroupRole(self, role) end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -37,6 +62,7 @@ interface "IFGroupRole"
 	-- Initializer
 	------------------------------------------------------
 	function IFGroupRole(self)
-		_IFGroupRoleUnitList[self] = _All
+		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFGroupRole"

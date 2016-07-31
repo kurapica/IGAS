@@ -13,12 +13,17 @@ class "QuestBossIcon"
 	inherit "Texture"
 	extend "IFClassification"
 
+	function SetClassification(self, classification)
+		self.Visible = self.Unit and UnitIsQuestBoss(self.Unit)
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
 	function QuestBossIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\TargetingFrame\PortraitQuestBadge]]
 		self.Height = 32
 		self.Width = 32
 	end

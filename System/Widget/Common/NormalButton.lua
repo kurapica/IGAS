@@ -11,6 +11,7 @@ if not IGAS:NewAddon("IGAS.Widget.NormalButton", version) then
 end
 
 __Doc__[[NormalButton is inherited from Button with custom style to help author creating useful buttons]]
+__AutoProperty__()
 class "NormalButton"
 	inherit "Button"
 

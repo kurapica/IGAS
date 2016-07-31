@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollFrame", version) then
 end
 
 __Doc__[[ScrollFrame is used to show a large body of content through a small window. The ScrollFrame is the size of the "window" through which you want to see the larger content, and it has another frame set as a "ScrollChild" containing the full content.]]
+__AutoProperty__()
 class "ScrollFrame"
 	inherit "Frame"
 

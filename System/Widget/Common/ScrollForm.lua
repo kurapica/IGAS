@@ -14,10 +14,12 @@ if not IGAS:NewAddon("IGAS.Widget.ScrollForm", version) then
 end
 
 __Doc__[[ScrollForm is used as a scrollable container]]
+__AutoProperty__()
 class "ScrollForm"
 	inherit "ScrollFrame"
 
 	__Doc__[[The container used for scroll form]]
+	__AutoProperty__()
 	class "Container"
 		inherit "Frame"
 

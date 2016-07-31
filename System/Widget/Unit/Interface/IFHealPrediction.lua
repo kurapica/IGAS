@@ -14,9 +14,7 @@ _IFAllHealPredictionUnitList = _IFAllHealPredictionUnitList or UnitList(_Name.."
 _IFAbsorbUnitList = _IFAbsorbUnitList or UnitList(_Name.."Absorb")
 _IFHealAbsorbUnitList = _IFHealAbsorbUnitList or UnitList(_Name.."HealAbsorb")
 
-_IFHealPredictionUnitMaxHealthCache = _IFHealPredictionUnitMaxHealthCache or {}
-
-_MinMax = MinMax(0, 1)
+_IFHealPredictionUnits = _IFHealPredictionUnits or {}
 
 local function OnUnitListChanged()
 	_IFMyHealPredictionUnitList:RegisterEvent("UNIT_HEAL_PREDICTION")
@@ -41,101 +39,90 @@ _IFHealAbsorbUnitList.OnUnitListChanged = OnUnitListChanged
 MAX_INCOMING_HEAL_OVERFLOW = 1.0
 
 function _IFMyHealPredictionUnitList:ParseEvent(event, unit)
-	if _IFHealPredictionUnitMaxHealthCache[unit] then
-		if event == "UNIT_MAXHEALTH" then
-			_MinMax.max = UnitHealthMax(unit)
-			_IFHealPredictionUnitMaxHealthCache[unit] = _MinMax.max
+	if _IFHealPredictionUnits[unit] then
+		local health = UnitHealth(unit)
+		local maxHealth = UnitHealthMax(unit)
 
-			_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-			_IFOtherHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-			_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-			_IFAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
-			_IFHealAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
+		local myIncomingHeal = UnitGetIncomingHeals(unit, "player") or 0
+		local allIncomingHeal = UnitGetIncomingHeals(unit) or 0
+		local totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
+		local myCurrentHealAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
+
+		local overHealAbsorb = false
+		local hasIncomingHeal = false
+		local hasAbsorb = false
+
+		--We don't fill outside the health bar with healAbsorbs.  Instead, an overHealAbsorbGlow is shown.
+		if ( health < myCurrentHealAbsorb ) then
+			overHealAbsorb = true
+			myCurrentHealAbsorb = health
+		end
+
+		--See how far we're going over the health bar and make sure we don't go too far out of the frame.
+		if ( health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * MAX_INCOMING_HEAL_OVERFLOW ) then
+			allIncomingHeal = maxHealth * MAX_INCOMING_HEAL_OVERFLOW - health + myCurrentHealAbsorb
+		end
+
+		local otherIncomingHeal = 0
+
+		--Split up incoming heals.
+		if ( allIncomingHeal >= myIncomingHeal ) then
+			otherIncomingHeal = allIncomingHeal - myIncomingHeal
 		else
-			local health = UnitHealth(unit)
-			local maxHealth = UnitHealthMax(unit)
+			myIncomingHeal = allIncomingHeal
+		end
 
-			local myIncomingHeal = UnitGetIncomingHeals(unit, "player") or 0
-			local allIncomingHeal = UnitGetIncomingHeals(unit) or 0
-			local totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
-			local myCurrentHealAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
-
-			-- Update max health
-			if _IFHealPredictionUnitMaxHealthCache[unit] ~= maxHealth then
-				_MinMax.max = maxHealth
-				_IFHealPredictionUnitMaxHealthCache[unit] = maxHealth
-
-				_IFMyHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-				_IFOtherHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-				_IFAllHealPredictionUnitList:EachK(unit, "MinMaxValue", _MinMax)
-				_IFAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
-				_IFHealAbsorbUnitList:EachK(unit, "MinMaxValue", _MinMax)
+		--We don't fill outside the the health bar with absorbs.  Instead, an overAbsorbGlow is shown.
+		local overAbsorb = false
+		if ( health - myCurrentHealAbsorb + allIncomingHeal + totalAbsorb >= maxHealth or health + totalAbsorb >= maxHealth ) then
+			if ( totalAbsorb > 0 ) then
+				overAbsorb = true
 			end
 
-			local overHealAbsorb = false
-			local hasIncomingHeal = false
-			local hasAbsorb = false
-
-			--We don't fill outside the health bar with healAbsorbs.  Instead, an overHealAbsorbGlow is shown.
-			if ( health < myCurrentHealAbsorb ) then
-				overHealAbsorb = true
-				myCurrentHealAbsorb = health
-			end
-
-			--See how far we're going over the health bar and make sure we don't go too far out of the frame.
-			if ( health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * MAX_INCOMING_HEAL_OVERFLOW ) then
-				allIncomingHeal = maxHealth * MAX_INCOMING_HEAL_OVERFLOW - health + myCurrentHealAbsorb
-			end
-
-			local otherIncomingHeal = 0
-
-			--Split up incoming heals.
-			if ( allIncomingHeal >= myIncomingHeal ) then
-				otherIncomingHeal = allIncomingHeal - myIncomingHeal
+			if ( allIncomingHeal > myCurrentHealAbsorb ) then
+				totalAbsorb = max(0,maxHealth - (health - myCurrentHealAbsorb + allIncomingHeal))
 			else
-				myIncomingHeal = allIncomingHeal
+				totalAbsorb = max(0,maxHealth - health)
 			end
+		end
 
-			--We don't fill outside the the health bar with absorbs.  Instead, an overAbsorbGlow is shown.
-			local overAbsorb = false
-			if ( health - myCurrentHealAbsorb + allIncomingHeal + totalAbsorb >= maxHealth or health + totalAbsorb >= maxHealth ) then
-				if ( totalAbsorb > 0 ) then
-					overAbsorb = true
-				end
+		--If allIncomingHeal is greater than myCurrentHealAbsorb, then the current
+		--heal absorb will be completely overlayed by the incoming heals so we don't show it.
+		if ( myCurrentHealAbsorb > allIncomingHeal ) then
+			myCurrentHealAbsorb = myCurrentHealAbsorb - allIncomingHeal
 
-				if ( allIncomingHeal > myCurrentHealAbsorb ) then
-					totalAbsorb = max(0,maxHealth - (health - myCurrentHealAbsorb + allIncomingHeal))
-				else
-					totalAbsorb = max(0,maxHealth - health)
-				end
-			end
+			--If there are incoming heals the left shadow would be overlayed by the incoming heals
+			--so it isn't shown.
+			hasIncomingHeal = allIncomingHeal > 0
 
-			--If allIncomingHeal is greater than myCurrentHealAbsorb, then the current
-			--heal absorb will be completely overlayed by the incoming heals so we don't show it.
-			if ( myCurrentHealAbsorb > allIncomingHeal ) then
-				myCurrentHealAbsorb = myCurrentHealAbsorb - allIncomingHeal
+			-- The right shadow is only shown if there are absorbs on the health bar.
+			hasAbsorb = totalAbsorb > 0
+		else
+			myCurrentHealAbsorb = 0
+		end
 
-				--If there are incoming heals the left shadow would be overlayed by the incoming heals
-				--so it isn't shown.
-				hasIncomingHeal = allIncomingHeal > 0
+		for obj in _IFMyHealPredictionUnitList:GetIterator(unit) do
+			obj:SetUnitMyHealPrediction(myIncomingHeal, maxHealth)
+		end
 
-				-- The right shadow is only shown if there are absorbs on the health bar.
-				hasAbsorb = totalAbsorb > 0
-			else
-				myCurrentHealAbsorb = 0
-			end
+		for obj in _IFOtherHealPredictionUnitList:GetIterator(unit) do
+			obj:SetUnitOtherHealPrediction(otherIncomingHeal, maxHealth)
+		end
 
-			_IFMyHealPredictionUnitList:EachK(unit, "Value", myIncomingHeal)
-			_IFOtherHealPredictionUnitList:EachK(unit, "Value", otherIncomingHeal)
-			_IFAllHealPredictionUnitList:EachK(unit, "Value", allIncomingHeal)
+		for obj in _IFAllHealPredictionUnitList:GetIterator(unit) do
+			obj:SetUnitAllHealPrediction(allIncomingHeal, maxHealth)
+		end
 
-			_IFAbsorbUnitList:EachK(unit, "Value", totalAbsorb)
-			_IFAbsorbUnitList:EachK(unit, "OverAbsorb", overAbsorb)
+		for obj in _IFAbsorbUnitList:GetIterator(unit) do
+			obj:SetUnitTotalAbsorb(totalAbsorb, maxHealth)
+			obj:SetUnitOverAbsorb(overAbsorb)
+		end
 
-			_IFHealAbsorbUnitList:EachK(unit, "Value", myCurrentHealAbsorb)
-			_IFHealAbsorbUnitList:EachK(unit, "OverAbsorb", overHealAbsorb)
-			_IFHealAbsorbUnitList:EachK(unit, "HasIncomingHeal", hasIncomingHeal)
-			_IFHealAbsorbUnitList:EachK(unit, "HasAbsorb", hasAbsorb)
+		for obj in _IFHealAbsorbUnitList:GetIterator(unit) do
+			obj:SetUnitHealAbsorb(myCurrentHealAbsorb, maxHealth)
+			obj:SetUnitOverAbsorb(overHealAbsorb)
+			obj:SetUnitHasIncomingHeal(hasIncomingHeal)
+			obj:SetUnitHasAbsorb(hasAbsorb)
 		end
 	end
 end
@@ -147,35 +134,25 @@ interface "IFMyHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			_MinMax.max = UnitHealthMax(self.Unit)
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		else
-			_MinMax.max = 100
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		end
+	__Doc__[[Set the player's heal prediction the element, overridable]]
+	__Optional__() function SetUnitMyHealPrediction(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[used to receive the incoming heal of mine]]
-	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		local unit = self.Unit
-		_IFMyHealPredictionUnitList[self] = unit
-		if unit then
-			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		_IFMyHealPredictionUnitList[self] = self.Unit
+		if self.Unit then _IFHealPredictionUnits[self.Unit] = true end
+	end
+
+	local function OnForceRefresh(self)
+		if self.Unit then
+			self:SetUnitMyHealPrediction(0, UnitHealthMax(self.Unit))
+		else
+			self:SetUnitMyHealPrediction(0, 100)
 		end
 	end
 
@@ -191,14 +168,7 @@ interface "IFMyHealPrediction"
 	------------------------------------------------------
 	function IFMyHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(StatusBar) and not self.StatusBarTexture then
-			self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
-			self.StatusBarColor = ColorType(0, 0.827, 0.765)
-		end
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFMyHealPrediction"
 
@@ -209,35 +179,25 @@ interface "IFOtherHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			_MinMax.max = UnitHealthMax(self.Unit)
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		else
-			_MinMax.max = 100
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		end
+	__Doc__[[Set other's heal prediction to the element, overridable]]
+	__Optional__() function SetUnitOtherHealPrediction(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[used to receive the incoming heal of others]]
-	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		local unit = self.Unit
-		_IFOtherHealPredictionUnitList[self] = unit
-		if unit then
-			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		_IFOtherHealPredictionUnitList[self] = self.Unit
+		if self.Unit then _IFHealPredictionUnits[self.Unit] = true end
+	end
+
+	local function OnForceRefresh(self)
+		if self.Unit then
+			self:SetUnitOtherHealPrediction(0, UnitHealthMax(self.Unit))
+		else
+			self:SetUnitOtherHealPrediction(0, 100)
 		end
 	end
 
@@ -253,14 +213,7 @@ interface "IFOtherHealPrediction"
 	------------------------------------------------------
 	function IFOtherHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(StatusBar) and not self.StatusBarTexture then
-			self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
-			self.StatusBarColor = ColorType(0, 0.631, 0.557)
-		end
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFOtherHealPrediction"
 
@@ -271,35 +224,25 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			_MinMax.max = UnitHealthMax(self.Unit)
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		else
-			_MinMax.max = 100
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-		end
+	__Doc__[[Set all heal prediction to the element, overridable]]
+	__Optional__() function SetUnitAllHealPrediction(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[used to receive the incoming heal of all]]
-	__Optional__() property "Value" { Type = Number }
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		local unit = self.Unit
-		_IFAllHealPredictionUnitList[self] = unit
-		if unit then
-			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		_IFAllHealPredictionUnitList[self] = self.Unit
+		if self.Unit then _IFHealPredictionUnits[self.Unit] = true end
+	end
+
+	local function OnForceRefresh(self)
+		if self.Unit then
+			self:SetUnitAllHealPrediction(0, UnitHealthMax(self.Unit))
+		else
+			self:SetUnitAllHealPrediction(0, 100)
 		end
 	end
 
@@ -315,14 +258,7 @@ interface "IFAllHealPrediction"
 	------------------------------------------------------
 	function IFAllHealPrediction(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(StatusBar) and not self.StatusBarTexture then
-			self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
-			self.StatusBarColor = ColorType(0, 0.631, 0.557)
-		end
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFAllHealPrediction"
 
@@ -333,41 +269,30 @@ interface "IFAbsorb"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			_MinMax.max = UnitHealthMax(self.Unit)
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-			self.OverAbsorb = false
-		else
-			_MinMax.max = 100
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-			self.OverAbsorb = false
-		end
+	__Doc__[[Set the total absorb to the element, overridable]]
+	__Optional__() function SetUnitTotalAbsorb(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
-
-	__Doc__[[used to receive the value of the absorb]]
-	__Optional__() property "Value" { Type = Number }
-
-	__Doc__[[used to receive the result whether the unit's absorb effect is overdose]]
-	__Optional__() property "OverAbsorb" { Type = Boolean }
+	__Doc__[[Set the result whether the unit's absorb effect is absorb]]
+	__Optional__() function SetUnitOverAbsorb(self, isOver) end
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		local unit = self.Unit
-		_IFAbsorbUnitList[self] = unit
-		if unit then
-			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		_IFAbsorbUnitList[self] = self.Unit
+		if self.Unit then _IFHealPredictionUnits[self.Unit] = true end
+	end
+
+	local function OnForceRefresh(self)
+		if self.Unit then
+			self:SetUnitTotalAbsorb(0, UnitHealthMax(self.Unit))
+		else
+			self:SetUnitTotalAbsorb(0, 100)
 		end
+		self:SetUnitOverAbsorb(false)
 	end
 
 	------------------------------------------------------
@@ -382,62 +307,50 @@ interface "IFAbsorb"
 	------------------------------------------------------
 	function IFAbsorb(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(StatusBar) and not self.StatusBarTexture then
-			self.StatusBarTexturePath = [[Interface\RaidFrame\Shield-Fill]]
-		end
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFAbsorb"
 
-__Doc__[[IFHealAbsorb is used to handle the unit's total absorb value]]
+__Doc__[[IFHealAbsorb is used to handle the unit's health absorb value]]
 interface "IFHealAbsorb"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	function Refresh(self)
-		if self.Unit then
-			_MinMax.max = UnitHealthMax(self.Unit)
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-			self.OverAbsorb = false
-			self.HasIncomingHeal = false
-			self.HasAbsorb = false
-		else
-			_MinMax.max = 100
-			self.MinMaxValue = _MinMax
-			self.Value = 0
-			self.OverAbsorb = false
-			self.HasIncomingHeal = false
-			self.HasAbsorb = false
-		end
+	__Doc__[[Set the health absorb to the element, overridable]]
+	__Optional__() function SetUnitHealAbsorb(self, value, max)
+		if max then self:SetMinMaxValues(0, max) end
+		if value then self:SetValue(value) end
 	end
 
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the min and max value of the health]]
-	__Optional__() property "MinMaxValue" { Type = MinMax }
+	__Doc__[[Set whether the unit has over absorb]]
+	__Optional__() function SetUnitOverAbsorb(self, isOver) end
 
-	__Doc__[[used to receive the value of the health absorb]]
-	__Optional__() property "Value" { Type = Number }
+	__Doc__[[Set whether the unit has incoming heal]]
+	__Optional__() function SetUnitHasIncomingHeal(self, has) end
 
-	__Doc__[[used to receive the result whether the unit's health absorb effect is overdose]]
-	__Optional__() property "OverAbsorb" { Type = Boolean }
+	__Doc__[[Set whether the unit has total absorb]]
+	__Optional__() function SetUnitHasAbsorb(self, has) end
+
 
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
-		local unit = self.Unit
-		_IFHealAbsorbUnitList[self] = unit
-		if unit then
-			_IFHealPredictionUnitMaxHealthCache[unit] = _IFHealPredictionUnitMaxHealthCache[unit] or 1
+		_IFHealAbsorbUnitList[self] = self.Unit
+		if self.Unit then _IFHealPredictionUnits[self.Unit] = true end
+	end
+
+	local function OnForceRefresh(self)
+		if self.Unit then
+			self:SetUnitHealAbsorb(0, UnitHealthMax(self.Unit))
+		else
+			self:SetUnitHealAbsorb(0, 100)
 		end
+		self:SetUnitOverAbsorb(false)
+		self:SetUnitHasIncomingHeal(false)
+		self:SetUnitHasAbsorb(false)
 	end
 
 	------------------------------------------------------
@@ -452,7 +365,6 @@ interface "IFHealAbsorb"
 	------------------------------------------------------
 	function IFHealAbsorb(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		self.MouseEnabled = false
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFHealAbsorb"

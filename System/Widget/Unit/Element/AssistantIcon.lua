@@ -19,6 +19,7 @@ class "AssistantIcon"
 	function AssistantIcon(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
+		self.TexturePath = [[Interface\GroupFrame\UI-Group-AssistantIcon]]
 		self.Height = 16
 		self.Width = 16
 	end

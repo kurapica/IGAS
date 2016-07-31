@@ -8,6 +8,7 @@ if not IGAS:NewAddon("IGAS.Widget.ElementPanel", version) then
 end
 
 __Doc__[[ElementPanel is used to contains several same class ui elements like a grid.]]
+__AutoProperty__()
 class "ElementPanel"
 	inherit "Frame"
 	extend "IFElementPanel"

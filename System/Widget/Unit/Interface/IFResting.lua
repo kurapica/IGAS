@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 1
+local version = 2
 if not IGAS:NewAddon("IGAS.Widget.Unit.IFResting", version) then
 	return
 end
@@ -17,7 +17,11 @@ function _IFRestingUnitList:OnUnitListChanged()
 end
 
 function _IFRestingUnitList:ParseEvent(event)
-	self:EachK("player", "Refresh")
+	self:EachK("player", OnForceRefresh)
+end
+
+function OnForceRefresh(self)
+	self:SetRestState(self.Unit == "player" and IsResting())
 end
 
 __Doc__[[
@@ -28,19 +32,6 @@ interface "IFResting"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	function Refresh(self)
-		self.Visible = self.Unit == "player" and IsResting()
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the result that whether the resting indicator should be shown]]
-	__Optional__() property "Visible" { Type = Boolean }
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
@@ -48,9 +39,21 @@ interface "IFResting"
 			_IFRestingUnitList[self] = self.Unit
 		else
 			_IFRestingUnitList[self] = nil
-			self.Visible = false
+			self:SetRestState(false)
 		end
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set the rest state to the element, overridable]]
+	__Optional__() function SetRestState(self, underRest)
+		self.Visible = underRest
+	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -64,13 +67,6 @@ interface "IFResting"
 	------------------------------------------------------
 	function IFResting(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-
-		-- Default Texture
-		if self:IsClass(Texture) then
-			if not self.TexturePath and not self.Color then
-				self.TexturePath = [[Interface\CharacterFrame\UI-StateIcon]]
-				self:SetTexCoord(0, .5, 0, .421875)
-			end
-		end
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFResting"

@@ -10,6 +10,7 @@ if not IGAS:NewAddon("IGAS.Widget.LayoutPanel", version) then
 end
 
 __Doc__[[LayoutPanel is used to manage its children's layout]]
+__AutoProperty__()
 class "LayoutPanel"
 	inherit "Frame"
 

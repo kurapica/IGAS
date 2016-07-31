@@ -16,6 +16,12 @@ _IFRangeTimer.Interval = 0.2
 
 _IFRangeCache = _IFRangeCache or {}
 
+function _IFRangeUnitList:OnUnitListChanged()
+	_IFRangeTimer.Enabled = true
+
+	self.OnUnitListChanged = nil
+end
+
 function IsInRange(unit)
 	local inRange, checkedRange = UnitInRange(unit)
 
@@ -29,20 +35,22 @@ function RefreshUnit(unit)
 		if _IFRangeCache[unit] ~= inRange then
 			_IFRangeCache[unit] = inRange
 
-			_IFRangeUnitList:EachK(unit, "InRange", inRange)
+			_IFRangeUnitList:EachK(unit, OnForceRefresh)
 		end
 	else
 		if not _IFRangeCache[unit] then
 			_IFRangeCache[unit] = true
-			_IFRangeUnitList:EachK(unit, "InRange", true)
+			_IFRangeUnitList:EachK(unit, OnForceRefresh)
 		end
 	end
 end
 
 function _IFRangeTimer:OnTimer()
-	for unit in pairs(_IFRangeUnitList) do
-		RefreshUnit(unit)
-	end
+	_IFRangeUnitList:Each(RefreshUnit)
+end
+
+function OnForceRefresh(self)
+	self:SetInRange(_IFRangeCache[self.Unit])
 end
 
 __Doc__[[IFRange is used to check whether the unit is in the spell range of the player]]
@@ -50,24 +58,21 @@ interface "IFRange"
 	extend "IFUnitElement"
 
 	------------------------------------------------------
-	-- Method
-	------------------------------------------------------
-	function Refresh(self)
-		self.InRange = _IFRangeCache[self.Unit]
-	end
-
-	------------------------------------------------------
-	-- Property
-	------------------------------------------------------
-	__Doc__[[used to receive the result, whether the unit is in the spell range of the player]]
-	__Optional__() property "InRange" { Type = BooleanNil }
-
-	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
 	local function OnUnitChanged(self)
 		_IFRangeUnitList[self] = self.Unit
 	end
+
+	------------------------------------------------------
+	-- Method
+	------------------------------------------------------
+	__Doc__[[Set whether in range to the element, overridable]]
+	__Optional__() function SetInRange(self, inRange) end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
 
 	------------------------------------------------------
 	-- Dispose
@@ -81,6 +86,6 @@ interface "IFRange"
 	------------------------------------------------------
 	function IFRange(self)
 		self.OnUnitChanged = self.OnUnitChanged + OnUnitChanged
-		_IFRangeTimer.Enabled = true
+		self.OnForceRefresh = self.OnForceRefresh + OnForceRefresh
 	end
 endinterface "IFRange"
