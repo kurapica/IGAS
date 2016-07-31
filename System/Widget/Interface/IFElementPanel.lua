@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.IFElementPanel", version) then
 	return
 end
@@ -27,15 +27,15 @@ interface "IFElementPanel"
 		element:ClearAllPoints()
 
 		if self.TopToBottom then
-			element:SetPoint("TOP", 0, - posY)
+			element:SetPoint("TOP", 0, - posY - self.MarginTop)
 		else
-			element:SetPoint("BOTTOM", 0, posY)
+			element:SetPoint("BOTTOM", 0, posY + self.MarginBottom)
 		end
 
 		if self.LeftToRight then
-			element:SetPoint("LEFT", posX, 0)
+			element:SetPoint("LEFT", posX + self.MarginLeft, 0)
 		else
-			element:SetPoint("RIGHT", - posX, 0)
+			element:SetPoint("RIGHT", - posX - self.MarginRight, 0)
 		end
 	end
 

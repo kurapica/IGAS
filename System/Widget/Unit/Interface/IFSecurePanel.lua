@@ -44,6 +44,11 @@ do
 			local marginLeft = panel:GetAttribute("IFSecurePanel_MarginLeft") or 0
 			local marginRight = panel:GetAttribute("IFSecurePanel_MarginRight") or 0
 			local orientation = panel:GetAttribute("IFSecurePanel_Orientation") or "HORIZONTAL"
+			local leftToRight = panel:GetAttribute("IFSecurePanel_LeftToRight")
+			local topToBottom = panel:GetAttribute("IFSecurePanel_TopToBottom")
+
+			if leftToRight == nil then leftToRight = true end
+			if topToBottom == nil then topToBottom = true end
 
 			if elements then
 				if panel:GetAttribute("IFSecurePanel_AutoPosition") then
@@ -51,12 +56,21 @@ do
 						local frm = elements[i]
 
 						if frm:IsShown() then
-							if orientation == "HORIZONTAL" then
-								-- Row first
-								frm:SetPoint("CENTER", panel, "TOPLEFT", count % columnCount * (elementWidth + hSpacing) + marginLeft + (elementWidth/2), -floor(count / columnCount) * (elementHeight + vSpacing) - marginTop - (elementHeight/2))
+							local posX = (orientation == "HORIZONTAL" and count % columnCount or floor(count / rowCount)) * (elementWidth + hSpacing)
+							local posY = (orientation == "HORIZONTAL" and floor(count / columnCount) or count % rowCount) * (elementHeight + vSpacing)
+
+							frm:ClearAllPoints()
+
+							if topToBottom then
+								frm:SetPoint("TOP", panel, "TOP", 0, - posY - marginTop)
 							else
-								-- Column first
-								frm:SetPoint("CENTER", panel, "TOPLEFT", floor(count / rowCount) * (elementWidth + hSpacing) + marginLeft + (elementWidth/2), -(count % rowCount) * (elementHeight + vSpacing) - marginTop - (elementHeight/2))
+								frm:SetPoint("BOTTOM", panel, "BOTTOM", 0, posY + marginBottom)
+							end
+
+							if leftToRight then
+								frm:SetPoint("LEFT", panel, "LEFT", posX + marginLeft, 0)
+							else
+								frm:SetPoint("RIGHT", panel, "RIGHT", - posX - marginRight, 0)
 							end
 
 							count = count + 1
@@ -205,36 +219,50 @@ __Doc__[[IFSecurePanel provides features to build a secure panel to contain elem
 interface "IFSecurePanel"
 	extend "IList"
 
-	local function AdjustElement(element, self)
-		if not element.ID then return end
-
-		element.Width = self.ElementWidth
-		element.Height = self.ElementHeight
-
-		if self.Orientation == Orientation.HORIZONTAL then
-			-- Row first
-			element:SetPoint("CENTER", self, "TOPLEFT", (element.ID - 1) % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -floor((element.ID - 1) / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
-		else
-			-- Column first
-			element:SetPoint("CENTER", self, "TOPLEFT", floor((element.ID - 1) / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -((element.ID - 1) % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
-		end
-	end
-
 	local function AdjustElements(self)
 		local index = 0
+		local isHorizontal = self.Orientation == Orientation.HORIZONTAL
+		local isTopToBottom = self.TopToBottom
+		local isLeftToRight = self.LeftToRight
+		local marginLeft = self.MarginLeft
+		local marginRight = self.MarginRight
+		local marginTop = self.MarginTop
+		local marginBottom = self.MarginBottom
+		local columnCount = self.ColumnCount
+		local rowCount = self.RowCount
+		local widthPer = self.ElementWidth + self.HSpacing
+		local heightPer = self.ElementHeight + self.VSpacing
 
 		self:Each(function(element)
 			element.Width = self.ElementWidth
 			element.Height = self.ElementHeight
 
 			if not self.AutoPosition or element.Visible then
-				if self.Orientation == Orientation.HORIZONTAL then
-					-- Row first
-					element:SetPoint("CENTER", self, "TOPLEFT", index % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -floor(index / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+				--if self.Orientation == Orientation.HORIZONTAL then
+				--	-- Row first
+				--	element:SetPoint("CENTER", self, "TOPLEFT", index % self.ColumnCount * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -floor(index / self.ColumnCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+				--else
+				--	-- Column first
+				--	element:SetPoint("CENTER", self, "TOPLEFT", floor(index / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -(index % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+				--end
+
+				local posX = (isHorizontal and index % columnCount or floor(index / rowCount)) * widthPer
+				local posY = (isHorizontal and floor(index / columnCount) or index % rowCount) * heightPer
+
+				element:ClearAllPoints()
+
+				if isTopToBottom then
+					element:SetPoint("TOP", 0, - posY - marginTop)
 				else
-					-- Column first
-					element:SetPoint("CENTER", self, "TOPLEFT", floor(index / self.RowCount) * (self.ElementWidth + self.HSpacing) + self.MarginLeft + (self.ElementWidth/2), -(index % self.RowCount) * (self.ElementHeight + self.VSpacing) - self.MarginTop - (self.ElementHeight/2))
+					element:SetPoint("BOTTOM", 0, posY + marginBottom)
 				end
+
+				if isLeftToRight then
+					element:SetPoint("LEFT", posX + marginLeft, 0)
+				else
+					element:SetPoint("RIGHT", - posX - marginRight, 0)
+				end
+
 				index = index + 1
 			end
 		end)
@@ -294,8 +322,6 @@ interface "IFSecurePanel"
 				ele = self.ElementRecycle()
 				ele.ID = i
 
-				-- AdjustElement(ele, self)
-
 				self:Fire("OnElementAdd", ele)
 
 				self:SetAttribute("IFSecurePanel_Count", i)
@@ -328,6 +354,8 @@ interface "IFSecurePanel"
 		Orientation = 1,
 		ElementHeight = 1,
 		ElementWidth = 1,
+		TopToBottom = 1,
+		LeftToRight = 1,
 
 		-- 3 - Reduce + AdjustElement
 		RowCount = 3,
@@ -344,7 +372,6 @@ interface "IFSecurePanel"
 			local oper = _OperationMap[prop]
 			if oper == 1 or oper == 3 then
 				if oper == 3 then Reduce(self) end
-				-- return self:Each(AdjustElement, self)
 				return AdjustElements(self)
 			elseif oper == 2 then
 				return SecureUpdatePanelSize(self)
@@ -471,6 +498,14 @@ interface "IFSecurePanel"
 	__Doc__[[The orientation for elements]]
 	__Handler__( OnPropertyChanged )
 	property "Orientation" { Type = Orientation, Default = Orientation.HORIZONTAL }
+
+	__Doc__[[Whether the elements start from left to right]]
+	__Handler__( OnPropertyChanged )
+	property "LeftToRight" { Type = Boolean, Default = true }
+
+	__Doc__[[Whether the elements start from top to bottom]]
+	__Handler__( OnPropertyChanged )
+	property "TopToBottom" { Type = Boolean, Default = true }
 
 	__Doc__[[The element's type]]
 	property "ElementType" { Type = Class }
