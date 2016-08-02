@@ -14,6 +14,8 @@ do
 	------------------------------------------------------
 	-- Move & Resize
 	------------------------------------------------------
+	_GameTooltip = IGAS.GameTooltip
+
 	Sleep = Threading.Sleep
 
 	_Mask_Showing = _Mask_Showing or {}
@@ -212,10 +214,22 @@ do
 					posFrm.Visible = false
 				end
 			end
+
+			if _ISMoving then
+				_GameTooltip:SetOwner(mark, "ANCHOR_BOTTOMRIGHT")
+				_GameTooltip:SetText(("%.1f : %.1f"):format(mark:GetLeft(), mark:GetBottom()))
+				_GameTooltip:Show()
+			else
+				_GameTooltip:SetOwner(mark, "ANCHOR_BOTTOMRIGHT")
+				_GameTooltip:SetText(("%.1f - %.1f"):format(mark.Width, mark.Height))
+				_GameTooltip:Show()
+			end
 		end
 
 		-- End Operation
 		mark:StopMovingOrSizing()
+
+		_GameTooltip:Hide()
 
 		frm = mark.Owner or mark.Parent
 
@@ -275,6 +289,7 @@ do
 				mark:Fire("OnMoveFinished")
 			else
 				mark:Fire("OnResizeFinished")
+				mark:SetSize(frm:GetSize())
 			end
 		end
 	end

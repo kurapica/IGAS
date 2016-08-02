@@ -1,3 +1,6 @@
+2016/08/02: IGAS v103
+    1. The mask system would display the position or size of the target.
+
 2016/07/31: IGAS v102
     1. Add TopToBottom, LeftoToRight property to IFSecurePanel.
 
