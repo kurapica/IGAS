@@ -46,7 +46,7 @@ function UpdateCondition(self)
 end
 
 function OnForceRefresh(self)
-	if SPEC_MONK_BREWMASTER == GetSpecialization() then
+	if self.Unit == "player" and SPEC_MONK_BREWMASTER == GetSpecialization() then
 		self:SetStaggerVisible(true)
 
 		self:SetUnitStagger(UnitStagger("player") or 0, UnitHealthMax("player"))

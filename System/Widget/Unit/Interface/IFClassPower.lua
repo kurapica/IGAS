@@ -220,7 +220,11 @@ function RefreshActivePower(trueLevel)
 end
 
 function OnForceRefresh(self)
-	RefreshActivePower()
+	if self.Unit == "player" then
+		RefreshActivePower()
+	else
+		self:SetClassPowerVisible(false)
+	end
 end
 
 __Doc__[[IFClassPower is used to handle the unit's class power, for monk's chi, priest's shadow orb, paladin's holy power, warlock's sould shard, demonic fury, burning ember.]]

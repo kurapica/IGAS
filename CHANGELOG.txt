@@ -1,3 +1,6 @@
+2016/08/04: IGAS v104
+    1. Fix show/hide api for IFRune, IFStagger, IFClassPower.
+
 2016/08/02: IGAS v103
     1. The mask system would display the position or size of the target.
 

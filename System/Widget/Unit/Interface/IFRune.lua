@@ -38,12 +38,18 @@ function _IFRuneUnitList:ParseEvent(event, runeIndex, isEnergize)
 end
 
 function OnForceRefresh(self)
-	local max = UnitPowerMax("player", SPELL_POWER_RUNES)
+	if self.Unit == "player" then
+		self:SetRuneVisible(true)
 
-	self:SetMaxRune(max)
+		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
 
-	for i = 1, max do
-		self:SetRuneByIndex(i, GetRuneCooldown(i))
+		self:SetMaxRune(max)
+
+		for i = 1, max do
+			self:SetRuneByIndex(i, GetRuneCooldown(i))
+		end
+	else
+		self:SetRuneVisible(false)
 	end
 end
 
