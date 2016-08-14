@@ -119,6 +119,19 @@ handler = ActionTypeHandler {
 		return "action", target
 	]],
 
+	PreClickSnippet = [[
+		local type, action = GetActionInfo(self:GetAttribute("action"))
+		return nil, format("%s|%s", tostring(type), tostring(action))
+	]],
+
+	PostClickSnippet = [[
+		local message = ...
+		local type, action = GetActionInfo(self:GetAttribute("action"))
+		if message ~= format("%s|%s", tostring(type), tostring(action)) then
+			return Manager:RunFor(self, UpdateAction)
+		end
+	]],
+
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
 }
 

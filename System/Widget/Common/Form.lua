@@ -568,5 +568,6 @@ class "Form"
 		self.Resizable = true
 		self.Movable = true
 		self.Toplevel = true
+		self.ClampedToScreen = true
 	end
 endclass "Form"

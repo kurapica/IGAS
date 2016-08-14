@@ -14,5 +14,7 @@
 	<Include file="ActionHandler\ActionHandler.xml"/>
 
 	<!-- ActionButton -->
+	<Script file="Widget\BaseActionButton.lua"/>
 	<Script file="Widget\ActionButton.lua"/>
+	<Script file="Widget\ItemButton.lua"/>
 </Ui>

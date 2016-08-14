@@ -331,23 +331,6 @@ interface "IFActionHandler"
 		},
 	}
 
-	__Doc__[[Whether the search overlay will be shown]]
-	__Handler__(function (self, value)
-		-- Create it when needed
-		local overlay = self:GetChild("SearchOverlay")
-		if value then
-			if not overlay then
-				overlay = Texture("SearchOverlay", self, "OVERLAY", nil, 2)
-				overlay:SetAllPoints(self)
-				overlay:SetTexture(0, 0, 0, 0.8)
-			end
-			overlay.Visible = true
-		elseif overlay then
-			overlay.Visible = false
-		end
-	end)
-	property "ShowSearchOverlay" { Type = Boolean }
-
 	__Doc__[[What to be shown as the count]]
 	__Handler__(RefreshCount)
 	property "BagSlotCountStyle" { Type = BagSlotCountStyle, Default = "Hidden" }

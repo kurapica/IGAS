@@ -308,7 +308,7 @@ class "Button"
 			return self:GetDisabledTexture() and self:GetDisabledTexture().TexturePath
 		end,
 		Set = "SetDisabledTexture",
-		Type = String,
+		Type = String + Number,
 	}
 
 	__Doc__[[the texture object used when the button is highlighted]]
@@ -320,7 +320,7 @@ class "Button"
 			return self:GetHighlightTexture() and self:GetHighlightTexture().TexturePath
 		end,
 		Set = "SetHighlightTexture",
-		Type = String,
+		Type = String + Number,
 	}
 
 	__Doc__[[the texture object used for the button's normal state]]
@@ -332,7 +332,7 @@ class "Button"
 			return self:GetNormalTexture() and self:GetNormalTexture().TexturePath
 		end,
 		Set = "SetNormalTexture",
-		Type = String,
+		Type = String + Number,
 	}
 
 	__Doc__[[the texture object used when the button is pushed]]
@@ -344,7 +344,7 @@ class "Button"
 			return self:GetPushedTexture() and self:GetPushedTexture().TexturePath
 		end,
 		Set = "SetPushedTexture",
-		Type = String,
+		Type = String + Number,
 	}
 
 	__Doc__[[the FontString object used for the button's label text]]

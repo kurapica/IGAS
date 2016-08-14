@@ -818,16 +818,18 @@ class "DropDownList"
         end
 
         -- Hide the previous
-		if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList ~= self then
-			_DropDownListContainer.__ShowList.Visible = false
-		end
+        if not self.__DisableAutoHide then
+			if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList ~= self then
+				_DropDownListContainer.__ShowList.Visible = false
+			end
 
-		_DropDownListContainer.__ShowList = self
+			_DropDownListContainer.__ShowList = self
+		end
 
 		if self.__ShowOnCursor then
             local cursorX, cursorY = GetCursorPosition()
-            cursorX = cursorX/uiScale
-            cursorY =  cursorY/uiScale
+            cursorX = cursorX/self:GetEffectiveScale()
+            cursorY =  cursorY/self:GetEffectiveScale()
 
             local offsetX, offsetY
 

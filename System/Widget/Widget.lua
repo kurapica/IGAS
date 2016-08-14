@@ -564,7 +564,7 @@ _BaseFrame:Hide()
 ------------------------------------
 --- Store blz UI's methodes to IGAS's Widget
 ------------------------------------
-function StoreBlzMethod(cls, managerCls, managerCls2)
+function StoreBlzMethod(cls, managerCls, managerCls2, inheritCls)
 	local clsEnv = getfenv(2)
 
 	local sample
@@ -597,7 +597,11 @@ function StoreBlzMethod(cls, managerCls, managerCls2)
 	end
 
 	for fname, func in pairs(getmetatable(IGAS:GetUI(sample)).__index) do
-		if cls == sample or cls[fname] == nil then
+		if cls == sample then
+			if not inheritCls or inheritCls[fname] == nil then
+				clsEnv[fname] = func
+			end
+		elseif cls[fname] == nil then
 			clsEnv[fname] = func
 		end
 	end

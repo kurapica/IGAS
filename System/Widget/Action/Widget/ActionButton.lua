@@ -11,8 +11,8 @@ end
 __Doc__[[the base action button template]]
 __AutoProperty__()
 class "ActionButton"
-	inherit "CheckButton"
-	extend "IFActionHandler" "IFKeyBinding" "IFCooldownIndicator"
+	inherit "BaseActionButton"
+	extend "IFKeyBinding"
 
 	RANGE_INDICATOR = "●"
 
@@ -40,21 +40,8 @@ class "ActionButton"
 	end
 
 	------------------------------------------------------
-	-- Event
-	------------------------------------------------------
-
-	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[Update the action button when content is changed]]
-	function UpdateAction(self)
-		if self:HasAction() then
-			self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot2]]
-		else
-			self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot]]
-		end
-	end
-
 	__Doc__[[
 		<desc>Set flyoutDirection for action button</desc>
 		<param name="dir">System.Widget.Action.IFActionHandler.FlyoutDirection</param>
@@ -84,51 +71,6 @@ class "ActionButton"
 	------------------------------------------------------
 	-- Property
 	------------------------------------------------------
-	__Doc__[[the action button icon's image file path, accessed by IFActionHandler]]
-	property "Icon" {
-		Get = function(self)
-			return self:GetChild("Icon").TexturePath
-		end,
-		Set = function(self, value)
-			self:GetChild("Icon").TexturePath = value
-		end,
-		Type = String+Number,
-	}
-
-	__Doc__[[the action's count, like item's count, accessed by IFActionHandler]]
-	property "Count" {
-		Get = function(self)
-			return self:GetChild("Count").Text
-		end,
-		Set = function(self, value)
-			self:GetChild("Count").Text = tostring(value or "")
-		end,
-		Type = StringNumber,
-	}
-
-	__Doc__[[the action's text, accessed by IFActionHandler]]
-	property "Text" {
-		Get = function(self)
-			return self:GetChild("Name").Text
-		end,
-		Set = function(self, value)
-			self:GetChild("Name").Text = value or ""
-		end,
-		Type = String,
-	}
-
-	__Doc__[[the action button's hotkey]]
-	property "HotKey" {
-		Get = function(self)
-			return self:GetChild("HotKey").Text
-		end,
-		Set = function(self, value)
-			self:GetChild("HotKey").Text = value or RANGE_INDICATOR
-			UpdateHotKey(self)
-		end,
-		Type = String,
-	}
-
 	__Doc__[[the visible of the flash, accessed by IFActionHandler]]
 	property "FlashVisible" {
 		Get = function(self)
@@ -162,29 +104,15 @@ class "ActionButton"
 		Type = Boolean,
 	}
 
-	__Doc__[[whether the target is in range, accessed by IFActionHandler]]
-	__Handler__( UpdateHotKey )
-	property "InRange" { Type = BooleanNil_01 }
-
-	__Doc__[[whether the action is usable, accessed by IFActionHandler]]
-	__Handler__( function (self, value)
-		if value then
-			self:GetChild("Icon"):SetVertexColor(1.0, 1.0, 1.0)
-		else
-			self:GetChild("Icon"):SetVertexColor(0.4, 0.4, 0.4)
-		end
-	end )
-	property "Usable" { Type = BooleanNil }
-
 	__Doc__[[whether the action is auto castable, accessed by IFActionHandler]]
 	__Handler__( function (self, value)
 		if value then
 			if not self:GetChild("AutoCastable") then
-		    	local autoCast = Texture("AutoCastable", self, "OVERLAY")
-		    	autoCast.Visible = false
-		    	autoCast.TexturePath = [[Interface\Buttons\UI-AutoCastableOverlay]]
-		    	autoCast:SetPoint("TOPLEFT", -14, 14)
-		    	autoCast:SetPoint("BOTTOMRIGHT", 14, -14)
+				local autoCast = Texture("AutoCastable", self, "OVERLAY")
+				autoCast.Visible = false
+				autoCast.TexturePath = [[Interface\Buttons\UI-AutoCastableOverlay]]
+				autoCast:SetPoint("TOPLEFT", -14, 14)
+				autoCast:SetPoint("BOTTOMRIGHT", 14, -14)
 			end
 			self:GetChild("AutoCastable").Visible = true
 		else
@@ -206,68 +134,27 @@ class "ActionButton"
 	end )
 	property "AutoCasting" { Type = BooleanNil }
 
-	__Doc__[[Whether an indicator should be shown for equipped item]]
-	__Handler__( function (self, value)
-		if value then
-			self.Border:SetVertexColor(0, 1.0, 0, 0.35)
-			self.Border.Visible = true
-		else
-			self.Border.Visible = false
-		end
-	end )
-	property "EquippedItemIndicator" { Type = BooleanNil }
+	property "HotKey" {
+		Get = function(self)
+			return self:GetChild("HotKey").Text
+		end,
+		Set = function(self, value)
+			self:GetChild("HotKey").Text = value or RANGE_INDICATOR
+			UpdateHotKey(self)
+		end,
+		Type = String,
+	}
 
-	__Doc__[[Whether the action button's icon is locked]]
-	__Handler__( function (self, value)
-		self:GetChild("Icon"):SetDesaturated(value)
-	end )
-	property "IconLocked" { Type = BooleanNil }
-
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
+	__Handler__( UpdateHotKey )
+	property "InRange" { Type = BooleanNil_01 }
 
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, template)
-    	if type(template) ~= "string" or strtrim(template) == "" then
-    		return CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate")
-    	else
-    		if not template:find("SecureActionButtonTemplate") then
-    			template = "SecureActionButtonTemplate,"..template
-    		end
-    		return CreateFrame("CheckButton", name, parent, template)
-    	end
-	end
+	function ActionButton(self, ...)
+		Super(self, ...)
 
-    function ActionButton(self, ...)
-    	Super(self, ...)
-
-		self.Height = 36
-		self.Width = 36
-
-		-- Button Texture
-		--- NormalTexture
-		self.NormalTexturePath = [[Interface\Buttons\UI-Quickslot]]
-		self.NormalTexture:ClearAllPoints()
-		self.NormalTexture:SetPoint("TOPLEFT", -15, 15)
-		self.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
-
-		--- PushedTexture
-		self.PushedTexturePath = [[Interface\Buttons\UI-Quickslot-Depress]]
-
-		--- HighlightTexture
-		self.HighlightTexturePath = [[Interface\Buttons\ButtonHilight-Square]]
-		self.HighlightTexture.BlendMode = "Add"
-
-		--- CheckedTexture
-		self.CheckedTexturePath = [[Interface\Buttons\CheckButtonHilight]]
-		self.CheckedTexture.BlendMode = "Add"
-
-		-- BACKGROUND
-		local icon = Texture("Icon", self, "BACKGROUND")
-		icon:SetAllPoints(self)
+		self.UseRangeCheck = true
 
 		-- ARTWORK-1
 		local flash = Texture("Flash", self, "ARTWORK", nil, 1)
@@ -303,23 +190,5 @@ class "ActionButton"
 		hotKey.Height = 10
 		hotKey:SetPoint("TOPLEFT", 1, -3)
 		hotKey:SetPoint("TOPRIGHT", -1, -3)
-
-		local count = FontString("Count", self, "ARTWORK", "NumberFontNormal", 2)
-		count.JustifyH = "Right"
-		count:SetPoint("BOTTOMRIGHT", -2, 2)
-
-		-- OVERLAY
-		local name = FontString("Name", self, "OVERLAY", "GameFontHighlightSmallOutline")
-		name.JustifyH = "Center"
-		name.Height = 10
-		name:SetPoint("BOTTOMLEFT", 0, 2)
-		name:SetPoint("BOTTOMRIGHT", 0, 2)
-
-		local border = Texture("Border", self, "OVERLAY")
-		border.BlendMode = "Add"
-		border.Visible = false
-		border.TexturePath = [[Interface\Buttons\UI-ActionButton-Border]]
-		border:SetPoint("TOPLEFT", -8, 8)
-		border:SetPoint("BOTTOMRIGHT", 8, -8)
-    end
+	end
 endclass "ActionButton"

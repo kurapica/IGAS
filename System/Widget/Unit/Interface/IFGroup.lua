@@ -275,6 +275,10 @@ interface "IFGroup"
 			for i = #ShadowFrames, 1, -1 do
 				ShadowFrames[i]:SetAttribute("unit", nil)
 			end
+			-- Make sure hide all unit frames
+			for i = #UnitFrames, 1, -1 do
+				UnitFrames[i]:SetAttribute("unit", nil)
+			end
 		]]
 
 		_ToggleShowOnlyPlayer = [[

@@ -16,6 +16,25 @@ __AutoProperty__()
 class "Region"
 	inherit "UIObject"
 
+	local function GetPos(frame, point)
+		local e = frame:GetEffectiveScale()/UIParent:GetScale()
+		local x, y = frame:GetCenter()
+
+		if strfind(point, "TOP") then
+			y = frame:GetTop()
+		elseif strfind(point, "BOTTOM") then
+			y = frame:GetBottom()
+		end
+
+		if strfind(point, "LEFT") then
+			x = frame:GetLeft()
+		elseif strfind(point, "RIGHT") then
+			x = frame:GetRight()
+		end
+
+		return x * e, y * e
+	end
+
 	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
@@ -263,6 +282,37 @@ class "Region"
 	]]
 
 	__Doc__"StopAnimating" [[Stops any active animations involving the region or its children]]
+
+
+	__Doc__[[Change the anchor settings with a location value]]
+	__Arguments__{ Location }
+	function UpdateWithAnchorSetting(self, oLoc)
+		local loc = {}
+
+		for i, anchor in ipairs(oLoc) do
+			local relativeTo = anchor.relativeTo
+			local relativeFrame
+
+			if relativeTo then
+				relativeFrame = self.Parent:GetChild(relativeTo) or IGAS:GetFrame(relativeTo)
+			else
+				relativeFrame = self.Parent
+			end
+
+			if relativeFrame then
+				local e = self:GetEffectiveScale()
+				local ep = relativeFrame:GetEffectiveScale()
+				local x, y = GetPos(self, anchor.point)
+				local rx, ry = GetPos(relativeFrame, anchor.relativePoint or anchor.point)
+
+				tinsert(loc, AnchorPoint(anchor.point, (x-rx)*ep/e, (y-ry)*ep/e, relativeTo, anchor.relativePoint or anchor.point))
+			end
+		end
+
+		if #loc > 0 then
+			self.Location = loc
+		end
+	end
 
 	------------------------------------------------------
 	-- Property

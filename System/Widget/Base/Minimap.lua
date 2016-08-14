@@ -106,7 +106,7 @@ class "Minimap"
 	------------------------------------------------------
 	-- BlzMethodes
 	------------------------------------------------------
-	StoreBlzMethod(_G.Minimap)
+	StoreBlzMethod(_G.Minimap, nil, nil, Frame)
 
 	------------------------------------------------------
 	-- Property

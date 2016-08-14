@@ -3,7 +3,7 @@
 -- Change Log  :
 
 -- Check Version
-local version = 2
+local version = 3
 if not IGAS:NewAddon("IGAS.Widget.Action.IFActionHandler", version) then
 	return
 end
@@ -36,6 +36,7 @@ do
 	_AutoAttackButtons = setmetatable({}, {__mode = "k"})
 	_AutoRepeatButtons = setmetatable({}, getmetatable(_AutoAttackButtons))
 	_Spell4Buttons = setmetatable({}, getmetatable(_AutoAttackButtons))
+	_RangeCheckButtons = setmetatable({}, getmetatable(_AutoAttackButtons))
 
 	_GlobalGroup = "Global"
 
@@ -112,6 +113,9 @@ interface "IFActionTypeHandler"
 	------------------------------------------------------
 	-- Overridable Method
 	------------------------------------------------------
+	__Doc__[[Refresh the button]]
+	function RefreshButton(self) end
+
 	__Doc__[[
 		<desc>Get the actions's kind, target, detail</desc>
 		<return type="kind"></return>
@@ -334,6 +338,12 @@ interface "IFActionTypeHandler"
 	__Doc__[[The snippet used to clear action]]
 	property "ClearSnippet" { Type = String }
 
+	__Doc__[[The snippet used for pre click]]
+	property "PreClickSnippet" { Type = String }
+
+	__Doc__[[The snippet used for post click]]
+	property "PostClickSnippet" { Type = String }
+
 	------------------------------------------------------
 	-- Initialize
 	------------------------------------------------------
@@ -388,12 +398,20 @@ interface "IFActionTypeHandler"
 		-- Register PickupMap
 		if self.PickupMap then self:RunSnippet( _RegisterSnippetTemplate:format("_PickupMap", self.Name, self.PickupMap) ) end
 
+		-- Register PreClickMap
+		if self.PreClickSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_PreClickSnippet", self.Name, self.PreClickSnippet) ) end
+
+		-- Register PostClickMap
+		if self.PostClickSnippet then self:RunSnippet( _RegisterSnippetTemplate:format("_PostClickSnippet", self.Name, self.PostClickSnippet) ) end
+
 		-- Clear
 		self.InitSnippet = nil
 		self.PickupSnippet = nil
 		self.UpdateSnippet = nil
 		self.ReceiveSnippet = nil
 		self.ClearSnippet = nil
+		self.PreClickSnippet = nil
+		self.PostClickSnippet = nil
     end
 endinterface "IFActionTypeHandler"
 
@@ -619,6 +637,8 @@ do
 			_UpdateSnippet = newtable()
 			_PickupSnippet = newtable()
 			_ReceiveSnippet = newtable()
+			_PreClickSnippet = newtable()
+			_PostClickSnippet = newtable()
 
 			_DragStyle = newtable()
 			_ReceiveStyle = newtable()
@@ -843,16 +863,18 @@ do
 	]]
 
 	_IFActionHandler_WrapClickPrev = [[
-		if self:GetAttribute("type") == "action" or self:GetAttribute("type") == "pet" then
-			local type, action = GetActionInfo(self:GetAttribute("action"))
-			return nil, format("%s|%s", tostring(type), tostring(action))
+		local name = self:GetAttribute("actiontype")
+
+		if _PreClickSnippet[name] then
+			return Manager:RunFor(self, _PreClickSnippet[name], button, down)
 		end
 	]]
 
 	_IFActionHandler_WrapClickPost = [[
-		local type, action = GetActionInfo(self:GetAttribute("action"))
-		if message ~= format("%s|%s", tostring(type), tostring(action)) then
-			return Manager:RunFor(self, UpdateAction)
+		local name = self:GetAttribute("actiontype")
+
+		if _PostClickSnippet[name] then
+			return Manager:RunFor(self, _PostClickSnippet[name], message, button, down)
 		end
 	]]
 
@@ -1205,6 +1227,12 @@ do
 
 		_Spell4Buttons[self] = handler.GetSpellId(self)
 
+		if self.UseRangeCheck and handler.HasAction(self) then
+			_RangeCheckButtons[self] = true
+		elseif _RangeCheckButtons[self] then
+			_RangeCheckButtons[self] = nil
+		end
+
 		if handler.IsPlayerAction and handler.ReceiveStyle ~= "Block" then
 			UpdateGrid(self)
 		end
@@ -1239,6 +1267,8 @@ do
 		if _IFActionHandler_OnTooltip == self then
 			UpdateTooltip(self)
 		end
+
+		handler.RefreshButton(self)
 
 		return self:UpdateAction()
 	end
@@ -1422,7 +1452,9 @@ do
 	end
 
 	function _IFActionHandler_UpdateRangeTimer:OnTimer()
-		_IFActionHandler_Buttons:Each(UpdateRange)
+		for btn in pairs(_RangeCheckButtons) do
+			UpdateRange(btn)
+		end
 	end
 
 	function _IFActionHandler_FlashingTimer:OnTimer()
@@ -1685,6 +1717,12 @@ interface "IFActionHandler"
 
 	__Doc__[[Whether an indicator should be shown for equipped item]]
 	__Optional__() property "EquippedItemIndicator" { Type = Boolean }
+
+	__Doc__[[Whether the action should check the range]]
+	__Optional__() property "UseRangeCheck" { Type = Boolean }
+
+	__Doc__[[Whether the search overlay will be shown]]
+	property "ShowSearchOverlay" { Type = Boolean }
 
 	__Doc__[[Whether the action button's icon is locked]]
 	__Optional__() property "IconLocked" { Type = Boolean }

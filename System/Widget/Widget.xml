@@ -73,6 +73,7 @@
 	<Script file="Secure\IFSecureHandler.lua"/>
 	<Script file="Secure\SecureFrame.lua"/>
 	<Script file="Secure\SecureButton.lua"/>
+	<Script file="Secure\SecureCheckButton.lua"/>
 
 	<!-- Custom Widget -->
 	<Script file="Common\NormalButton.lua"/>

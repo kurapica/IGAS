@@ -18,11 +18,14 @@ class "SecureButton"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if select('#', ...) > 0 then
-			return CreateFrame("Button", name, parent, ...)
-		else
-			return CreateFrame("Button", name, parent, "SecureFrameTemplate")
-		end
+	function Constructor(self, name, parent, template)
+    	if type(template) ~= "string" or strtrim(template) == "" then
+    		return CreateFrame("Button", name, parent, "SecureActionButtonTemplate")
+    	else
+    		if not template:find("SecureActionButtonTemplate") then
+    			template = "SecureActionButtonTemplate,"..template
+    		end
+    		return CreateFrame("Button", name, parent, template)
+    	end
 	end
 endclass "SecureButton"

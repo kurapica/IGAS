@@ -29,9 +29,15 @@ function _IFPowerUnitList:ParseEvent(event, unit, type)
 		if powerType ~= _IFPowerUnitPowerType[unit] then
 			_IFPowerUnitPowerType[unit] = powerType
 
+			local max = UnitPowerMax(unit, powerType)
+			local value = UnitPower(unit, powerType)
+
 			for obj in self:GetIterator(unit) do
 				obj:SetUnitPowerType(powerType)
+				obj:SetUnitPower(value, max)
 			end
+
+			return
 		end
 
 		if event == "UNIT_POWER" then

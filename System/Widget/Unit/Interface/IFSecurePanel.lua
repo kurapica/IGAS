@@ -86,24 +86,35 @@ do
 				end
 			end
 
-			if not panel:GetAttribute("IFSecurePanel_KeepMaxSize") and ( not noForce or panel:GetAttribute("IFSecurePanel_AutoSize") ) then
-				if count ~= IFSecurePanel_Cache[panel] then
-					IFSecurePanel_Cache[panel] = count
+			if not panel:GetAttribute("IFSecurePanel_KeepMaxSize") then
+				if not noForce or panel:GetAttribute("IFSecurePanel_AutoSize") then
+					if count ~= IFSecurePanel_Cache[panel] then
+						IFSecurePanel_Cache[panel] = count
 
-					if orientation == "HORIZONTAL" then
-						row = ceil(count / columnCount)
-						column = row == 1 and count or columnCount
-					else
-						column = ceil(count / rowCount)
-						row = column == 1 and count or rowCount
-					end
+						if orientation == "HORIZONTAL" then
+							row = ceil(count / columnCount)
+							column = row == 1 and count or columnCount
+						else
+							column = ceil(count / rowCount)
+							row = column == 1 and count or rowCount
+						end
 
-					if row > 0 and column > 0 then
-						panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
-						panel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
-					else
-						panel:SetWidth(1)
-						panel:SetHeight(1)
+						if panel:GetAttribute("IFSecurePanel_KeepColumnSize") then
+							column = columnCount
+							if row == 0 then row = 1 end
+						end
+						if panel:GetAttribute("IFSecurePanel_KeepRowSize") then
+							row = rowCount
+							if column == 0 then column = 1 end
+						end
+
+						if row > 0 and column > 0 then
+							panel:SetWidth(column * elementWidth + (column - 1) * hSpacing + marginLeft + marginRight)
+							panel:SetHeight(row * elementHeight + (row - 1) * vSpacing + marginTop + marginBottom)
+						else
+							panel:SetWidth(1)
+							panel:SetHeight(1)
+						end
 					end
 				end
 			end
@@ -270,9 +281,9 @@ interface "IFSecurePanel"
 
 	local function AdjustPanel(self)
 		if self.KeepMaxSize then
-			--self.Width = self.ColumnCount * self.ElementWidth + (self.ColumnCount - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
-			--self.Height = self.RowCount * self.ElementHeight + (self.RowCount - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
-			local row, column
+			self.Width = self.ColumnCount * self.ElementWidth + (self.ColumnCount - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
+			self.Height = self.RowCount * self.ElementHeight + (self.RowCount - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
+			--[[local row, column
 
 			if self.Orientation == "HORIZONTAL" then
 				row = ceil(self.Count / self.ColumnCount)
@@ -288,7 +299,7 @@ interface "IFSecurePanel"
 			else
 				self:SetWidth(1)
 				self:SetHeight(1)
-			end
+			end--]]
 		else
 			SecureUpdatePanelSize(self)
 		end
@@ -345,6 +356,8 @@ interface "IFSecurePanel"
 		MarginRight = 0,
 		MarginBottom = 0,
 		AutoSize = 0,
+		KeepColumnSize = 0,
+		KeepRowSize = 0,
 
 		-- 1 - self:Each(AdjustElement, self)
 		MarginLeft = 1,
@@ -556,6 +569,14 @@ interface "IFSecurePanel"
 	__Doc__[[Whether adjust the elements position automatically]]
 	__Handler__( OnPropertyChanged )
 	property "AutoPosition" { Type = Boolean }
+
+	__Doc__[[Whether keep the max size for columns]]
+	__Handler__( OnPropertyChanged )
+	property "KeepColumnSize" { Type = Boolean }
+
+	__Doc__[[Whether keep the max size for rows]]
+	__Handler__( OnPropertyChanged )
+	property "KeepRowSize" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Event Handler

@@ -64,6 +64,15 @@ interface "IFElementPanel"
 				row = column == 1 and i or self.RowCount
 			end
 
+			if self.KeepColumnSize then
+				column = self.ColumnCount
+				if row == 0 then row = 1 end
+			end
+			if self.KeepRowSize then
+				row = self.RowCount
+				if column == 0 then column = 1 end
+			end
+
 			if row > 0 and column > 0 then
 				self.Width = column * self.ElementWidth + (column - 1) * self.HSpacing + self.MarginLeft + self.MarginRight
 				self.Height = row * self.ElementHeight + (row - 1) * self.VSpacing + self.MarginTop + self.MarginBottom
@@ -294,6 +303,14 @@ interface "IFElementPanel"
 	__Doc__[[Whether the elementPanel should keep it's max size]]
 	__Handler__( AdjustPanel )
 	property "KeepMaxSize" { Type = Boolean }
+
+	__Doc__[[Whether keep the max size for columns]]
+	__Handler__( AdjustPanel )
+	property "KeepColumnSize" { Type = Boolean }
+
+	__Doc__[[Whether keep the max size for rows]]
+	__Handler__( AdjustPanel )
+	property "KeepRowSize" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Initialize

@@ -29,9 +29,15 @@ function _IFPowerFrequentUnitList:ParseEvent(event, unit, type)
 		if powerType ~= _IFPowerFrequentUnitPowerType[unit] then
 			_IFPowerFrequentUnitPowerType[unit] = powerType
 
+			local max = UnitPowerMax(unit, powerType)
+			local value = UnitPower(unit, powerType)
+
 			for obj in self:GetIterator(unit) do
 				obj:SetUnitPowerType(powerType)
+				obj:SetUnitPower(value, max)
 			end
+
+			return
 		end
 
 		if event == "UNIT_POWER_FREQUENT" then

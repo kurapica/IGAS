@@ -1,3 +1,6 @@
+2016/08/14: IGAS v105
+    1. Fix bugs and finished the bag-slot handler.
+
 2016/08/04: IGAS v104
     1. Fix show/hide api for IFRune, IFStagger, IFClassPower.
 

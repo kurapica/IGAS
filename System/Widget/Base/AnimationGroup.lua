@@ -146,6 +146,10 @@ class "AnimationGroup"
 
 	__Doc__"Stop" [[Stops animation of the group. Unlike with AnimationGroup:Pause(), the animation is reset to the initial state (e.g. in a fade-out-fade-in animation, the element will be instantly returned to full opacity) instead of paused at its current progress state.]]
 
+	__Doc__"SetToFinalAlpha" [[Set the final alpha to the animated region]]
+
+	__Doc__"IsSetToFinalAlpha" [[Whether set the final alpha to the animated region]]
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -242,5 +246,5 @@ class "AnimationGroup"
 	property "Duration" { }
 
 	__Doc__[[Whether to final alpha is set]]
-	property "ToFinalAlpha" { Type = Boolean }
+	property "ToFinalAlpha" { Type = Boolean, Set = SetToFinalAlpha, Get = IsSetToFinalAlpha }
 endclass "AnimationGroup"
