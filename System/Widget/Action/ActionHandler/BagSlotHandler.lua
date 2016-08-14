@@ -297,16 +297,12 @@ function handler:IsUsableAction()
 	return item and IsUsableItem(item)
 end
 
-local _IsConsumableCache = {}
-
 function handler:IsConsumableAction()
 	local item = GetContainerItemID(self.ActionTarget, self.ActionDetail)
 	if not item then return false end
-	if _IsConsumableCache[item] ~= nil then return _IsConsumableCache[item] end
 
 	local maxStack = select(8, GetItemInfo(item)) or 0
-	_IsConsumableCache[item] = maxStack > 1
-	return _IsConsumableCache[item]
+	return maxStack > 1
 end
 
 function handler:IsInRange()

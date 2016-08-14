@@ -1,3 +1,6 @@
+2016/08/15: IGAS v107
+    1. Fix the bagslot won't display count when first login.
+
 2016/08/14: IGAS v106
     1. Fix error for TreeView.
 
