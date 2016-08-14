@@ -1,3 +1,6 @@
+2016/08/14: IGAS v106
+    1. Fix error for TreeView.
+
 2016/08/14: IGAS v105
     1. Fix bugs and finished the bag-slot handler.
 

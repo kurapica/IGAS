@@ -1396,7 +1396,7 @@ class "TreeView"
 	function SelectNone(self)
 		self.__SelectedItem = nil
 
-		for i = (self.__ChildNodeCount or 0), index+1, -1 do
+		for i = (self.__ChildNodeCount or 0), 1, -1 do
 			self:GetChild(_Index2Name(i)).HighlightLocked = false
 		end
 	end
