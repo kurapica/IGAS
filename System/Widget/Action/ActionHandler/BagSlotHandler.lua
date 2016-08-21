@@ -16,6 +16,16 @@ _BagCache = {}
 LE_ITEM_QUALITY_POOR = _G.LE_ITEM_QUALITY_POOR
 REPAIR_COST = _G.REPAIR_COST
 
+BACKPACK_CONTAINER = _G.BACKPACK_CONTAINER
+BANK_CONTAINER = _G.BANK_CONTAINER
+REAGENTBANK_CONTAINER = _G.REAGENTBANK_CONTAINER
+NUM_BAG_SLOTS = _G.NUM_BAG_SLOTS
+NUM_BANKBAGSLOTS = _G.NUM_BANKBAGSLOTS
+NUM_BANKGENERIC_SLOTS = _G.NUM_BANKGENERIC_SLOTS
+
+_ContainerBag = { BACKPACK_CONTAINER, 1, 2, 3, 4 }
+_BankBag = { BANK_CONTAINER, 5, 6, 7, 8, 9, 10, 11 }
+
 -- Event handler
 function OnEnable(self)
 	self:RegisterEvent("QUEST_ACCEPTED")
@@ -30,18 +40,34 @@ function OnEnable(self)
 	self:RegisterEvent("MERCHANT_SHOW")
 	self:RegisterEvent("MERCHANT_CLOSED")
 
+	self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
+	self:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
+
 	OnEnable = nil
 
 	return handler:Refresh()
 end
 
 function QUEST_ACCEPTED(self)
-	return handler:Refresh()
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn in pairs(_BagCache[bag]) do
+				handler:Refresh(btn)
+			end
+		end
+	end
 end
 
 function UNIT_QUEST_LOG_CHANGED(self, unit)
 	if unit ~= "player" then return end
-	return handler:Refresh()
+
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn in pairs(_BagCache[bag]) do
+				handler:Refresh(btn)
+			end
+		end
+	end
 end
 
 function BAG_UPDATE(self, bag)
@@ -65,7 +91,13 @@ function ITEM_LOCK_CHANGED(self, bag, slot)
 end
 
 function BAG_UPDATE_COOLDOWN(self)
-	return handler:Refresh(RefreshCooldown)
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn in pairs(_BagCache[bag]) do
+				RefreshCooldown(btn)
+			end
+		end
+	end
 end
 
 function INVENTORY_SEARCH_UPDATE(self)
@@ -77,24 +109,62 @@ function INVENTORY_SEARCH_UPDATE(self)
 end
 
 function BAG_NEW_ITEMS_UPDATED(self)
-	return handler:Refresh()
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn, slot in pairs(_BagCache[bag]) do
+				if C_NewItems.IsNewItem(bag, slot) then
+					handler:Refresh(btn)
+				end
+			end
+		end
+	end
 end
 
 function MERCHANT_SHOW(self)
-	for _, btn in handler() do
-		local texture, itemCount, locked, quality, readable, _, _, isFiltered, noValue, itemID = GetContainerItemInfo(btn.ActionTarget, btn.ActionDetail)
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn, slot in pairs(_BagCache[bag]) do
+				local texture, itemCount, locked, quality, readable, _, _, isFiltered, noValue, itemID = GetContainerItemInfo(bag, slot)
 
-		if itemID then
-			self.ShowJunkIcon = (quality == LE_ITEM_QUALITY_POOR and not noValue)
-		else
-			self.ShowJunkIcon = false
+				if itemID then
+					btn.ShowJunkIcon = (quality == LE_ITEM_QUALITY_POOR and not noValue)
+				else
+					btn.ShowJunkIcon = false
+				end
+			end
 		end
 	end
 end
 
 function MERCHANT_CLOSED(self)
-	for _, btn in handler() do
-		btn.ShowJunkIcon = false
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn, slot in pairs(_BagCache[bag]) do
+				btn.ShowJunkIcon = false
+			end
+		end
+	end
+end
+
+function PLAYERBANKSLOTS_CHANGED(self, slot)
+	if slot <= NUM_BANKGENERIC_SLOTS then
+		if _BagCache[BANK_CONTAINER] then
+			for btn, bslot in pairs(_BagCache[BANK_CONTAINER]) do
+				if bslot == slot then
+					handler:Refresh(btn)
+				end
+			end
+		end
+	end
+end
+
+function PLAYERREAGENTBANKSLOTS_CHANGED(self, slot)
+	if _BagCache[REAGENTBANK_CONTAINER] then
+		for btn, bslot in pairs(_BagCache[REAGENTBANK_CONTAINER]) do
+			if bslot == slot then
+				handler:Refresh(btn)
+			end
+		end
 	end
 end
 
@@ -292,9 +362,15 @@ function handler:IsActivedAction()
 end
 
 function handler:IsUsableAction()
-	local item = GetContainerItemID(self.ActionTarget, self.ActionDetail)
+	local bag = self.ActionTarget
 
-	return item and IsUsableItem(item)
+	if bag >= 0 and bag <= 4 then
+		local item = GetContainerItemID(self.ActionTarget, self.ActionDetail)
+
+		return item and IsUsableItem(item)
+	else
+		return true
+	end
 end
 
 function handler:IsConsumableAction()
@@ -306,46 +382,78 @@ function handler:IsConsumableAction()
 end
 
 function handler:IsInRange()
-	return IsItemInRange(GetContainerItemID(self.ActionTarget, self.ActionDetail), self:GetAttribute("unit"))
+	local bag = self.ActionTarget
+	if bag >= 0 and bag <= 4 then
+		return IsItemInRange(GetContainerItemID(self.ActionTarget, self.ActionDetail), self:GetAttribute("unit"))
+	end
 end
 
 function handler:SetTooltip(GameTooltip)
-	GameTooltip:SetOwner(self, "ANCHOR_NONE")
+	local bag = self.ActionTarget
+	local slot = self.ActionDetail
 
-	local showSell = nil
-	local hasCooldown, repairCost, speciesID, level, breedQuality, maxHealth, power, speed, name = GameTooltip:SetBagItem(self.ActionTarget, self.ActionDetail)
+	if bag == BANK_CONTAINER or bag == REAGENTBANK_CONTAINER then
+		local invId
 
-	GameTooltip:ClearAllPoints()
-	if self:GetRight() < GetScreenWidth() / 2 then
-		GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPRIGHT")
-	else
-		GameTooltip:SetPoint("BOTTOMRIGHT", self, "TOPLEFT")
-	end
-
-	if speciesID and speciesID > 0 then
-		BattlePetToolTip_Show(speciesID, level, breedQuality, maxHealth, power, speed, name)
-		return
-	else
-		if _G.BattlePetTooltip then
-			_G.BattlePetTooltip:Hide()
+		if bag == BANK_CONTAINER then
+			invId = BankButtonIDToInvSlotID(slot)
+		else
+			invId = ReagentBankButtonIDToInvSlotID(slot)
 		end
-	end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 
-	if InRepairMode() and (repairCost and repairCost > 0) then
-		GameTooltip:AddLine(REPAIR_COST, nil, nil, nil, true)
-		SetTooltipMoney(IGAS:GetUI(GameTooltip), repairCost)
-	elseif _G.MerchantFrame:IsShown() and _G.MerchantFrame.selectedTab == 1 then
-		showSell = 1
-	end
+		local hasItem, hasCooldown, repairCost, speciesID, level, breedQuality, maxHealth, power, speed, name = GameTooltip:SetInventoryItem("player", invId)
+		if(speciesID and speciesID > 0) then
+			BattlePetToolTip_Show(speciesID, level, breedQuality, maxHealth, power, speed, name)
+			CursorUpdate(self)
+			return
+		end
 
-	if IsModifiedClick("DRESSUP") and self._BagSlot_ItemID then
-		ShowInspectCursor()
-	elseif showSell then
-		ShowContainerSellCursor(self.ActionTarget, self.ActionDetail)
-	elseif self._BagSlot_Readable then
-		ShowInspectCursor()
+		if IsModifiedClick("DRESSUP") and self._BagSlot_ItemID then
+			ShowInspectCursor()
+		elseif self._BagSlot_Readable then
+			ShowInspectCursor()
+		else
+			ResetCursor()
+		end
 	else
-		ResetCursor()
+		GameTooltip:SetOwner(self, "ANCHOR_NONE")
+
+		local showSell = nil
+		local hasCooldown, repairCost, speciesID, level, breedQuality, maxHealth, power, speed, name = GameTooltip:SetBagItem(bag, slot)
+
+		GameTooltip:ClearAllPoints()
+		if self:GetRight() < GetScreenWidth() / 2 then
+			GameTooltip:SetPoint("BOTTOMLEFT", self, "TOPRIGHT")
+		else
+			GameTooltip:SetPoint("BOTTOMRIGHT", self, "TOPLEFT")
+		end
+
+		if speciesID and speciesID > 0 then
+			BattlePetToolTip_Show(speciesID, level, breedQuality, maxHealth, power, speed, name)
+			return
+		else
+			if _G.BattlePetTooltip then
+				_G.BattlePetTooltip:Hide()
+			end
+		end
+
+		if InRepairMode() and (repairCost and repairCost > 0) then
+			GameTooltip:AddLine(REPAIR_COST, nil, nil, nil, true)
+			SetTooltipMoney(IGAS:GetUI(GameTooltip), repairCost)
+		elseif _G.MerchantFrame:IsShown() and _G.MerchantFrame.selectedTab == 1 then
+			showSell = 1
+		end
+
+		if IsModifiedClick("DRESSUP") and self._BagSlot_ItemID then
+			ShowInspectCursor()
+		elseif showSell then
+			ShowContainerSellCursor(self.ActionTarget, self.ActionDetail)
+		elseif self._BagSlot_Readable then
+			ShowInspectCursor()
+		else
+			ResetCursor()
+		end
 	end
 end
 

@@ -41,8 +41,8 @@ interface "IFActionHandler"
 
 	function SetAction(self, kind, target, ...)
 		if kind == "custom" then
-			self.custom = type(target) == "function" and target or nil
-			target = type(target) == "string" and target or nil
+			self:SetAttribute("_custom", target)
+			target = "_"
 		end
 
 		return old_SetAction(self, kind, target, ...)
@@ -63,7 +63,8 @@ interface "IFActionHandler"
 	property "CustomText" { Type = String }
 
 	__Doc__[[The custom texture path]]
-	property "CustomTexture" { Type = String }
+	__Handler__("Refresh")
+	property "CustomTexture" { Type = String + Number }
 
 	__Doc__[[The custom tooltip]]
 	property "CustomTooltip" { Type = String }

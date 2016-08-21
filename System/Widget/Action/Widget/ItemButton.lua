@@ -109,6 +109,15 @@ class "ItemButton"
 		Type = StringNumber,
 	}
 
+	__Handler__(function(self, val)
+		if val then
+			self:GetChild("Icon"):SetVertexColor(1, 1, 1)
+		else
+			self:GetChild("Icon"):SetVertexColor(1, 0.1, 0.1)
+		end
+	end)
+	property "BagUsable" { Type = Boolean, Default = true }
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------

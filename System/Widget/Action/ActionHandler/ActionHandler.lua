@@ -86,6 +86,7 @@ handler = ActionTypeHandler {
 
 		UpdateMainActionBar = [=[
 			local page = ...
+			if not page then page = 1 end
 			if page == "tempshapeshift" then
 				if HasTempShapeshiftActionBar() then
 					page = GetTempShapeshiftBarIndex()

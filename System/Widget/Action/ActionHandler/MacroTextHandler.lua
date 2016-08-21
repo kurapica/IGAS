@@ -59,7 +59,8 @@ interface "IFActionHandler"
 	property "CustomText" { Type = String }
 
 	__Doc__[[The custom texture path]]
-	property "CustomTexture" { Type = String }
+	__Handler__("Refresh")
+	property "CustomTexture" { Type = String + Number }
 
 	__Doc__[[The custom tooltip]]
 	property "CustomTooltip" { Type = String }

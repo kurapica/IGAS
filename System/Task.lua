@@ -2,7 +2,7 @@
 -- Create Date : 2014/06/28
 -- ChangeLog   :
 
-Module "System.Task" "2.1.1"
+Module "System.Task" "2.2.1"
 
 namespace "System"
 
@@ -667,6 +667,62 @@ __Final__() interface "Task"
 		return yield()
 	end
 endinterface "Task"
+
+------------------------------------------------------
+-- Cancel Task Clear
+-- The time task would be cleared by time
+-- Just clear event tasks
+------------------------------------------------------
+do
+	Task.ThreadCall(function()
+		while true do
+			for evt in pairs(p_Header) do
+				if type(evt) == "string" then
+					local head = p_Header[evt]
+					local cnt = 0
+
+					while head and head.Cancel do
+						local nxt = head.Next
+						cnt = cnt + 1
+						tinsert(c_Task, wipe(head))
+						head = nxt
+					end
+
+					p_Header[evt] = head
+					p_Tail[evt] = nil
+
+					while head do
+						local nxt = head.Next
+
+						while nxt and nxt.Cancel do
+							local nnxt = nxt.Next
+							cnt = cnt + 1
+							tinsert(c_Task, wipe(nxt))
+							nxt = nnxt
+						end
+
+						head.Next = nxt
+
+						if nxt then
+							head = nxt
+						else
+							p_Tail[evt] = head
+							head = nil
+						end
+					end
+
+					if cnt > 0 then
+						Log(1, "[System.Task.Clear]%s : %d", evt, cnt)
+					end
+
+					Task.Continue()
+				end
+			end
+
+			Task.Delay(10)
+		end
+	end)
+end
 
 ------------------------------------------------------
 -- Task System Diagnose

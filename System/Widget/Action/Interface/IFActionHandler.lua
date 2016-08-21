@@ -1142,11 +1142,16 @@ do
 
 	function UpdateTooltip(self)
 		self = IGAS:GetWrapper(self)
+		local anchor = self.GameTooltipAnchor
 
-		if (GetCVar("UberTooltips") == "1") then
-			GameTooltip_SetDefaultAnchor(_GameTooltip, self)
+		if anchor then
+			_GameTooltip:SetOwner(self, anchor)
 		else
-			_GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			if (GetCVar("UberTooltips") == "1") then
+				GameTooltip_SetDefaultAnchor(_GameTooltip, self)
+			else
+				_GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			end
 		end
 		_IFActionTypeHandler[self.ActionType].SetTooltip(self, _GameTooltip)
 		_IFActionHandler_OnTooltip =self
@@ -1726,6 +1731,9 @@ interface "IFActionHandler"
 
 	__Doc__[[Whether the action button's icon is locked]]
 	__Optional__() property "IconLocked" { Type = Boolean }
+
+	__Doc__[[The anchor point of the gametooltip]]
+	property "GameTooltipAnchor" { Type = AnchorType }
 
 	------------------------------------------------------
 	-- Dispose
