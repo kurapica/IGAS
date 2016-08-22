@@ -63,11 +63,12 @@ function OnEnable(self)
 					btn:SetAttribute("*type*", "macro")
 					btn:SetAttribute("*macrotext*", "/click CharacterBag".. tostring(target-1) .."Slot")
 				elseif target and target <= 11 then
-					btn:SetAttribute("*type*", "macro")
-					btn:SetAttribute("*macrotext*", "/click BankSlotsFrame.Bag".. tostring(target-4))
+					btn:SetAttribute("*type*", "openbank")
+					btn:SetAttribute("_openbank", [=[ self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("OpenBankBag", self:GetName()) ]]) ]=])
 				else
 					btn:SetAttribute("*type*", nil)
 					btn:SetAttribute("*macrotext*", nil)
+					btn:SetAttribute("_openbank", nil)
 				end
 				if target <= 4 then
 					local id = target ~= 0 and _BagSlotMap[target] or target or false
@@ -157,6 +158,7 @@ handler = ActionTypeHandler {
 	PickupSnippet = [[
 		local id = ...
 		if id ~= 0 then
+			Manager:CallMethod("CloseContainerForSafe", id)
 			return "clear", "bag", _BagSlotMap[id]
 		end
 	]],
@@ -172,11 +174,12 @@ handler = ActionTypeHandler {
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/click CharacterBag".. tostring(target-1) .."Slot")
 		elseif target and target <= 11 then
-			self:SetAttribute("*type*", "macro")
-			self:SetAttribute("*macrotext*", "/click BankSlotsFrame.Bag".. tostring(target-4))
+			self:SetAttribute("*type*", "openbank")
+			Manager:CallMethod("RegisterBankBag", self:GetName())
 		else
 			self:SetAttribute("*type*", nil)
 			self:SetAttribute("*macrotext*", nil)
+			Manager:CallMethod("UnregisterBankBag", self:GetName())
 		end
 
 		Manager:CallMethod("UpdateForPushItemAnim", self:GetName(), target)
@@ -184,7 +187,7 @@ handler = ActionTypeHandler {
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
-
+		Manager:CallMethod("UnregisterBankBag", self:GetName())
 		Manager:CallMethod("UpdateForPushItemAnim", self:GetName(), false)
 	]],
 	OnEnableChanged = function(self) _Enabled = self.Enabled end,
@@ -194,6 +197,37 @@ handler = ActionTypeHandler {
 IGAS:GetUI(handler.Manager).UpdateForPushItemAnim = function (self, name, target)
 	local id = target ~= 0 and _BagSlotMap[target] or target or false
 	return IFPushItemAnim.AttachBag(IGAS:GetWrapper(_G[name]), id)
+end
+
+IGAS:GetUI(handler.Manager).RegisterBankBag = function (self, btnName)
+	Task.NoCombatCall(function()
+		_G[btnName]:SetAttribute("_openbank", [=[ self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("OpenBankBag", self:GetName()) ]]) ]=])
+	end)
+end
+
+IGAS:GetUI(handler.Manager).UnregisterBankBag = function (self, btnName)
+	Task.NoCombatCall(function()
+		_G[btnName]:SetAttribute("_openbank",  nil)
+	end)
+end
+
+IGAS:GetUI(handler.Manager).OpenBankBag = function (self, btnName)
+	local bankID = IGAS:GetWrapper(_G[btnName]).BagSlot
+
+	if bankID and not InCombatLockdown() then
+		local inventoryID = BankButtonIDToInvSlotID(bankID-4, 1)
+		local hadItem = PutItemInBag(inventoryID)
+		if ( not hadItem ) then
+			-- open bag
+			ToggleBag(bankID)
+		end
+	end
+end
+
+IGAS:GetUI(handler.Manager).CloseContainerForSafe = function (self, id)
+	if id and not InCombatLockdown() then
+		CloseBag(id)
+	end
 end
 
 -- Overwrite methods
