@@ -1,3 +1,6 @@
+2016/08/24: IGAS v110
+    1. Add RegisterUnitEvent for System.Widget.Frame.
+
 2016/08/22: IGAS v109
     1. Fix the baghandler for bank bag.
 

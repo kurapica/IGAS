@@ -573,13 +573,8 @@ class "Frame"
 		<param name="event">string, the event's name</param>
 	]]
 	function RegisterEvent(self, event)
-		if type(event) == "string" and event ~= "" then
-			IGAS:GetUI(self):RegisterEvent(event)
-
-			self.OnEvent = self.OnEvent + OnEvent
-		else
-			error(("Usage : Frame:RegisterEvent(event) : 'event' - string expected, got %s."):format(type(event) == "string" and "empty string" or type(event)), 2)
-		end
+		IGAS:GetUI(self):RegisterEvent(event)
+		self.OnEvent = self.OnEvent + OnEvent
 	end
 
 	__Doc__"UnregisterAllEvents" [[Un-register all events]]
@@ -588,6 +583,11 @@ class "Frame"
 		<desc>Un-register given name event</desc>
 		<param name="event">string, the event's name</param>
 	]]
+
+	function RegisterUnitEvent(self, evt, ...)
+		IGAS:GetUI(self):RegisterUnitEvent(evt, ...)
+		self.OnEvent = self.OnEvent + OnEvent
+	end
 
 	------------------------------------------------------
 	-- Event Handler
