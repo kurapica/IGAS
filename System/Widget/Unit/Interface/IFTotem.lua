@@ -65,26 +65,19 @@ interface "IFTotem"
 	------------------------------------------------------
 	__Doc__[[Refresh the rune by index]]
 	__Optional__() function SetTotemByIndex(self, index, haveTotem, name, start, duration, icon)
-		local btn = self[index]
-
-		if btn then
-			if haveTotem and duration > 0 then
-				btn.Icon = icon
-				btn.Slot = SLOT_MAP[i]
-				btn:OnCooldownUpdate(start, duration)
-
-				btn.Visible = true
-			else
-				btn:OnCooldownUpdate()
-				btn.Visible = false
-			end
-		end
 	end
 
 	__Doc__[[Whether show or hide the totem bar]]
 	__Optional__() function SetTotemVisible(self, show)
 		self.Visible = show
 	end
+
+	------------------------------------------------------
+	-- Property
+	------------------------------------------------------
+	__Doc__[[The slot map of the totems]]
+	__Getter__"Clone"
+	__Static__() property "TotemSlotMap" { Default = SLOT_MAP, Set = false }
 
 	------------------------------------------------------
 	-- Dispose

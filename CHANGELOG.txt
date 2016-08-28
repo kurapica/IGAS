@@ -1,3 +1,6 @@
+2016/08/28: IGAS v112
+    1. Fix the IFTotem and TotemBar.
+
 2016/08/28: IGAS v111
     1. Fix the lag for sorting container's items.
     2. Fix error for IFPortrait.
