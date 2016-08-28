@@ -110,6 +110,9 @@ interface "IFCooldownLabel"
 	end )
 	property "IFCooldownLabelAutoColor" { Type = Boolean }
 
+	__Doc__[[Whether change the font size based on the jeight]]
+	property "IFCooldownLabelAutoSize" { Type = Boolean, Default = true }
+
 	------------------------------------------------------
 	-- Event Handler
 	------------------------------------------------------
@@ -138,7 +141,7 @@ interface "IFCooldownLabel"
 	end
 
 	local function OnSizeChanged(self)
-		if self.Height > 0 then
+		if self.Height > 0 and self.IFCooldownLabelAutoSize then
 			self:GetChild("CooldownLabel"):SetFont(self:GetChild("CooldownLabel"):GetFont(), self.Height * 4 / 7, "OUTLINE")
 		end
 	end

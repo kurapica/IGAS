@@ -32,6 +32,7 @@ function OnEnable(self)
 	self:RegisterEvent("UNIT_QUEST_LOG_CHANGED")
 
 	self:RegisterEvent("BAG_UPDATE")
+	self:RegisterEvent("BAG_UPDATE_DELAYED")
 	self:RegisterEvent("ITEM_LOCK_CHANGED")
 	self:RegisterEvent("BAG_UPDATE_COOLDOWN")
 	self:RegisterEvent("INVENTORY_SEARCH_UPDATE")
@@ -70,12 +71,21 @@ function UNIT_QUEST_LOG_CHANGED(self, unit)
 	end
 end
 
+local bagUpdateCache = {}
+
 function BAG_UPDATE(self, bag)
 	if _BagCache[bag] then
+		bagUpdateCache[bag] = true
+	end
+end
+
+function BAG_UPDATE_DELAYED(self)
+	for bag in pairs(bagUpdateCache) do
 		for btn in pairs(_BagCache[bag]) do
 			handler:Refresh(btn)
 		end
 	end
+	wipe(bagUpdateCache)
 end
 
 function ITEM_LOCK_CHANGED(self, bag, slot)

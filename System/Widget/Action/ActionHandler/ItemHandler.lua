@@ -27,7 +27,7 @@ function OnEnable(self)
 	-- Load toy informations
 	C_ToyBox.ForceToyRefilter()
 
-	self:RegisterEvent("BAG_UPDATE")
+	self:RegisterEvent("BAG_UPDATE_DELAYED")
 	self:RegisterEvent("BAG_UPDATE_COOLDOWN")
 	self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -78,7 +78,7 @@ function SPELL_UPDATE_COOLDOWN(self)
 	end
 end
 
-function BAG_UPDATE(self)
+function BAG_UPDATE_DELAYED(self)
 	handler:Refresh(RefreshCount)
 	return handler:Refresh(RefreshUsable)
 end

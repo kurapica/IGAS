@@ -24,7 +24,7 @@ function _IFPortraitUnitList:ParseEvent(event, unit)
 		unit = "party"..unit
 	end
 
-	return self:EachK(unit, OnForceRefresh, event == "UNIT_MODEL_CHANGED")
+	return unit and self:EachK(unit, OnForceRefresh, event == "UNIT_MODEL_CHANGED")
 end
 
 function OnForceRefresh(self, force)

@@ -58,8 +58,6 @@ class "PowerBar"
 		self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
 		self.FrameStrata = "LOW"
 		self.MouseEnabled = false
-
-		self.UsePowerColor = true
 	end
 endclass "PowerBar"
 
@@ -113,7 +111,5 @@ class "PowerBarFrequent"
 		self.StatusBarTexturePath = [[Interface\TargetingFrame\UI-StatusBar]]
 		self.FrameStrata = "LOW"
 		self.MouseEnabled = false
-
-		self.UsePowerColor = true
 	end
 endclass "PowerBarFrequent"

@@ -1,3 +1,7 @@
+2016/08/28: IGAS v111
+    1. Fix the lag for sorting container's items.
+    2. Fix error for IFPortrait.
+
 2016/08/24: IGAS v110
     1. Add RegisterUnitEvent for System.Widget.Frame.
 
