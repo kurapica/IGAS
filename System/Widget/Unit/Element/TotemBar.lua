@@ -101,7 +101,7 @@ class "TotemBar"
 		local btn = self.Element[index]
 
 		if btn then
-			if haveTotem and duration > 0 then
+			if haveTotem and name and duration > 0 then
 				btn.Icon = icon
 				btn:OnCooldownUpdate(start, duration)
 
@@ -230,7 +230,7 @@ class "SecureTotemBar"
 		local btn = self.Element[index]
 
 		if btn then
-			if haveTotem and duration > 0 then
+			if haveTotem and name and duration > 0 then
 				btn.Icon = icon
 				btn:OnCooldownUpdate(start, duration)
 

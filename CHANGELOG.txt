@@ -1,3 +1,6 @@
+2016/08/29: IGAS v113
+    1. Block noname totem seems shouldn't be seen.
+
 2016/08/28: IGAS v112
     1. Fix the IFTotem and TotemBar.
 
