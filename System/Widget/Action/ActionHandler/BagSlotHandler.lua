@@ -259,15 +259,34 @@ local function OnLeave(self)
 	end
 end
 
+local function OnShow(self)
+	local bag = self.ItemBag
+	if bag then
+		_BagCache[bag] = _BagCache[bag] or {}
+		_BagCache[bag][self] = self.ItemSlot
+	end
+	return handler:Refresh(self)
+end
+
+local function OnHide(self)
+	for k, v in pairs(_BagCache) do
+		if v[self] then v[self] = nil end
+	end
+end
+
 IGAS:GetUI(handler.Manager).RegisterBagSlot = function (self, btnName)
 	self = IGAS:GetWrapper(_G[btnName])
 
-	local bag = self.ItemBag
-	_BagCache[bag] = _BagCache[bag] or {}
-	_BagCache[bag][self] = self.ItemSlot
+	if self:IsVisible() then
+		local bag = self.ItemBag
+		_BagCache[bag] = _BagCache[bag] or {}
+		_BagCache[bag][self] = self.ItemSlot
+	end
 
 	self.OnEnter = self.OnEnter + OnEnter
 	self.OnLeave = self.OnLeave + OnLeave
+	self.OnShow = self.OnShow + OnShow
+	self.OnHide = self.OnHide + OnHide
 end
 
 IGAS:GetUI(handler.Manager).UnregisterBagSlot = function (self, btnName)
@@ -287,6 +306,8 @@ IGAS:GetUI(handler.Manager).UnregisterBagSlot = function (self, btnName)
 
 	self.OnEnter = self.OnEnter - OnEnter
 	self.OnLeave = self.OnLeave - OnLeave
+	self.OnShow = self.OnShow - OnShow
+	self.OnHide = self.OnHide - OnHide
 end
 
 -- Overwrite methods
