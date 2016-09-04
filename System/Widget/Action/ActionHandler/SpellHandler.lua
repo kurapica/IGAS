@@ -158,13 +158,11 @@ function UpdateMacroMap()
 	local _, id = GetSpellBookItemInfo(index, "spell")
 
 	while id do
-		if not _MacroMap[id] then
-			local name = GetSpellInfo(id)
-			if name then
-				_MacroMap[id] = name
-				cnt = cnt + 1
-				str[cnt] = _MacroMapTemplate:format(id, name)
-			end
+		local name = GetSpellInfo(id)
+		if name and _MacroMap[id] ~= name then
+			_MacroMap[id] = name
+			cnt = cnt + 1
+			str[cnt] = _MacroMapTemplate:format(id, name)
 		end
 
 		index = index + 1
@@ -272,6 +270,26 @@ handler = ActionTypeHandler {
 }
 
 -- Overwrite methods
+function handler:RefreshButton()
+	local target = self.ActionTarget
+
+	if not target then return end
+
+	if not _StanceMap[target] and not _MacroMap[target] then
+		local name = GetSpellInfo(target)
+		if name then
+			_MacroMap[target] = name
+
+			Task.NoCombatCall(function ()
+				handler:RunSnippet( _MacroMapTemplate:format(target, name) )
+
+				self:SetAttribute("*type*", "macro")
+				self:SetAttribute("*macrotext*", "/cast ".. name)
+			end)
+		end
+	end
+end
+
 function handler:PickupAction(target)
 	return PickupSpell(target)
 end

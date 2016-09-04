@@ -1,3 +1,6 @@
+2016/09/04: IGAS v115
+    1. Fix action buttons for spells not in the spell books.
+
 2016/09/01: IGAS v114
     1. The BagSlotHandler no longer refresh the buttons that is hidden, it should fix lags in some condition.
 
