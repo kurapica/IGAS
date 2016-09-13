@@ -483,6 +483,9 @@ do
 		_GroupMap[disposeFrame] = nil
 
 		if _HoverOnUnitFrame == disposeFrame then
+			if _HoverOnUnitFrameLeaveSnippet then
+				_HoverOnUnitFrame:UnregisterAutoHide()
+			end
 			_HoverOnUnitFrame = nil
 			_HoverOnUnitFrameLeaveSnippet = nil
 		end
