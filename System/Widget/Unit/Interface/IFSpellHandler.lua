@@ -502,6 +502,7 @@ do
 		local unit = self:GetAttribute("unit")
 
 		if _HoverOnUnitFrame and _HoverOnUnitFrameLeaveSnippet and _HoverOnUnitFrame ~= self then
+			_HoverOnUnitFrame:UnregisterAutoHide()
 			control:RunFor(_HoverOnUnitFrame, _HoverOnUnitFrameLeaveSnippet)
 		end
 
@@ -516,12 +517,19 @@ do
 		if _EnterSnippet[group] then
 			control:RunFor(self, _EnterSnippet[group])
 		end
+
+		if _HoverOnUnitFrameLeaveSnippet then
+			_HoverOnUnitFrame:RegisterAutoHide(0.25)
+		end
 	]]
 	-- OnLeave Snippet
 	_IFSpellHandler_OnLeaveSnippet = [[
 		local group = "%s"
 
 		if _HoverOnUnitFrame == self then
+			if _HoverOnUnitFrameLeaveSnippet then
+				_HoverOnUnitFrame:UnregisterAutoHide()
+			end
 			_HoverOnUnitFrame = nil
 			_HoverOnUnitFrameLeaveSnippet = nil
 		end
@@ -536,6 +544,12 @@ do
 
 		if _HoverOnUnitFrame ~= self then
 			return
+		end
+
+		if _HoverOnUnitFrameLeaveSnippet then
+			if self:GetAttribute("unit") then
+				self:Show()
+			end
 		end
 
 		_HoverOnUnitFrame = nil

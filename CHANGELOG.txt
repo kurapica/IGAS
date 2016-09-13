@@ -1,3 +1,6 @@
+2016/09/13: IGAS v116
+    1. Use RegisterAutoHide to fix the hover spell bindings not clear for IFSpellHandler.
+
 2016/09/04: IGAS v115
     1. Fix action buttons for spells not in the spell books.
 
