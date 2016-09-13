@@ -565,6 +565,7 @@ do
 
 		if _HoverOnUnitFrame and _GroupMap[_HoverOnUnitFrame] == group then
 			if _HoverOnUnitFrameLeaveSnippet then
+				_HoverOnUnitFrame:UnregisterAutoHide()
 				control:RunFor(_HoverOnUnitFrame, _HoverOnUnitFrameLeaveSnippet)
 			end
 			_HoverOnUnitFrame = nil
