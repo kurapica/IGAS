@@ -1,3 +1,6 @@
 package-as: IGAS
 
+required-dependencies:
+    - ploop
+
 manual-changelog: CHANGELOG.txt
