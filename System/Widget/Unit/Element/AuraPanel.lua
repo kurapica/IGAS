@@ -202,7 +202,7 @@ class "AuraPanel"
 		local filter = self.Filter
 
 		if unit then
-			while i < self.MaxCount do
+			while i <= self.MaxCount do
 				if UnitAura(unit, index, filter) then
 					if self:CustomFilter(unit, index, filter) then
 						self.Element[i]:Refresh(unit, index, filter)
