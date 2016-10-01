@@ -52,7 +52,7 @@ class "Array" (function(_ENV)
 				if Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
 					for sc in Reflector.GetAllEvents(_ArrayInfo[self].Type) do
 						if _ArrayInfo[self]["_ArrayActive_" .. sc] then
-							Reflector.ActiveThread(value, sc)
+							value[sc].Delegate = System.Task.ThreadCall
 						end
 						if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
 							Reflector.BlockEvent(value, sc)
@@ -79,7 +79,7 @@ class "Array" (function(_ENV)
 				if Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
 					for sc in Reflector.GetAllEvents(_ArrayInfo[self].Type) do
 						if _ArrayInfo[self]["_ArrayActive_" .. sc] then
-							Reflector.ActiveThread(value, sc)
+							value[sc].Delegate = System.Task.ThreadCall
 						end
 						if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
 							Reflector.BlockEvent(value, sc)
@@ -131,7 +131,7 @@ class "Array" (function(_ENV)
 		if _ArrayInfo[self] and _ArrayInfo[self].IsClass and _ArrayInfo[self].Type and Reflector.ObjectIsClass(value, _ArrayInfo[self].Type) then
 			for sc in Reflector.GetAllEvents(_ArrayInfo[self].Type) do
 				if _ArrayInfo[self]["_ArrayActive_" .. sc] then
-					Reflector.InactiveThread(value, sc)
+					value[sc].Delegate = nil
 				end
 				if _ArrayInfo[self]["_ArrayBlock_" .. sc] then
 					Reflector.UnBlockEvent(value, sc)
@@ -173,7 +173,7 @@ class "Array" (function(_ENV)
 
 						for _, obj in ipairs(self) do
 							if Reflector.ObjectIsClass(obj, cls) then
-								Reflector.ActiveThread(obj, name)
+								obj[name].Delegate = System.Task.ThreadCall
 							end
 						end
 					end
@@ -209,7 +209,7 @@ class "Array" (function(_ENV)
 
 						for _, obj in ipairs(self) do
 							if Reflector.ObjectIsClass(obj, cls) then
-								Reflector.InactiveThread(obj, name)
+								obj[name].Delegate = nil
 							end
 						end
 					end

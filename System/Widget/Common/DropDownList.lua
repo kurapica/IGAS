@@ -22,7 +22,7 @@ __Doc__[[
 		mnuHide = mnuEdit:AddMenuButton("Hide")  -- Create a sub pop-up menu for mnuEdit, and add a 'Hide' menu button to the sub pop-up menu
 
 		function mnuHide:OnClick()
-		    myForm.Visible = false               -- Hide myForm when click the 'Hide' menu button
+			myForm.Visible = false               -- Hide myForm when click the 'Hide' menu button
 		end
 	</usage>
 ]]
@@ -33,8 +33,8 @@ class "DropDownList"
 	UIParent = IGAS.UIParent
 
 	-- Container & ColorPicker
-    _DropDownListContainer = Frame("IGAS_GUI_ListContainer", UIParent)
-    _DropDownListContainer.__ShowList = _DropDownListContainer.__ShowList or nil
+	_DropDownListContainer = Frame("IGAS_GUI_ListContainer", UIParent)
+	_DropDownListContainer.__ShowList = _DropDownListContainer.__ShowList or nil
 
 	_DropDownColorPicker = ColorPicker("DropDownColorPicker", _DropDownListContainer)
 	_DropDownColorPicker:ClearAllPoints()
@@ -68,171 +68,183 @@ class "DropDownList"
 
 		itemHeight = 16
 
-        -- Events
-        --- colorBack
-        local function colorsWatch_OnClick(self)
-            self.Parent:Fire("OnClick")
+		-- Events
+		--- colorBack
+		local function colorsWatch_OnClick(self)
+			self.Parent:Fire("OnClick")
 			_DropDownColorPicker._DropDownButton = self.Parent
 			_DropDownColorPicker.Visible = true
-        end
+		end
 
-        local function colorsWatch_OnEnter(self)
-            self:GetChild("SwatchBg"):SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+		local function colorsWatch_OnEnter(self)
+			self:GetChild("SwatchBg"):SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
 			self.Parent:Fire("OnEnter")
-        end
+		end
 
-        local function colorsWatch_OnLeave(self)
-            self:GetChild("SwatchBg"):SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+		local function colorsWatch_OnLeave(self)
+			self:GetChild("SwatchBg"):SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 			self.Parent:Fire("OnLeave")
-        end
+		end
 
-        local function hideDropList(self)
+		local function hideDropList(self)
 			if self["IsObjectType"] and self:IsObjectType("DropDownList") then
 				self = self.__DdList or self
 			end
-            if self.__Childs and type(self.__Childs) == "table" then
-                for _, v in pairs(self.__Childs) do
-                    if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-                        if v.__DropDownList then
-                            hideDropList(v.__DropDownList)
-                        end
-                    end
-                end
-            end
-            self.Visible = false
-        end
+			if self.__Childs and type(self.__Childs) == "table" then
+				for _, v in pairs(self.__Childs) do
+					if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+						if v.__DropDownList then
+							hideDropList(v.__DropDownList)
+						end
+					end
+				end
+			end
+			self.Visible = false
+		end
 
-        local function hideDropDownList(self)
-            if self["IsObjectType"] and self:IsObjectType(DropDownMenuButton) and self.__DropDownList then
-                hideDropList(self.__DropDownList)
-            end
-        end
+		local function hideDropDownList(self)
+			if self["IsObjectType"] and self:IsObjectType(DropDownMenuButton) and self.__DropDownList then
+				hideDropList(self.__DropDownList)
+			end
+		end
 
-        local function showDropDownList(self)
-            local offsetx, offsety, menu
+		local function showDropDownList(self)
+			local offsetx, offsety, menu
 
-            -- Hide other sub dropdownlist
-            if self.Parent.__Childs and type(self.Parent.__Childs) == "table" then
-                for _,v in pairs(self.Parent.__Childs) do
-                    if type(v) == "table" then
-                        hideDropDownList(v)
-                    end
-                end
-            end
+			-- Hide other sub dropdownlist
+			if self.Parent.__Childs and type(self.Parent.__Childs) == "table" then
+				for _,v in pairs(self.Parent.__Childs) do
+					if type(v) == "table" then
+						hideDropDownList(v)
+					end
+				end
+			end
 
-            -- Show self's dropdownlist
-            menu = self.__DropDownList
+			-- Show self's dropdownlist
+			menu = self.__DropDownList
 
-            if menu then
-                menu.Visible = true
+			if menu then
+				menu.Visible = true
 
-                -- Offset-X
-                if self.Parent:GetRight() + menu.Width > GetScreenWidth() then
-                    offsetx = - (self.Parent.Width + menu.Width)
-                else
-                    offsetx = 0
-                end
-                -- Offset-Y
-                if self:GetTop() < menu.Height then
-                    offsety = menu.Height - self:GetTop()
-                else
-                    offsety = 0
-                end
+				-- Offset-X
+				if self.Parent.__Mask.ShowOnLeft then
+					if self.Parent:GetLeft() - menu.Width < 0 then
+						offsetx = 0
+						menu.ShowOnLeft = false
+					else
+						offsetx = - (self.Parent.Width + menu.Width)
+						menu.ShowOnLeft = true
+					end
+				else
+					if self.Parent:GetRight() + menu.Width > GetScreenWidth() then
+						offsetx = - (self.Parent.Width + menu.Width)
+						menu.ShowOnLeft = true
+					else
+						offsetx = 0
+						menu.ShowOnLeft = false
+					end
+				end
+				-- Offset-Y
+				if self:GetTop() < menu.Height then
+					offsety = menu.Height - self:GetTop()
+				else
+					offsety = 0
+				end
 				menu:ClearAllPoints()
-                menu:SetPoint("TOPLEFT", self, "TOPRIGHT", offsetx, offsety)
-            end
-        end
+				menu:SetPoint("TOPLEFT", self, "TOPRIGHT", offsetx, offsety)
+			end
+		end
 
-        local function toggleDropDownList(self)
-            if self.__DropDownList then
-                if self.__DropDownList.Visible then
-                    hideDropDownList(self)
-                else
-                    showDropDownList(self)
-                end
-            end
-        end
+		local function toggleDropDownList(self)
+			if self.__DropDownList then
+				if self.__DropDownList.Visible then
+					hideDropDownList(self)
+				else
+					showDropDownList(self)
+				end
+			end
+		end
 
-        --- expandArrow
-        local function expandArrow_OnClick(self)
-            toggleDropDownList(self.Parent)
-        end
+		--- expandArrow
+		local function expandArrow_OnClick(self)
+			toggleDropDownList(self.Parent)
+		end
 
-        local function expandArrow_OnEnter(self)
-            showDropDownList(self.Parent)
+		local function expandArrow_OnEnter(self)
+			showDropDownList(self.Parent)
 			self.Parent.Parent:Fire("OnEnter")
-        end
+		end
 
-        local function expandArrow_OnLeave(self)
-            self.Parent.Parent:Fire("OnLeave")
-        end
+		local function expandArrow_OnLeave(self)
+			self.Parent.Parent:Fire("OnLeave")
+		end
 
-        -- Item
-        local function item_OnEnter(self)
-            showDropDownList(self)
-            self:GetChild("HighLight"):Show()
-            self.Parent:Fire("OnEnter")
-        end
+		-- Item
+		local function item_OnEnter(self)
+			showDropDownList(self)
+			self:GetChild("HighLight"):Show()
+			self.Parent:Fire("OnEnter")
+		end
 
-        local function item_OnLeave(self)
-            self:GetChild("HighLight"):Hide()
-            self.Parent:Fire("OnLeave")
-        end
+		local function item_OnLeave(self)
+			self:GetChild("HighLight"):Hide()
+			self.Parent:Fire("OnLeave")
+		end
 
-        local function updateWidth(self)
-            local maxW = 0
+		local function updateWidth(self)
+			local maxW = 0
 
-            if self.__Childs and type(self.__Childs) == "table" then
-                for i,v in pairs(self.__Childs) do
-                    if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-                        if v:GetChild("Text"):GetStringWidth()> maxW then
-                            maxW = v:GetChild("Text"):GetStringWidth()
-                        end
-                    end
-                end
+			if self.__Childs and type(self.__Childs) == "table" then
+				for i,v in pairs(self.__Childs) do
+					if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+						if v:GetChild("Text"):GetStringWidth()> maxW then
+							maxW = v:GetChild("Text"):GetStringWidth()
+						end
+					end
+				end
 
-                maxW = maxW + 48
+				maxW = maxW + 48
 
-                self.Width = maxW
-            end
-        end
+				self.Width = maxW
+			end
+		end
 
-        -- OnClick Script
-        local function OnClick(self, ...)
-            -- if this is checkButton
-            if self.__IsCheckButton then
-                if self.Parent.__MultiSelect then
-                    self.Checked = not self.Checked
-                    return true
-                else
-                    if self.Checked then
-                        -- No need to action
-                        hideDropList(self.Parent)
-                        return true
-                    end
-                    self.Checked = true
-                    for i, v in pairs(self.Parent.__Childs) do
-                        if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) and v.__IsCheckButton and v ~= self and v.Checked then
-                            v.Checked = false
-                        end
-                    end
-                    hideDropList(self.Parent)
-                end
-                return
+		-- OnClick Script
+		local function OnClick(self, ...)
+			-- if this is checkButton
+			if self.__IsCheckButton then
+				if self.Parent.__MultiSelect then
+					self.Checked = not self.Checked
+					return true
+				else
+					if self.Checked then
+						-- No need to action
+						hideDropList(self.Parent)
+						return true
+					end
+					self.Checked = true
+					for i, v in pairs(self.Parent.__Childs) do
+						if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) and v.__IsCheckButton and v ~= self and v.Checked then
+							v.Checked = false
+						end
+					end
+					hideDropList(self.Parent)
+				end
+				return
 			elseif self.ColorSwatch.Visible then
 				_DropDownColorPicker._DropDownButton = self
 				_DropDownColorPicker.Visible = true
-            end
+			end
 
-            local root = self.Parent
+			local root = self.Parent
 
-            while root.__MenuBase do
-                root = root.__MenuBase
-            end
+			while root.__MenuBase do
+				root = root.__MenuBase
+			end
 
-            if root.AutoHide then
-            	hideDropList(root)
-            end
+			if root.AutoHide then
+				hideDropList(root)
+			end
 		end
 
 		local function Frame_OnEnter(self)
@@ -649,124 +661,124 @@ class "DropDownList"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-        function DropDownMenuButton(self, name, parent, ...)
-        	Super(self, name, parent, ...)
+		function DropDownMenuButton(self, name, parent, ...)
+			Super(self, name, parent, ...)
 
 			parent = parent.__DdList or parent
 
-            local maxID = parent.__ItemCount or 0
+			local maxID = parent.__ItemCount or 0
 
-            self.Width = 100
-            self.Height = itemHeight
+			self.Width = 100
+			self.Height = itemHeight
 
-            maxID = maxID + 1
-            self.__Index = maxID
-            parent.__ItemCount = maxID
+			maxID = maxID + 1
+			self.__Index = maxID
+			parent.__ItemCount = maxID
 
-            -- Anchor
-            self:SetPoint("LEFT", parent, "LEFT", 4, 0)
-            self:SetPoint("RIGHT", parent, "RIGHT", -4, 0)
-            self:SetPoint("TOP", parent, "TOP", 0, - (16 + itemHeight * (maxID - 1)))
-            parent.Height = 32 + itemHeight * maxID
+			-- Anchor
+			self:SetPoint("LEFT", parent, "LEFT", 4, 0)
+			self:SetPoint("RIGHT", parent, "RIGHT", -4, 0)
+			self:SetPoint("TOP", parent, "TOP", 0, - (16 + itemHeight * (maxID - 1)))
+			parent.Height = 32 + itemHeight * maxID
 
-            -- HighLightTexture
-            local highLight = Texture("HighLight", self, "BACKGROUND")
-            highLight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
-            highLight:SetBlendMode("ADD")
-            highLight:SetAllPoints(self)
-            highLight.Visible = false
+			-- HighLightTexture
+			local highLight = Texture("HighLight", self, "BACKGROUND")
+			highLight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+			highLight:SetBlendMode("ADD")
+			highLight:SetAllPoints(self)
+			highLight.Visible = false
 
-            -- CheckTexture
-            local check = Texture("Check", self, "ARTWORK")
-            check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
-            check.Height = 18
-            check.Width = 18
+			-- CheckTexture
+			local check = Texture("Check", self, "ARTWORK")
+			check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+			check.Height = 18
+			check.Width = 18
 			check.Visible = false
-            check:SetPoint("LEFT", self, "LEFT")
+			check:SetPoint("LEFT", self, "LEFT")
 
-            -- IconTexture
-            local icon = Texture("Icon", self, "ARTWORK")
-            icon.Height = 16
-            icon.Width = 16
-            icon.Visible = false
-            icon:SetPoint("LEFT", self, "LEFT")
+			-- IconTexture
+			local icon = Texture("Icon", self, "ARTWORK")
+			icon.Height = 16
+			icon.Width = 16
+			icon.Visible = false
+			icon:SetPoint("LEFT", self, "LEFT")
 
-            -- ColorSwatch
-            local colorsWatch = Button("ColorSwatch", self)
-            colorsWatch.Height = 16
-            colorsWatch.Width = 16
-            colorsWatch.Visible = false
-            colorsWatch:SetPoint("RIGHT", self, "RIGHT", -6, 0)
-            colorsWatch:SetNormalTexture("Interface\\ChatFrame\\ChatFrameColorSwatch")
+			-- ColorSwatch
+			local colorsWatch = Button("ColorSwatch", self)
+			colorsWatch.Height = 16
+			colorsWatch.Width = 16
+			colorsWatch.Visible = false
+			colorsWatch:SetPoint("RIGHT", self, "RIGHT", -6, 0)
+			colorsWatch:SetNormalTexture("Interface\\ChatFrame\\ChatFrameColorSwatch")
 
-            local colorBack = Texture("SwatchBg", colorsWatch, "BACKGROUND")
-            colorBack.Height = 14
-            colorBack.Width = 14
+			local colorBack = Texture("SwatchBg", colorsWatch, "BACKGROUND")
+			colorBack.Height = 14
+			colorBack.Width = 14
 			colorBack.DrawLayer = "BACKGROUND"
-            colorBack:SetPoint("CENTER", colorsWatch, "CENTER")
-            colorBack:SetVertexColor(1.0, 1.0, 1.0)
+			colorBack:SetPoint("CENTER", colorsWatch, "CENTER")
+			colorBack:SetVertexColor(1.0, 1.0, 1.0)
 
-            colorsWatch.OnClick = colorsWatch_OnClick
-            colorsWatch.OnEnter = colorsWatch_OnEnter
-            colorsWatch.OnLeave = colorsWatch_OnLeave
+			colorsWatch.OnClick = colorsWatch_OnClick
+			colorsWatch.OnEnter = colorsWatch_OnEnter
+			colorsWatch.OnLeave = colorsWatch_OnLeave
 
-            -- ExpandArrow
-            local expandArrow = Button("ExpandArrow", self)
-            expandArrow.Height = 16
-            expandArrow.Width = 16
-            expandArrow.Visible = false
-            expandArrow:SetPoint("RIGHT", self, "RIGHT", 0, 0)
-            expandArrow:SetNormalTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
+			-- ExpandArrow
+			local expandArrow = Button("ExpandArrow", self)
+			expandArrow.Height = 16
+			expandArrow.Width = 16
+			expandArrow.Visible = false
+			expandArrow:SetPoint("RIGHT", self, "RIGHT", 0, 0)
+			expandArrow:SetNormalTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
 
-            expandArrow.OnClick = expandArrow_OnClick
-            expandArrow.OnEnter = expandArrow_OnEnter
-            expandArrow.OnLeave = expandArrow_OnLeave
+			expandArrow.OnClick = expandArrow_OnClick
+			expandArrow.OnEnter = expandArrow_OnEnter
+			expandArrow.OnLeave = expandArrow_OnLeave
 
-            -- FontString
-            local text = FontString("Text",self,"OVERLAY","GameFontNormal")
-            text.JustifyH = "LEFT"
-            text:SetPoint("LEFT", self, "LEFT", 18, 0)
-            text:SetHeight(16)
-            self:SetFontString(text)
+			-- FontString
+			local text = FontString("Text",self,"OVERLAY","GameFontNormal")
+			text.JustifyH = "LEFT"
+			text:SetPoint("LEFT", self, "LEFT", 18, 0)
+			text:SetHeight(16)
+			self:SetFontString(text)
 
-            -- Event
-            self.OnEnter = self.OnEnter + item_OnEnter
-            self.OnLeave = self.OnLeave + item_OnLeave
-            self.OnClick = self.OnClick + OnClick
+			-- Event
+			self.OnEnter = self.OnEnter + item_OnEnter
+			self.OnLeave = self.OnLeave + item_OnLeave
+			self.OnClick = self.OnClick + OnClick
 
-            --- Font
-            self:SetNormalFontObject(GameFontHighlightSmallLeft)
-            self:SetDisabledFontObject(GameFontDisableSmallLeft)
-            self:SetHighlightFontObject(GameFontHighlightSmallLeft)
-        end
-    endclass "DropDownMenuButton"
+			--- Font
+			self:SetNormalFontObject(GameFontHighlightSmallLeft)
+			self:SetDisabledFontObject(GameFontDisableSmallLeft)
+			self:SetHighlightFontObject(GameFontHighlightSmallLeft)
+		end
+	endclass "DropDownMenuButton"
 
-    ------------------------------------------------------
+	------------------------------------------------------
 	--------------------- DropDownList ----------------------
 	------------------------------------------------------
 
 	_FrameBackdrop = {
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 9,
-        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = true, tileSize = 16, edgeSize = 9,
+		insets = { left = 5, right = 5, top = 5, bottom = 5 }
 	}
 
-    local function hideDropList(self)
+	local function hideDropList(self)
 		if self["IsObjectType"] and self:IsObjectType("DropDownList") then
 			self = self.__DdList or self
 		end
-        if self.__Childs and type(self.__Childs) == "table" then
-            for i,v in pairs(self.__Childs) do
-                if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
-                    if v.__DropDownList then
-                        hideDropList(v.__DropDownList)
-                    end
-                end
-            end
-        end
-        self.Visible = false
-    end
+		if self.__Childs and type(self.__Childs) == "table" then
+			for i,v in pairs(self.__Childs) do
+				if type(v) == "table" and v["IsObjectType"] and v:IsObjectType(DropDownMenuButton) then
+					if v.__DropDownList then
+						hideDropList(v.__DropDownList)
+					end
+				end
+			end
+		end
+		self.Visible = false
+	end
 
 	local function OnTimer(self)
 		hideDropList(self.Parent)
@@ -776,9 +788,9 @@ class "DropDownList"
 	local function OnEnter(self)
 		self:GetChild("DropDownList_Timer").Interval = 0
 
-        if self.__MenuBase then
-            self.__MenuBase:Fire("OnEnter")
-        end
+		if self.__MenuBase then
+			self.__MenuBase:Fire("OnEnter")
+		end
 
 		return self.__Mask:Fire("OnEnter")
 	end
@@ -787,19 +799,19 @@ class "DropDownList"
 		if self.Visible and not self.__DisableAutoHide then
 			self:GetChild("DropDownList_Timer").Interval = 2
 		end
-        if self.__MenuBase then
-            self.__MenuBase:Fire("OnLeave")
-        end
+		if self.__MenuBase then
+			self.__MenuBase:Fire("OnLeave")
+		end
 
 		return self.__Mask:Fire("OnLeave")
 	end
 
-    local function OnShow(self, ...)
-    	if not self.__DisableAutoHide then
-        	self:GetChild("DropDownList_Timer").Interval = 2
-        end
+	local function OnShow(self, ...)
+		if not self.__DisableAutoHide then
+			self:GetChild("DropDownList_Timer").Interval = 2
+		end
 
-        -- Set the dropdownframe scale
+		-- Set the dropdownframe scale
 		local uiScale
 		local uiParentScale = UIParent:GetScale()
 		if (GetCVar("useUIScale") == "1" ) then
@@ -813,12 +825,12 @@ class "DropDownList"
 
 		self:SetScale(uiScale)
 
-        if self.__MenuLevel > 1 then
-            return self.__Mask:Fire("OnShow")
-        end
+		if self.__MenuLevel > 1 then
+			return self.__Mask:Fire("OnShow")
+		end
 
-        -- Hide the previous
-        if not self.__DisableAutoHide then
+		-- Hide the previous
+		if not self.__DisableAutoHide then
 			if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList ~= self then
 				_DropDownListContainer.__ShowList.Visible = false
 			end
@@ -827,64 +839,64 @@ class "DropDownList"
 		end
 
 		if self.__ShowOnCursor then
-            local cursorX, cursorY = GetCursorPosition()
-            cursorX = cursorX/self:GetEffectiveScale()
-            cursorY =  cursorY/self:GetEffectiveScale()
+			local cursorX, cursorY = GetCursorPosition()
+			cursorX = cursorX/self:GetEffectiveScale()
+			cursorY =  cursorY/self:GetEffectiveScale()
 
-            local offsetX, offsetY
+			local offsetX, offsetY
 
-            offsetX = cursorX
-            offsetY = cursorY
+			offsetX = cursorX
+			offsetY = cursorY
 
-            self:ClearAllPoints()
-            self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+			self:ClearAllPoints()
+			self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
 
-            local x, y = self:GetCenter()
+			local x, y = self:GetCenter()
 
-            if not (x and y) then
-                self:Hide()
-                return
-            end
+			if not (x and y) then
+				self:Hide()
+				return
+			end
 
-            -- Determine whether the menu is off the screen or not
-            local offscreenY, offscreenX;
-            if ((y - self:GetHeight()/2) < 0 ) then
-                offscreenY = 1
-            end
-            if (self:GetRight() > GetScreenWidth() ) then
-                offscreenX = 1
-            end
+			-- Determine whether the menu is off the screen or not
+			local offscreenY, offscreenX;
+			if ((y - self:GetHeight()/2) < 0 ) then
+				offscreenY = 1
+			end
+			if (self:GetRight() > GetScreenWidth() ) then
+				offscreenX = 1
+			end
 
-            self:ClearAllPoints()
-            if offscreenX and offscreenY then
-                self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
-            elseif offscreenX then
-                self:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
-            elseif offscreenY then
-                self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
-            else
-            	self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
-            end
-        end
+			self:ClearAllPoints()
+			if offscreenX and offscreenY then
+				self:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+			elseif offscreenX then
+				self:SetPoint("TOPRIGHT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+			elseif offscreenY then
+				self:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+			else
+				self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", offsetX, offsetY)
+			end
+		end
 
 		return self.__Mask:Fire("OnShow")
-    end
+	end
 
-    local function OnHide(self, ...)
+	local function OnHide(self, ...)
 		self:GetChild("DropDownList_Timer").Interval = 0
 
 		hideDropList(self)
 
-        if self.__MenuLevel > 1 then
-            return self.__Mask:Fire("OnHide")
-        end
+		if self.__MenuLevel > 1 then
+			return self.__Mask:Fire("OnHide")
+		end
 
-        if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList == self then
-            _DropDownListContainer.__ShowList = nil
-        end
+		if _DropDownListContainer.__ShowList and _DropDownListContainer.__ShowList == self then
+			_DropDownListContainer.__ShowList = nil
+		end
 
 		return self.__Mask:Fire("OnHide")
-    end
+	end
 
 	------------------------------------------------------
 	-- Event
@@ -1587,34 +1599,34 @@ class "DropDownList"
 	function DropDownList(self, name, parent, ...)
 		Super(self, name, parent, ...)
 
-        local frame = Button(nil, _DropDownListContainer)
+		local frame = Button(nil, _DropDownListContainer)
 		frame.__Mask = self
 		self.__DdList = frame
 
-        frame.FrameStrata = "TOOLTIP"
-        frame.MouseWheelEnabled = true
-        frame.Visible = false
-        frame:ClearAllPoints()
-        frame:SetBackdrop(_FrameBackdrop)
-        frame:SetBackdropBorderColor(1, 1, 1);
+		frame.FrameStrata = "TOOLTIP"
+		frame.MouseWheelEnabled = true
+		frame.Visible = false
+		frame:ClearAllPoints()
+		frame:SetBackdrop(_FrameBackdrop)
+		frame:SetBackdropBorderColor(1, 1, 1);
 		frame:SetBackdropColor(0.09, 0.09, 0.19);
-        frame.Height = 8
-        frame.Width = 100
+		frame.Height = 8
+		frame.Width = 100
 		frame.__ShowOnCursor = true
 		frame.__MultiSelect = true
 		frame.__ItemCount = 0
 
-        frame.OnShow = OnShow
-        frame.OnHide = OnHide
-        frame.OnEnter = OnEnter
-        frame.OnLeave = OnLeave
+		frame.OnShow = OnShow
+		frame.OnHide = OnHide
+		frame.OnEnter = OnEnter
+		frame.OnLeave = OnLeave
 
 		-- Timer
 		local timer = Timer("DropDownList_Timer", frame)
 		timer.Interval = 0
 		timer.OnTimer = OnTimer
 
-        -- MenuLevel
-        frame.__MenuLevel = 1
+		-- MenuLevel
+		frame.__MenuLevel = 1
 	end
 endclass "DropDownList"
