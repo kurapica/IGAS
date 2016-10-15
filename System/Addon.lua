@@ -124,12 +124,8 @@ do
 		local function loading(self)
 			fireEvent(self, "OnLoad")
 
-			local mdls = self:GetModules()
-
-			if mdls then
-				for _, mdl in ipairs(mdls) do
-					loading(mdl)
-				end
+			for _, mdl in self:GetModules() do
+				loading(mdl)
 			end
 		end
 
@@ -138,12 +134,8 @@ do
 			if not _Addon_Disabled[self] then
 				fireEvent(self, "OnEnable")
 
-				local mdls = self:GetModules()
-
-				if mdls then
-					for _, mdl in ipairs(mdls) do
-						enabling(mdl)
-					end
+				for _, mdl in self:GetModules() do
+					enabling(mdl)
 				end
 			end
 		end
@@ -152,12 +144,8 @@ do
 		local function quit(self)
 			fireEvent(self, "OnQuit")
 
-			local mdls = self:GetModules()
-
-			if mdls then
-				for _, mdl in ipairs(mdls) do
-					quit(mdl)
-				end
+			for _, mdl in self:GetModules() do
+				quit(mdl)
 			end
 		end
 
@@ -694,13 +682,9 @@ interface "IFModule"
 
 			if _M._Logined then Object.Fire(self, "OnEnable") end
 
-			local mdls = self:GetModules()
-
-			if mdls then
-				for _, mdl in ipairs(mdls) do
-					if _Addon_DefaultState[mdl] ~= false then
-						Enable(mdl)
-					end
+			for _, mdl in self:GetModules() do
+				if _Addon_DefaultState[mdl] ~= false then
+					Enable(mdl)
 				end
 			end
 		end
@@ -713,15 +697,11 @@ interface "IFModule"
 
 			if _M._Logined then Object.Fire(self, "OnDisable") end
 
-			local mdls = self:GetModules()
+			for _, mdl in self:GetModules() do
+				_Addon_DefaultState[mdl] = not _Addon_Disabled[mdl]
 
-			if mdls then
-				for _, mdl in ipairs(mdls) do
-					_Addon_DefaultState[mdl] = not _Addon_Disabled[mdl]
-
-					if not _Addon_Disabled[mdl] then
-						Disable(mdl)
-					end
+				if not _Addon_Disabled[mdl] then
+					Disable(mdl)
 				end
 			end
 		else
