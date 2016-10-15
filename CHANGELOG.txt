@@ -1,3 +1,6 @@
+2016/10/15: IGAS v120
+    1. Fix for PLoop v155 version.
+
 2016/10/01: IGAS v119
     1. Fix ActiveThread error for System.Array.
     2. Improve the dropdownlist so sub-menus won't be blocked by parent's

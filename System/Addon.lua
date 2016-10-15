@@ -774,7 +774,7 @@ interface "IFModule"
 		local mdl = self
 
 		for sub in name:gmatch("[_%w]+") do
-			mdl = Addon.Module(mdl, sub)
+			mdl = Addon.Module(sub, mdl)
 		end
 
 		if mdl then
@@ -865,8 +865,8 @@ class "Addon"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
-		function Module(self, parent, name)
-			Super(self, parent, name)
+		function Module(self, name, parent)
+			Super(self, name, parent)
 
 			_Addon_DefaultState[self] = true
 			_Addon_Disabled[self] = _Addon_Disabled[parent]
@@ -985,7 +985,7 @@ class "Addon"
 	-- Constructor
 	------------------------------------------------------
 	function Addon(self, name)
-		Super(self, nil, name)
+		Super(self, name)
 
 		_Addon[name] = self
 	end
@@ -1047,7 +1047,7 @@ do
 				mdl = Addon(sub)
 				addon = mdl
 			else
-				mdl = Addon.Module(mdl, sub)
+				mdl = Addon.Module(sub, mdl)
 			end
 		end
 
