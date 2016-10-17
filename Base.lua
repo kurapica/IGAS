@@ -41,3 +41,45 @@ IGAS = setmetatable({}, {
 	-- seal the metatable
 	__metatable = true,
 })
+
+Module "IGAS_SYSTEM_EXTENSION" ""
+
+import "System"
+
+__Doc__[[
+	<desc>Fire an object's event, to trigger the object's event handlers</desc>
+	<param name="event">the event name</param>
+	<param name="...">the event's arguments</param>
+]]
+Object.Fire = Reflector.FireObjectEvent
+
+__Doc__[[
+	<desc>Check if the event type is supported by the object</desc>
+	<param name="name">the event's name</param>
+	<return type="boolean">true if the object has that event type</return>
+]]
+function Object.HasEvent(self, name)
+	if type(name) ~= "string" then
+		error(("Usage : object:HasEvent(name) : 'name' - string expected, got %s."):format(type(name)), 2)
+	end
+	return Reflector.HasEvent(Reflector.GetObjectClass(self), name) or false
+end
+
+__Doc__[[
+	<desc>Block some events for the object</desc>
+	<param name="...">the event's name list</param>
+]]
+Object.BlockEvent = Reflector.BlockEvent
+
+__Doc__[[
+	<desc>Check if the event is blocked for the object</desc>
+	<param name="event">the event's name</param>
+	<return type="boolean">true if th event is blocked</return>
+]]
+Object.IsEventBlocked = Reflector.IsEventBlocked
+
+__Doc__[[
+	<desc>Un-Block some events for the object</desc>
+	<param name="...">the event's name list</param>
+]]
+Object.UnBlockEvent = Reflector.UnBlockEvent
