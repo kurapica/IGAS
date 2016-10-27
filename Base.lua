@@ -83,3 +83,10 @@ __Doc__[[
 	<param name="...">the event's name list</param>
 ]]
 Object.UnBlockEvent = Reflector.UnBlockEvent
+
+if not Object.ThreadCall then
+	Object.ThreadCall = function(self, method, ...)
+	    if type(method) == "string" then method = self[method] end
+	    if type(method) == "function" then return Threading.ThreadCall(method, self, ...) end
+	end
+end

@@ -65,7 +65,7 @@ class "RangeChecker"
 		if UnitIsVisible(unit) then
 			local tarx, tary = GetPlayerMapPosition(unit)
 			local x, y = GetPlayerMapPosition("player")
-			local facing = 2 * pi - GetPlayerFacing()
+			local facing = 2 * pi - (GetPlayerFacing() or 0)
 			local rad = 0
 
 			if tarx and tary and x and y then

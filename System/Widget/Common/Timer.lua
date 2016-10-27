@@ -21,7 +21,7 @@ function CallTimer(self, guid)
 end
 
 function RefreshTimer(self)
-	local guid = GUID.New()
+	local guid = Guid()
 	self._GUID = guid
 	return self.Interval > 0 and self.Enabled and DelayCall(self.Interval, CallTimer, self, guid)
 end

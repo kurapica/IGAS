@@ -35,6 +35,14 @@ _Addon_SavedVariables = setmetatable({}, _MetaWK)
 _Addon_NoAutoWrapper = setmetatable({}, _MetaWK)
 _Addon_MetaData = setmetatable({}, _MetaWK)
 
+geterrorhandler = geterrorhandler or function()
+	return print
+end
+
+errorhandler = errorhandler or function(err)
+	return geterrorhandler()(err)
+end
+
 ------------------------------------------------------
 -- _EventManager
 --

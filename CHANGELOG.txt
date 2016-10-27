@@ -1,3 +1,6 @@
+2016/10/27 v123
+    1. Update for WOW 7.1
+
 2016/10/15: IGAS v120
     1. Fix for PLoop v155 version.
 
