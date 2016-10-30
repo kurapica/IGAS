@@ -44,6 +44,9 @@ function OnEnable(self)
 	self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	self:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 
+	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+
 	OnEnable = nil
 
 	return handler:Refresh()
@@ -178,6 +181,41 @@ function PLAYERREAGENTBANKSLOTS_CHANGED(self, slot)
 	end
 end
 
+local ITEM_UPGRADE_CHECK_TIME = 0.5
+local function RefreshUpgradeItem(self, bag, slot)
+	local itemIsUpgrade = IsContainerItemAnUpgrade(bag, slot)
+
+	if itemIsUpgrade == nil then
+		-- nil means not all the data was available to determine if this is an upgrade.
+		self.IsUpgradeItem = false
+		Task.DelayCall(ITEM_UPGRADE_CHECK_TIME, RefreshUpgradeItem, self, bag, slot)
+	else
+		self.IsUpgradeItem = itemIsUpgrade
+	end
+end
+
+function UNIT_INVENTORY_CHANGED(self, unit)
+	if not unit or unit == "player" then
+		for _, bag in ipairs(_ContainerBag) do
+			if _BagCache[bag] then
+				for btn, slot in pairs(_BagCache[bag]) do
+					RefreshUpgradeItem(btn, bag, slot)
+				end
+			end
+		end
+	end
+end
+
+function PLAYER_SPECIALIZATION_CHANGED(self)
+	for _, bag in ipairs(_ContainerBag) do
+		if _BagCache[bag] then
+			for btn, slot in pairs(_BagCache[bag]) do
+				RefreshUpgradeItem(btn, bag, slot)
+			end
+		end
+	end
+end
+
 ----------------------------------------
 -- BagSlot Handler
 ----------------------------------------
@@ -303,6 +341,7 @@ IGAS:GetUI(handler.Manager).UnregisterBagSlot = function (self, btnName)
 	self.ShowJunkIcon = false
 	self.IsBattlePayItem = false
 	self.IsNewItem = false
+	self.IsUpgradeItem = false
 
 	self.OnEnter = self.OnEnter - OnEnter
 	self.OnLeave = self.OnLeave - OnLeave
@@ -342,6 +381,8 @@ function handler:RefreshButton()
 
 		self.IsBattlePayItem = IsBattlePayItem(bag, slot)
 		self.IsNewItem = C_NewItems.IsNewItem(bag, slot)
+
+		RefreshUpgradeItem(self, bag, slot)
 	else
 		self._BagSlot_ItemID = nil
 		self._BagSlot_Readable = nil
@@ -352,6 +393,7 @@ function handler:RefreshButton()
 		self.ShowJunkIcon = false
 		self.IsBattlePayItem = false
 		self.IsNewItem = false
+		self.IsUpgradeItem = false
 	end
 end
 
@@ -529,4 +571,7 @@ interface "IFActionHandler"
 
 	__Doc__[[Whether show the item as junk]]
 	property "ShowJunkIcon" { Type = Boolean }
+
+	__Doc__[[Whether the item is an upgrade item]]
+	property "IsUpgradeItem" { Type = Boolean }
 endinterface "IFActionHandler"

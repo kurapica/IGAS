@@ -1,3 +1,6 @@
+2016/10/30 v124
+    1. Add support to show upgrade item for bag slot action buttons.(not work until blz fix it)
+
 2016/10/27 v123
     1. Update for WOW 7.1
 
