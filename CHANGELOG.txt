@@ -1,3 +1,6 @@
+2016/11/20 v125
+    1. Fix the double click won't select words in the Multiline-textbox and Code Editor, blz may changed the base.
+
 2016/10/30 v124
     1. Add support to show upgrade item for bag slot action buttons.(not work until blz fix it)
 

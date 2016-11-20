@@ -2852,7 +2852,7 @@ class "MultiLineTextBox"
 			self:HighlightText(cursorPos, cursorPos)
 
 			return self:Fire("OnPasting", startp, endp)
-		elseif self.__DBLCLKSELTEXT then
+		--[[elseif self.__DBLCLKSELTEXT then
 			local str = self.__Text.Text
 			local startp, endp = GetWord(str, cursorPos)
 
@@ -2860,7 +2860,7 @@ class "MultiLineTextBox"
 				self:HighlightText(startp - 1, endp)
 			end
 
-			self.__DBLCLKSELTEXT = nil
+			self.__DBLCLKSELTEXT = nil--]]
 		elseif self.__MouseDownShift == false then
 			-- First CursorChanged after mouse down if not press shift
 			self:HighlightText(cursorPos, cursorPos)
@@ -2938,6 +2938,16 @@ class "MultiLineTextBox"
 				-- mean double click
 				self.__DBLCLKSELTEXT = true
 				self.__OldCursorPosition = nil
+
+				local str = self.__Text.Text
+				local startp, endp = GetWord(str, self.CursorPosition)
+
+				if startp and endp then
+					Task.NextCall(HighlightText, self, startp-1, endp)
+					--self:HighlightText(startp - 1, endp)
+				end
+
+				self.__DBLCLKSELTEXT = nil
 			else
 				self.__MouseDownTime = GetTime()
 			end
