@@ -823,7 +823,7 @@ class "DropDownList"
 			uiScale = uiParentScale
 		end
 
-		self:SetScale(uiScale)
+		self:SetScale(1)
 
 		if self.__MenuLevel > 1 then
 			return self.__Mask:Fire("OnShow")

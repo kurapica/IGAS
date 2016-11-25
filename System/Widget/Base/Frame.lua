@@ -24,34 +24,34 @@ class "Frame"
 		<param name="name">string, name of the changed attribute, always lower case</param>
 		<param name="value">any, new value of the attribute</param>
 	]]
-	event "OnAttributeChanged"
+	__WidgetEvent__() event "OnAttributeChanged"
 
 	__Doc__[[
 		<desc>Run for each text character typed in the frame</desc>
 		<param name="char">string, the text character typed</param>
 	]]
-	event "OnChar"
+	__WidgetEvent__() event "OnChar"
 
 	__Doc__[[Run when the frame is disabled]]
-	event "OnDisable"
+	__WidgetEvent__() event "OnDisable"
 
 	__Doc__[[
 		<desc>Run when the mouse is dragged starting in the frame</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 	]]
-	event "OnDragStart"
+	__WidgetEvent__() event "OnDragStart"
 
 	__Doc__[[Run when the mouse button is released after a drag started in the frame]]
-	event "OnDragStop"
+	__WidgetEvent__() event "OnDragStop"
 
 	__Doc__[[Run when the frame is enabled]]
-	event "OnEnable"
+	__WidgetEvent__() event "OnEnable"
 
 	__Doc__[[
 		<desc>Run when the mouse cursor enters the frame's interactive area</desc>
 		<param name="motion">boolean, true if the handler is being run due to actual mouse movement; false if the cursor entered the frame due to other circumstances (such as the frame being created underneath the cursor)</param>
 	]]
-	event "OnEnter"
+	__WidgetEvent__() event "OnEnter"
 
 	__Doc__[[
 		<desc>Run whenever an event fires for which the frame is registered</desc>
@@ -59,82 +59,82 @@ class "Frame"
 		<param name="event">string, the event's name</param>
 		<param name="...">the event's parameters</param>
 	]]
-	event "OnEvent"
+	__WidgetEvent__() event "OnEvent"
 
 	__Doc__[[Run when the frame's visbility changes to hidden]]
-	event "OnHide"
+	__WidgetEvent__() event "OnHide"
 
 	__Doc__[[
 		<desc>Run when a keyboard key is pressed if the frame is keyboard enabled</desc>
 		<param name="key">string, name of the key pressed</param>
 	]]
-	event "OnKeyDown"
+	__WidgetEvent__() event "OnKeyDown"
 
 	__Doc__[[
 		<desc>Run when a keyboard key is released if the frame is keyboard enabled</desc>
 		<param name="key">string, name of the key pressed</param>
 	]]
-	event "OnKeyUp"
+	__WidgetEvent__() event "OnKeyUp"
 
 	__Doc__[[
 		<desc>Run when the mouse cursor leaves the frame's interactive area</desc>
 		<param name="motion">boolean, true if the handler is being run due to actual mouse movement; false if the cursor left the frame due to other circumstances (such as the frame being created underneath the cursor)</param>
 	]]
-	event "OnLeave"
+	__WidgetEvent__() event "OnLeave"
 
 	__Doc__[[Run when the frame is created, no using in IGAS coding]]
-	event "OnLoad"
+	__WidgetEvent__() event "OnLoad"
 
 	__Doc__[[
 		<desc>Run when a mouse button is pressed while the cursor is over the frame</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 	]]
-	event "OnMouseDown"
+	__WidgetEvent__() event "OnMouseDown"
 
 	__Doc__[[
 		<desc>Run when the mouse button is released following a mouse down action in the frame</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 	]]
-	event "OnMouseUp"
+	__WidgetEvent__() event "OnMouseUp"
 
 	__Doc__[[
 		<desc>Run when the frame receives a mouse wheel scrolling action</desc>
 		<param name="delta">number, 1 for a scroll-up action, -1 for a scroll-down action</param>
 	]]
-	event "OnMouseWheel"
+	__WidgetEvent__() event "OnMouseWheel"
 
 	__Doc__[[Run when the mouse button is released after dragging into the frame]]
-	event "OnReceiveDrag"
+	__WidgetEvent__() event "OnReceiveDrag"
 
 	__Doc__[[Run when the frame becomes visible]]
-	event "OnShow"
+	__WidgetEvent__() event "OnShow"
 
 	__Doc__[[
 		<desc>Run when a frame's size changes</desc>
 		<param name="width">number, new width of the frame</param>
 		<param name="height">number, new height of the frame</param>
 	]]
-	event "OnSizeChanged"
+	__WidgetEvent__() event "OnSizeChanged"
 
 	__Doc__[[
 		<desc>Run each time the screen is drawn by the game engine</desc>
 		<param name="elapsed">number, number of seconds since the OnUpdate handlers were last run (likely a fraction of a second)</param>
 	]]
-	event "OnUpdate"
+	__WidgetEvent__() event "OnUpdate"
 
 	__Doc__[[
 		<desc>Run when a frame's minresize changes</desc>
 		<param name="width">number, new width of the frame</param>
 		<param name="height">number, new height of the frame</param>
 	]]
-	event "OnMinResizeChanged"
+	__WidgetEvent__() event "OnMinResizeChanged"
 
 	__Doc__[[
 		<desc>Run when a frame's minresize changes</desc>
 		<param name="width">number, new width of the frame</param>
 		<param name="height">number, new height of the frame</param>
 	]]
-	event "OnMaxResizeChanged"
+	__WidgetEvent__() event "OnMaxResizeChanged"
 
 	------------------------------------------------------
 	-- Method

@@ -135,28 +135,6 @@ endstruct "LocaleString"
 ------------------------------------------------------
 -- PositiveNumber
 ------------------------------------------------------
-__StructType__(StructType.Custom)
-__Default__( 1 )
-struct "PositiveNumber"
-	function PositiveNumber(value)
-		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
-		value = floor(value)
-		if value <= 0 then error("%s must be greater than zero.") end
-		return value
-	end
-endstruct "PositiveNumber"
-
-__StructType__(StructType.Custom)
-__Default__( 0 )
-struct "NaturalNumber"
-	function NaturalNumber(value)
-		if type(value) ~= "number" then error(format("%s must be a number, got %s.", "%s", type(value))) end
-		value = floor(value)
-		if value < 0 then error("%s must be a natural number.") end
-		return value
-	end
-endstruct "NaturalNumber"
-
 struct "StringNumber"
 	function StringNumber(value)
 		if type(value) ~= "number" and type(value) ~= "string" then error(format("%s must be a number or string, got %s.", "%s", type(value))) end

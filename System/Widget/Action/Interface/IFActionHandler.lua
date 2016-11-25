@@ -420,7 +420,7 @@ endinterface "IFActionTypeHandler"
 --
 ------------------------------------------------------
 __Doc__[[The handler for each action types]]
-__Cache__() __AutoProperty__()
+__AutoCache__() __AutoProperty__()
 class "ActionTypeHandler"
 	extend "IFActionTypeHandler"
 
@@ -1062,7 +1062,7 @@ do
 	function UpdateGrid(self)
 		local kind = self.ActionType
 
-		if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
+		if _IFActionHandler_GridCounter > 0 or ((self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self)) and not self.KeepFadeOut) then
 			self.Alpha = 1
 		else
 			self.Alpha = 0
@@ -1072,7 +1072,7 @@ do
 	function UpdatePetGrid(self)
 		local kind = self.ActionType
 
-		if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
+		if _IFActionHandler_PetGridCounter > 0 or ((self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self)) and not self.KeepFadeOut) then
 			self.Alpha = 1
 		else
 			self.Alpha = 0
@@ -1734,6 +1734,9 @@ interface "IFActionHandler"
 
 	__Doc__[[The anchor point of the gametooltip]]
 	property "GameTooltipAnchor" { Type = AnchorType }
+
+	__Doc__[[Whether the button is keeping fade out, so keep not show grid]]
+	property "KeepFadeOut" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose

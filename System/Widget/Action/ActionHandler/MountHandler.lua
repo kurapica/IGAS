@@ -33,9 +33,16 @@ function OnEnable(self)
 	OnEnable = nil
 end
 
+local firstUpdate = true
+
 function COMPANION_UPDATE(self, companionType)
 	if not companionType or companionType == "MOUNT" then
-		return handler:Refresh(RefreshUsable)
+		if firstUpdate then
+			firstUpdate = true
+			return handler:Refresh()
+		else
+			return handler:Refresh(RefreshUsable)
+		end
 	end
 end
 
@@ -125,7 +132,7 @@ end
 function handler:IsActivedAction()
 	local target = self.ActionTarget
 	if target == SUMMON_RANDOM_ID then
-		return IsCurrentSpell(SUMMON_RANDOM_FAVORITE_MOUNT_SPELL)
+		return IsMounted()
 	else
 		return (select(4, GetMountInfoByID(target)))
 	end

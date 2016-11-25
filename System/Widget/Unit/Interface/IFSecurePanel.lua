@@ -525,11 +525,11 @@ interface "IFSecurePanel"
 
 	__Doc__[[The horizontal spacing]]
 	__Handler__( OnPropertyChanged )
-	property "HSpacing" { Type = NaturalNumber }
+	property "HSpacing" { Type = Number }
 
 	__Doc__[[The vertical spacing]]
 	__Handler__( OnPropertyChanged )
-	property "VSpacing" { Type = NaturalNumber }
+	property "VSpacing" { Type = Number }
 
 	__Doc__[[Whether the elementPanel is autosize]]
 	__Handler__( OnPropertyChanged )
@@ -537,19 +537,19 @@ interface "IFSecurePanel"
 
 	__Doc__[[The top margin]]
 	__Handler__( OnPropertyChanged )
-	property "MarginTop" { Type = NaturalNumber }
+	property "MarginTop" { Type = Number }
 
 	__Doc__[[The bottom margin]]
 	__Handler__( OnPropertyChanged )
-	property "MarginBottom" { Type = NaturalNumber }
+	property "MarginBottom" { Type = Number }
 
 	__Doc__[[The left margin]]
 	__Handler__( OnPropertyChanged )
-	property "MarginLeft" { Type = NaturalNumber }
+	property "MarginLeft" { Type = Number }
 
 	__Doc__[[The right margin]]
 	__Handler__( OnPropertyChanged )
-	property "MarginRight" { Type = NaturalNumber }
+	property "MarginRight" { Type = Number }
 
 	__Doc__[[The Element accessor, used like obj.Element[i].]]
 	property "Element" {

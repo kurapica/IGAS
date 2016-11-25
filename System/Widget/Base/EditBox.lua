@@ -23,7 +23,7 @@ class "EditBox"
 		<desc>Run when the edit box's input composition mode changes</desc>
 		<param name="text">string, The text entered</param>
 	]]
-	event "OnCharComposition"
+	__WidgetEvent__() event "OnCharComposition"
 
 	__Doc__[[
 		<desc>Run when the position of the text insertion cursor in the edit box changes</desc>
@@ -32,40 +32,40 @@ class "EditBox"
 		<param name="width">number, width of the cursor graphic (in pixels)</param>
 		<param name="height">number, height of the cursor graphic (in pixels); matches the height of a line of text in the edit box</param>
 	]]
-	event "OnCursorChanged"
+	__WidgetEvent__() event "OnCursorChanged"
 
 	__Doc__ [[Run when the edit box becomes focused for keyboard input]]
-	event "OnEditFocusGained"
+	__WidgetEvent__() event "OnEditFocusGained"
 
 	__Doc__[[Run when the edit box loses keyboard input focus]]
-	event "OnEditFocusLost"
+	__WidgetEvent__() event "OnEditFocusLost"
 
 	__Doc__[[Run when the Enter (or Return) key is pressed while the edit box has keyboard focus]]
-	event "OnEnterPressed"
+	__WidgetEvent__() event "OnEnterPressed"
 
 	__Doc__[[Run when the Escape key is pressed while the edit box has keyboard focus]]
-	event "OnEscapePressed"
+	__WidgetEvent__() event "OnEscapePressed"
 
 	__Doc__[[
 		<desc>Run when the edit box's language input mode changes</desc>
 		<param name="language">string, name of the new input language</param>
 	]]
-	event "OnInputLanguageChanged"
+	__WidgetEvent__() event "OnInputLanguageChanged"
 
 	__Doc__[[Run when the space bar is pressed while the edit box has keyboard focus]]
-	event "OnSpacePressed"
+	__WidgetEvent__() event "OnSpacePressed"
 
 	__Doc__[[Run when the Tab key is pressed while the edit box has keyboard focus]]
-	event "OnTabPressed"
+	__WidgetEvent__() event "OnTabPressed"
 
 	__Doc__[[
 		<desc>Run when the edit box's text is changed</desc>
 		<param name="isUserInput">boolean</param>
 	]]
-	event "OnTextChanged"
+	__WidgetEvent__() event "OnTextChanged"
 
 	__Doc__[[Run when the edit box's text is set programmatically]]
-	event "OnTextSet"
+	__WidgetEvent__() event "OnTextSet"
 
 	_FirstLoadedFix = setmetatable({}, {__mode = "k",})
 

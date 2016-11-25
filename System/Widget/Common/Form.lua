@@ -78,15 +78,15 @@ class "Form"
 			end
 		end
 
-		local function GetScreenFrameRect(frame)
-		    local es = frame:GetEffectiveScale();
+		local function GetScreenFrameRect(frame, noscale)
+		    local es = noscale and 1 or frame:GetEffectiveScale();
 		    local l, b, w, h = frame:GetRect();
 		    if (not (l and b)) then return 0, 0, 0, 0; end
 		    return l * es, (l + w) * es, b * es, (b + h) * es;
 		end
 
 		local function CheckPosition(self, instant)
-			local left, right, bottom, top = GetScreenFrameRect(self.Form)
+			local left, right, bottom, top = GetScreenFrameRect(self.Form, true)
 
 			if left < 10 then
 				self.NeedHideForm = 2

@@ -22,13 +22,13 @@ class "StatusBar"
 		<param name="min">new minimun value of the status bar</param>
 		<param name="max">new maximum value of the status bar</param>
 	]]
-	event "OnMinMaxChanged"
+	__WidgetEvent__() event "OnMinMaxChanged"
 
 	__Doc__[[
 		<desc>Fired when the status bar's value changes</desc>
 		<param name="value">new value of the status bar</param>
 	]]
-	event "OnValueChanged"
+	__WidgetEvent__() event "OnValueChanged"
 
 	------------------------------------------------------
 	-- Method

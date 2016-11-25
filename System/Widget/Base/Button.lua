@@ -23,27 +23,27 @@ class "Button"
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 		<param name="down">boolean, true for a mouse button down action; false for button up or other actions</param>
 	]]
-	event "OnClick"
+	__WidgetEvent__() event "OnClick"
 
 	__Doc__[[
 		<desc>Run when the button is double-clicked</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 	]]
-	event "OnDoubleClick"
+	__WidgetEvent__() event "OnDoubleClick"
 
 	__Doc__[[
 		<desc>Run immediately following the button's `OnClick` handler with the same arguments</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 		<param name="down">boolean, true for a mouse button down action; false for button up or other actions</param>
 	]]
-	event "PostClick"
+	__WidgetEvent__() event "PostClick"
 
 	__Doc__[[
 		<desc>Run immediately before the button's `OnClick` handler with the same arguments</desc>
 		<param name="button">string, name of the mouse button responsible for the click action:Button4, Button5, LeftButton, MiddleButton, RightButton</param>
 		<param name="down">boolean, true for a mouse button down action; false for button up or other actions</param>
 	]]
-	event "PreClick"
+	__WidgetEvent__() event "PreClick"
 
 	------------------------------------------------------
 	-- Method

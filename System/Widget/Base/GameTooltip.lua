@@ -26,34 +26,34 @@ class "GameTooltip"
 		<param name="amount">number, amount of money to be added to the tooltip (in copper)</param>
 		<param name="maxAmount">number, a second amount of money to be added to the tooltip (in copper); if non-nil, the first amount is treated as the minimum and this amount as the maximum of a price range</param>
 	]]
-	event "OnTooltipAddMoney"
+	__WidgetEvent__() event "OnTooltipAddMoney"
 
 	__Doc__[[Run when the tooltip is hidden or its content is cleared]]
-	event "OnTooltipCleared"
+	__WidgetEvent__() event "OnTooltipCleared"
 
 	__Doc__[[Run when the tooltip is filled with information about an achievement]]
-	event "OnTooltipSetAchievement"
+	__WidgetEvent__() event "OnTooltipSetAchievement"
 
 	__Doc__[[Run when the tooltip is repositioned to its default anchor location]]
-	event "OnTooltipSetDefaultAnchor"
+	__WidgetEvent__() event "OnTooltipSetDefaultAnchor"
 
 	__Doc__[[Run when the tooltip is filled with information about an equipment set]]
-	event "OnTooltipSetEquipmentSet"
+	__WidgetEvent__() event "OnTooltipSetEquipmentSet"
 
 	__Doc__[[Run when the tooltip is filled with a list of frames under the mouse cursor]]
-	event "OnTooltipSetFrameStack"
+	__WidgetEvent__() event "OnTooltipSetFrameStack"
 
 	__Doc__[[Run when the tooltip is filled with information about an item]]
-	event "OnTooltipSetItem"
+	__WidgetEvent__() event "OnTooltipSetItem"
 
 	__Doc__[[Run when the tooltip is filled with information about a quest]]
-	event "OnTooltipSetQuest"
+	__WidgetEvent__() event "OnTooltipSetQuest"
 
 	__Doc__[[Run when the tooltip is filled with information about a spell]]
-	event "OnTooltipSetSpell"
+	__WidgetEvent__() event "OnTooltipSetSpell"
 
 	__Doc__[[Run when the tooltip is filled with information about a unit]]
-	event "OnTooltipSetUnit"
+	__WidgetEvent__() event "OnTooltipSetUnit"
 
 	------------------------------------------------------
 	-- Method

@@ -26,28 +26,28 @@ class "Animation"
 		<desc>Run when the animation (or animation group) finishes animating</desc>
 		<param name="requested">boolean, true if animation finished because of a call to AnimationGroup:Finish(); false otherwise</param>
 	]]
-	event "OnFinished"
+	__WidgetEvent__() event "OnFinished"
 
 	__Doc__[[Run when the frame is created]]
-	event "OnLoad"
+	__WidgetEvent__() event "OnLoad"
 
 	__Doc__[[Run when the animation (or animation group) is paused]]
-	event "OnPause"
+	__WidgetEvent__() event "OnPause"
 
 	__Doc__[[Run when the animation (or animation group) begins to play]]
-	event "OnPlay"
+	__WidgetEvent__() event "OnPlay"
 
 	__Doc__[[
 		<desc>Run when the animation (or animation group) is stopped</desc>
 		<param name="requested">boolean, true if the animation was stopped due to a call to the animation's or group's :Stop() method; false if the animation was stopped for other reasons</param>
 	]]
-	event "OnStop"
+	__WidgetEvent__() event "OnStop"
 
 	__Doc__[[
 		<desc>Run each time the screen is drawn by the game engine</desc>
 		<param name="elapsed">number, number of seconds since the OnUpdate handlers were last run (likely a fraction of a second)</param>
 	]]
-	event "OnUpdate"
+	__WidgetEvent__() event "OnUpdate"
 
 	------------------------------------------------------
 	-- Method

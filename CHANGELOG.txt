@@ -1,3 +1,7 @@
+2016/11/26 v127
+    1. Update for New PLoop System.
+    2. Fix several bugs.
+
 2016/11/20 v125
     1. Fix the double click won't select words in the Multiline-textbox and Code Editor, blz may changed the base.
 

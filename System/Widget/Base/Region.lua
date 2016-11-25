@@ -39,16 +39,16 @@ class "Region"
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Run when the Region becomes visible]]
-	event "OnShow"
+	__WidgetEvent__() event "OnShow"
 
 	__Doc__[[Run when the Region's visbility changes to hidden]]
-	event "OnHide"
+	__WidgetEvent__() event "OnHide"
 
 	__Doc__[[Run when the Region's visible state is changed]]
-	event "OnVisibleChanged"
+	__WidgetEvent__() event "OnVisibleChanged"
 
 	__Doc__[[Run when the Region's location is changed]]
-	event "OnPositionChanged"
+	__WidgetEvent__() event "OnPositionChanged"
 
 	------------------------------------------------------
 	-- Method
@@ -301,7 +301,7 @@ class "Region"
 
 			if relativeFrame then
 				local e = self:GetEffectiveScale()
-				local ep = relativeFrame:GetEffectiveScale()
+				local ep = UIParent:GetScale()
 				local x, y = GetPos(self, anchor.point)
 				local rx, ry = GetPos(relativeFrame, anchor.relativePoint or anchor.point)
 

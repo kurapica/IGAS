@@ -18,10 +18,10 @@ class "Model"
 	-- Event
 	------------------------------------------------------
 	__Doc__[[Run when the model's animation finishes]]
-	event "OnAnimFinished"
+	__WidgetEvent__() event "OnAnimFinished"
 
 	__Doc__[[Run when a model changes or animates]]
-	event "OnUpdateModel"
+	__WidgetEvent__() event "OnUpdateModel"
 
 	------------------------------------------------------
 	-- Method

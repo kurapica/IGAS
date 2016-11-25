@@ -320,7 +320,7 @@ end
 
 -- BooleanNil_01
 struct "BooleanNil_01"
-	function BooleanNil_01(value)
+	function __init(value)
 		return value == 1 or value == true
 	end
 endstruct "BooleanNil_01"
@@ -389,7 +389,7 @@ struct "ColorType"
 	a = ColorFloat
 	code = String
 
-	function ColorType(value)
+	function __init(value)
 		value.a = value.a or 1	-- default
 		value.code = value.code or ("\124cff%.2x%.2x%.2x"):format(value.r * 255, value.g * 255, value.b * 255)
 	end
@@ -425,7 +425,9 @@ struct "AnimOrderType"
 	function AnimOrderType(value)
 		assert(type(value) == "number", "%s must be a number, got %s.", "%s", type(value))
 		assert(value >=0 and value <= 100, "%s must be in [0-100], got %s.")
+	end
 
+	function __init(value)
 		return floor(value)
 	end
 endstruct "AnimOrderType"

@@ -11,50 +11,54 @@ if not IGAS:NewAddon("IGAS.Widget.UIObject", version) then
 	return
 end
 
-__Doc__[[UIObject is the base ui elemenet type]]
-__InitTable__() __AutoProperty__()
-class "UIObject"
-	inherit "Object"
+__AttributeUsage__{AttributeTarget = AttributeTargets.Event, RunOnce = true}
+__Sealed__() __Unique__()
+class "__WidgetEvent__"
+    extend "IAttribute"
 
-	------------------------------------------------------
-	-- Event Handler
-	------------------------------------------------------
-	-- OnEventHandlerChanged
-	_ScriptHandler = _ScriptHandler or setmetatable({}, {
-		__index = function(self, handler)
-			rawset(self, handler, function(self, ...)
-				return _WrapperMap[self]:Fire(handler, ...)
-			end)
+	local function OnEventHandlerChanged(handler)
+		local name = handler.Event
+		local self = handler.Owner
 
-			return rawget(self, handler)
-		end,
-	})
-
-	local function OnEventHandlerChanged(self, scriptName)
 		local _UI = rawget(self, "__UI")
 
-		if type(_UI) ~= "table" or _UI == self or type(_UI.HasScript) ~= "function" or not _UI:HasScript(scriptName) then
+		if type(_UI) ~= "table" or _UI == self or type(_UI.HasScript) ~= "function" or not _UI:HasScript(name) then
 			return
 		end
 
-		if self[scriptName]:IsEmpty() then
+		self.__UIObject_WidgetEvent = self.__UIObject_WidgetEvent or {}
+
+		if handler:IsEmpty() then
 			-- UnRegister
-			if _UI:GetScript(scriptName) == _ScriptHandler[scriptName] then
-				_UI:SetScript(scriptName, nil)
+			if _UI:GetScript(name) == self.__UIObject_WidgetEvent[name] then
+				_UI:SetScript(name, nil)
 			end
 		else
+			if not self.__UIObject_WidgetEvent[name] then
+				self.__UIObject_WidgetEvent[name] = function(self, ...) return handler(...) end
+			end
+
 			-- Register
-			if not _UI:GetScript(scriptName) then
-				_UI:SetScript(scriptName, _ScriptHandler[scriptName])
-			elseif _UI:GetScript(scriptName) ~= _ScriptHandler[scriptName] then
-				if type(self.__HookedScript) ~= "table" or not self.__HookedScript[scriptName] then
-					_UI:HookScript(scriptName, _ScriptHandler[scriptName])
-					self.__HookedScript = self.__HookedScript or {}
-					self.__HookedScript[scriptName] = true
+			if not _UI:GetScript(name) then
+				_UI:SetScript(name, self.__UIObject_WidgetEvent[name])
+			elseif _UI:GetScript(name) ~= self.__UIObject_WidgetEvent[name] then
+				if not self.__UIObject_WidgetEvent["Hooked_" .. name] then
+					self.__UIObject_WidgetEvent["Hooked_" .. name] = true
+					_UI:HookScript(name, self.__UIObject_WidgetEvent[name])
 				end
 			end
 		end
 	end
+
+    function __WidgetEvent__(self)
+    	__EventChangeHandler__(OnEventHandlerChanged)
+    end
+endclass "__WidgetEvent__"
+
+__Doc__[[UIObject is the base ui elemenet type]]
+__InitTable__() __AutoProperty__()
+class "UIObject"
+	inherit "Object"
 
 	------------------------------------------------------
 	-- Event
@@ -394,8 +398,6 @@ class "UIObject"
 			self.__UI = name
 			_WrapperMap[name] = self
 
-			self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
-
 			SetName(self, name:GetName() or "Name"..random(100000))
 
 			return
@@ -418,8 +420,6 @@ class "UIObject"
 		self[0] = obj[0]
 		self.__UI = obj
 		_WrapperMap[obj] = self
-
-		self.OnEventHandlerChanged = self.OnEventHandlerChanged + OnEventHandlerChanged
 
 		SetName(self, name)
 		SetParent(self, parent)
