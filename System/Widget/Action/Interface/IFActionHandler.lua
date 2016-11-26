@@ -1060,9 +1060,11 @@ do
 	_IFActionHandler_PetGridCounter = 0
 
 	function UpdateGrid(self)
+		if _IFActionHandler_GridCounter <= 0 and self.KeepFadeOut then return end
+
 		local kind = self.ActionType
 
-		if _IFActionHandler_GridCounter > 0 or ((self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self)) and not self.KeepFadeOut) then
+		if _IFActionHandler_GridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
 			self.Alpha = 1
 		else
 			self.Alpha = 0
@@ -1070,9 +1072,11 @@ do
 	end
 
 	function UpdatePetGrid(self)
+		if _IFActionHandler_PetGridCounter <= 0 and self.KeepFadeOut then return end
+
 		local kind = self.ActionType
 
-		if _IFActionHandler_PetGridCounter > 0 or ((self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self)) and not self.KeepFadeOut) then
+		if _IFActionHandler_PetGridCounter > 0 or self.ShowGrid or _IFActionTypeHandler[kind].HasAction(self) then
 			self.Alpha = 1
 		else
 			self.Alpha = 0

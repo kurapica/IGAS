@@ -1,3 +1,6 @@
+2016/11/26 v129
+    1. Fix the keep fade out option for action buttons.
+
 2016/11/26 v128
     1. Fix the random mount spell's button state.
 
