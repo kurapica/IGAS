@@ -21,6 +21,7 @@ function OnEnable(self)
 	self:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
+	self:RegisterEvent("UNIT_AURA")
 
 	OnEnable = nil
 
@@ -67,6 +68,12 @@ end
 
 function UPDATE_SHAPESHIFT_FORMS(self)
 	return handler:Refresh()
+end
+
+function UNIT_AURA(self, unit)
+	if unit == "player" then
+		handler:Refresh(RefreshButtonState)
+	end
 end
 
 -- Action type handler
