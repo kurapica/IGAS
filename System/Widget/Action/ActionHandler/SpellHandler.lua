@@ -41,6 +41,7 @@ function OnEnable(self)
 	self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("UNIT_AURA")
+	self:RegisterEvent("SPELL_FLYOUT_UPDATE")
 
 	OnEnable = nil
 
@@ -122,6 +123,10 @@ function UNIT_AURA(self, unit)
 			if _StanceMap[target] then handler:Refresh(btn) end
 		end
 	end
+end
+
+function SPELL_FLYOUT_UPDATE(self)
+	return handler:Refresh()
 end
 
 function UpdateStanceMap()
