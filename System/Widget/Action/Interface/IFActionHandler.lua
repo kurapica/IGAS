@@ -1060,7 +1060,7 @@ do
 	_IFActionHandler_PetGridCounter = 0
 
 	function UpdateGrid(self)
-		if _IFActionHandler_GridCounter <= 0 and self.KeepFadeOut then return end
+		if self.BlockGridUpdating then return end
 
 		local kind = self.ActionType
 
@@ -1072,7 +1072,7 @@ do
 	end
 
 	function UpdatePetGrid(self)
-		if _IFActionHandler_PetGridCounter <= 0 and self.KeepFadeOut then return end
+		if self.BlockGridUpdating then return end
 
 		local kind = self.ActionType
 
@@ -1500,6 +1500,17 @@ interface "IFActionHandler"
 	require "CheckButton"
 
 	------------------------------------------------------
+	-- Event Handler
+	------------------------------------------------------
+	local function OnShow(self)
+		if _IFActionTypeHandler[self.ActionType].IsPlayerAction then
+			UpdateGrid(self)
+		else
+			UpdatePetGrid(self)
+		end
+	end
+
+	------------------------------------------------------
 	-- Event
 	------------------------------------------------------
 
@@ -1671,13 +1682,7 @@ interface "IFActionHandler"
 	-- Display Property
 	------------------------------------------------------
 	__Doc__[[Whether show the action button with no content, controlled by IFActionHandler]]
-	__Handler__( function (self, value)
-		if _IFActionTypeHandler[self.ActionType].IsPlayerAction then
-			UpdateGrid(self)
-		else
-			UpdatePetGrid(self)
-		end
-	end )
+	__Handler__( OnShow )
 	property "ShowGrid" { Type = Boolean }
 
 	__Doc__[[Whether show the action button's flyout icon, controlled by IFActionHandler]]
@@ -1739,8 +1744,9 @@ interface "IFActionHandler"
 	__Doc__[[The anchor point of the gametooltip]]
 	property "GameTooltipAnchor" { Type = AnchorType }
 
-	__Doc__[[Whether the button is keeping fade out, so keep not show grid]]
-	property "KeepFadeOut" { Type = Boolean }
+	__Doc__[[Whether the button is block grid updating, should handle it by itself.]]
+	__Handler__( OnShow )
+	property "BlockGridUpdating" { Type = Boolean }
 
 	------------------------------------------------------
 	-- Dispose
@@ -1776,6 +1782,8 @@ interface "IFActionHandler"
 		_IFActionHandler_Buttons:Insert(self)
 
 		_IFActionHandler_Buttons[self] = self.ActionType
+
+		self.OnShow = self.OnShow + OnShow
 
 		return Task.NoCombatCall(SetupActionButton, self)
 	end

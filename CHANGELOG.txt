@@ -1,3 +1,6 @@
+2016/11/30 v131
+    1. The IFActionHandler support buttons that control their alpha by themselves.
+
 2016/11/29 v130
     1. Force refresh when flyout spell is updated.
 
