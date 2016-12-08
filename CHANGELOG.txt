@@ -1,3 +1,6 @@
+2016/12/08 v132
+    1. Fix the player can't use mount spell when shapeshift.
+
 2016/11/30 v131
     1. The IFActionHandler support buttons that control their alpha by themselves.
 

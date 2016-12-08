@@ -66,18 +66,31 @@ handler = ActionTypeHandler {
 		local target = ...
 
 		if target then
-			self:SetAttribute("*type*", "summonmount")
-			Manager:CallMethod("RegisterMount", self:GetName())
+			self:SetAttribute("*type*", "macro")
+			self:SetAttribute("*macrotext*", "/CANCELFORM")
+			--self:SetAttribute("*type*", "summonmount")
+			--Manager:CallMethod("RegisterMount", self:GetName())
 		else
 			self:SetAttribute("*type*", nil)
-			Manager:CallMethod("UnregisterMount", self:GetName())
+			self:SetAttribute("*macrotext*", nil)
+			--Manager:CallMethod("UnregisterMount", self:GetName())
 		end
 	]],
 
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)
-		Manager:CallMethod("UnregisterMount", self:GetName())
+		self:SetAttribute("*macrotext*", nil)
+		--self:SetAttribute("*type*", nil)
+		--Manager:CallMethod("UnregisterMount", self:GetName())
 	]],
+
+	PreClickSnippet = [[
+		return nil, self:GetName()
+	]],
+
+	PostClickSnippet = [=[
+		self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("SummonMount", self:GetName()) ]])
+	]=],
 }
 
 IGAS:GetUI(handler.Manager).SummonMount = function (self, btnName)
