@@ -1,3 +1,6 @@
+2016/12/09 v133
+    1. Update for PLoop v164.
+
 2016/12/08 v132
     1. Fix the player can't use mount spell when shapeshift.
 
