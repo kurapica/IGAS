@@ -1,3 +1,6 @@
+2016/12/14 v134
+    1. Fix error for System.Task.
+
 2016/12/09 v133
     1. Update for PLoop v164.
 

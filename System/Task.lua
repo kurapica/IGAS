@@ -503,7 +503,7 @@ __Final__() interface "Task"
 					task.NArgs = 0
 					task.Method = callable
 
-					QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
+					QueueDelayTask(v + GetTime(), task)
 
 					if tail then
 						tail.Sibling = task
@@ -634,7 +634,7 @@ __Final__() interface "Task"
 				task.NArgs = 0
 				task.Method = thread
 
-				QueueDelayTask((tonumber(delay) or 0) + GetTime(), task)
+				QueueDelayTask(v + GetTime(), task)
 
 				if tail then
 					tail.Sibling = task
