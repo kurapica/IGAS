@@ -68,27 +68,18 @@ handler = ActionTypeHandler {
 		if target then
 			self:SetAttribute("*type*", "macro")
 			self:SetAttribute("*macrotext*", "/CANCELFORM")
-			--self:SetAttribute("*type*", "summonmount")
-			--Manager:CallMethod("RegisterMount", self:GetName())
 		else
 			self:SetAttribute("*type*", nil)
 			self:SetAttribute("*macrotext*", nil)
-			--Manager:CallMethod("UnregisterMount", self:GetName())
 		end
 	]],
 
 	ClearSnippet = [[
 		self:SetAttribute("*type*", nil)
 		self:SetAttribute("*macrotext*", nil)
-		--self:SetAttribute("*type*", nil)
-		--Manager:CallMethod("UnregisterMount", self:GetName())
 	]],
 
-	PreClickSnippet = [[
-		return nil, self:GetName()
-	]],
-
-	PostClickSnippet = [=[
+	PreClickSnippet = [=[
 		self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("SummonMount", self:GetName()) ]])
 	]=],
 }
@@ -100,21 +91,9 @@ IGAS:GetUI(handler.Manager).SummonMount = function (self, btnName)
 		if select(4, C_MountJournal.GetMountInfoByID(mountID)) then
 			C_MountJournal.Dismiss()
 		else
-			C_MountJournal.SummonByID(mountID)
+			Task.NextCall(C_MountJournal.SummonByID, mountID)
 		end
 	end
-end
-
-IGAS:GetUI(handler.Manager).RegisterMount = function (self, btnName)
-	Task.NoCombatCall(function()
-		_G[btnName]:SetAttribute("_summonmount", [=[ self:GetFrameRef("IFActionHandler_Manager"):RunFor(self, [[ Manager:CallMethod("SummonMount", self:GetName()) ]]) ]=])
-	end)
-end
-
-IGAS:GetUI(handler.Manager).UnregisterMount = function (self, btnName)
-	Task.NoCombatCall(function()
-		_G[btnName]:SetAttribute("_summonmount",  nil)
-	end)
 end
 
 -- Overwrite methods
