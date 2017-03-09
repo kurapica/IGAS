@@ -1,3 +1,6 @@
+2017/03/09 v138
+    1. A little fix for health and power updating.
+
 2016/12/27 v136
     1. Fix mount spell.
 
