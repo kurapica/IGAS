@@ -31,6 +31,8 @@ class "PowerBar"
 					self._SmoothValueObj.OnValueChanged = OnValueChanged
 
 					self:SetValue(power)
+				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
+					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				end
 
 				self._SmoothValueObj.RealValue = power
@@ -84,6 +86,8 @@ class "PowerBarFrequent"
 					self._SmoothValueObj.OnValueChanged = OnValueChanged
 
 					self:SetValue(power)
+				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
+					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				end
 
 				self._SmoothValueObj.RealValue = power

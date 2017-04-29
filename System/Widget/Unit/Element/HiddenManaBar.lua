@@ -31,6 +31,8 @@ class "HiddenManaBar"
 					self._SmoothValueObj.OnValueChanged = OnValueChanged
 
 					self:SetValue(power)
+				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
+					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				end
 
 				self._SmoothValueObj.RealValue = power

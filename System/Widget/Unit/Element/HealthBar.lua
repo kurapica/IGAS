@@ -162,6 +162,7 @@ class "HealthBar"
 
 	local function OnValueChanged(self, value)
 		self.Owner:SetValue(value)
+		return HealthBar_OnStateChanged(self.Owner)
 	end
 
 	------------------------------------------------------
@@ -178,6 +179,8 @@ class "HealthBar"
 					self._SmoothValueObj.OnValueChanged = OnValueChanged
 
 					self:SetValue(health)
+				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
+					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				end
 
 				self._SmoothValueObj.RealValue = health
@@ -254,6 +257,7 @@ class "HealthBarFrequent"
 
 	local function OnValueChanged(self, value)
 		self.Owner:SetValue(value)
+		return HealthBar_OnStateChanged(self.Owner)
 	end
 
 	------------------------------------------------------
@@ -270,6 +274,8 @@ class "HealthBarFrequent"
 					self._SmoothValueObj.OnValueChanged = OnValueChanged
 
 					self:SetValue(health)
+				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
+					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
 				end
 
 				self._SmoothValueObj.RealValue = health
