@@ -161,8 +161,9 @@ class "HealthBar"
 	end
 
 	local function OnValueChanged(self, value)
-		self.Owner:SetValue(value)
-		return HealthBar_OnStateChanged(self.Owner)
+		self = self.Owner
+		self:SetValue(value)
+		return HealthBar_OnStateChanged(self)
 	end
 
 	------------------------------------------------------
@@ -172,22 +173,11 @@ class "HealthBar"
 		if max then self:SetMinMaxValues(0, max) end
 		if health then
 			if self.Smoothing then
-				if not self._SmoothValueObj then
-					self._SmoothValueObj = SmoothValue()
-					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
-					self._SmoothValueObj.Owner = self
-					self._SmoothValueObj.OnValueChanged = OnValueChanged
-
-					self:SetValue(health)
-				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
-					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
-				end
-
-				self._SmoothValueObj.RealValue = health
+				self.SmoothValue:SetValue(health, max)
 			else
 				self:SetValue(health)
+				return HealthBar_OnStateChanged(self, health)
 			end
-			return HealthBar_OnStateChanged(self, health)
 		end
 	end
 
@@ -212,7 +202,21 @@ class "HealthBar"
 	property "Smoothing" { Type = Boolean }
 
 	__Doc__[[The delay time for smoothing value changes]]
-	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
+	property "SmoothDelay" {
+		Type = PositiveNumber,
+		Set  = function(self, delay) self.SmoothValue.SmoothDelay = delay end,
+		Get  = function(self) return self.SmoothValue.SmoothDelay end,
+	}
+
+	property "SmoothValue" {
+		Set = false,
+		Default = function(self)
+			local obj = SmoothValue()
+			obj.Owner = self
+			obj.OnValueChanged = OnValueChanged
+			return obj
+		end,
+	}
 
 	__Doc__[[Whether use the debuff color]]
 	__Handler__(HealthBar_OnStateChanged)
@@ -267,22 +271,11 @@ class "HealthBarFrequent"
 		if max then self:SetMinMaxValues(0, max) end
 		if health then
 			if self.Smoothing then
-				if not self._SmoothValueObj then
-					self._SmoothValueObj = SmoothValue()
-					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
-					self._SmoothValueObj.Owner = self
-					self._SmoothValueObj.OnValueChanged = OnValueChanged
-
-					self:SetValue(health)
-				elseif self._SmoothValueObj.SmoothDelay ~= self.SmoothDelay then
-					self._SmoothValueObj.SmoothDelay = self.SmoothDelay
-				end
-
-				self._SmoothValueObj.RealValue = health
+				self.SmoothValue:SetValue(health, max)
 			else
 				self:SetValue(health)
+				return HealthBar_OnStateChanged(self, health)
 			end
-			return HealthBar_OnStateChanged(self, health)
 		end
 	end
 
@@ -307,7 +300,21 @@ class "HealthBarFrequent"
 	property "Smoothing" { Type = Boolean }
 
 	__Doc__[[The delay time for smoothing value changes]]
-	property "SmoothDelay" { Type = PositiveNumber, Default = 1 }
+	property "SmoothDelay" {
+		Type = PositiveNumber,
+		Set  = function(self, delay) self.SmoothValue.SmoothDelay = delay end,
+		Get  = function(self) return self.SmoothValue.SmoothDelay end,
+	}
+
+	property "SmoothValue" {
+		Set = false,
+		Default = function(self)
+			local obj = SmoothValue()
+			obj.Owner = self
+			obj.OnValueChanged = OnValueChanged
+			return obj
+		end,
+	}
 
 	__Doc__[[Whether use the debuff color]]
 	__Handler__(HealthBar_OnStateChanged)

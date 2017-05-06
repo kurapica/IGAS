@@ -1,3 +1,6 @@
+2017/05/06 v142
+    1. Fix the smoothing performance for healthbar and powerbar.
+
 2017/05/02 v141
     1. Force action button full refresh when unit aura changes.
 
