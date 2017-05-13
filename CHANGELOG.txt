@@ -1,3 +1,6 @@
+2017/05/06 v143
+    1. Fix possible error for smooth value system.
+
 2017/05/06 v142
     1. Fix the smoothing performance for healthbar and powerbar.
 

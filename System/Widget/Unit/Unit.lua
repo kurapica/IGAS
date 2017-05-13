@@ -471,5 +471,7 @@ class "SmoothValue"
 	function SmoothValue(self)
 		self.Processing = false
 		self.Disposed = false
+		self.OldValue = 0
+		self.Value = 0
 	end
 endclass "SmoothValue"
