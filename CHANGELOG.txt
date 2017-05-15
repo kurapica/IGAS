@@ -1,3 +1,6 @@
+2017/05/15 v144
+    1. Fix the unexpected unitframe hidden for raid panels.
+
 2017/05/06 v143
     1. Fix possible error for smooth value system.
 
