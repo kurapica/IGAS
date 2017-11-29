@@ -19,4 +19,5 @@
 	<Script file="BagHandler.lua"/>
 	<!--Script file="InventoryHandler.lua"/ -->
 	<Script file="BagSlotHandler.lua"/>
+	<Script file="RaidTargetHandler.lua"/>
 </Ui>

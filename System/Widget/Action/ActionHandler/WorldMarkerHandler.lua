@@ -8,6 +8,8 @@ if not IGAS:NewAddon("IGAS.Widget.Action.WorldMarkerHandler", version) then
 	return
 end
 
+import "System.Widget.Action.ActionRefreshMode"
+
 _Enabled = false
 
 enum "WorldMarkerActionType" {
@@ -16,13 +18,10 @@ enum "WorldMarkerActionType" {
 	"toggle",
 }
 
-_WorldMarker = {
-	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_6",
-	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_4",
-	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_3",
-	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_7",
-	"Interface\\TargetingFrame\\UI-RaidTargetingIcon_1",
-}
+_WorldMarker = {}
+for i = 1, _G.NUM_WORLD_RAID_MARKERS do
+	_WorldMarker[i] = _G["WORLD_MARKER"..i]:match("Interface[^:]+")
+end
 
 handler = ActionTypeHandler {
 	Name = "worldmarker",
@@ -35,8 +34,22 @@ handler = ActionTypeHandler {
 
 	ReceiveStyle = "Block",
 
-	OnEnableChanged = function(self) _Enabled = self.Enabled end,
+	OnEnableChanged = function(self)
+		_Enabled = self.Enabled
+		if _Enabled then
+			RefreshForWorldMark()
+		end
+	end,
 }
+
+System.Threading.__Thread__()
+function RefreshForWorldMark()
+	while _Enabled do
+		handler:Refresh(RefreshButtonState)
+
+		Task.Delay(0.1)
+	end
+end
 
 -- Overwrite methods
 function handler:GetActionTexture()
@@ -46,7 +59,7 @@ end
 function handler:IsActivedAction()
 	local target = tonumber(self.ActionTarget)
 	-- No event for world marker, disable it now
-	return false and target and target >= 1 and target <= NUM_WORLD_RAID_MARKERS and IsRaidMarkerActive(target)
+	return target and target >= 1 and target <= NUM_WORLD_RAID_MARKERS and IsRaidMarkerActive(target)
 end
 
 -- Expand IFActionHandler
@@ -68,12 +81,11 @@ interface "IFActionHandler"
 	__Doc__[[The world marker action type]]
 	property "WorldMarkerActionType" {
 		Get = function (self)
-			return self:GetAttribute("actiontype") == "worldmarker" and self:GetAttribute("action")
+			return self:GetAttribute("actiontype") == "worldmarker" and self:GetAttribute("action") or "toggle"
 		end,
 		Set = function (self, type)
 			self:SetAction("worldmarker", self.WorldMarker, type)
 		end,
 		Type = WorldMarkerActionType,
-		Default = "toggle",
 	}
 endinterface "IFActionHandler"
