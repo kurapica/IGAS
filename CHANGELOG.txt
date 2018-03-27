@@ -1,3 +1,6 @@
+2018/03/27 v151
+    1. Remove the dependence, the IGAS is too old for new PLoop.
+
 2017/11/29 v150
     1. Fix support for action button of world markers.
     2. Add support for action button of raid target.
