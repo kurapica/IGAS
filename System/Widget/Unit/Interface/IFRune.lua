@@ -10,7 +10,7 @@ end
 
 _IFRuneUnitList = _IFRuneUnitList or UnitList(_Name)
 
-SPELL_POWER_RUNES = _G.SPELL_POWER_RUNES
+SPELL_POWER_RUNES = ClassPowerMap.RUNES
 
 function _IFRuneUnitList:OnUnitListChanged()
 	self:RegisterEvent("RUNE_POWER_UPDATE")
@@ -21,11 +21,10 @@ function _IFRuneUnitList:OnUnitListChanged()
 end
 
 function _IFRuneUnitList:ParseEvent(event, runeIndex, isEnergize)
-	if event == "RUNE_POWER_UPDATE" and runeIndex and runeIndex >=1 then
-		local start, duration, ready = GetRuneCooldown(runeIndex)
-
+	if event == "RUNE_POWER_UPDATE" then
+		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
 		for obj in self:GetIterator("player") do
-			obj:SetRuneByIndex(runeIndex, start, duration, ready, isEnergize)
+			obj:RefreshRunes(max)
 		end
 	elseif event == "UNIT_MAXPOWER" and runeIndex == "player" then
 		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
@@ -44,10 +43,7 @@ function OnForceRefresh(self)
 		local max = UnitPowerMax("player", SPELL_POWER_RUNES)
 
 		self:SetMaxRune(max)
-
-		for i = 1, max do
-			self:SetRuneByIndex(i, GetRuneCooldown(i))
-		end
+		self:RefreshRunes(max)
 	else
 		self:SetRuneVisible(false)
 	end
@@ -60,20 +56,7 @@ interface "IFRune"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
-	__Doc__[[Refresh the rune by index]]
-	__Optional__() function SetRuneByIndex(self, index, start, duration, ready, isEnergize)
-		if self[index] then
-			if not ready then
-				if start then
-					self[index]:Fire("OnCooldownUpdate", start, duration)
-				end
-				self[index].Ready = false
-			else
-				self[index].Ready = true
-			end
-
-			self[index].Energize = isEnergize
-		end
+	function RefreshRunes(self, max)
 	end
 
 	__Doc__[[Set the max rune count to the element]]

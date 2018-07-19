@@ -101,12 +101,10 @@ handler = ActionTypeHandler {
 					page = 1
 				end
 			elseif page == "possess" then
-				page = Manager:GetFrameRef("MainMenuBarArtFrame"):GetAttribute("actionpage")
-				if page <= 10 then
-					page = Manager:GetFrameRef("OverrideActionBar"):GetAttribute("actionpage")
-				end
-				if page <= 10 then
-					page = 12
+				if HasOverrideActionBar() then
+					page = GetOverrideBarIndex()
+				else
+					page = 1
 				end
 			end
 			MainPage[0] = page
@@ -144,9 +142,6 @@ handler = ActionTypeHandler {
 }
 
 do
-	handler.Manager:SetFrameRef("MainMenuBarArtFrame", MainMenuBarArtFrame)
-	handler.Manager:SetFrameRef("OverrideActionBar", OverrideActionBar)
-
 	-- ActionBar swap register
 	local state = {}
 

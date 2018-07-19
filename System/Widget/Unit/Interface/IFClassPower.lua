@@ -40,7 +40,7 @@ SPEC_ALL = 0
 _ClassMap = {
 	ROGUE = {
 		[SPEC_ALL] = {
-			PowerType = _G.SPELL_POWER_COMBO_POINTS,
+			PowerType = ClassPowerMap["COMBO_POINTS"],
 			PowerToken = {
 				COMBO_POINTS = true,
 			},
@@ -49,7 +49,7 @@ _ClassMap = {
 	PALADIN = {
 		[SPEC_PALADIN_RETRIBUTION] = {
 			ShowLevel = _G.PALADINPOWERBAR_SHOW_LEVEL,
-			PowerType = _G.SPELL_POWER_HOLY_POWER,
+			PowerType = ClassPowerMap["HOLY_POWER"],
 			PowerToken = {
 				HOLY_POWER = true,
 			},
@@ -57,7 +57,7 @@ _ClassMap = {
 	},
 	MAGE = {
 		[SPEC_MAGE_ARCANE] = {
-			PowerType = _G.SPELL_POWER_ARCANE_CHARGES,
+			PowerType = ClassPowerMap["ARCANE_CHARGES"],
 			PowerToken = {
 				ARCANE_CHARGES = true,
 			},
@@ -66,7 +66,7 @@ _ClassMap = {
 	DRUID = {
 		USE_SHAPESHIFTFORM = true,
 		[CAT_FORM] = {
-			PowerType = _G.SPELL_POWER_COMBO_POINTS,
+			PowerType = ClassPowerMap["COMBO_POINTS"],
 			PowerToken = {
 				COMBO_POINTS = true,
 			},
@@ -74,7 +74,7 @@ _ClassMap = {
 	},
 	PRIEST = {
 		[SPEC_PRIEST_SHADOW] = {
-			PowerType = _G.SPELL_POWER_MANA,
+			PowerType = ClassPowerMap["MANA"],
 			PowerToken = {
 				MANA = true,
 			},
@@ -82,7 +82,7 @@ _ClassMap = {
 	},
 	MONK = {
 		[SPEC_MONK_WINDWALKER] = {
-			PowerType = _G.SPELL_POWER_CHI,
+			PowerType = ClassPowerMap["CHI"],
 			PowerToken = {
 				CHI = true,
 			},
@@ -90,7 +90,7 @@ _ClassMap = {
 	},
 	WARLOCK = {
 		[SPEC_ALL] = {
-			PowerType = _G.SPELL_POWER_SOUL_SHARDS,
+			PowerType = ClassPowerMap["SOUL_SHARDS"],
 			PowerToken = {
 				SOUL_SHARDS = true,
 			},
@@ -98,13 +98,13 @@ _ClassMap = {
 	},
 	SHAMAN = {
 		[SPEC_SHAMAN_ELEMENTAL] = {
-			PowerType = _G.SPELL_POWER_MANA,
+			PowerType = ClassPowerMap["MANA"],
 			PowerToken = {
 				MANA = true,
 			},
 		},
 		[SPEC_SHAMAN_ENHANCEMENT] = {
-			PowerType = _G.SPELL_POWER_MANA,
+			PowerType = ClassPowerMap["MANA"],
 			PowerToken = {
 				MANA = true,
 			},
