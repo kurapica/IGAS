@@ -93,18 +93,18 @@ handler = ActionTypeHandler {
 
 		UpdateMainActionBar = [=[
 			local page = ...
-			if not page then page = 1 end
-			if page == "tempshapeshift" then
-				if HasTempShapeshiftActionBar() then
-					page = GetTempShapeshiftBarIndex()
-				else
-					page = 1
-				end
-			elseif page == "possess" then
-				if HasOverrideActionBar() then
+			if not page then page = GetActionBarPage() end
+			if type(page) ~= "number" then
+				if HasVehicleActionBar() then
+					page = GetVehicleBarIndex()
+				elseif HasOverrideActionBar() then
 					page = GetOverrideBarIndex()
+				elseif HasTempShapeshiftActionBar() then
+					page = GetTempShapeshiftBarIndex()
+				elseif HasBonusActionBar() then
+					page = GetBonusBarIndex()
 				else
-					page = 1
+					page = GetActionBarPage()
 				end
 			end
 			MainPage[0] = page
@@ -146,7 +146,10 @@ do
 	local state = {}
 
 	-- special using
-	tinsert(state, "[overridebar][possessbar]possess")
+	tinsert(state, "[possessbar]possess")
+	tinsert(state, "[shapeshift]tempshapeshift")
+	tinsert(state, "[overridebar]override")
+	tinsert(state, "[vehicleui]vehicle")
 
 	-- action bar swap
 	for i = 2, 6 do
@@ -170,7 +173,7 @@ do
 	end
 
 	-- Fix for temp shape shift bar
-	tinsert(state, "[shapeshift]tempshapeshift")
+	-- tinsert(state, "[shapeshift]tempshapeshift")
 
 	tinsert(state, "1")
 
