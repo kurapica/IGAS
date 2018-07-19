@@ -274,7 +274,7 @@ function handler:GetSpellId()
 	if type == "spell" then
 		return id
 	elseif type == "macro" then
-		return (select(3, GetMacroSpell(id)))
+		return GetMacroSpell(id)
 	end
 end
 

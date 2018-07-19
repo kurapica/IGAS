@@ -200,11 +200,15 @@ do
 	end
 
 	function TransSpell2Macro(spell, with)
-		return ("/%s %%unit\n/cast %s"):format(with, GetSpellInfo(spell))
+		if GetSpellInfo(spell) then
+			return ("/%s %%unit\n/cast %s"):format(with, GetSpellInfo(spell))
+		end
 	end
 
 	function TransItem2Macro(item, with)
-		return ("/%s %%unit\n/use %s"):format(with, GetItemInfo(item))
+		if GetItemInfo(item) then
+			return ("/%s %%unit\n/use %s"):format(with, GetItemInfo(item))
+		end
 	end
 
 	_IFSPellHandler_ActionType = {
@@ -401,7 +405,7 @@ do
 					tinsert(setup, _IFSpellHandler_SetupTemplate:format(prev .. "type" .. virtualKey, actionSet.type))
 					tinsert(clear, _IFSpellHandler_ClearTemplate:format(prev .. "type" .. virtualKey))
 
-					if actionSet.content then
+					if actionSet.content and tranContent then
 						tinsert(setup, _IFSpellHandler_SetupTemplate:format(prev .. actionSet.content .. virtualKey, tranContent))
 						tinsert(clear, _IFSpellHandler_ClearTemplate:format(prev .. actionSet.content .. virtualKey))
 					end
@@ -427,7 +431,7 @@ do
 					tinsert(setup, _IFSpellHandler_SetupTemplate:format(prev .. "type" .. virtualKey, actionSet.type))
 					tinsert(clear, _IFSpellHandler_ClearTemplate:format(prev .. "type" .. virtualKey))
 
-					if actionSet.content then
+					if actionSet.content and tranContent then
 						tinsert(setup, _IFSpellHandler_SetupTemplate:format(prev .. actionSet.content .. virtualKey, tranContent))
 						tinsert(clear, _IFSpellHandler_ClearTemplate:format(prev .. actionSet.content .. virtualKey))
 					end

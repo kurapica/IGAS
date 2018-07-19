@@ -125,7 +125,7 @@ function GetDebuffType(self)
 	local debuffType
 
 	while unit do
-		name, _, _, _, dtype = UnitAura(unit, index, "HARMFUL")
+		name, _, _, dtype = UnitAura(unit, index, "HARMFUL")
 
 		if name then
 			if dtype == "Magic" and _DEBUFF_ABLE["Magic"] then

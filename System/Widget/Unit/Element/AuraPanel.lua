@@ -70,7 +70,7 @@ class "AuraPanel"
 			<param name="filter">string, the filiter token</param>
 			]]
 		function Refresh(self, unit, index, filter)
-			local name, rank, texture, count, dtype, duration, expires, caster, isStealable, shouldConsolidate, spellID, canApplyAura, isBossDebuff = UnitAura(unit, index, filter)
+			local name, texture, count, dtype, duration, expires, caster, isStealable, shouldConsolidate, spellID, canApplyAura, isBossDebuff = UnitAura(unit, index, filter)
 
 			if name then
 				self.Index = index

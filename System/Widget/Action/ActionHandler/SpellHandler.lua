@@ -135,7 +135,7 @@ function UpdateStanceMap()
 	--wipe(_StanceMap)
 
 	for i = 1, GetNumShapeshiftForms() do
-		local id = select(5, GetShapeshiftFormInfo(i))
+		local id = select(4, GetShapeshiftFormInfo(i))
 	    if id then
 			str = str.._StanceMapTemplate:format(id, i)
 	    	_StanceMap[id] = i
@@ -350,7 +350,7 @@ end
 function handler:IsActivedAction()
 	local target = self.ActionTarget
 	if _StanceMap[target] then
-		return select(3, GetShapeshiftFormInfo(_StanceMap[target]))
+		return select(2, GetShapeshiftFormInfo(_StanceMap[target]))
 	elseif _MacroMap[target] then
 		return IsCurrentSpell(_MacroMap[target])
 	end
@@ -367,7 +367,7 @@ function handler:IsUsableAction()
 	local target = self.ActionTarget
 
 	if _StanceMap[target] then
-		return select(4, GetShapeshiftFormInfo(_StanceMap[target]))
+		return select(3, GetShapeshiftFormInfo(_StanceMap[target]))
 	elseif _MacroMap[target] then
 		return IsUsableSpell(_MacroMap[target])
 	end

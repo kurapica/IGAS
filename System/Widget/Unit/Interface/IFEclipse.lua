@@ -34,7 +34,7 @@ function _IFEclipseUnitList:OnUnitListChanged()
 	self:RegisterEvent("ECLIPSE_DIRECTION_CHANGE")
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("UNIT_AURA")
-	self:RegisterEvent("UNIT_POWER")
+	self:RegisterEvent("UNIT_POWER_UPDATE")
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
@@ -42,7 +42,7 @@ function _IFEclipseUnitList:OnUnitListChanged()
 end
 
 function _IFEclipseUnitList:ParseEvent(event, unit, powerType)
-	if event == "UNIT_POWER" then
+	if event == "UNIT_POWER_UPDATE" then
 		if unit == "player" and powerType == "ECLIPSE" then
 			self:EachK(_All, "Value", UnitPower('player', SPELL_POWER_ECLIPSE))
 		end
@@ -103,7 +103,7 @@ function GetEclipseActive()
 	local hasSolarEclipse = false
 
 	local i = 1
-	local name, _, _, _, _, _, _, _, _, _, spellID = UnitAura("player", i, "HELPFUL")
+	local name, _, _, _, _, _, _, _, _, spellID = UnitAura("player", i, "HELPFUL")
 
 	while name do
 		if spellID == ECLIPSE_BAR_SOLAR_BUFF_ID then
@@ -115,7 +115,7 @@ function GetEclipseActive()
 		end
 
 		i = i + 1
-		name, _, _, _, _, _, _, _, _, _, spellID = UnitAura("player", i, "HELPFUL")
+		name, _, _, _, _, _, _, _, _, spellID = UnitAura("player", i, "HELPFUL")
 	end
 
 	return hasLunarEclipse, hasSolarEclipse

@@ -389,13 +389,13 @@ class "WarlockPowerBar"
 
 		local activated = false
 		local index = 1
-		local name, _, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
+		local name, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
 		while spellId do
 			if ( spellId == WARLOCK_METAMORPHOSIS ) then
 				activated = true
 				break
 			end
-			name, _, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
+			name, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
 			index = index + 1
 		end
 		local frame = self.DemonicFuryBarFrame

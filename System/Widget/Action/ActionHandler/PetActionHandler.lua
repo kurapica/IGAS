@@ -151,7 +151,7 @@ function handler:HasAction()
 end
 
 function handler:GetActionTexture()
-	local name, _, texture, isToken = GetPetActionInfo(self.ActionTarget)
+	local name, texture, isToken = GetPetActionInfo(self.ActionTarget)
 	if name then
 		return isToken and _G[texture] or texture
 	end
@@ -166,15 +166,15 @@ function handler:IsUsableAction()
 end
 
 function handler:IsActivedAction()
-	return select(5, GetPetActionInfo(self.ActionTarget))
+	return select(4, GetPetActionInfo(self.ActionTarget))
 end
 
 function handler:IsAutoCastAction()
-	return select(6, GetPetActionInfo(self.ActionTarget))
+	return select(5, GetPetActionInfo(self.ActionTarget))
 end
 
 function handler:IsAutoCasting()
-	return select(7, GetPetActionInfo(self.ActionTarget))
+	return select(6, GetPetActionInfo(self.ActionTarget))
 end
 
 function handler:SetTooltip(GameTooltip)

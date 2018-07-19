@@ -34,7 +34,7 @@ function UpdateAuraState(unit)
 	local changed = false
 
 	while true do
-		name, _, _, _, dtype = UnitAura(unit, index, "HARMFUL")
+		name, _, _, dtype = UnitAura(unit, index, "HARMFUL")
 
 		if name then
 			if dtype == "Magic" then

@@ -12,7 +12,7 @@ _IFPowerUnitList = _IFPowerUnitList or UnitList(_Name)
 _IFPowerUnitPowerType = _IFPowerUnitPowerType or {}
 
 function _IFPowerUnitList:OnUnitListChanged()
-	self:RegisterEvent("UNIT_POWER")
+	self:RegisterEvent("UNIT_POWER_UPDATE")
 	self:RegisterEvent("UNIT_MAXPOWER")
 	self:RegisterEvent("UNIT_POWER_BAR_SHOW")
 	self:RegisterEvent("UNIT_POWER_BAR_HIDE")
@@ -41,7 +41,7 @@ function _IFPowerUnitList:ParseEvent(event, unit, type)
 			return
 		end
 
-		if event == "UNIT_POWER" then
+		if event == "UNIT_POWER_UPDATE" then
 			if powerType and ClassPowerMap[powerType] ~= type then return end
 
 			local max = UnitPowerMax(unit, powerType)

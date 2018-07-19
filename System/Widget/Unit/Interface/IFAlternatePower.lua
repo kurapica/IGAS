@@ -15,7 +15,7 @@ _IFAlternatePowerUnitList = _IFAlternatePowerUnitList or UnitList(_Name)
 
 function _IFAlternatePowerUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_MAXPOWER")
-	self:RegisterEvent("UNIT_POWER")
+	self:RegisterEvent("UNIT_POWER_UPDATE")
 	self:RegisterEvent("UNIT_POWER_BAR_SHOW")
 	self:RegisterEvent("UNIT_POWER_BAR_HIDE")
 	self.OnUnitListChanged = nil
@@ -28,7 +28,7 @@ function _IFAlternatePowerUnitList:ParseEvent(event, unit, powerType)
 		for obj in self:GetIterator(unit) do
 			obj:SetUnitAlternatePower(UnitPower(unit, ALTERNATE_POWER_INDEX), select(2, UnitAlternatePowerInfo(unit)), UnitPowerMax(unit, ALTERNATE_POWER_INDEX))
 		end
-	elseif event == "UNIT_POWER" and powerType == "ALTERNATE" then
+	elseif event == "UNIT_POWER_UPDATE" and powerType == "ALTERNATE" then
 		for obj in self:GetIterator(unit) do
 			obj:SetUnitAlternatePower(UnitPower(unit, ALTERNATE_POWER_INDEX))
 		end

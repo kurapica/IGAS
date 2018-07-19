@@ -19,7 +19,7 @@ else
 end
 
 function _IFManaUnitList:OnUnitListChanged()
-	self:RegisterEvent("UNIT_POWER")
+	self:RegisterEvent("UNIT_POWER_UPDATE")
 	self:RegisterEvent("UNIT_MAXPOWER")
 	self:RegisterEvent("UNIT_POWER_BAR_SHOW")
 	self:RegisterEvent("UNIT_POWER_BAR_HIDE")
@@ -33,7 +33,7 @@ end
 function _IFManaUnitList:ParseEvent(event, unit, type)
 	if (unit and unit ~= "player") or (type and type ~= "MANA") then return end
 
-	if event == "UNIT_POWER" or event == "UNIT_MAXPOWER" then
+	if event == "UNIT_POWER_UPDATE" or event == "UNIT_MAXPOWER" then
 		local mana, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
 		for obj in self:GetIterator("player") do
 			obj:SetUnitMana(mana, max)

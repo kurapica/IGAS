@@ -60,7 +60,7 @@ do
 	-- Register
 	function _EventManager:Register(event, obj)
 		if type(event) == "string" and event ~= "" then
-			self:RegisterEvent(event)
+			pcall(self.RegisterEvent, self, event)
 
 			if self:IsEventRegistered(event) then
 				_EventDistribution[event] = _EventDistribution[event] or setmetatable({}, _MetaWK)

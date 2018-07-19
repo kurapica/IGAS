@@ -69,8 +69,8 @@ class "CastBar"
 		status.OnValueChanged = status.OnValueChanged + Status_OnValueChanged
 	end
 
-	function Start(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime, _, _, notInterruptible = UnitCastingInfo(self.Unit)
+	function Start(self, lineID, spellID)
+		local name, text, texture, startTime, endTime, _, _, notInterruptible = UnitCastingInfo(self.Unit)
 
 		if not name then
 			self.Alpha = 0
@@ -104,7 +104,7 @@ class "CastBar"
 		self.Alpha = 1
 	end
 
-	function Fail(self, spell, rank, lineID, spellID)
+	function Fail(self, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
 			self.Alpha = 0
@@ -113,7 +113,7 @@ class "CastBar"
 		end
 	end
 
-	function Stop(self, spell, rank, lineID, spellID)
+	function Stop(self, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
 			self.Alpha = 0
@@ -122,7 +122,7 @@ class "CastBar"
 		end
 	end
 
-	function Interrupt(self, spell, rank, lineID, spellID)
+	function Interrupt(self, lineID, spellID)
 		if not lineID or lineID == self.LineID then
 			self:OnCooldownUpdate()
 			self.Alpha = 0
@@ -139,8 +139,8 @@ class "CastBar"
 		self.Shield.Visible = true
 	end
 
-	function Delay(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime = UnitCastingInfo(self.Unit)
+	function Delay(self, lineID, spellID)
+		local name, text, texture, startTime, endTime = UnitCastingInfo(self.Unit)
 
 		if not startTime or not endTime then return end
 
@@ -159,8 +159,8 @@ class "CastBar"
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
 
-	function ChannelStart(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime, _, notInterruptible = UnitChannelInfo(self.Unit)
+	function ChannelStart(self, lineID, spellID)
+		local name, text, texture, startTime, endTime, _, notInterruptible = UnitChannelInfo(self.Unit)
 
 		if not name then
 			self.Alpha = 0
@@ -194,8 +194,8 @@ class "CastBar"
 		self.Alpha = 1
 	end
 
-	function ChannelUpdate(self, spell, rank, lineID, spellID)
-		local name, _, text, texture, startTime, endTime = UnitChannelInfo(self.Unit)
+	function ChannelUpdate(self, lineID, spellID)
+		local name, text, texture, startTime, endTime = UnitChannelInfo(self.Unit)
 
 		if not name or not startTime or not endTime then
 			self:OnCooldownUpdate()
@@ -219,7 +219,7 @@ class "CastBar"
 		self:OnCooldownUpdate(startTime, self.Duration)
 	end
 
-	function ChannelStop(self, spell, rank, lineID, spellID)
+	function ChannelStop(self, lineID, spellID)
 		self:OnCooldownUpdate()
 		self.Alpha = 0
 		self.Duration = 0

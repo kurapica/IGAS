@@ -272,7 +272,7 @@ do
 
 	function QueueEventTask(event, task)
 		if not c_Event[event] then
-			TaskManager:RegisterEvent(event)
+			pcall(TaskManager.RegisterEvent, TaskManager, event)
 
 			if not TaskManager:IsEventRegistered(event) then
 				tinsert(c_Task, wipe(task))
