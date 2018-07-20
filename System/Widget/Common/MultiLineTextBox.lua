@@ -3275,6 +3275,11 @@ class "MultiLineTextBox"
 		return self:Fire("OnCharComposition", ...)
 	end
 
+	local function OnShow(self)
+		self.Text = self.Text or ""
+		Task.NextCall(Ajust4Font, self)
+	end
+
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
@@ -3359,6 +3364,8 @@ class "MultiLineTextBox"
 		editbox.OnChar = editbox.OnChar + OnChar
 		editbox.OnMouseDown = editbox.OnMouseDown + OnMouseDown
 		editbox.OnMouseUp = editbox.OnMouseUp + OnMouseUp
+
+		self.OnShow 	= self.OnShow + OnShow
 
 		container:UpdateSize()
 	end

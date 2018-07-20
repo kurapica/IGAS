@@ -1,3 +1,6 @@
+2018/07/20 v155
+    1. Fix MultiLineTextBox can't get focus. So the cube will works well now.
+
 2018/03/27 v151
     1. Remove the dependence, the IGAS is too old for new PLoop.
 
