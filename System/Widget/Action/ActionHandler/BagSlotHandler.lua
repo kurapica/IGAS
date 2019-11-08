@@ -490,7 +490,7 @@ function handler:SetTooltip(GameTooltip)
 			ResetCursor()
 		end
 	else
-		GameTooltip:SetOwner(self, "ANCHOR_NONE")
+		--GameTooltip:SetOwner(self, "ANCHOR_NONE")
 
 		local showSell = nil
 		local hasCooldown, repairCost, speciesID, level, breedQuality, maxHealth, power, speed, name = GameTooltip:SetBagItem(bag, slot)
