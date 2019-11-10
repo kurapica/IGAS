@@ -569,6 +569,12 @@ endclass "ActionList"
 ------------------------------------------------------
 do
 	_GameTooltip = _G.GameTooltip
+	_GameTooltip:SetClampedToScreen(true)
+	_GameTooltip:HookScript("OnShow", function(self)
+		if not (self:IsClampedToScreen() or InCombatLockdown() or (self:GetOwner() and self:GetOwner():IsProtected())) then
+			pcall(self.SetClampedToScreen, self, true)
+		end
+	end)
 
 	-- Object Array
 	_IFActionHandler_Buttons = ActionList()
