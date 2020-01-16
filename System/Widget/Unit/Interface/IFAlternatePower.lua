@@ -13,6 +13,11 @@ ALT_POWER_TYPE_COUNTER = _G.ALT_POWER_TYPE_COUNTER
 
 _IFAlternatePowerUnitList = _IFAlternatePowerUnitList or UnitList(_Name)
 
+function UnitAlternatePowerInfo(unit)
+	local barID = UnitPowerBarID(unit)
+	return GetAlternatePowerInfoByID(barID)
+end
+
 function _IFAlternatePowerUnitList:OnUnitListChanged()
 	self:RegisterEvent("UNIT_MAXPOWER")
 	self:RegisterEvent("UNIT_POWER_UPDATE")
