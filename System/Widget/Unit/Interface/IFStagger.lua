@@ -37,10 +37,10 @@ function UpdateCondition(self)
 	-- Only for player now
 	if SPEC_MONK_BREWMASTER == GetSpecialization() then
 		self:RegisterEvent("UNIT_MAXHEALTH")
-		self:RegisterEvent("UNIT_HEALTH_FREQUENT")
+		self:RegisterEvent("UNIT_HEALTH")
 	else
 		self:UnregisterEvent("UNIT_MAXHEALTH")
-		self:UnregisterEvent("UNIT_HEALTH_FREQUENT")
+		self:UnregisterEvent("UNIT_HEALTH")
 	end
 	self:EachK("player", OnForceRefresh)
 end

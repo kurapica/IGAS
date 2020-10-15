@@ -177,8 +177,17 @@ class "Model"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Model", nil, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("Model", nil, parent, template, ...)
 	end
 endclass "Model"
 

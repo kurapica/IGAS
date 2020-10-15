@@ -453,6 +453,9 @@ class "Frame"
 		<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
 		<param name="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</param>
 	]]
+	function SetBackdropBorderColor(self, ...)
+		return self.__UI:SetBackdropBorderColor(...)
+	end
 
 	__Doc__"SetBackdropColor" [[
 		<desc>Sets a shading color for the frame's background graphic. As with Texture:SetVertexColor(), this color is a shading applied to the colors of the texture image; a color of (1, 1, 1) allows the image's original colors to show.</desc>
@@ -461,6 +464,9 @@ class "Frame"
 		<param name="blue">number, blue component of the color (0.0 - 1.0)</param>
 		<param name="alpha">number, alpha (opacity) for the graphic (0.0 = fully transparent, 1.0 = fully opaque)</param>
 	]]
+	function SetBackdropColor(self, ...)
+		return self.__UI:SetBackdropColor(...)
+	end
 
 	__Doc__"SetClampedToScreen" [[
 		<desc>Sets whether the frame's boundaries should be limited to those of the screen. Applies to user moving/resizing of the frame (via :StartMoving(), :StartSizing(), or title region); attempting to move or resize the frame beyond the edges of the screen will move/resize it no further than the edge of the screen closest to the mouse position. Does not apply to programmatically setting the frame's position or size.</desc>
@@ -608,8 +614,17 @@ class "Frame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Frame", nil, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("Frame", nil, parent, template, ...)
 	end
 endclass "Frame"
 

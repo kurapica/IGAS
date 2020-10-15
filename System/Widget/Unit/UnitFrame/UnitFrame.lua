@@ -321,7 +321,7 @@ class "UnitFrame"
 	-- Constructor
 	------------------------------------------------------
 	function Constructor(self, name, parent)
-		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate, SecureHandlerAttributeTemplate")
+		return CreateFrame("Button", name, parent, "SecureUnitButtonTemplate, SecureHandlerAttributeTemplate, BackdropTemplate")
 	end
 
     function UnitFrame(self, name, parent, ...)

@@ -206,9 +206,19 @@ class "ScrollingMessageFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("ScrollingMessageFrame", nil, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("ScrollingMessageFrame", nil, parent, template, ...)
 	end
+
 endclass "ScrollingMessageFrame"
 
 class "ScrollingMessageFrame"

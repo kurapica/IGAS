@@ -192,7 +192,7 @@ end
 
 -- Overwrite methods
 function handler:GetActionDetail()
-	local target = ActionButton_CalculateAction(self)
+	local target = self:CalculateAction()
 	local desc
 
 	if target then
@@ -286,6 +286,8 @@ interface "IFActionHandler"
 	------------------------------------------------------
 	-- Method
 	------------------------------------------------------
+	CalculateAction = SecureActionButtonMixin.CalculateAction
+
 	__Doc__[[
 		<desc>Set Action Page for actionbutton</desc>
 		<param name="page">number|nil, the action page for the action button</param>

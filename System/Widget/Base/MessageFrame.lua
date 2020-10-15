@@ -82,8 +82,17 @@ class "MessageFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("MessageFrame", nil, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("MessageFrame", nil, parent, template, ...)
 	end
 endclass "MessageFrame"
 

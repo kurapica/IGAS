@@ -99,9 +99,19 @@ class "Slider"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Slider", nil, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("Slider", nil, parent, template, ...)
 	end
+
 endclass "Slider"
 
 class "Slider"

@@ -626,10 +626,19 @@ class "GameTooltip"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
 		local fullname = (parent:GetName() or "").."."..name
 
-		return CreateFrame("GameTooltip", fullname, parent, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("GameTooltip", fullname, parent, template, ...)
 	end
 endclass "GameTooltip"
 

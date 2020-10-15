@@ -17,11 +17,15 @@ class "SecureFrame"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		if select('#', ...) > 0 then
-			return CreateFrame("Frame", name, parent, ...)
-		else
-			return CreateFrame("Frame", name, parent, "SecureFrameTemplate")
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "SecureFrameTemplate, BackdropTemplate"
+			end
 		end
+
+		return CreateFrame("Frame", name, parent, template, ...)
 	end
 endclass "SecureFrame"

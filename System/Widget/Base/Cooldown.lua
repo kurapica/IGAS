@@ -46,9 +46,19 @@ class "Cooldown"
 	------------------------------------------------------
 	-- Constructor
 	------------------------------------------------------
-	function Constructor(self, name, parent, ...)
-		return CreateFrame("Cooldown", nil, parent, "CooldownFrameTemplate")
+	local BackdropTemplateMixin = _G.BackdropTemplateMixin
+
+	function Constructor(self, name, parent, template, ...)
+		if BackdropTemplateMixin then
+			if template then
+				template = template .. ", BackdropTemplate"
+			else
+				template = "BackdropTemplate"
+			end
+		end
+		return CreateFrame("Cooldown", nil, parent, template, ...)
 	end
+
 endclass "Cooldown"
 
 class "Cooldown"
