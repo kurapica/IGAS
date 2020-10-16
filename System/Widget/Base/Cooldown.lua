@@ -51,9 +51,9 @@ class "Cooldown"
 	function Constructor(self, name, parent, template, ...)
 		if BackdropTemplateMixin then
 			if template then
-				template = template .. ", BackdropTemplate"
+				template = template .. ", BackdropTemplate, CooldownFrameTemplate"
 			else
-				template = "BackdropTemplate"
+				template = "BackdropTemplate, CooldownFrameTemplate"
 			end
 		end
 		return CreateFrame("Cooldown", nil, parent, template, ...)
