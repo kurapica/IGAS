@@ -49,6 +49,8 @@ class "Cooldown"
 	local BackdropTemplateMixin = _G.BackdropTemplateMixin
 
 	function Constructor(self, name, parent, template, ...)
+		template = template or "CooldownFrameTemplate"
+
 		if BackdropTemplateMixin then
 			if template then
 				template = template .. ", BackdropTemplate"

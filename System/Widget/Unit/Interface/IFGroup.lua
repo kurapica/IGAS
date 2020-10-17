@@ -433,6 +433,10 @@ interface "IFGroup"
 		------------------------------------------------------
 		-- Constructor
 		------------------------------------------------------
+		function Constructor(self, name, parent, template, ...)
+			return CreateFrame("Frame", nil, parent, template, ...)
+		end
+
 	    function ShadowGroupHeader(self, ...)
 	    	Super(self, ...)
 
