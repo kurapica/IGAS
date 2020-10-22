@@ -47,7 +47,7 @@ _ClassMap = {
 		},
 	},
 	PALADIN = {
-		[SPEC_PALADIN_RETRIBUTION] = {
+		[SPEC_ALL] = {
 			ShowLevel = _G.PALADINPOWERBAR_SHOW_LEVEL,
 			PowerType = ClassPowerMap["HOLY_POWER"],
 			PowerToken = {
